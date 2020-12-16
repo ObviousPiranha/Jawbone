@@ -1,0 +1,9 @@
+.vscode/
+.vs/
+bin/
+obj/
+
+*.exe
+*.dll
+*.bin
+*.so
