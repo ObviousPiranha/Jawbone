@@ -311,7 +311,7 @@ namespace Piranha.Jawbone
             var view = new WindowEventView(_eventData);
             var handler = GetHandler(view.WindowId);
 
-            if (handler != null)
+            if (handler is not null)
             {
                 switch (windowEvent)
                 {
