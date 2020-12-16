@@ -5,10 +5,10 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Tools.CollectionExtensions;
-using Piranha.Tools.ReflectionExtensions;
+using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Tools.ReflectionExtensions;
 
-namespace Piranha.Tools
+namespace Piranha.Jawbone.Tools
 {
     public static class NativeLibraryInterface
     {

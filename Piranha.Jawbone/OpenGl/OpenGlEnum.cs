@@ -1,4 +1,4 @@
-namespace Piranha.OpenGl
+namespace Piranha.Jawbone.OpenGl
 {
     public static class Gl
     {

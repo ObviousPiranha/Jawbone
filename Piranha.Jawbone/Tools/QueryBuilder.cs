@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Piranha.Tools
+namespace Piranha.Jawbone.Tools
 {
     public class QueryBuilder
     {

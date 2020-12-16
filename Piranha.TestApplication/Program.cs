@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
-using Piranha.OpenAl;
-using Piranha.Sdl;
+using Piranha.Jawbone.Openal;
+using Piranha.Jawbone.Sdl;
 using Piranha.Sqlite;
 
 namespace Piranha.TestApplication

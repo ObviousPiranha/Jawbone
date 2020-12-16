@@ -1,4 +1,4 @@
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     // SDL_video.h -- SDL_WindowEventID
     public static class SdlWindowEvent

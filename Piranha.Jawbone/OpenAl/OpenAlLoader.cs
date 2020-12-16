@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
-namespace Piranha.OpenAl
+namespace Piranha.Jawbone.Openal
 {
     public class OpenAlLoader : IPlatformLoader<string?>
     {

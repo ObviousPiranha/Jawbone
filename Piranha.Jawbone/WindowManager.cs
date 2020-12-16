@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Piranha.OpenGl;
-using Piranha.Sdl;
-using Piranha.Tools;
-using Piranha.Tools.CollectionExtensions;
+using Piranha.Jawbone.OpenGl;
+using Piranha.Jawbone.Sdl;
+using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone
 {

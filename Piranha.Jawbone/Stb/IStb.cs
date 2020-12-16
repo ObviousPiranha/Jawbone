@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace Piranha.Stb
+namespace Piranha.Jawbone.Stb
 {
     public interface IStb
     {

@@ -1,4 +1,4 @@
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     public static class SdlWindow
     {

@@ -4,10 +4,10 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Piranha.OpenGl;
-using Piranha.Sdl;
-using Piranha.Stb;
-using Piranha.Tools;
+using Piranha.Jawbone.OpenGl;
+using Piranha.Jawbone.Sdl;
+using Piranha.Jawbone.Stb;
+using Piranha.Jawbone.Tools;
 
 namespace Piranha.TestApplication
 {

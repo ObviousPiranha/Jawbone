@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     public class SdlLoader : IPlatformLoader<string?>
     {

@@ -1,4 +1,4 @@
-namespace Piranha.OpenAl
+namespace Piranha.Jawbone.Openal
 {
     public static class Al
     {

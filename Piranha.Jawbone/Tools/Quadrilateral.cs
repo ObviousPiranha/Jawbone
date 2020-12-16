@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Piranha.Tools
+namespace Piranha.Jawbone.Tools
 {
     public readonly struct Quadrilateral
     {

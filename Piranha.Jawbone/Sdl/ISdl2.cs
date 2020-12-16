@@ -1,7 +1,7 @@
 using System;
-using Piranha.Tools.CollectionExtensions;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     public interface ISdl2
     {

@@ -1,6 +1,6 @@
-using Piranha.OpenGl;
+using Piranha.Jawbone.OpenGl;
 
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     public interface IWindowEventHandler
     {

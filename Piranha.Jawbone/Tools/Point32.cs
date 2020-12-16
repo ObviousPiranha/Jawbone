@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Tools
+namespace Piranha.Jawbone.Tools
 {
     public readonly struct Point32 : IEquatable<Point32>
     {

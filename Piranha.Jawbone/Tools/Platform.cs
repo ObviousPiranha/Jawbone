@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Tools
+namespace Piranha.Jawbone.Tools
 {
     public interface IPlatformLoader<T>
     {

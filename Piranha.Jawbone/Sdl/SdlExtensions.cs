@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     public static class SdlExtensions
     {

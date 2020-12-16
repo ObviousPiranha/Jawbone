@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
-namespace Piranha.OpenAl
+namespace Piranha.Jawbone.Openal
 {
     public static class OpenAlExtensions
     {

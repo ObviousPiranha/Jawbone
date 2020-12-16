@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     [StructLayout(LayoutKind.Sequential, Size = 16)]
     public struct SdlRect

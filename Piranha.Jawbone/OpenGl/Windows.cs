@@ -4,11 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using Piranha.Tools;
-using Piranha.Tools.CollectionExtensions;
-using Piranha.Tools.ReflectionExtensions;
+using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Tools.ReflectionExtensions;
 
-namespace Piranha.OpenGl
+namespace Piranha.Jawbone.OpenGl
 {
     public delegate IntPtr ModuleLoader(string name);
 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
 namespace Piranha.Sqlite
 {

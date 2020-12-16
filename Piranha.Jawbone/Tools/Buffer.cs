@@ -1,7 +1,7 @@
 using System;
 using System.Buffers;
 
-namespace Piranha.Tools
+namespace Piranha.Jawbone.Tools
 {
     public class Buffer<T> : IDisposable
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Sdl
+namespace Piranha.Jawbone.Sdl
 {
     public readonly struct MouseWheelEventView
     {

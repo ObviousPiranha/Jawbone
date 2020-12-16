@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace Piranha.Tools
+namespace Piranha.Jawbone.Tools
 {
     public readonly struct Rectangle32 : IEquatable<Rectangle32>
     {

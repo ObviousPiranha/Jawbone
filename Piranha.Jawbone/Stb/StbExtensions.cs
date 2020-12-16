@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
-namespace Piranha.Stb
+namespace Piranha.Jawbone.Stb
 {
     public static class StbExtensions
     {

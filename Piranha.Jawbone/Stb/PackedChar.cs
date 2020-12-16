@@ -1,9 +1,9 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
-namespace Piranha.Stb
+namespace Piranha.Jawbone.Stb
 {
     [StructLayout(LayoutKind.Sequential, Size = 28)]
     public struct PackedChar

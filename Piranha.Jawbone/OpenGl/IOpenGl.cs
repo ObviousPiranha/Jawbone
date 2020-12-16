@@ -4,9 +4,9 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Piranha.Tools;
+using Piranha.Jawbone.Tools;
 
-namespace Piranha.OpenGl
+namespace Piranha.Jawbone.OpenGl
 {
     public delegate void GenAction(int n, out uint array);
 
