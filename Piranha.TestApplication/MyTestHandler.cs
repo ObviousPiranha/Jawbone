@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 
@@ -6,6 +7,7 @@ namespace Piranha.Jawbone
 {
     class MyTestHandler : IWindowEventHandler
     {
+        private readonly ILogger<MyTestHandler> _logger;
         private readonly float _red;
         private readonly float _green;
         private readonly float _blue;
@@ -17,8 +19,9 @@ namespace Piranha.Jawbone
             return (random.Next(1024) + 1) / 1024F;
         }
 
-        public MyTestHandler(Random random)
+        public MyTestHandler(ILogger<MyTestHandler> logger, Random random)
         {
+            _logger = logger;
             _red = Randumb(random);
             _green = Randumb(random);
             _blue = Randumb(random);
@@ -34,7 +37,7 @@ namespace Piranha.Jawbone
         
         public void OnClose()
         {
-            Console.WriteLine("OnClose");
+            _logger.LogDebug("OnClose");
             Running = false;
         }
 

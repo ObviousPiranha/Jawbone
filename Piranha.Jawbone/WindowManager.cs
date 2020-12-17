@@ -9,7 +9,7 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone
 {
-    public class WindowManager : IDisposable
+    public sealed class WindowManager : IDisposable
     {
         public static IntPtr CreateWindowPtr(
             ISdl2 sdl,
@@ -71,10 +71,10 @@ namespace Piranha.Jawbone
             }
             else
             {
-                _logger.LogDebug("configuring OpenGL 3.2");
-                _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-                _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
-                _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
+                // _logger.LogDebug("configuring OpenGL 3.2");
+                // _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
+                // _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
+                // _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
             }
         }
 

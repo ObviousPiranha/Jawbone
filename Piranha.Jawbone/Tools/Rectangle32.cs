@@ -1,12 +1,11 @@
 using System;
-using System.Numerics;
 
 namespace Piranha.Jawbone.Tools
 {
     public readonly struct Rectangle32 : IEquatable<Rectangle32>
     {
-        public Point32 Low { get; }
-        public Point32 High { get; }
+        public readonly Point32 Low;
+        public readonly Point32 High;
 
         public Point32 Size => High - Low;
         public int Width => High.X - Low.X;

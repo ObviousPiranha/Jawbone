@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.Jawbone.Openal
+namespace Piranha.Jawbone.OpenAl
 {
     public class OpenAlLoader : IPlatformLoader<string?>
     {

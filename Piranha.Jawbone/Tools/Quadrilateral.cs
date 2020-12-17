@@ -4,10 +4,10 @@ namespace Piranha.Jawbone.Tools
 {
     public readonly struct Quadrilateral
     {
-        public Vector2 A { get; }
-        public Vector2 B { get; }
-        public Vector2 C { get; }
-        public Vector2 D { get; }
+        public readonly Vector2 A;
+        public readonly Vector2 B;
+        public readonly Vector2 C;
+        public readonly Vector2 D;
 
         public Quadrilateral(
             Vector2 a,

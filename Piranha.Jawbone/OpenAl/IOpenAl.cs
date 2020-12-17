@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Openal
+namespace Piranha.Jawbone.OpenAl
 {
     public interface IOpenAl
     {

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
-using Piranha.Jawbone.Openal;
+using Piranha.Jawbone.OpenAl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Sqlite;
 
@@ -25,7 +25,9 @@ namespace Piranha.TestApplication
                             });
                 })
                 .AddSdl2()
-                .AddSingleton<WindowManager>();
+                .AddSingleton<WindowManager>()
+                .AddTransient<Random>()
+                .AddSingleton<MyTestHandler>();
         }
 
         static void RunApplication()
@@ -41,8 +43,8 @@ namespace Piranha.TestApplication
             
             using var serviceProvider = serviceCollection.BuildServiceProvider(options);
             var windowManager = serviceProvider.GetRequiredService<WindowManager>();
-            var random = new Random();
-            windowManager.AddWindow("Test Application", 1024, 768, new MyTestHandler(random));
+            var handler = serviceProvider.GetRequiredService<MyTestHandler>();
+            windowManager.AddWindow("Test Application", 1024, 768, handler);
             windowManager.Run();
         }
 
