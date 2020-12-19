@@ -4,62 +4,7 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sqlite
 {
-    static class SqliteLimit
-    {
-        public const int Length = 0;
-        public const int SqlLength = 1;
-        public const int Column = 2;
-        public const int ExprDepth = 3;
-        public const int CompoundSelect = 4;
-        public const int VdbeOp = 5;
-        public const int FunctionArg = 6;
-        public const int Attached = 7;
-        public const int LikePatternLength = 8;
-        public const int VariableNumber = 9;
-        public const int TriggerDepth = 10;
-        public const int WorkerThreads = 11;
-    }
-
-    public enum Synchronous : int
-    {
-        Off = 0,
-        Normal = 1,
-        Full = 2,
-        Extra = 3
-    }
-
-    public enum JournalMode : int
-    {
-        Delete = 0,
-        Truncate = 1,
-        Persist = 2,
-        Memory = 3,
-        WriteAheadLog = 4,
-        Off = 5
-    }
-
-    // https://www.sqlite.org/c3ref/open.html
-    [Flags] enum SqliteOpen : int
-    {
-        ReadOnly = 1 << 0,
-        ReadWrite = 1 << 1,
-        Create = 1 << 2,
-        Uri = 1 << 6,
-        Memory = 1 << 7,
-        NoMutex = 1 << 15,
-        FullMutex = 1 << 16,
-        SharedCache = 1 << 17,
-        PrivateCache = 1 << 18
-    }
-
-    public enum TempStore
-    {
-        Default = 0,
-        File = 1,
-        Memory = 2
-    }
-
-    public class SqliteDatabase : IDisposable
+    public sealed class SqliteDatabase : IDisposable
     {
         public static SqliteDatabase Create(ISqlite3 sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadWrite | SqliteOpen.Create);
         public static SqliteDatabase Open(ISqlite3 sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadWrite);

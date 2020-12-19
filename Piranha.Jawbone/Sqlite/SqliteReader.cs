@@ -3,16 +3,7 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sqlite
 {
-    public static class SqliteType
-    {
-        public const int Integer = 1;
-        public const int Float = 2;
-        public const int Text = 3;
-        public const int Blob = 4;
-        public const int Null = 5;
-    }
-
-    public class SqliteReader : IDisposable
+    public sealed class SqliteReader : IDisposable
     {
         private readonly ISqlite3 _sqlite3;
         private readonly IntPtr _database;
