@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     static class SqliteLimit
     {

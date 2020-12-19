@@ -1,4 +1,4 @@
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     class Int16Handler : ITypeHandler<short>
     {

@@ -27,14 +27,14 @@ namespace Piranha.Jawbone.OpenGl
                 lib = Platform.FindLib("libGL.so*") ?? throw new NullReferenceException();
             }
 
-            return NativeLibraryInterface.Create<IOpenGl>(
+            return NativeLibraryInterface.FromFile<IOpenGl>(
                 lib,
                 name => "gl" + name);
         }
 
         public NativeLibraryInterface<IOpenGl> macOS()
         {
-            return NativeLibraryInterface.Create<IOpenGl>(
+            return NativeLibraryInterface.FromFile<IOpenGl>(
                 "/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib",
                 name => "gl" + name);
         }

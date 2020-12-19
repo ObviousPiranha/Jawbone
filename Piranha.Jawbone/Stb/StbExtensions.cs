@@ -11,7 +11,7 @@ namespace Piranha.Jawbone.Stb
             string dll)
         {
             return services.AddNativeLibrary<IStb>(
-                _ => NativeLibraryInterface.Create<IStb>(dll, ResolveName));
+                _ => NativeLibraryInterface.FromFile<IStb>(dll, ResolveName));
         }
 
         public static string ResolveName(string methodName)

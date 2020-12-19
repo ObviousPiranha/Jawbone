@@ -1,7 +1,7 @@
 using System;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     public static class SqliteStatementExtensions
     {

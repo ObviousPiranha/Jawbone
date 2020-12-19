@@ -1,4 +1,4 @@
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     class NullableHandler<T> : ITypeHandler<T?> where T : struct
     {

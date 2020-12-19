@@ -27,7 +27,7 @@ namespace Piranha.Jawbone.OpenAl
         public static NativeLibraryInterface<IOpenAl> LoadOpenAl()
         {
             var path = theInstance.CurrentPlatform() ?? throw new NullReferenceException("Failed to load OpenAL path.");
-            return NativeLibraryInterface.Create<IOpenAl>(path, ResolveName);
+            return NativeLibraryInterface.FromFile<IOpenAl>(path, ResolveName);
         }
 
         private OpenAlLoader()

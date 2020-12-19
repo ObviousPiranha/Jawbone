@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     class DateTimeOffsetHandler : ITypeHandler<DateTimeOffset>
     {

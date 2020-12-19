@@ -1,4 +1,4 @@
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     class UInt32Handler : ITypeHandler<uint>
     {

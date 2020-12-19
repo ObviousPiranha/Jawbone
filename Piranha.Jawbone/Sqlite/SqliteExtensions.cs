@@ -3,16 +3,26 @@ using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     public static class SqliteExtensions
     {
-        public static IServiceCollection AddSqlite3(
-            this IServiceCollection services,
-            string dll)
+        public static IServiceCollection AddSqlite3(this IServiceCollection services)
         {
             return services.AddNativeLibrary<ISqlite3>(
-                _ => NativeLibraryInterface.Create<ISqlite3>(dll, ResolveName));
+                _ => NativeLibraryInterface.FromFile<ISqlite3>(
+                    "PiranhaNative.dll",
+                    ResolveName,
+                    sqlite3 => InitializeAndVerify(sqlite3),
+                    sqlite3 => sqlite3.Shutdown()));
+        }
+
+        private static void InitializeAndVerify(ISqlite3 sqlite3)
+        {
+            var result = sqlite3.Initialize();
+
+            if (result != SqliteResult.Ok)
+                throw new SqliteException("Error on sqlite3_initialize().", KeyValuePair.Create(result, result.ToString()));
         }
         
         public static string ResolveName(string methodName)

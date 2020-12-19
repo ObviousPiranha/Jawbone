@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     interface ITypeHandler<T>
     {

@@ -2,7 +2,7 @@ using System;
 using System.Reflection;
 using System.Text;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     static class SqlitePropertyExtensions
     {

@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "Piranha.Jawbone"
+		},
+		{
+			"path": "Piranha.Jawbone.Test"
 		}
 	],
 	"settings": {}

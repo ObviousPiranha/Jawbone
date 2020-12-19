@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     public class SqliteException : Exception
     {

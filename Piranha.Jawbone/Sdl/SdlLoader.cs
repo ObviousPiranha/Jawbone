@@ -20,7 +20,7 @@ namespace Piranha.Jawbone.Sdl
         public static NativeLibraryInterface<ISdl2> LoadSdl()
         {
             var path = theInstance.CurrentPlatform() ?? throw new NullReferenceException("Failed to load SDL path.");
-            return NativeLibraryInterface.Create<ISdl2>(path, ResolveName);
+            return NativeLibraryInterface.FromFile<ISdl2>(path, ResolveName);
         }
 
         private SdlLoader()

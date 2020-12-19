@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     public sealed class SqliteTable<T> where T : class
     {

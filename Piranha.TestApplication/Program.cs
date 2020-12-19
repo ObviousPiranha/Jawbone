@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
 using Piranha.Jawbone.OpenAl;
 using Piranha.Jawbone.Sdl;
-using Piranha.Sqlite;
+using Piranha.Jawbone.Sqlite;
 
 namespace Piranha.TestApplication
 {

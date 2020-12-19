@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class SqliteColumn : Attribute

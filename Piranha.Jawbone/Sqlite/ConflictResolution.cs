@@ -1,4 +1,4 @@
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     // https://www.sqlite.org/lang_conflict.html
     public enum ConflictResolution

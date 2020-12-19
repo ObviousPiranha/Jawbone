@@ -24,9 +24,11 @@ namespace Piranha.Jawbone.Tools
             return ptr.IsInvalid() ? null : Marshal.PtrToStringUTF8(ptr);
         }
 
-        public static NativeLibraryInterface<T> Create<T>(
+        public static NativeLibraryInterface<T> FromFile<T>(
             string libraryPath,
-            Func<string, string> methodNameToFunctionName)
+            Func<string, string> methodNameToFunctionName,
+            Action<T>? afterLoad = null,
+            Action<T>? beforeDispose = null)
             where T : class
         {
             var libraryName = "Native." + Path.GetFileNameWithoutExtension(libraryPath);
@@ -41,7 +43,9 @@ namespace Piranha.Jawbone.Tools
                     libraryName,
                     libraryHandle,
                     methodNameToFunctionName,
-                    NativeLibrary.GetExport);
+                    NativeLibrary.GetExport,
+                    afterLoad,
+                    beforeDispose);
             }
             catch
             {
@@ -54,7 +58,9 @@ namespace Piranha.Jawbone.Tools
             string libraryName,
             IntPtr libraryHandle,
             Func<string, string> methodNameToFunctionName,
-            Func<IntPtr, string, IntPtr> procAddressLoader)
+            Func<IntPtr, string, IntPtr> procAddressLoader,
+            Action<T>? afterLoad = null,
+            Action<T>? beforeDispose = null)
             where T : class
         {
             if (!typeof(T).IsInterface)
@@ -133,7 +139,8 @@ namespace Piranha.Jawbone.Tools
 
             var type = typeBuilder.CreateType() ?? throw new NullReferenceException();
             var libraryInterface = (T)(Activator.CreateInstance(type) ?? throw new NullReferenceException());
-            return new NativeLibraryInterface<T>(libraryInterface, libraryHandle);
+            afterLoad?.Invoke(libraryInterface);
+            return new NativeLibraryInterface<T>(libraryInterface, libraryHandle, beforeDispose);
         }
 
         public static IServiceCollection AddNativeLibrary<T>(
@@ -148,21 +155,33 @@ namespace Piranha.Jawbone.Tools
         }
     }
 
-    public class NativeLibraryInterface<T> : IDisposable where T : class
+    public sealed class NativeLibraryInterface<T> : IDisposable where T : class
     {
         public T Library { get; }
 
         private readonly IntPtr _handle;
+        private readonly Action<T>? _beforeDispose;
 
-        public NativeLibraryInterface(T library, IntPtr handle)
+        public NativeLibraryInterface(
+            T library,
+            IntPtr handle,
+            Action<T>? beforeDispose = null)
         {
             Library = library;
             _handle = handle;
+            _beforeDispose = beforeDispose;
         }
 
         public void Dispose()
         {
-            NativeLibrary.Free(_handle);
+            try
+            {
+                _beforeDispose?.Invoke(Library);
+            }
+            finally
+            {
+                NativeLibrary.Free(_handle);
+            }
         }
     }
 }

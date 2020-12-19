@@ -1,8 +1,9 @@
 using System;
-using System.Collections.Generic;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
+    // https://www.sqlite.org/c3ref/funclist.html
+
     public interface ISqlite3
     {
         int Open(string filename, out IntPtr database);
@@ -36,5 +37,8 @@ namespace Piranha.Sqlite
         int Changes(IntPtr database);
         int TotalChanges(IntPtr database);
         int Limit(IntPtr database, int id, int newVal);
+        int Initialize();
+        int Shutdown();
+        string? Libversion();
     }
 }

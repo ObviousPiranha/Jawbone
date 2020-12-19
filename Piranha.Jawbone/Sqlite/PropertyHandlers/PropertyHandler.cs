@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Piranha.Sqlite
+namespace Piranha.Jawbone.Sqlite
 {
     interface IPropertyHandler<T>
     {
