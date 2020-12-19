@@ -19,6 +19,7 @@ namespace Piranha.Jawbone.Sqlite
 
         private static void InitializeAndVerify(ISqlite3 sqlite3)
         {
+            // https://www.sqlite.org/c3ref/initialize.html
             var result = sqlite3.Initialize();
 
             if (result != SqliteResult.Ok)

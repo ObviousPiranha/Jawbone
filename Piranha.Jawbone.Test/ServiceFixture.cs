@@ -4,6 +4,8 @@ using Piranha.Jawbone.Sqlite;
 
 namespace Piranha.Jawbone.Test
 {
+    // https://xunit.net/docs/shared-context
+    
     public sealed class ServiceFixture : IDisposable
     {
         private readonly ServiceProvider _serviceProvider;
