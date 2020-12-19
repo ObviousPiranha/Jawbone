@@ -2,7 +2,7 @@ using System;
 
 namespace Piranha.Jawbone.Sdl
 {
-    public readonly struct MouseButtonEventView
+    public readonly ref struct MouseButtonEventView
     {
         private readonly byte[] _data;
 

@@ -9,7 +9,7 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone
 {
-    public sealed class WindowManager : IDisposable
+    public sealed class WindowManager : IWindowManager, IDisposable
     {
         public static IntPtr CreateWindowPtr(
             ISdl2 sdl,
@@ -40,8 +40,6 @@ namespace Piranha.Jawbone
             new Dictionary<uint, IWindowEventHandler>();
         private readonly List<KeyValuePair<IntPtr, IWindowEventHandler>> _activeWindows =
             new List<KeyValuePair<IntPtr, IWindowEventHandler>>();
-        
-        private IWindowEventHandler? _lastHandler = null;
 
         public WindowManager(
             ISdl2 sdl,
@@ -150,7 +148,7 @@ namespace Piranha.Jawbone
                 _handlerByWindowId.Add(id, handler);
                 _activeWindows.Add(KeyValuePair.Create(windowPtr, handler));
                 _sdl.GetWindowSize(windowPtr, out var w, out var h);
-                handler.OnStart(id, w, h);
+                handler.OnOpen(id, w, h);
                 return id;
             }
             catch
@@ -174,7 +172,6 @@ namespace Piranha.Jawbone
                 }
                 else
                 {
-                    _lastHandler = pair.Value;
                     _sdl.DestroyWindow(pair.Key);
                     _activeWindows.RemoveAt(i);
                 }
@@ -247,7 +244,7 @@ namespace Piranha.Jawbone
                 {
                     var view = new MouseWheelEventView(_eventData);
                     GetHandler(view.WindowId)?.OnMouseWheel(view);
-                    break;
+                    break; 
                 }
                 case SdlEvent.MouseButtonDown:
                 {
@@ -263,7 +260,9 @@ namespace Piranha.Jawbone
                 }
                 case SdlEvent.Quit:
                 {
-                    _lastHandler?.OnClose();
+                    foreach (var pair in _activeWindows)
+                        pair.Value.OnQuit();
+                    
                     break;
                 }
                 case SdlEvent.UserEvent:

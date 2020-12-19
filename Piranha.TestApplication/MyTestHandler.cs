@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 
-namespace Piranha.Jawbone
+namespace Piranha.TestApplication
 {
     class MyTestHandler : IWindowEventHandler
     {
@@ -27,17 +27,24 @@ namespace Piranha.Jawbone
             _blue = Randumb(random);
         }
 
-        public bool Running { get; private set; } = true;
+        public bool Running { get; private set; }
 
-        public void OnStart(uint windowId, int width, int height)
+        public void OnOpen(uint windowId, int width, int height)
         {
             _width = width;
             _height = height;
+            Running = true;
         }
         
         public void OnClose()
         {
             _logger.LogDebug("OnClose");
+            Running = false;
+        }
+
+        public void OnQuit()
+        {
+            _logger.LogDebug("OnQuit");
             Running = false;
         }
 
@@ -62,7 +69,7 @@ namespace Piranha.Jawbone
 
         public void OnKeyUp(KeyboardEventView eventData)
         {
-            Console.WriteLine("OnKeyUp");
+            _logger.LogDebug("OnKeyUp");
             if (eventData.PhysicalKeyCode == SdlScancode.Escape)
                 Running = false;
         }

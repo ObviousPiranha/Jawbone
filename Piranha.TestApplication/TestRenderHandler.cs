@@ -344,7 +344,7 @@ namespace Piranha.TestApplication
             UpdateSize(eventData.X, eventData.Y);
         }
 
-        public void OnStart(uint windowId, int width, int height)
+        public void OnOpen(uint windowId, int width, int height)
         {
             UpdateSize(width, height);
         }
@@ -361,5 +361,10 @@ namespace Piranha.TestApplication
         }
 
         public bool OnUser(UserEventView eventdata) => false;
+
+        public void OnQuit()
+        {
+            Running = false;
+        }
     }
 }

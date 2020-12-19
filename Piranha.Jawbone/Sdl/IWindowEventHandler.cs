@@ -6,7 +6,7 @@ namespace Piranha.Jawbone.Sdl
     {
         bool Running { get; }
 
-        void OnStart(uint windowId, int width, int height);
+        void OnOpen(uint windowId, int width, int height);
         void OnMouseEnter();
         void OnMouseLeave();
         void OnInputFocus();
@@ -26,5 +26,6 @@ namespace Piranha.Jawbone.Sdl
         void OnMouseButtonUp(MouseButtonEventView eventData);
         bool OnUser(UserEventView eventdata);
         void OnClose();
+        void OnQuit();
     }
 }

@@ -25,17 +25,15 @@ namespace Piranha.Jawbone.Tools
         }
 
         public static NativeLibraryInterface<T> Create<T>(
-            string library,
+            string libraryPath,
             Func<string, string> methodNameToFunctionName)
             where T : class
         {
-            var here = Path.GetDirectoryName(typeof(NativeLibraryInterface).Assembly.Location) ?? string.Empty;
-            var libraryPath = Path.Combine(here, library);
-            var libraryName = "Native." + Path.GetFileNameWithoutExtension(library);
+            var libraryName = "Native." + Path.GetFileNameWithoutExtension(libraryPath);
             var libraryHandle = NativeLibrary.Load(libraryPath);
             
             if (libraryHandle.IsInvalid())
-                throw new Exception("Unable to load library " + library);
+                throw new Exception("Unable to load library " + libraryPath);
             
             try
             {

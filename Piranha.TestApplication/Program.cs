@@ -25,7 +25,7 @@ namespace Piranha.TestApplication
                             });
                 })
                 .AddSdl2()
-                .AddSingleton<WindowManager>()
+                .AddSingleton<IWindowManager, WindowManager>()
                 .AddTransient<Random>()
                 .AddSingleton<MyTestHandler>();
         }
@@ -42,8 +42,9 @@ namespace Piranha.TestApplication
             };
             
             using var serviceProvider = serviceCollection.BuildServiceProvider(options);
-            var windowManager = serviceProvider.GetRequiredService<WindowManager>();
+            var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
             var handler = serviceProvider.GetRequiredService<MyTestHandler>();
+            // var handler = serviceProvider.GetRequiredService<TestRenderHandler>();
             windowManager.AddWindow("Test Application", 1024, 768, handler);
             windowManager.Run();
         }

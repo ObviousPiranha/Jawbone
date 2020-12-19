@@ -2,7 +2,7 @@ using System;
 
 namespace Piranha.Jawbone.Sdl
 {
-    public readonly struct KeyboardEventView
+    public readonly ref struct KeyboardEventView
     {
         private readonly byte[] _data;
 
