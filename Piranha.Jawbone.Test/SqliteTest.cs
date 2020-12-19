@@ -10,7 +10,7 @@ namespace Piranha.Jawbone.Test
     [Collection(JawboneServiceCollection.Name)]
     public class SqliteTest
     {
-        private const string DatabasePath = "test.sqlite";
+        private const string DatabasePath = ":memory:";
         private static readonly SqliteTable<SqliteRecord> Table = new();
         private readonly ISqlite3 _sqlite3;
 
@@ -45,8 +45,6 @@ namespace Piranha.Jawbone.Test
                 Assert.False(object.ReferenceEquals(records, storedRecords));
                 Assert.Equal(records, storedRecords);
             }
-
-            Assert.True(File.Exists(DatabasePath));
         }
     }
 }
