@@ -31,6 +31,9 @@ namespace Piranha.Jawbone.Tools
             Action<T>? beforeDispose = null)
             where T : class
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !libraryPath.Contains('/'))
+                libraryPath = "./" + libraryPath;
+            
             var libraryName = "Native." + Path.GetFileNameWithoutExtension(libraryPath);
             var libraryHandle = NativeLibrary.Load(libraryPath);
             
