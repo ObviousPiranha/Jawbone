@@ -8,6 +8,8 @@ namespace Piranha.Jawbone.Sdl
             int height,
             IWindowEventHandler handler);
         
+        bool TryExpose(uint windowId);
+        
         void Run();
     }
 }

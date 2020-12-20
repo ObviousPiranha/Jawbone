@@ -70,5 +70,6 @@ namespace Piranha.Jawbone.Sdl
         int GlSetSwapInterval(int interval);
         int GlSetAttribute(int attribute, int value);
         void GlSwapWindow(IntPtr window);
+        uint GetTicks();
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
@@ -34,12 +33,11 @@ namespace Piranha.Jawbone
         private readonly byte[] _eventData = new byte[56];
         private readonly ISdl2 _sdl;
         private readonly ILogger<WindowManager> _logger;
+        private readonly uint _customExposeEvent;
         private NativeLibraryInterface<IOpenGl>? _gl = default;
         private IntPtr _contextPtr = default;
-        private readonly Dictionary<uint, IWindowEventHandler> _handlerByWindowId =
-            new Dictionary<uint, IWindowEventHandler>();
-        private readonly List<KeyValuePair<IntPtr, IWindowEventHandler>> _activeWindows =
-            new List<KeyValuePair<IntPtr, IWindowEventHandler>>();
+        private readonly Dictionary<uint, IWindowEventHandler> _handlerByWindowId = new();
+        private readonly List<KeyValuePair<IntPtr, IWindowEventHandler>> _activeWindows = new();
 
         public WindowManager(
             ISdl2 sdl,
@@ -53,6 +51,7 @@ namespace Piranha.Jawbone
             if (result != 0)
                 throw new SdlException("Failed to initialize SDL: " + _sdl.GetError());
 
+            _customExposeEvent = _sdl.RegisterEvents(1);
             _sdl.GlSetAttribute(SdlGl.RedSize, 8);
             _sdl.GlSetAttribute(SdlGl.GreenSize, 8);
             _sdl.GlSetAttribute(SdlGl.BlueSize, 8);
@@ -156,6 +155,19 @@ namespace Piranha.Jawbone
                 _sdl.DestroyWindow(windowPtr);
                 throw;
             }
+        }
+
+        public bool TryExpose(uint windowId)
+        {
+            var eventData = new byte[64];
+            // _ = BitConverter.TryWriteBytes(eventData, _customExposeEvent);
+            _ = BitConverter.TryWriteBytes(eventData, SdlEvent.WindowEvent);
+            _ = BitConverter.TryWriteBytes(eventData.AsSpan(4), _sdl.GetTicks());
+            _ = BitConverter.TryWriteBytes(eventData.AsSpan(8), windowId);
+            eventData[12] = SdlWindowEvent.Exposed;
+
+            var result = _sdl.PushEvent(eventData);
+            return result == 1;
         }
 
         private void DestroyInactiveWindows()
@@ -265,19 +277,16 @@ namespace Piranha.Jawbone
                     
                     break;
                 }
-                case SdlEvent.UserEvent:
-                {
-                    var view = new UserEventView(_eventData);
-                    // _logger.LogDebug("Received user event: " + view.Code);
-                    var handler = GetHandler(view.WindowId);
-
-                    if (handler != null && handler.OnUser(view))
-                        Expose(view.WindowId, handler);
-                    
-                    break;
-                }
                 default:
                 {
+                    if (eventType == _customExposeEvent)
+                    {
+                        var view = new UserEventView(_eventData);
+                        var handler = GetHandler(view.WindowId);
+
+                        if (handler is not null)
+                            Expose(view.WindowId, handler);
+                    }
                     _logger.LogTrace("event " + eventType);
                     break;
                 }
@@ -306,13 +315,12 @@ namespace Piranha.Jawbone
 
         private void HandleWindowEvent()
         {
-            int windowEvent = _eventData[12];
             var view = new WindowEventView(_eventData);
             var handler = GetHandler(view.WindowId);
 
             if (handler is not null)
             {
-                switch (windowEvent)
+                switch (view.Event)
                 {
                     case SdlWindowEvent.Shown: break;
                     case SdlWindowEvent.Hidden: break;

@@ -8,15 +8,21 @@ namespace Piranha.TestApplication
     class MyTestHandler : IWindowEventHandler
     {
         private readonly ILogger<MyTestHandler> _logger;
+        private readonly IWindowManager _windowManager;
         private readonly Random _random;
+        private uint _windowId = 0;
         private int _width = 0;
         private int _height = 0;
 
         private float Randumb() => (float)_random.NextDouble();
 
-        public MyTestHandler(ILogger<MyTestHandler> logger, Random random)
+        public MyTestHandler(
+            ILogger<MyTestHandler> logger,
+            IWindowManager windowManager,
+            Random random)
         {
             _logger = logger;
+            _windowManager = windowManager;
             _random = random;
         }
 
@@ -24,6 +30,7 @@ namespace Piranha.TestApplication
 
         public void OnOpen(uint windowId, int width, int height)
         {
+            _windowId = windowId;
             _width = width;
             _height = height;
             Running = true;
@@ -77,6 +84,7 @@ namespace Piranha.TestApplication
 
         public void OnMouseButtonDown(MouseButtonEventView eventData)
         {
+            _ = _windowManager.TryExpose(_windowId);
         }
 
         public void OnMouseButtonUp(MouseButtonEventView eventData)
