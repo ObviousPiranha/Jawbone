@@ -6,12 +6,10 @@ namespace Piranha.Jawbone.Stb
 {
     public static class StbExtensions
     {
-        public static IServiceCollection AddStb(
-            this IServiceCollection services,
-            string dll)
+        public static IServiceCollection AddStb(this IServiceCollection services)
         {
             return services.AddNativeLibrary<IStb>(
-                _ => NativeLibraryInterface.FromFile<IStb>(dll, ResolveName));
+                _ => NativeLibraryInterface.FromFile<IStb>("PiranhaNative.dll", ResolveName));
         }
 
         public static string ResolveName(string methodName)

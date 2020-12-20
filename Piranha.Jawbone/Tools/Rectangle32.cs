@@ -4,33 +4,18 @@ namespace Piranha.Jawbone.Tools
 {
     public readonly struct Rectangle32 : IEquatable<Rectangle32>
     {
-        public readonly Point32 Low;
-        public readonly Point32 High;
+        public readonly Point32 Position;
+        public readonly Point32 Size;
 
-        public Point32 Size => High - Low;
-        public int Width => High.X - Low.X;
-        public int Height => High.Y - Low.Y;
-        public int Area => Width * Height;
-
-        public Rectangle32(Point32 low, Point32 high)
+        public Rectangle32(Point32 position, Point32 size)
         {
-            Low = low;
-            High = high;
+            Position = position;
+            Size = size;
         }
 
         public override bool Equals(object? obj) => obj is Rectangle32 r && Equals(r);
-        public override int GetHashCode() => HashCode.Combine(Low, High);
-        public override string ToString() => $"{Low} to {High}";
-
-        public bool Equals(Rectangle32 other)
-        {
-            return Low.Equals(other.Low) && High.Equals(other.High);
-        }
-
-        public Rectangle32 Shrunk(int n)
-        {
-            var offset = new Point32(n, n);
-            return new Rectangle32(Low + offset, High - offset);
-        }
+        public override int GetHashCode() => HashCode.Combine(Position.X, Position.Y, Size.X, Size.Y);
+        public override string ToString() => $"{Position} of size {Size}";
+        public bool Equals(Rectangle32 other) => Position.Equals(other.Position) && Size.Equals(other.Size);
     }
 }

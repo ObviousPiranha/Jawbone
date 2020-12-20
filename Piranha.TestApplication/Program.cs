@@ -5,6 +5,7 @@ using Piranha.Jawbone;
 using Piranha.Jawbone.OpenAl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Sqlite;
+using Piranha.Jawbone.Stb;
 
 namespace Piranha.TestApplication
 {
@@ -24,7 +25,9 @@ namespace Piranha.TestApplication
                                 options.IncludeScopes = true;
                             });
                 })
+                .AddSqlite3()
                 .AddSdl2()
+                .AddStb()
                 .AddSingleton<IWindowManager, WindowManager>();
         }
 
@@ -40,11 +43,20 @@ namespace Piranha.TestApplication
             };
             
             using var serviceProvider = serviceCollection.BuildServiceProvider(options);
-            var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
-            var handler = ActivatorUtilities.CreateInstance<MyTestHandler>(serviceProvider, new Random());
-            // var handler = serviceProvider.GetRequiredService<TestRenderHandler>();
-            windowManager.AddWindow("Test Application", 1024, 768, handler);
-            windowManager.Run();
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+            try
+            {
+                var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
+                var handler = ActivatorUtilities.CreateInstance<MyTestHandler>(serviceProvider, new Random());
+                // var handler = serviceProvider.GetRequiredService<TestRenderHandler>();
+                windowManager.AddWindow("Test Application", 1024, 768, handler);
+                windowManager.Run();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error running window manager.");
+            }
         }
 
         static void Main(string[] args)

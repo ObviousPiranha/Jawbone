@@ -23,5 +23,6 @@ namespace Piranha.Jawbone.Tools
         public static Point64 operator -(Point64 a, Point64 b) => new Point64(a.X - b.X, a.Y - b.Y);
         public static bool operator ==(Point64 a, Point64 b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(Point64 a, Point64 b) => a.X != b.X || a.Y != b.Y;
+        public static explicit operator Point32(Point64 p) => new Point32((int)p.X, (int)p.Y);
     }
 }

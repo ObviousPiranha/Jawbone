@@ -8,23 +8,16 @@ namespace Piranha.TestApplication
     class MyTestHandler : IWindowEventHandler
     {
         private readonly ILogger<MyTestHandler> _logger;
-        private readonly float _red;
-        private readonly float _green;
-        private readonly float _blue;
+        private readonly Random _random;
         private int _width = 0;
         private int _height = 0;
 
-        private static float Randumb(Random random)
-        {
-            return (random.Next(1024) + 1) / 1024F;
-        }
+        private float Randumb() => (float)_random.NextDouble();
 
         public MyTestHandler(ILogger<MyTestHandler> logger, Random random)
         {
             _logger = logger;
-            _red = Randumb(random);
-            _green = Randumb(random);
-            _blue = Randumb(random);
+            _random = random;
         }
 
         public bool Running { get; private set; }
@@ -51,7 +44,7 @@ namespace Piranha.TestApplication
         public void OnExpose(IOpenGl gl)
         {
             gl.Viewport(0, 0, _width, _height);
-            gl.ClearColor(_red, _green, _blue, 1.0F);
+            gl.ClearColor(Randumb(), Randumb(), Randumb(), 1.0F);
             gl.Clear(Gl.ColorBufferBit);
         }
 
