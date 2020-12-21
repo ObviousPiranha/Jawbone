@@ -11,30 +11,44 @@ namespace Piranha.Jawbone
 {
     public sealed class WindowManager : IWindowManager, IDisposable
     {
-        public static IntPtr CreateWindowPtr(
+        private static IntPtr CreateWindowPtr(
             ISdl2 sdl,
+            ILogger logger,
             string title,
             int width,
             int height,
             bool fullscreen)
         {
-            var flags = SdlWindow.OpenGl | SdlWindow.Shown;
+            var flags = SdlWindow.OpenGl;
+            var pos = SdlWindowPos.Centered;
+
+            var result = sdl.GetDesktopDisplayMode(0, out var mode);
+            if (result < 0)
+                throw new SdlException("Unable to get desktop display mode: " + sdl.GetError());
+            
+            logger.LogDebug($"Detected display of {mode.w}x{mode.h}.");
 
             if (fullscreen)
-                flags |= SdlWindow.FullScreen;
+            {
+                pos = 0;
+                width = mode.w;
+                height = mode.h;
+            }
             else
-                flags |= SdlWindow.Resizable;
+            {
+                flags |= SdlWindow.Resizable | SdlWindow.Shown;
+            }
             
             var windowPtr = sdl.CreateWindow(
                 title,
-                SdlWindowPos.Centered,
-                SdlWindowPos.Centered,
+                pos,
+                pos,
                 width,
                 height,
                 flags);
             
             if (windowPtr.IsInvalid())
-                throw new SdlException("Unable to create window: " + sdl.GetError());
+                throw new SdlException($"Unable to create window ({windowPtr}): {sdl.GetError()}");
 
             return windowPtr;
         }
@@ -71,7 +85,7 @@ namespace Piranha.Jawbone
             _sdl.GlSetAttribute(SdlGl.GreenSize, 8);
             _sdl.GlSetAttribute(SdlGl.BlueSize, 8);
             _sdl.GlSetAttribute(SdlGl.AlphaSize, 8);
-            // _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
+            _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
             _sdl.GlSetAttribute(SdlGl.DoubleBuffer, 1);
 
             if (Platform.IsRaspberryPi)
@@ -117,7 +131,7 @@ namespace Piranha.Jawbone
             bool fullscreen,
             IWindowEventHandler handler)
         {
-            var windowPtr = CreateWindowPtr(_sdl, title, width, height, fullscreen);
+            var windowPtr = CreateWindowPtr(_sdl, _logger, title, width, height, fullscreen);
 
             try
             {

@@ -49,22 +49,7 @@ namespace Piranha.TestApplication
             {
                 var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
                 var handler = ActivatorUtilities.CreateInstance<MyTestHandler>(serviceProvider, new Random());
-                // var handler = serviceProvider.GetRequiredService<TestRenderHandler>();
-                var w = 1024;
-                var h = 768;
-                if (fullscreen)
-                {
-                    var sdl = serviceProvider.GetRequiredService<ISdl2>();
-                    var result = sdl.GetCurrentDisplayMode(0, out var mode);
-
-                    if (result < 0)
-                        throw new SdlException("Unable to get display mode: " + sdl.GetError());
-                    
-                    w = mode.w;
-                    h = mode.h;
-                }
-
-                windowManager.AddWindow("Test Application", w, h, fullscreen, handler);
+                windowManager.AddWindow("Test Application", 1024, 768, fullscreen, handler);
                 windowManager.Run();
             }
             catch (Exception ex)
