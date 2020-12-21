@@ -6,6 +6,7 @@ namespace Piranha.Jawbone.Sdl
             string title,
             int width,
             int height,
+            bool fullscreen,
             IWindowEventHandler handler);
         
         bool TryExpose(uint windowId);

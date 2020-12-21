@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
@@ -14,15 +15,23 @@ namespace Piranha.Jawbone
             ISdl2 sdl,
             string title,
             int width,
-            int height)
+            int height,
+            bool fullscreen)
         {
+            var flags = SdlWindow.OpenGl | SdlWindow.Shown;
+
+            if (fullscreen)
+                flags |= SdlWindow.FullScreen;
+            else
+                flags |= SdlWindow.Resizable;
+            
             var windowPtr = sdl.CreateWindow(
                 title,
                 SdlWindowPos.Centered,
                 SdlWindowPos.Centered,
                 width,
                 height,
-                SdlWindow.OpenGl | SdlWindow.Shown | SdlWindow.Resizable);
+                flags);
             
             if (windowPtr.IsInvalid())
                 throw new SdlException("Unable to create window: " + sdl.GetError());
@@ -41,12 +50,18 @@ namespace Piranha.Jawbone
 
         public WindowManager(
             ISdl2 sdl,
-            ILogger<WindowManager> logger)
+            ILogger<WindowManager> logger,
+            Bcm.IBcm? bcm = null)
         {
             _sdl = sdl;
             _logger = logger;
             
+            bcm?.HostInit();
             int result = _sdl.Init(SdlInit.Video | SdlInit.Timer | SdlInit.Events);
+
+            var displayCount = _sdl.GetNumVideoDisplays();
+            var word = displayCount == 1 ? "display" : "displays";
+            _logger.LogDebug($"{displayCount} {word}");
 
             if (result != 0)
                 throw new SdlException("Failed to initialize SDL: " + _sdl.GetError());
@@ -99,9 +114,10 @@ namespace Piranha.Jawbone
             string title,
             int width,
             int height,
+            bool fullscreen,
             IWindowEventHandler handler)
         {
-            var windowPtr = CreateWindowPtr(_sdl, title, width, height);
+            var windowPtr = CreateWindowPtr(_sdl, title, width, height, fullscreen);
 
             try
             {
@@ -159,15 +175,22 @@ namespace Piranha.Jawbone
 
         public bool TryExpose(uint windowId)
         {
-            var eventData = new byte[64];
-            // _ = BitConverter.TryWriteBytes(eventData, _customExposeEvent);
-            _ = BitConverter.TryWriteBytes(eventData, SdlEvent.WindowEvent);
-            _ = BitConverter.TryWriteBytes(eventData.AsSpan(4), _sdl.GetTicks());
-            _ = BitConverter.TryWriteBytes(eventData.AsSpan(8), windowId);
-            eventData[12] = SdlWindowEvent.Exposed;
+            var eventData = ArrayPool<byte>.Shared.Rent(64);
 
-            var result = _sdl.PushEvent(eventData);
-            return result == 1;
+            try
+            {
+                _ = BitConverter.TryWriteBytes(eventData, SdlEvent.WindowEvent);
+                _ = BitConverter.TryWriteBytes(eventData.AsSpan(4), _sdl.GetTicks());
+                _ = BitConverter.TryWriteBytes(eventData.AsSpan(8), windowId);
+                eventData[12] = SdlWindowEvent.Exposed;
+
+                var result = _sdl.PushEvent(eventData);
+                return result == 1;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(eventData, true);
+            }
         }
 
         private void DestroyInactiveWindows()

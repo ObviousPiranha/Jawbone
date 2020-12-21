@@ -71,5 +71,8 @@ namespace Piranha.Jawbone.Sdl
         int GlSetAttribute(int attribute, int value);
         void GlSwapWindow(IntPtr window);
         uint GetTicks();
+        int GetCurrentDisplayMode(int displayIndex, out SdlDisplayMode mode);
+        int GetDesktopDisplayMode(int displayIndex, out SdlDisplayMode mode);
+        int GetNumVideoDisplays();
     }
 }
