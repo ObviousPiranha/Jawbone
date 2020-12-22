@@ -3,11 +3,10 @@ using System.Buffers;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
-using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 
-namespace Piranha.Jawbone
+namespace Piranha.Jawbone.Sdl
 {
     public sealed class WindowManager : IWindowManager, IDisposable
     {
@@ -85,7 +84,7 @@ namespace Piranha.Jawbone
             _sdl.GlSetAttribute(SdlGl.GreenSize, 8);
             _sdl.GlSetAttribute(SdlGl.BlueSize, 8);
             _sdl.GlSetAttribute(SdlGl.AlphaSize, 8);
-            _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
+            // _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
             _sdl.GlSetAttribute(SdlGl.DoubleBuffer, 1);
 
             if (Platform.IsRaspberryPi)
