@@ -110,7 +110,9 @@ namespace Piranha.Jawbone.Tools
                 
                 typeBuilder.DefineMethodOverride(methodBuilder, interfaceMethod);
 
-                var functionName = methodNameToFunctionName(interfaceMethod.Name);
+                var functionName =
+                    interfaceMethod.GetCustomAttribute<FunctionNameAttribute>()?.FunctionName ??
+                    methodNameToFunctionName.Invoke(interfaceMethod.Name);
                 var procAddress = procAddressLoader(libraryHandle, functionName);
                 
                 if (procAddress.IsInvalid())

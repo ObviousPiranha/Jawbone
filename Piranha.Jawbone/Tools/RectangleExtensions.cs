@@ -46,5 +46,7 @@ namespace Piranha.Jawbone.Tools
             Point32 size,
             out Rectangle32 rx,
             out Rectangle32 ry) => r.InnerPack(size, r.Size.Y, size.X, out rx, out ry);
+        
+        public static Rectangle32 Moved(this Rectangle32 r, Point32 offset) => new Rectangle32(r.Position + offset, r.Size);
     }
 }

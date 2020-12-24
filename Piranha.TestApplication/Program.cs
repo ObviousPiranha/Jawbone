@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
@@ -6,6 +7,7 @@ using Piranha.Jawbone.OpenAl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Sqlite;
 using Piranha.Jawbone.Stb;
+using Piranha.Jawbone.Tools;
 
 namespace Piranha.TestApplication
 {

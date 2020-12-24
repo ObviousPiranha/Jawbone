@@ -1,4 +1,5 @@
 using System;
+using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sdl
@@ -55,11 +56,18 @@ namespace Piranha.Jawbone.Sdl
         ulong GetPerformanceFrequency();
         ulong GetPerformanceCounter();
         int PollEvent(byte[] eventData);
-        int UpperBlit(
+        [FunctionName("SDL_UpperBlit")]
+        int BlitSurface(
             IntPtr source,
             int[]? sourceRectangle,
             IntPtr destination,
             int[]? destinationRectangle);
+        [FunctionName("SDL_UpperBlit")]
+        int BlitSurface(
+            IntPtr source,
+            in int sourceRectangle,
+            IntPtr destination,
+            ref int destinationRectangle);
         int WaitEvent(byte[] eventData);
         uint RegisterEvents(int numEvents);
         int PushEvent(byte[] eventData);

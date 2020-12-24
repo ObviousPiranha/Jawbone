@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl
 {
-    public readonly struct SurfaceView
+    public readonly ref struct SurfaceView
     {
         public static readonly int FormatOffset = Environment.Is64BitProcess ? 8 : 4;
         public static readonly int WidthOffset = Environment.Is64BitProcess ? 16 : 8;
