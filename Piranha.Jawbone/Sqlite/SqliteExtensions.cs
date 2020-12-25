@@ -10,20 +10,29 @@ namespace Piranha.Jawbone.Sqlite
         public static IServiceCollection AddSqlite3(this IServiceCollection services)
         {
             return services.AddNativeLibrary<ISqlite3>(
-                _ => NativeLibraryInterface.FromFile<ISqlite3>(
-                    "PiranhaNative.dll",
-                    ResolveName,
-                    sqlite3 => InitializeAndVerify(sqlite3),
-                    sqlite3 => sqlite3.Shutdown()));
-        }
+                _ =>
+                {
+                    var library = NativeLibraryInterface.FromFile<ISqlite3>(
+                        "PiranhaNative.dll",
+                        ResolveName,
+                        sqlite3 => sqlite3.Shutdown());
+                    
+                    try
+                    {
+                        // https://www.sqlite.org/c3ref/initialize.html
+                        var result = library.Library.Initialize();
 
-        private static void InitializeAndVerify(ISqlite3 sqlite3)
-        {
-            // https://www.sqlite.org/c3ref/initialize.html
-            var result = sqlite3.Initialize();
-
-            if (result != SqliteResult.Ok)
-                throw new SqliteException("Error on sqlite3_initialize().", KeyValuePair.Create(result, result.ToString()));
+                        if (result != SqliteResult.Ok)
+                            throw new SqliteException("Error on sqlite3_initialize().", KeyValuePair.Create(result, result.ToString()));
+                        
+                        return library;
+                    }
+                    catch
+                    {
+                        library.DisposeHandle();
+                        throw;
+                    }
+                });
         }
         
         public static string ResolveName(string methodName)

@@ -63,21 +63,14 @@ namespace Piranha.Jawbone.Sdl
 
         public WindowManager(
             ISdl2 sdl,
-            ILogger<WindowManager> logger,
-            Bcm.IBcm? bcm = null)
+            ILogger<WindowManager> logger)
         {
             _sdl = sdl;
             _logger = logger;
-            
-            bcm?.HostInit();
-            int result = _sdl.Init(SdlInit.Video | SdlInit.Timer | SdlInit.Events);
 
             var displayCount = _sdl.GetNumVideoDisplays();
             var word = displayCount == 1 ? "display" : "displays";
             _logger.LogDebug($"{displayCount} {word}");
-
-            if (result != 0)
-                throw new SdlException("Failed to initialize SDL: " + _sdl.GetError());
 
             _customExposeEvent = _sdl.RegisterEvents(1);
             _sdl.GlSetAttribute(SdlGl.RedSize, 8);
@@ -109,8 +102,6 @@ namespace Piranha.Jawbone.Sdl
 
             if (_contextPtr.IsValid())
                 _sdl.GlDeleteContext(_contextPtr);
-            
-            _sdl.Quit();
         }
 
         private uint GetWindowId(IntPtr windowPtr)

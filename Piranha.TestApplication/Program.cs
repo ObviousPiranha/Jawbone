@@ -70,7 +70,7 @@ namespace Piranha.TestApplication
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine(ex);
-                Console.ResetColor();
+                Console.ResetColor();   
             }
         }
     }

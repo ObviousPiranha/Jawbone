@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "Piranha.Jawbone.Test"
+		},
+		{
+			"path": "Piranha.SheetTool"
 		}
 	],
 	"settings": {}

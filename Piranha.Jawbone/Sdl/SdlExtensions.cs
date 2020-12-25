@@ -12,15 +12,44 @@ namespace Piranha.Jawbone.Sdl
 
         public static IServiceCollection AddSdl2(this IServiceCollection services)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists(BcmLibrary))
+            return services.AddSdl2(SdlInit.Video | SdlInit.Timer | SdlInit.Events);
+        }
+
+        public static IServiceCollection AddSdl2(
+            this IServiceCollection services,
+            uint flags)
+        {
+            var isVideoEnabled = (flags & SdlInit.Video) == SdlInit.Video;
+            if (isVideoEnabled && RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists(BcmLibrary))
             {
                 services.AddNativeLibrary<IBcm>(
                     _ => NativeLibraryInterface.FromFile<IBcm>(
-                        BcmLibrary, _ => "bcm_host_init"));
+                        BcmLibrary, name => name));
             }
 
             return services.AddNativeLibrary<ISdl2>(
-                _ => SdlLoader.LoadSdl());
+                serviceProvider =>
+                {
+                    var bcm = serviceProvider.GetService<IBcm>();
+                    bcm?.HostInit();
+
+                    var library = SdlLoader.LoadSdl();
+
+                    try
+                    {
+                        int result = library.Library.Init(flags);
+
+                        if (result != 0)
+                            throw new SdlException("Failed to initialize SDL: " + library.Library.GetError());
+
+                        return library;
+                    }
+                    catch
+                    {
+                        library.DisposeHandle();
+                        throw;
+                    }
+                });
         }
     }
 }

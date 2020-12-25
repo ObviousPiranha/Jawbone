@@ -27,7 +27,6 @@ namespace Piranha.Jawbone.Tools
         public static NativeLibraryInterface<T> FromFile<T>(
             string libraryPath,
             Func<string, string> methodNameToFunctionName,
-            Action<T>? afterLoad = null,
             Action<T>? beforeDispose = null)
             where T : class
         {
@@ -47,7 +46,6 @@ namespace Piranha.Jawbone.Tools
                     libraryHandle,
                     methodNameToFunctionName,
                     NativeLibrary.GetExport,
-                    afterLoad,
                     beforeDispose);
             }
             catch
@@ -62,7 +60,6 @@ namespace Piranha.Jawbone.Tools
             IntPtr libraryHandle,
             Func<string, string> methodNameToFunctionName,
             Func<IntPtr, string, IntPtr> procAddressLoader,
-            Action<T>? afterLoad = null,
             Action<T>? beforeDispose = null)
             where T : class
         {
@@ -144,7 +141,6 @@ namespace Piranha.Jawbone.Tools
 
             var type = typeBuilder.CreateType() ?? throw new NullReferenceException();
             var libraryInterface = (T)(Activator.CreateInstance(type) ?? throw new NullReferenceException());
-            afterLoad?.Invoke(libraryInterface);
             return new NativeLibraryInterface<T>(libraryInterface, libraryHandle, beforeDispose);
         }
 
@@ -177,6 +173,8 @@ namespace Piranha.Jawbone.Tools
             _beforeDispose = beforeDispose;
         }
 
+        public void DisposeHandle() => NativeLibrary.Free(_handle);
+
         public void Dispose()
         {
             try
@@ -185,7 +183,7 @@ namespace Piranha.Jawbone.Tools
             }
             finally
             {
-                NativeLibrary.Free(_handle);
+                DisposeHandle();
             }
         }
     }
