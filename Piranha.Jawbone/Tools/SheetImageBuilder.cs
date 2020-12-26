@@ -182,7 +182,9 @@ namespace Piranha.Jawbone.Tools
                 sheetSurface,
                 pos.Moved(1 + width, 1 + height));
 
-            return sheetPosition;
+            return new SheetPosition(
+                sheetPosition.SheetIndex,
+                sheetPosition.Rectangle.Padded(1));
         }
 
         public SheetPosition Load(ReadOnlySpan<byte> imageData)

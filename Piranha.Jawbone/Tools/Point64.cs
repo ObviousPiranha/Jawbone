@@ -18,11 +18,11 @@ namespace Piranha.Jawbone.Tools
         public override int GetHashCode() => HashCode.Combine(X, Y);
         public override string ToString() => $"({X}, {Y})";
 
-        public static Point64 operator -(Point64 p) => new Point64(-p.X, -p.Y);
-        public static Point64 operator +(Point64 a, Point64 b) => new Point64(a.X + b.X, a.Y + b.Y);
-        public static Point64 operator -(Point64 a, Point64 b) => new Point64(a.X - b.X, a.Y - b.Y);
+        public static Point64 operator -(Point64 p) => new(-p.X, -p.Y);
+        public static Point64 operator +(Point64 a, Point64 b) => new(a.X + b.X, a.Y + b.Y);
+        public static Point64 operator -(Point64 a, Point64 b) => new(a.X - b.X, a.Y - b.Y);
         public static bool operator ==(Point64 a, Point64 b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(Point64 a, Point64 b) => a.X != b.X || a.Y != b.Y;
-        public static explicit operator Point32(Point64 p) => new Point32((int)p.X, (int)p.Y);
+        public static explicit operator Point32(Point64 p) => new((int)p.X, (int)p.Y);
     }
 }

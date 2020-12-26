@@ -20,19 +20,26 @@ namespace Piranha.Jawbone.Tools
         public SheetPosition Allocate(Point32 size)
         {
             var bestIndex = NoIndex;
-            var bestFitLow = int.MaxValue;
-            var bestFitHigh = int.MaxValue;
+            Span<int> fitValues = stackalloc int[6]
+            {
+                int.MaxValue, // best fit (low)
+                int.MaxValue, // best fit (high)
+                int.MaxValue, // best sheet index
+                0, // current low fit
+                0, // current high fit
+                0 // current sheet index
+            };
 
             for (int i = 0; i < _available.Count; ++i)
             {
                 var fit = _available[i].Rectangle.Size - size;
-                fit.InOrder(out var fitLow, out var fitHigh);
+                fit.InOrder(out fitValues[3], out fitValues[4]);
+                fitValues[5] = _available[i].SheetIndex;
 
-                if (0 <= fitLow && (fitLow < bestFitLow || (fitLow == bestFitLow && fitHigh < bestFitHigh)))
+                if (0 <= fitValues[3] && Comparer.IsLessThan(fitValues[3..6], fitValues[0..3]))
                 {
                     bestIndex = i;
-                    bestFitLow = fitLow;
-                    bestFitHigh = fitHigh;
+                    fitValues[3..6].CopyTo(fitValues);
                 }
             }
 

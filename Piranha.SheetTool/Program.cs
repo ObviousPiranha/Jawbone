@@ -25,6 +25,11 @@ namespace Piranha.SheetTool
                 .AddSdl2()
                 .AddStb();
         }
+
+        static void CreateSheetsFromFolder(IServiceProvider serviceProvider, string folder)
+        {
+            
+        }
         
         static void Main(string[] args)
         {
@@ -44,6 +49,8 @@ namespace Piranha.SheetTool
 
                 try
                 {
+                    foreach (var arg in args)
+                        CreateSheetsFromFolder(serviceProvider, arg);
                 }
                 catch (Exception ex)
                 {
