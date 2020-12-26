@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
 using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.SheetTool
 {
@@ -27,9 +30,84 @@ namespace Piranha.SheetTool
                 .AddStb();
         }
 
-        static void CreateSheetsFromFolder(ISdl2 sdl, IStb stb, string inputFolder, string outputFolder)
+        static void CreateSheetsFromFolder(ILogger logger, ISdl2 sdl, IStb stb, string inputFolder, string outputFolder)
         {
-            var builder = new SheetImageBuilder(stb, sdl, new Point32(1024, 1024));
+            var surfaces = new List<IntPtr>();
+            var nameBySurface = new Dictionary<IntPtr, string>();
+            var folders = new Stack<string>();
+            folders.Push(inputFolder);
+
+            while (folders.TryPop(out var folder))
+            {
+                logger.LogDebug("Processing folder {0}", folder);
+
+                foreach (var innerFolder in Directory.EnumerateDirectories(folder))
+                    folders.Push(innerFolder);
+                
+                foreach (var png in Directory.EnumerateFiles(folder, "*.png"))
+                {
+                    logger.LogDebug("Loading {0}", png);
+                    var pngBytes = File.ReadAllBytes(png);
+                    var pixelBytes = stb.StbiLoadFromMemory(
+                        pngBytes[0],
+                        pngBytes.Length,
+                        out var width,
+                        out var height,
+                        out var comp,
+                        4);
+                    
+                    if (pixelBytes.IsInvalid())
+                        throw new Exception("Unable to load PNG.");
+                    
+                    var surface = sdl.CreateRGBSurfaceFrom(
+                        pixelBytes,
+                        width,
+                        height,
+                        32,
+                        4 * width,
+                        Platform.Rmask,
+                        Platform.Gmask,
+                        Platform.Bmask,
+                        Platform.Amask);
+                    
+                    if (surface.IsInvalid())
+                    {
+                        stb.StbiImageFree(pixelBytes);
+                        throw new SdlException("Unable to create surface: " + sdl.GetError());
+                    }
+                    
+                    surfaces.Add(surface);
+                    nameBySurface.Add(surface, Path.GetFileNameWithoutExtension(png));
+                }
+
+            }
+
+            surfaces.Sort(
+                (a, b) =>
+                {
+                    var sa = new SurfaceView(a);
+                    var sb = new SurfaceView(b);
+                    var areaA = sa.Width * sa.Height;
+                    var areaB = sb.Width * sb.Height;
+                    return -areaA.CompareTo(areaB); // Sort descending!
+                });
+
+            using (var builder = new SheetImageBuilder(stb, sdl, new Point32(1024, 1024)))
+            {
+                foreach (var surface in surfaces)
+                {
+                    var position = builder.Add(surface);
+                }
+                
+                builder.SaveImages(outputFolder);
+            }
+
+            foreach (var surface in surfaces)
+            {
+                var view = new SurfaceView(surface);
+                stb.StbiImageFree(view.Pixels);
+                sdl.FreeSurface(surface);
+            }
         }
         
         static void Main(string[] args)
@@ -53,7 +131,7 @@ namespace Piranha.SheetTool
                     var sdl = serviceProvider.GetRequiredService<ISdl2>();
                     var stb = serviceProvider.GetRequiredService<IStb>();
 
-                    CreateSheetsFromFolder(sdl, stb, args[0], args[1]);
+                    CreateSheetsFromFolder(logger, sdl, stb, args[0], args[1]);
                 }
                 catch (Exception ex)
                 {
