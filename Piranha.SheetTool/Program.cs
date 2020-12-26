@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
+using Piranha.Jawbone.Tools;
 
 namespace Piranha.SheetTool
 {
@@ -26,9 +27,9 @@ namespace Piranha.SheetTool
                 .AddStb();
         }
 
-        static void CreateSheetsFromFolder(IServiceProvider serviceProvider, string folder)
+        static void CreateSheetsFromFolder(ISdl2 sdl, IStb stb, string inputFolder, string outputFolder)
         {
-            
+            var builder = new SheetImageBuilder(stb, sdl, new Point32(1024, 1024));
         }
         
         static void Main(string[] args)
@@ -49,8 +50,10 @@ namespace Piranha.SheetTool
 
                 try
                 {
-                    foreach (var arg in args)
-                        CreateSheetsFromFolder(serviceProvider, arg);
+                    var sdl = serviceProvider.GetRequiredService<ISdl2>();
+                    var stb = serviceProvider.GetRequiredService<IStb>();
+
+                    CreateSheetsFromFolder(sdl, stb, args[0], args[1]);
                 }
                 catch (Exception ex)
                 {

@@ -140,6 +140,8 @@ namespace Piranha.Jawbone.Sdl
                         _gl = OpenGlLoader.Load();
                         var gl = _gl.Library;
 
+                        gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
+
                         var log = string.Concat(
                             "OpenGL version: ",
                             gl.GetString(Gl.Version),
@@ -151,7 +153,10 @@ namespace Piranha.Jawbone.Sdl
                             gl.GetString(Gl.Vendor),
                             Environment.NewLine,
                             "OpenGL renderer: ",
-                            gl.GetString(Gl.Renderer));
+                            gl.GetString(Gl.Renderer),
+                            Environment.NewLine,
+                            "OpenGL max texture size: ",
+                            maxTextureSize);
                         
                         _logger.LogDebug(log);
                     }
