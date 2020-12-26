@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Sdl;
@@ -92,12 +93,30 @@ namespace Piranha.SheetTool
                     return -areaA.CompareTo(areaB); // Sort descending!
                 });
 
-            using (var builder = new SheetImageBuilder(stb, sdl, new Point32(1024, 1024)))
+            var infoPath = Path.Combine(outputFolder, "info.json");
+            var options = new JsonWriterOptions
             {
+                Indented = true
+            };
+            using (var builder = new SheetImageBuilder(stb, sdl, new Point32(1024, 1024)))
+            using (var fileStream = File.Create(infoPath))
+            using (var writer = new Utf8JsonWriter(fileStream, options))
+            {
+                writer.WriteStartObject();
                 foreach (var surface in surfaces)
                 {
                     var position = builder.Add(surface);
+                    writer.WritePropertyName(nameBySurface[surface]);
+                    writer.WriteStartObject();
+                    writer.WriteNumber("sheetIndex", position.SheetIndex);
+                    writer.WriteNumber("x", position.Rectangle.Position.X);
+                    writer.WriteNumber("y", position.Rectangle.Position.Y);
+                    writer.WriteNumber("width", position.Rectangle.Size.X);
+                    writer.WriteNumber("height", position.Rectangle.Size.Y);
+                    writer.WriteEndObject();
+                    writer.Flush();
                 }
+                writer.WriteEndObject();
                 
                 builder.SaveImages(outputFolder);
             }
