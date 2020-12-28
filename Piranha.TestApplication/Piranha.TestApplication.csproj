@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <None Include="vertex.shader" CopyToOutputDirectory="Always"/>
+    <None Include="fragment.shader" CopyToOutputDirectory="Always"/>
+    <None Include="sheet.png" CopyToOutputDirectory="Always"/>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Piranha.Jawbone\Piranha.Jawbone.csproj"/>
   </ItemGroup>
   <ItemGroup>

@@ -99,7 +99,7 @@ namespace Piranha.SheetTool
                 SkipValidation = true
             };
 
-            using (var builder = new SheetImageBuilder(stb, sdl, new Point32(1024, 1024)))
+            using (var builder = new SheetImageBuilder(stb, sdl, new Point32(512, 512)))
             using (var fileStream = File.Create(infoPath))
             using (var writer = new Utf8JsonWriter(fileStream, options))
             {

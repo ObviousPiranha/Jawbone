@@ -1,5 +1,7 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Piranha.Jawbone.OpenGl
 {
@@ -32,6 +34,42 @@ namespace Piranha.Jawbone.OpenGl
                     return shader;
                 }
             }
+        }
+
+        public static bool TryLogErrors(
+            this IOpenGl gl,
+            ILogger logger,
+            [CallerFilePath] string? file = null,
+            [CallerMemberName] string? caller = null,
+            [CallerLineNumber] int lineNumber = 0)
+        {
+            bool result = false;
+
+            while (true)
+            {
+                var err = gl.GetError();
+
+                if (err == Gl.NoError)
+                    break;
+
+                result = true;
+                var errorEnum = err switch
+                {
+                    Gl.InvalidEnum => "GL_INVALID_ENUM",
+                    Gl.InvalidValue => "GL_INVALID_VALUE",
+                    Gl.InvalidOperation => "GL_INVALID_OPERATION",
+                    Gl.StackOverflow => "GL_STACK_OVERFLOW",
+                    Gl.StackUnderflow => "GL_STACK_UNDERFLOW",
+                    Gl.OutOfMemory => "GL_OUT_OF_MEMORY",
+                    Gl.InvalidFramebufferOperation => "GL_INVALID_FRAMEBUFFER_OPERATION",
+                    Gl.ContextLost => "GL_CONTEXT_LOST",
+                    _ => $"unknown error value: " + err
+                };
+
+                logger.LogError($"{file} - {caller} : {lineNumber} - {errorEnum}");
+            }
+
+            return result;
         }
     }
 }
