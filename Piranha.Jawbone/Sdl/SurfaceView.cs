@@ -12,45 +12,45 @@ namespace Piranha.Jawbone.Sdl
         public static readonly int PixelsOffset = Environment.Is64BitProcess ? 32 : 20;
         public static readonly int UserDataOffset = Environment.Is64BitProcess ? 40 : 24;
 
-        public IntPtr Address { get; }
+        public readonly IntPtr Address { get; }
 
-        public uint Flags
+        public readonly uint Flags
         {
             get => unchecked((uint)Marshal.ReadInt32(Address));
             set => Marshal.WriteInt32(Address, unchecked((int)value));
         }
 
-        public int Width
+        public readonly int Width
         {
             get => Marshal.ReadInt32(Address, WidthOffset);
             set => Marshal.WriteInt32(Address, WidthOffset, value);
         }
 
-        public int Height
+        public readonly int Height
         {
             get => Marshal.ReadInt32(Address, HeightOffset);
             set => Marshal.WriteInt32(Address, HeightOffset, value);
         }
 
-        public int Pitch
+        public readonly int Pitch
         {
             get => Marshal.ReadInt32(Address, PitchOffset);
             set => Marshal.WriteInt32(Address, PitchOffset, value);
         }
 
-        public IntPtr Pixels
+        public readonly IntPtr Pixels
         {
             get => Marshal.ReadIntPtr(Address, PixelsOffset);
             set => Marshal.WriteIntPtr(Address, PixelsOffset, value);
         }
 
-        public IntPtr UserData
+        public readonly IntPtr UserData
         {
             get => Marshal.ReadIntPtr(Address, UserDataOffset);
             set => Marshal.WriteIntPtr(Address, UserDataOffset, value);
         }
 
-        public IntPtr Format
+        public readonly IntPtr Format
         {
             get => Marshal.ReadIntPtr(Address, FormatOffset);
             set => Marshal.WriteIntPtr(Address, FormatOffset, value);
@@ -61,7 +61,7 @@ namespace Piranha.Jawbone.Sdl
             Address = address;
         }
 
-        public Span<byte> GetPixelData()
+        public readonly Span<byte> GetPixelData()
         {
             unsafe
             {

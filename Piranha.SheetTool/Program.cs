@@ -45,10 +45,10 @@ namespace Piranha.SheetTool
                 foreach (var innerFolder in Directory.EnumerateDirectories(folder))
                     folders.Push(innerFolder);
                 
-                foreach (var png in Directory.EnumerateFiles(folder, "*.png"))
+                foreach (var pngFile in Directory.EnumerateFiles(folder, "*.png"))
                 {
-                    logger.LogDebug("Loading {0}", png);
-                    var pngBytes = File.ReadAllBytes(png);
+                    logger.LogDebug("Loading {0}", pngFile);
+                    var pngBytes = File.ReadAllBytes(pngFile);
                     var pixelBytes = stb.StbiLoadFromMemory(
                         pngBytes[0],
                         pngBytes.Length,
@@ -78,36 +78,37 @@ namespace Piranha.SheetTool
                     }
                     
                     surfaces.Add(surface);
-                    nameBySurface.Add(surface, Path.GetFileNameWithoutExtension(png));
+                    nameBySurface.Add(surface, Path.GetFileNameWithoutExtension(pngFile));
                 }
-
             }
 
             surfaces.Sort(
                 (a, b) =>
                 {
-                    var sa = new SurfaceView(a);
-                    var sb = new SurfaceView(b);
-                    var areaA = sa.Width * sa.Height;
-                    var areaB = sb.Width * sb.Height;
+                    var viewA = new SurfaceView(a);
+                    var viewB = new SurfaceView(b);
+                    var areaA = viewA.Width * viewA.Height;
+                    var areaB = viewB.Width * viewB.Height;
                     return -areaA.CompareTo(areaB); // Sort descending!
                 });
 
             var infoPath = Path.Combine(outputFolder, "info.json");
             var options = new JsonWriterOptions
             {
-                Indented = true
+                Indented = true,
+                SkipValidation = true
             };
+
             using (var builder = new SheetImageBuilder(stb, sdl, new Point32(1024, 1024)))
             using (var fileStream = File.Create(infoPath))
             using (var writer = new Utf8JsonWriter(fileStream, options))
             {
-                writer.WriteStartObject();
+                writer.WriteStartArray();
                 foreach (var surface in surfaces)
                 {
                     var position = builder.Add(surface);
-                    writer.WritePropertyName(nameBySurface[surface]);
                     writer.WriteStartObject();
+                    writer.WriteString("name", nameBySurface[surface]);
                     writer.WriteNumber("sheetIndex", position.SheetIndex);
                     writer.WriteNumber("x", position.Rectangle.Position.X);
                     writer.WriteNumber("y", position.Rectangle.Position.Y);
@@ -116,8 +117,7 @@ namespace Piranha.SheetTool
                     writer.WriteEndObject();
                     writer.Flush();
                 }
-                writer.WriteEndObject();
-                
+                writer.WriteEndArray();
                 builder.SaveImages(outputFolder);
             }
 

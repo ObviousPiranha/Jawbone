@@ -344,7 +344,7 @@ namespace Piranha.TestApplication
             UpdateSize(eventData.X, eventData.Y);
         }
 
-        public void OnOpen(uint windowId, int width, int height)
+        public void OnOpen(uint windowId, int width, int height, IOpenGl gl)
         {
             UpdateSize(width, height);
         }

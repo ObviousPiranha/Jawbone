@@ -18,14 +18,7 @@ namespace Piranha.Jawbone.Tools
         public override int GetHashCode() => HashCode.Combine(SheetIndex, Rectangle);
         public override string? ToString() => $"index {SheetIndex} {Rectangle}";
 
-        public static bool operator ==(SheetPosition left, SheetPosition right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(SheetPosition left, SheetPosition right)
-        {
-            return !(left == right);
-        }
+        public static bool operator ==(SheetPosition left, SheetPosition right) => left.Equals(right);
+        public static bool operator !=(SheetPosition left, SheetPosition right) => !left.Equals(right);
     }
 }

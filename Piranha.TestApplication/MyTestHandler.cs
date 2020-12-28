@@ -13,6 +13,8 @@ namespace Piranha.TestApplication
         private uint _windowId = 0;
         private int _width = 0;
         private int _height = 0;
+        private uint _program = 0;
+        private uint _texture = 0;
 
         private float Randumb() => (float)_random.NextDouble();
 
@@ -28,12 +30,14 @@ namespace Piranha.TestApplication
 
         public bool Running { get; private set; }
 
-        public void OnOpen(uint windowId, int width, int height)
+        public void OnOpen(uint windowId, int width, int height, IOpenGl gl)
         {
             _windowId = windowId;
             _width = width;
             _height = height;
             Running = true;
+
+            
         }
         
         public void OnClose()
@@ -69,7 +73,6 @@ namespace Piranha.TestApplication
 
         public void OnKeyUp(KeyboardEventView eventData)
         {
-            _logger.LogDebug("OnKeyUp");
             if (eventData.PhysicalKeyCode == SdlScancode.Escape)
                 Running = false;
         }
@@ -126,10 +129,6 @@ namespace Piranha.TestApplication
         }
 
         public void OnRestore()
-        {
-        }
-
-        public void OnSecond()
         {
         }
 

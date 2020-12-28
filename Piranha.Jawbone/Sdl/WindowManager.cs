@@ -125,7 +125,7 @@ namespace Piranha.Jawbone.Sdl
 
             try
             {
-                if (_contextPtr.IsInvalid())
+                if (_gl is null)
                 {
                     _contextPtr = _sdl.GlCreateContext(windowPtr);
 
@@ -167,12 +167,16 @@ namespace Piranha.Jawbone.Sdl
                         throw;
                     }
                 }
+                else
+                {
+                    _sdl.GlMakeCurrent(windowPtr, _contextPtr);
+                }
 
                 var id = GetWindowId(windowPtr);
                 _handlerByWindowId.Add(id, handler);
                 _activeWindows.Add(KeyValuePair.Create(windowPtr, handler));
                 _sdl.GetWindowSize(windowPtr, out var w, out var h);
-                handler.OnOpen(id, w, h);
+                handler.OnOpen(id, w, h, _gl.Library);
                 return id;
             }
             catch
