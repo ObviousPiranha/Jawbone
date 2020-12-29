@@ -30,7 +30,7 @@ namespace Piranha.TestApplication
                 .AddSqlite3()
                 .AddSdl2()
                 .AddStb()
-                .AddSingleton<IWindowManager, WindowManager>();
+                .AddWindowManager();
         }
 
         static void RunApplication(bool fullscreen)
@@ -49,10 +49,14 @@ namespace Piranha.TestApplication
 
             try
             {
+                var scenePool = new ScenePool<PiranhaScene>();
+                var gameLoop = ActivatorUtilities.CreateInstance<GameLoop>(serviceProvider, scenePool);
                 var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
-                var handler = ActivatorUtilities.CreateInstance<MyTestHandler>(serviceProvider, new Random());
-                windowManager.AddWindow("Test Application", 1024, 768, fullscreen, handler);
-                windowManager.Run();
+                var handler = ActivatorUtilities.CreateInstance<MyTestHandler>(serviceProvider, scenePool);
+                var windowId = windowManager.AddWindow("Test Application", 1024, 768, fullscreen, handler);
+
+                using (ActivatorUtilities.CreateInstance<GameLoopManager>(serviceProvider, gameLoop, handler))
+                    windowManager.Run();
             }
             catch (Exception ex)
             {

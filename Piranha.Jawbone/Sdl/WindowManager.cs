@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Tools;
@@ -8,7 +9,7 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sdl
 {
-    public sealed class WindowManager : IWindowManager, IDisposable
+    sealed class WindowManager : IWindowManager, IDisposable
     {
         private static IntPtr CreateWindowPtr(
             ISdl2 sdl,
@@ -55,24 +56,25 @@ namespace Piranha.Jawbone.Sdl
         private readonly byte[] _eventData = new byte[56];
         private readonly ISdl2 _sdl;
         private readonly ILogger<WindowManager> _logger;
-        private readonly uint _customExposeEvent;
+        private readonly CustomEvents _customEvents;
         private NativeLibraryInterface<IOpenGl>? _gl = default;
         private IntPtr _contextPtr = default;
-        private readonly Dictionary<uint, IWindowEventHandler> _handlerByWindowId = new();
-        private readonly List<KeyValuePair<IntPtr, IWindowEventHandler>> _activeWindows = new();
+        private readonly List<KeyValuePair<uint, IWindowEventHandler>> _activeWindows = new();
+        private readonly Dictionary<uint, int> _exposeVersionId = new();
 
         public WindowManager(
             ISdl2 sdl,
-            ILogger<WindowManager> logger)
+            ILogger<WindowManager> logger,
+            CustomEvents customEvents)
         {
             _sdl = sdl;
             _logger = logger;
+            _customEvents = customEvents;
 
             var displayCount = _sdl.GetNumVideoDisplays();
             var word = displayCount == 1 ? "display" : "displays";
             _logger.LogDebug($"{displayCount} {word}");
 
-            _customExposeEvent = _sdl.RegisterEvents(1);
             _sdl.GlSetAttribute(SdlGl.RedSize, 8);
             _sdl.GlSetAttribute(SdlGl.GreenSize, 8);
             _sdl.GlSetAttribute(SdlGl.BlueSize, 8);
@@ -173,8 +175,7 @@ namespace Piranha.Jawbone.Sdl
                 }
 
                 var id = GetWindowId(windowPtr);
-                _handlerByWindowId.Add(id, handler);
-                _activeWindows.Add(KeyValuePair.Create(windowPtr, handler));
+                _activeWindows.Add(KeyValuePair.Create(id, handler));
                 _sdl.GetWindowSize(windowPtr, out var w, out var h);
                 handler.OnOpen(id, w, h, _gl.Library);
                 return id;
@@ -220,7 +221,17 @@ namespace Piranha.Jawbone.Sdl
                 }
                 else
                 {
-                    _sdl.DestroyWindow(pair.Key);
+                    var ptr = _sdl.GetWindowFromID(pair.Key);
+
+                    if (ptr.IsValid())
+                    {
+                        _sdl.DestroyWindow(ptr);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No window pointer found for window ID: {0}.", pair.Key);
+                    }
+
                     _activeWindows.RemoveAt(i);
                 }
             }
@@ -230,18 +241,31 @@ namespace Piranha.Jawbone.Sdl
         {
             while (_activeWindows.Count > 0)
             {
-                if (_sdl.WaitEvent(_eventData) == 1)
+                var doSleep = true;
+                while (_sdl.PollEvent(_eventData) == 1)
                 {
                     HandleEvent();
+                    doSleep = false;
                 }
-                else
+
+                foreach (var pair in _activeWindows)
                 {
-                    _logger.LogError(
-                        "Failed to wait for an event: " +
-                        _sdl.GetError());
+                    var evi = pair.Value.ExposeVersionId;
+                    if (0 < evi)
+                    {
+                        if (!_exposeVersionId.TryGetValue(pair.Key, out var id) || evi != id)
+                        {
+                            _exposeVersionId[pair.Key] = evi;
+                            doSleep = false;
+                            Expose(pair.Key, pair.Value);
+                        }
+                    }
                 }
 
                 DestroyInactiveWindows();
+
+                if (doSleep)
+                    Thread.Sleep(1);
             }
 
             // Flush the queue before exiting.
@@ -253,10 +277,14 @@ namespace Piranha.Jawbone.Sdl
 
         private IWindowEventHandler? GetHandler(uint windowId)
         {
-            if (!_handlerByWindowId.TryGetValue(windowId, out var handler))
-                _logger.LogWarning("Unrecognized window ID: " + windowId);
+            foreach (var pair in _activeWindows)
+            {
+                if (pair.Key == windowId)
+                    return pair.Value;
+            }
             
-            return handler;
+            _logger.LogWarning("Unrecognized window ID: " + windowId);
+            return null;
         }
 
         private void HandleEvent()
@@ -315,7 +343,7 @@ namespace Piranha.Jawbone.Sdl
                 }
                 default:
                 {
-                    if (eventType == _customExposeEvent)
+                    if (eventType == _customEvents.SceneUpdate)
                     {
                         var view = new UserEventView(_eventData);
                         var handler = GetHandler(view.WindowId);

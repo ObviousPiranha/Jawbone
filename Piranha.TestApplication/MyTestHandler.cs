@@ -13,7 +13,7 @@ namespace Piranha.TestApplication
     class MyTestHandler : IWindowEventHandler
     {
         private const uint Target = Gl.Texture2d;
-        private static readonly Rectangle32 PiranhaSprite = new(
+        public static readonly Rectangle32 PiranhaSprite = new(
             new Point32(1, 1),
             new Point32(500, 250));
 
@@ -22,7 +22,9 @@ namespace Piranha.TestApplication
         private readonly ISdl2 _sdl;
         private readonly ILogger<MyTestHandler> _logger;
         private readonly IWindowManager _windowManager;
-        private readonly Random _random;
+        private readonly Random _random = new();
+        private readonly ScenePool<PiranhaScene> _scenePool;
+        private PiranhaScene _currentScene = new();
         private Matrix4x4 _matrix = default;
         private uint _windowId = 0;
         private int _width = 0;
@@ -43,16 +45,19 @@ namespace Piranha.TestApplication
             IWindowManager windowManager,
             IStb stb,
             ISdl2 sdl,
-            Random random)
+            ScenePool<PiranhaScene> scenePool)
         {
             _stb = stb;
             _sdl = sdl;
             _logger = logger;
             _windowManager = windowManager;
-            _random = random;
+            _scenePool = scenePool;
         }
 
         public bool Running { get; private set; }
+        public int ExposeVersionId { get; private set; }
+
+        public void RequestExpose() => ++ExposeVersionId;
 
         public void OnOpen(uint windowId, int width, int height, IOpenGl gl)
         {
@@ -134,8 +139,8 @@ namespace Piranha.TestApplication
             
             gl.TexParameteri(Target, Gl.TextureWrapS, Gl.ClampToEdge);
             gl.TexParameteri(Target, Gl.TextureWrapT, Gl.ClampToEdge);
-            gl.TexParameteri(Target, Gl.TextureMagFilter, Gl.Nearest);
-            gl.TexParameteri(Target, Gl.TextureMinFilter, Gl.Nearest);
+            gl.TexParameteri(Target, Gl.TextureMagFilter, Gl.Linear);
+            gl.TexParameteri(Target, Gl.TextureMinFilter, Gl.Linear);
 
             var positions = new Quadrilateral(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
             var textureCoordinates = PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
@@ -175,7 +180,7 @@ namespace Piranha.TestApplication
 
             _buffer = gl.GenBuffer();
             gl.BindBuffer(Gl.ArrayBuffer, _buffer);
-            gl.BufferData(Gl.ArrayBuffer, new IntPtr(_bufferData.Length * 4), _bufferData[0], Gl.StaticDraw);
+            gl.BufferData(Gl.ArrayBuffer, new IntPtr(_bufferData.Length * 4), _bufferData[0], Gl.StreamDraw);
 
             _ = GlTools.TryLogErrors(gl, _logger);
         }
@@ -184,6 +189,7 @@ namespace Piranha.TestApplication
         {
             _logger.LogDebug("OnClose");
             Running = false;
+            _scenePool.Closed = true;
         }
 
         public void OnQuit()
@@ -194,15 +200,32 @@ namespace Piranha.TestApplication
 
         public void OnExpose(IOpenGl gl)
         {
+
             gl.Viewport(0, 0, _width, _height);
-            gl.ClearColor(Randumb(), Randumb(), Randumb(), 1.0F);
+            gl.ClearColor(
+                _currentScene.Color.X,
+                _currentScene.Color.Y,
+                _currentScene.Color.Z,
+                _currentScene.Color.W);
             gl.Clear(Gl.ColorBufferBit);
 
             gl.UseProgram(_program);
             gl.Enable(Gl.Blend);
             gl.BlendFunc(Gl.SrcAlpha, Gl.OneMinusSrcAlpha);
             gl.BindVertexArray(_vertexArray);
-            // gl.BindBuffer(Gl.ArrayBuffer, _buffer);
+            var latestScene = _scenePool.TakeLatestScene();
+
+            if (latestScene is not null)
+            {
+                _scenePool.ReturnScene(_currentScene);
+                _currentScene = latestScene;
+                
+                gl.BufferSubData(
+                    Gl.ArrayBuffer,
+                    IntPtr.Zero,
+                    new IntPtr(_currentScene.VertexData.Length * 4),
+                    _currentScene.VertexData[0]);
+            }
             gl.BindTexture(Gl.Texture2d, _texture);
             gl.EnableVertexAttribArray(_positionAttribute);
             gl.EnableVertexAttribArray(_textureCoordinateAttribute);

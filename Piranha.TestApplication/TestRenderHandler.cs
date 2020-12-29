@@ -176,7 +176,10 @@ namespace Piranha.TestApplication
         }
 
         public bool Running { get; private set; } = true;
+        public int ExposeVersionId { get; private set; }
 
+        public void RequestExpose() => ++ExposeVersionId;
+        
         public void OnClose()
         {
             Running = false;

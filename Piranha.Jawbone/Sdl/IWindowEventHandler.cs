@@ -5,7 +5,9 @@ namespace Piranha.Jawbone.Sdl
     public interface IWindowEventHandler
     {
         bool Running { get; }
+        int ExposeVersionId { get; }
 
+        void RequestExpose();
         void OnOpen(uint windowId, int width, int height, IOpenGl gl);
         void OnMouseEnter();
         void OnMouseLeave();
