@@ -11,7 +11,6 @@ namespace Piranha.Jawbone.Sdl
         private readonly ILogger<GameLoopManager> _logger;
         private readonly ISdl2 _sdl;
         private readonly IGameLoop _gameLoop;
-        private readonly CustomEvents _customEvents;
         private readonly IWindowEventHandler _windowEventHandler;
         private bool _running = true;
 
@@ -19,13 +18,11 @@ namespace Piranha.Jawbone.Sdl
             ILogger<GameLoopManager> logger,
             ISdl2 sdl,
             IGameLoop gameLoop,
-            CustomEvents customEvents,
             IWindowEventHandler windowEventHandler)
         {
             _logger = logger;
             _sdl = sdl;
             _gameLoop = gameLoop;
-            _customEvents = customEvents;
             _windowEventHandler = windowEventHandler;
 
             _thread = new Thread(RunGameLoopInBackground);
@@ -102,7 +99,10 @@ namespace Piranha.Jawbone.Sdl
                     }
                 }
 
-                _logger.LogDebug("Game loop exited gracefully.");
+                if (!_running)
+                    _logger.LogDebug("Game loop exited gracefully via disposal.");
+                else
+                    _logger.LogDebug("Game loop exited gracefully via game loop.");
             }
             catch (Exception ex)
             {

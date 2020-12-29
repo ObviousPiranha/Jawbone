@@ -54,15 +54,7 @@ namespace Piranha.Jawbone.Sdl
 
         public static IServiceCollection AddWindowManager(this IServiceCollection services)
         {
-            return services
-                .AddSingleton<IWindowManager, WindowManager>()
-                .AddSingleton<CustomEvents>(
-                    serviceProvider =>
-                    {
-                        var sdl = serviceProvider.GetRequiredService<ISdl2>();
-                        var events = sdl.RegisterEvents(1);
-                        return new CustomEvents { SceneUpdate = events };
-                    });
+            return services.AddSingleton<IWindowManager, WindowManager>();
         }
     }
 }

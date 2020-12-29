@@ -56,7 +56,6 @@ namespace Piranha.Jawbone.Sdl
         private readonly byte[] _eventData = new byte[56];
         private readonly ISdl2 _sdl;
         private readonly ILogger<WindowManager> _logger;
-        private readonly CustomEvents _customEvents;
         private NativeLibraryInterface<IOpenGl>? _gl = default;
         private IntPtr _contextPtr = default;
         private readonly List<KeyValuePair<uint, IWindowEventHandler>> _activeWindows = new();
@@ -64,12 +63,10 @@ namespace Piranha.Jawbone.Sdl
 
         public WindowManager(
             ISdl2 sdl,
-            ILogger<WindowManager> logger,
-            CustomEvents customEvents)
+            ILogger<WindowManager> logger)
         {
             _sdl = sdl;
             _logger = logger;
-            _customEvents = customEvents;
 
             var displayCount = _sdl.GetNumVideoDisplays();
             var word = displayCount == 1 ? "display" : "displays";
@@ -343,14 +340,6 @@ namespace Piranha.Jawbone.Sdl
                 }
                 default:
                 {
-                    if (eventType == _customEvents.SceneUpdate)
-                    {
-                        var view = new UserEventView(_eventData);
-                        var handler = GetHandler(view.WindowId);
-
-                        if (handler is not null)
-                            Expose(view.WindowId, handler);
-                    }
                     _logger.LogTrace("event " + eventType);
                     break;
                 }
