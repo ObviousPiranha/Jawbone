@@ -27,10 +27,12 @@ namespace Piranha.TestApplication
                                 options.IncludeScopes = true;
                             });
                 })
+                .AddOpenAl()
                 .AddSqlite3()
                 .AddSdl2()
                 .AddStb()
-                .AddWindowManager();
+                .AddWindowManager()
+                .AddSingleton<AudioRenderer>();
         }
 
         static void RunApplication(bool fullscreen)

@@ -3,6 +3,7 @@
     <None Include="vertex.shader" CopyToOutputDirectory="Always"/>
     <None Include="fragment.shader" CopyToOutputDirectory="Always"/>
     <None Include="sheet.png" CopyToOutputDirectory="Always"/>
+    <None Include="crunch.ogg" CopyToOutputDirectory="Always"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Piranha.Jawbone\Piranha.Jawbone.csproj"/>

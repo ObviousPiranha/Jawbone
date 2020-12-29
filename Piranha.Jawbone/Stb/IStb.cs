@@ -38,6 +38,12 @@ namespace Piranha.Jawbone.Stb
             out int sampleRate,
             out IntPtr output);
         
+        int StbVorbisDecodeFilename(
+            string filename,
+            out int channels,
+            out int sampleRate,
+            out IntPtr output);
+        
         int StbttGetFontOffsetForIndex(byte[] data, int index);
         
         int StbttInitFont(

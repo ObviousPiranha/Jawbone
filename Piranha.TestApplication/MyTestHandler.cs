@@ -3,6 +3,7 @@ using System.IO;
 using System.Numerics;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.OpenAl;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
@@ -22,6 +23,7 @@ namespace Piranha.TestApplication
         private readonly ISdl2 _sdl;
         private readonly ILogger<MyTestHandler> _logger;
         private readonly IWindowManager _windowManager;
+        private readonly AudioRenderer _audioRenderer;
         private readonly Random _random = new();
         private readonly ScenePool<PiranhaScene> _scenePool;
         private PiranhaScene _currentScene = new();
@@ -43,6 +45,7 @@ namespace Piranha.TestApplication
         public MyTestHandler(
             ILogger<MyTestHandler> logger,
             IWindowManager windowManager,
+            AudioRenderer audioRenderer,
             IStb stb,
             ISdl2 sdl,
             ScenePool<PiranhaScene> scenePool)
@@ -51,6 +54,7 @@ namespace Piranha.TestApplication
             _sdl = sdl;
             _logger = logger;
             _windowManager = windowManager;
+            _audioRenderer = audioRenderer;
             _scenePool = scenePool;
         }
 
@@ -183,6 +187,11 @@ namespace Piranha.TestApplication
             gl.BufferData(Gl.ArrayBuffer, new IntPtr(_bufferData.Length * 4), _bufferData[0], Gl.StreamDraw);
 
             _ = GlTools.TryLogErrors(gl, _logger);
+
+            // neck_snap-Vladimir-719669812.wav
+            // Public domain audio: http://soundbible.com/1953-Neck-Snap.html
+            var audioBytes = File.ReadAllBytes("crunch.ogg");
+            _audioRenderer.AddAudioSource(_stb, "crunch", audioBytes);
         }
         
         public void OnClose()
@@ -281,7 +290,8 @@ namespace Piranha.TestApplication
 
         public void OnMouseButtonDown(MouseButtonEventView eventData)
         {
-            _ = _windowManager.TryExpose(_windowId);
+            var id = _audioRenderer.GetBufferIndex("crunch");
+            _audioRenderer.Play(id, false);
         }
 
         public void OnMouseButtonUp(MouseButtonEventView eventData)

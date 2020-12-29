@@ -34,6 +34,5 @@ namespace Piranha.Jawbone.OpenAl
         void DestroyContext(IntPtr context);
         sbyte MakeContextCurrent(IntPtr context);
         IntPtr OpenDevice(string? devicename);
-
     }
 }
