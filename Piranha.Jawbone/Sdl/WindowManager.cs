@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
@@ -86,12 +87,12 @@ namespace Piranha.Jawbone.Sdl
                 _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
                 _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Es);
             }
-            else
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                // _logger.LogDebug("configuring OpenGL 3.2");
-                // _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-                // _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
-                // _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
+                _logger.LogDebug("configuring OpenGL 3.2");
+                _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
+                _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
+                _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
             }
         }
 
