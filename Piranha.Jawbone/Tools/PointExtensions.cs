@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace Piranha.Jawbone.Tools
 {
@@ -21,6 +22,18 @@ namespace Piranha.Jawbone.Tools
             {
                 low = p.Y;
                 high = p.X;
+            }
+        }
+
+        public static Vector2 ToRatio(this Point32 p)
+        {
+            if (p.X < p.Y)
+            {
+                return new Vector2(1f, p.Y / (float)p.X);
+            }
+            else
+            {
+                return new Vector2(p.X / (float)p.Y, 1f);
             }
         }
     }
