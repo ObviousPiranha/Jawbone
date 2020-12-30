@@ -1,8 +1,9 @@
+using System;
 using System.Numerics;
 
 namespace Piranha.Jawbone.Tools
 {
-    public readonly struct Quadrilateral
+    public readonly struct Quadrilateral : IEquatable<Quadrilateral>
     {
         public readonly Vector2 A;
         public readonly Vector2 B;
@@ -31,15 +32,17 @@ namespace Piranha.Jawbone.Tools
             D = d;
         }
 
-        public Quadrilateral Transform(Matrix4x4 matrix)
+        public bool Equals(Quadrilateral other)
         {
-            return new Quadrilateral(
-                Vector2.Transform(A, matrix),
-                Vector2.Transform(B, matrix),
-                Vector2.Transform(C, matrix),
-                Vector2.Transform(D, matrix));
+            return
+                A.Equals(other.A) &&
+                B.Equals(other.B) &&
+                C.Equals(other.C) &&
+                D.Equals(other.D);
         }
 
+        public override bool Equals(object? obj) => obj is Quadrilateral other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(A, B, C, D);
         public override string ToString() => $"{A} {B} {C} {D}";
     }
 }

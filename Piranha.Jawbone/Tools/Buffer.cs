@@ -1,15 +1,18 @@
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Tools
 {
-    public class Buffer<T> : IDisposable
+    public class Buffer<T> : IDisposable where T : unmanaged
     {
         private readonly ArrayPool<T> _pool;
         private T[] _array = Array.Empty<T>();
         
         public int Capacity => _array.Length;
         public int Count { get; private set; }
+        public int ByteCount => Count * Unsafe.SizeOf<T>();
+        public bool IsEmpty => Count < 1;
         public ref T this[int index] => ref _array[index];
 
         private void AddWithResize(T value)

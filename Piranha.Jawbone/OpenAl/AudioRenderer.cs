@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Stb;
+using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.OpenAl
@@ -126,7 +127,7 @@ namespace Piranha.Jawbone.OpenAl
 
         public int Play(int soundId, bool looping, float gain = 1.0f)
         {
-            _logger.LogDebug("Attempting to play sound " + soundId);
+            _logger.LogTrace("Attempting to play sound " + soundId);
 
             var buffer = _buffers[soundId];
             int playingSource = -1;
@@ -184,10 +185,8 @@ namespace Piranha.Jawbone.OpenAl
 
         public void SetMasterVolume(float volume)
         {
-            volume = Math.Max(Math.Min(volume, 0.0f), 1.0f);
-                
             _logger.LogDebug("Setting master volume " + volume);
-            _al.Listenerf(Al.Gain, volume);
+            _al.Listenerf(Al.Gain, volume.Clamped(0f, 1f));
         }
 
         private bool SourceGenIsValid((short id, short gen) idGenPair)
