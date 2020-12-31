@@ -36,5 +36,7 @@ namespace Piranha.Jawbone.Tools
                 return new Vector2(p.X / (float)p.Y, 1f);
             }
         }
+
+        public static Vector2 ToVector2(this Point32 p) => new Vector2(p.X, p.Y);
     }
 }
