@@ -5,5 +5,6 @@ namespace Piranha.Jawbone.Sdl
         bool Running { get; }
         void PrepareScene();
         void FrameUpdate();
+        void Close();
     }
 }

@@ -101,5 +101,9 @@ namespace Piranha.TestApplication
                 (float)_random.NextDouble(),
                 1.0f);
         }
+
+        public void Close()
+        {
+        }
     }
 }

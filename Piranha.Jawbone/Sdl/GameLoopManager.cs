@@ -99,6 +99,8 @@ namespace Piranha.Jawbone.Sdl
                     }
                 }
 
+                _gameLoop.Close();
+
                 if (!_running)
                     _logger.LogDebug("Game loop exited gracefully via disposal.");
                 else
