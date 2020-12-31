@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Tools
 {
-    public class Buffer<T> : IDisposable where T : unmanaged
+    public sealed class Buffer<T> : IDisposable where T : unmanaged
     {
         private readonly ArrayPool<T> _pool;
         private T[] _array = Array.Empty<T>();
