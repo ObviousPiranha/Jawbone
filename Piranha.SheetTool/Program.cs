@@ -31,7 +31,13 @@ namespace Piranha.SheetTool
                 .AddStb();
         }
 
-        static void CreateSheetsFromFolder(ILogger logger, ISdl2 sdl, IStb stb, string inputFolder, string outputFolder)
+        static void CreateSheetsFromFolder(
+            ILogger logger,
+            ISdl2 sdl,
+            IStb stb,
+            Point32 sheetSize,
+            string inputFolder,
+            string outputFolder)
         {
             var surfaces = new List<IntPtr>();
             var nameBySurface = new Dictionary<IntPtr, string>();
@@ -99,10 +105,14 @@ namespace Piranha.SheetTool
                 SkipValidation = true
             };
 
-            using (var builder = new SheetImageBuilder(stb, sdl, new Point32(512, 512)))
+            using (var builder = new SheetImageBuilder(stb, sdl, sheetSize))
             using (var fileStream = File.Create(infoPath))
             using (var writer = new Utf8JsonWriter(fileStream, options))
             {
+                writer.WriteStartObject();
+                writer.WriteNumber("width", sheetSize.X);
+                writer.WriteNumber("height", sheetSize.Y);
+                writer.WritePropertyName("sprites");
                 writer.WriteStartArray();
                 foreach (var surface in surfaces)
                 {
@@ -118,6 +128,7 @@ namespace Piranha.SheetTool
                     writer.Flush();
                 }
                 writer.WriteEndArray();
+                writer.WriteEndObject();
                 builder.SaveImages(outputFolder);
             }
 
@@ -150,7 +161,10 @@ namespace Piranha.SheetTool
                     var sdl = serviceProvider.GetRequiredService<ISdl2>();
                     var stb = serviceProvider.GetRequiredService<IStb>();
 
-                    CreateSheetsFromFolder(logger, sdl, stb, args[0], args[1]);
+                    var w = int.Parse(args[0]);
+                    var h = int.Parse(args[1]);
+
+                    CreateSheetsFromFolder(logger, sdl, stb, new Point32(w, h), args[2], args[3]);
                 }
                 catch (Exception ex)
                 {
