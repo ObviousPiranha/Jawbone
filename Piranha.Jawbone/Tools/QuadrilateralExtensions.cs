@@ -23,6 +23,24 @@ namespace Piranha.Jawbone.Tools
             return q.Transformed(matrix);
         }
 
+        public static Quadrilateral NegatedX(in this Quadrilateral q)
+        {
+            return new Quadrilateral(
+                new Vector2(-q.A.X, q.A.Y),
+                new Vector2(-q.B.X, q.B.Y),
+                new Vector2(-q.C.X, q.C.Y),
+                new Vector2(-q.D.X, q.D.Y));
+        }
+
+        public static Quadrilateral NegatedY(in this Quadrilateral q)
+        {
+            return new Quadrilateral(
+                new Vector2(q.A.X, -q.A.Y),
+                new Vector2(q.B.X, -q.B.Y),
+                new Vector2(q.C.X, -q.C.Y),
+                new Vector2(q.D.X, -q.D.Y));
+        }
+
         public static Quadrilateral Translated(
             in this Quadrilateral q,
             Vector2 offset)
