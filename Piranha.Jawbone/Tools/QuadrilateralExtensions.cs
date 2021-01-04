@@ -51,5 +51,60 @@ namespace Piranha.Jawbone.Tools
                 q.C + offset,
                 q.D + offset);
         }
+
+        public static Quadrilateral RotatedClockwiseAboutOrigin(in this Quadrilateral q, int stepCount)
+        {
+            return (stepCount & 3) switch
+            {
+                0 => q,
+                1 => q.RotatedClockwiseAboutOrigin(),
+                2 => q.RotatedHalfAboutOrigin(),
+                3 => q.RotatedCounterclockwiseAboutOrigin(),
+                _ => ExceptionHelper.ThrowInvalidValue<Quadrilateral>(nameof(stepCount))
+            };
+        }
+
+        public static Quadrilateral RotatedCounterclockwiseAboutOrigin(in this Quadrilateral q, int stepCount)
+        {
+            return (stepCount & 3) switch
+            {
+                0 => q,
+                1 => q.RotatedCounterclockwiseAboutOrigin(),
+                2 => q.RotatedHalfAboutOrigin(),
+                3 => q.RotatedClockwiseAboutOrigin(),
+                _ => ExceptionHelper.ThrowInvalidValue<Quadrilateral>(nameof(stepCount))
+            };
+        }
+
+        public static Quadrilateral RotatedClockwiseAboutOrigin(in this Quadrilateral q)
+        {
+            return new Quadrilateral(
+                RotatedClockwise(q.A),
+                RotatedClockwise(q.B),
+                RotatedClockwise(q.C),
+                RotatedClockwise(q.D));
+        }
+
+        public static Quadrilateral RotatedCounterclockwiseAboutOrigin(in this Quadrilateral q)
+        {
+            return new Quadrilateral(
+                RotatedCounterclockwise(q.A),
+                RotatedCounterclockwise(q.B),
+                RotatedCounterclockwise(q.C),
+                RotatedCounterclockwise(q.D));
+        }
+
+        public static Quadrilateral RotatedHalfAboutOrigin(in this Quadrilateral q)
+        {
+            return new Quadrilateral(
+                RotatedHalf(q.A),
+                RotatedHalf(q.B),
+                RotatedHalf(q.C),
+                RotatedHalf(q.D));
+        }
+
+        private static Vector2 RotatedClockwise(Vector2 vector) => new(vector.Y, -vector.X);
+        private static Vector2 RotatedCounterclockwise(Vector2 vector) => new(-vector.Y, vector.X);
+        private static Vector2 RotatedHalf(Vector2 vector) => new(-vector.X, -vector.Y);
     }
 }
