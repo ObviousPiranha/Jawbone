@@ -83,5 +83,6 @@ namespace Piranha.Jawbone.Sdl
         int GetDesktopDisplayMode(int displayIndex, out SdlDisplayMode mode);
         int GetNumVideoDisplays();
         int ShowCursor(int toggle);
+        void SetWindowTitle(IntPtr window, string title);
     }
 }
