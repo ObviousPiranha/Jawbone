@@ -4,6 +4,8 @@ namespace Piranha.Jawbone.Tools.RandomExtensions
 {
     public static class RandomExtensions
     {
+        public static bool NextBoolean(this Random random) => random.Next(2) == 0;
+        public static bool NextBoolean(this Random random, int odds) => random.Next(odds) == 0;
         public static double BoxMullerTransform(this Random random, double mean, double standardDeviation)
         {
             return mean + BoxMullerTransform(random, standardDeviation);
