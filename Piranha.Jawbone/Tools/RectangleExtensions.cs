@@ -62,5 +62,17 @@ namespace Piranha.Jawbone.Tools
                 new Vector2(r.Position.X / w, r.Position.Y / h),
                 new Vector2((r.Position.X + r.Size.X) / w, (r.Position.Y + r.Size.Y) / h));
         }
+
+        public static int FarX(this Rectangle32 r) => r.Position.X + r.Size.X;
+        public static int FarY(this Rectangle32 r) => r.Position.Y + r.Size.Y;
+
+        public static bool Overlaps(this Rectangle32 r, Rectangle32 other)
+        {
+            return !(
+                r.FarX() <= other.Position.X ||
+                other.FarX() <= r.Position.X ||
+                r.FarY() <= other.Position.Y ||
+                other.FarY() <= r.Position.Y);
+        }
     }
 }

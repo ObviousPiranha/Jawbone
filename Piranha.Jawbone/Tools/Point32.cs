@@ -26,5 +26,7 @@ namespace Piranha.Jawbone.Tools
         public static bool operator ==(Point32 a, Point32 b) => a.X == b.X && a.Y == b.Y;
         public static bool operator !=(Point32 a, Point32 b) => a.X != b.X || a.Y != b.Y;
         public static implicit operator Point64(Point32 p) => new(p.X, p.Y);
+
+        public static int CrossProduct(Point32 a, Point32 b) => a.X * b.Y - b.X * a.Y;
     }
 }
