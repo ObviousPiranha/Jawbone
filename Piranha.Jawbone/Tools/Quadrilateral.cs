@@ -44,5 +44,7 @@ namespace Piranha.Jawbone.Tools
         public override bool Equals(object? obj) => obj is Quadrilateral other && Equals(other);
         public override int GetHashCode() => HashCode.Combine(A, B, C, D);
         public override string ToString() => $"{A} {B} {C} {D}";
+
+        public static Quadrilateral operator -(in Quadrilateral q) => new(-q.A, -q.B, -q.C, -q.D);
     }
 }

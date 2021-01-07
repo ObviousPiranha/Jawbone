@@ -9,7 +9,7 @@ namespace Piranha.Jawbone.Tools
         public static bool AnyNegative(this Point32 p) => p.X < 0 || p.Y < 0;
         public static int Min(this Point32 p) => Math.Min(p.X, p.Y);
         public static int Max(this Point32 p) => Math.Max(p.X, p.Y);
-        public static Point32 Moved(this Point32 p, int dx, int dy) => new Point32(p.X + dx, p.Y + dy);
+        public static Point32 Moved(this Point32 p, int dx, int dy) => new(p.X + dx, p.Y + dy);
         
         public static void InOrder(this Point32 p, out int low, out int high)
         {
@@ -37,6 +37,7 @@ namespace Piranha.Jawbone.Tools
             }
         }
 
-        public static Vector2 ToVector2(this Point32 p) => new Vector2(p.X, p.Y);
+        public static Vector2 ToVector2(this Point32 p) => new(p.X, p.Y);
+        public static Point32 Rotated(this Point32 p) => new(p.Y, -p.X);
     }
 }

@@ -58,7 +58,7 @@ namespace Piranha.Jawbone.Tools
             {
                 0 => q,
                 1 => q.RotatedClockwiseAboutOrigin(),
-                2 => q.RotatedHalfAboutOrigin(),
+                2 => -q,
                 3 => q.RotatedCounterclockwiseAboutOrigin(),
                 _ => ExceptionHelper.ThrowInvalidValue<Quadrilateral>(nameof(stepCount))
             };
@@ -70,7 +70,7 @@ namespace Piranha.Jawbone.Tools
             {
                 0 => q,
                 1 => q.RotatedCounterclockwiseAboutOrigin(),
-                2 => q.RotatedHalfAboutOrigin(),
+                2 => -q,
                 3 => q.RotatedClockwiseAboutOrigin(),
                 _ => ExceptionHelper.ThrowInvalidValue<Quadrilateral>(nameof(stepCount))
             };
@@ -94,17 +94,7 @@ namespace Piranha.Jawbone.Tools
                 RotatedCounterclockwise(q.D));
         }
 
-        public static Quadrilateral RotatedHalfAboutOrigin(in this Quadrilateral q)
-        {
-            return new Quadrilateral(
-                RotatedHalf(q.A),
-                RotatedHalf(q.B),
-                RotatedHalf(q.C),
-                RotatedHalf(q.D));
-        }
-
         private static Vector2 RotatedClockwise(Vector2 vector) => new(vector.Y, -vector.X);
         private static Vector2 RotatedCounterclockwise(Vector2 vector) => new(-vector.Y, vector.X);
-        private static Vector2 RotatedHalf(Vector2 vector) => new(-vector.X, -vector.Y);
     }
 }
