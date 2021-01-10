@@ -23,7 +23,7 @@ namespace Piranha.TestApplication
         private readonly ISdl2 _sdl;
         private readonly ILogger<MyTestHandler> _logger;
         private readonly IWindowManager _windowManager;
-        private readonly AudioRenderer _audioRenderer;
+        private readonly IAudioSystem _audioRenderer;
         private readonly Random _random = new();
         private readonly ScenePool<PiranhaScene> _scenePool;
         private PiranhaScene _currentScene = new();
@@ -45,7 +45,7 @@ namespace Piranha.TestApplication
         public MyTestHandler(
             ILogger<MyTestHandler> logger,
             IWindowManager windowManager,
-            AudioRenderer audioRenderer,
+            IAudioSystem audioRenderer,
             IStb stb,
             ISdl2 sdl,
             ScenePool<PiranhaScene> scenePool)
@@ -191,7 +191,7 @@ namespace Piranha.TestApplication
             // neck_snap-Vladimir-719669812.wav
             // Public domain audio: http://soundbible.com/1953-Neck-Snap.html
             var audioBytes = File.ReadAllBytes("crunch.ogg");
-            _audioRenderer.AddAudioSource(_stb, "crunch", audioBytes);
+            _audioRenderer.AddAudioSource("crunch", audioBytes);
         }
         
         public void OnClose()
@@ -350,5 +350,9 @@ namespace Piranha.TestApplication
         }
 
         public bool OnUser(UserEventView eventdata) => false;
+
+        public void OnSecond()
+        {
+        }
     }
 }

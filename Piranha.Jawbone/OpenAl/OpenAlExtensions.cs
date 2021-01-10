@@ -10,5 +10,10 @@ namespace Piranha.Jawbone.OpenAl
             return services.AddNativeLibrary<IOpenAl>(
                 _ => OpenAlLoader.LoadOpenAl());
         }
+
+        public static IServiceCollection AddAudioSystem(this IServiceCollection services)
+        {
+            return services.AddSingleton<IAudioSystem, AudioSystem>();
+        }
     }
 }

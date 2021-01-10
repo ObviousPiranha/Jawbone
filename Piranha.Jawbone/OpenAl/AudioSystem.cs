@@ -7,10 +7,11 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.OpenAl
 {
-    public class AudioRenderer : IDisposable
+    class AudioSystem : IAudioSystem, IDisposable
     {
         private readonly IOpenAl _al;
-        private readonly ILogger<AudioRenderer> _logger;
+        private readonly IStb _stb;
+        private readonly ILogger<AudioSystem> _logger;
         private readonly Dictionary<string, int> _bufferIndexBySoundId = new Dictionary<string, int>();
         private readonly List<uint> _buffers = new List<uint>();
         private readonly uint[] _sources = new uint[8];
@@ -20,11 +21,15 @@ namespace Piranha.Jawbone.OpenAl
         private int _musicSource = 0;
         private ushort[] _idGenerations;
 
-        public AudioRenderer(IOpenAl al, ILogger<AudioRenderer> logger)
+        public AudioSystem(
+            IOpenAl al,
+            IStb stb,
+            ILogger<AudioSystem> logger)
         {
             _idGenerations = new ushort[_sources.Length];
 
             _al = al;
+            _stb = stb;
             _logger = logger;
 
             _device = _al.OpenDevice(null);
@@ -70,7 +75,7 @@ namespace Piranha.Jawbone.OpenAl
 
         public int GetBufferIndex(string soundId) => _bufferIndexBySoundId[soundId];
 
-        public void AddAudioSource(IStb stb, string soundId, ReadOnlySpan<byte> data)
+        public void AddAudioSource(string soundId, ReadOnlySpan<byte> data)
         {
             var wavHeader = new WavHeader(data);
 
@@ -91,7 +96,7 @@ namespace Piranha.Jawbone.OpenAl
             {
                 // Not a WAV file? Must be OGG!
 
-                int samples = stb.StbVorbisDecodeMemory(
+                int samples = _stb.StbVorbisDecodeMemory(
                     data[0],
                     data.Length,
                     out var channelCount,
@@ -115,7 +120,7 @@ namespace Piranha.Jawbone.OpenAl
                     }
                     finally
                     {
-                        stb.PiranhaFree(output);
+                        _stb.PiranhaFree(output);
                     }
                 }
                 else

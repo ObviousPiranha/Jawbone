@@ -32,7 +32,7 @@ namespace Piranha.TestApplication
                 .AddSdl2()
                 .AddStb()
                 .AddWindowManager()
-                .AddSingleton<AudioRenderer>();
+                .AddAudioSystem();
         }
 
         static void RunApplication(bool fullscreen)

@@ -29,5 +29,6 @@ namespace Piranha.Jawbone.Sdl
         bool OnUser(UserEventView eventdata);
         void OnClose();
         void OnQuit();
+        void OnSecond();
     }
 }

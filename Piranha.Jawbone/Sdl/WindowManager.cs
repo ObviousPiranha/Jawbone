@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -237,6 +238,8 @@ namespace Piranha.Jawbone.Sdl
 
         public void Run()
         {
+            var nextSecond = Stopwatch.GetTimestamp() + Stopwatch.Frequency;
+
             while (_activeWindows.Count > 0)
             {
                 var doSleep = true;
@@ -258,6 +261,16 @@ namespace Piranha.Jawbone.Sdl
                             Expose(pair.Key, pair.Value);
                         }
                     }
+                }
+
+                if (nextSecond <= Stopwatch.GetTimestamp())
+                {
+                    doSleep = false;
+
+                    foreach (var pair in _activeWindows)
+                        pair.Value.OnSecond();
+                    
+                    nextSecond += Stopwatch.Frequency;
                 }
 
                 DestroyInactiveWindows();
