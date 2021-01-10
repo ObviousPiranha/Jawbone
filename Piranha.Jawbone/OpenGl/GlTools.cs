@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -7,6 +8,33 @@ namespace Piranha.Jawbone.OpenGl
 {
     public static class GlTools
     {
+        public static uint LoadShaderProgram(
+            IOpenGl gl,
+            string vertexShaderPath,
+            string fragmentShaderPath)
+        {
+            var program = gl.CreateProgram();
+            var vertexSource = File.ReadAllBytes(vertexShaderPath);
+            var fragmentSource = File.ReadAllBytes(fragmentShaderPath);
+            var vertexShader = GlTools.LoadShader(gl, vertexSource, Gl.VertexShader);
+            var fragmentShader = GlTools.LoadShader(gl, fragmentSource, Gl.FragmentShader);
+            gl.AttachShader(program, vertexShader);
+            gl.AttachShader(program, fragmentShader);
+            gl.LinkProgram(program);
+            gl.DeleteShader(fragmentShader);
+            gl.DeleteShader(vertexShader);
+            gl.GetProgramiv(program, Gl.LinkStatus, out var result);
+            if (result == Gl.False)
+            {
+                gl.GetProgramiv(program, Gl.InfoLogLength, out var logLength);
+                var buffer = new byte[logLength];
+                gl.GetProgramInfoLog(program, buffer.Length, out var actualLength, buffer);
+                var errors = Encoding.UTF8.GetString(buffer);
+                throw new OpenGlException("Error linking program: " + errors);
+            }
+
+            return program;
+        }
         public static uint LoadShader(
             IOpenGl gl,
             byte[] source,
