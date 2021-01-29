@@ -142,8 +142,14 @@ namespace Piranha.Jawbone.Sdl
                         var gl = _gl.Library;
 
                         gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
+                        
+                        var version = new byte[4];
+                        _sdl.GetVersion(out version[0]);
 
                         var log = string.Concat(
+                            "SDL version: ",
+                            string.Join('.', version),
+                            Environment.NewLine,
                             "OpenGL version: ",
                             gl.GetString(Gl.Version),
                             Environment.NewLine,

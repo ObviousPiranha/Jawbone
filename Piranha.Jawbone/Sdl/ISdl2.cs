@@ -84,5 +84,6 @@ namespace Piranha.Jawbone.Sdl
         int GetNumVideoDisplays();
         int ShowCursor(int toggle);
         void SetWindowTitle(IntPtr window, string title);
+        void GetVersion(out byte v);
     }
 }
