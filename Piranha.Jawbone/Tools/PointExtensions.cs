@@ -39,6 +39,7 @@ namespace Piranha.Jawbone.Tools
 
         public static Vector2 ToVector2(this Point32 p) => new(p.X, p.Y);
         public static Point32 Rotated(this Point32 p) => new(p.Y, -p.X);
+        public static Point32 RotatedAbout(this Point32 p, Point32 origin) => (p - origin).Rotated() + origin;
         public static int LengthSquared(this Point32 p) => p.X * p.X + p.Y * p.Y;
         public static int Length(this Point32 point)
         {
