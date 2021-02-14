@@ -31,11 +31,11 @@ namespace Piranha.Jawbone.Stb
             yOff2 = BitConverter.ToSingle(bytes.Slice(24));
         }
 
-        public Quadrilateral GetCoordinates(Point32 sheetSize)
+        public Quadrilateral<Vector2> GetCoordinates(Point32 sheetSize)
         {
             var width = (float)sheetSize.X;
             var height = (float)sheetSize.Y;
-            return new Quadrilateral(
+            return Quadrilateral.Create(
                 new Vector2(x0 / width, y0 / height),
                 new Vector2(x1 / width, y1 / height));
         }

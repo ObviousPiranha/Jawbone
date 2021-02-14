@@ -146,7 +146,7 @@ namespace Piranha.TestApplication
             gl.TexParameteri(Target, Gl.TextureMagFilter, Gl.Linear);
             gl.TexParameteri(Target, Gl.TextureMinFilter, Gl.Linear);
 
-            var positions = new Quadrilateral(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
+            var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
             var textureCoordinates = PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
             var n = 0;
             _bufferData[n++] = positions.A.X;
