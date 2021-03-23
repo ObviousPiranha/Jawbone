@@ -50,5 +50,7 @@ namespace Piranha.Jawbone.Tools
                 c,
                 new Vector2(c.X, a.Y));
         }
+
+        public static Quadrilateral<Vector2> Create(Rectangle<Vector2> rectangle) => Create(rectangle.A, rectangle.C);
     }
 }
