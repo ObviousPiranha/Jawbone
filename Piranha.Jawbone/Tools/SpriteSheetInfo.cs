@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Text.Json;
+using Piranha.Jawbone.Tools.ObjectExtensions;
 
 namespace Piranha.Jawbone.Tools
 {
@@ -9,6 +11,15 @@ namespace Piranha.Jawbone.Tools
         Point32 SheetSize,
         ImmutableDictionary<string, SheetPosition> SheetPositions)
     {
+        public static SpriteSheetInfo Load(string path)
+        {
+            using (var stream = File.OpenRead(path))
+            using (var document = JsonDocument.Parse(stream))
+            {
+                return Load(document.RootElement);
+            }
+        }
+
         public static SpriteSheetInfo Load(JsonElement json)
         {
             var sheetSize = new Point32(
@@ -27,7 +38,7 @@ namespace Piranha.Jawbone.Tools
                             element.GetProperty("width").GetInt32(),
                             element.GetProperty("height").GetInt32())));
                 
-                var name = element.GetProperty("name").GetString() ?? throw new NullReferenceException();
+                var name = element.GetProperty("name").GetString().ThrowIfNull();
                 builder.Add(name, sheetPosition);
             }
             
