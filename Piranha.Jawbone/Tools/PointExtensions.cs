@@ -43,8 +43,16 @@ namespace Piranha.Jawbone.Tools
         public static int LengthSquared(this Point32 p) => p.X * p.X + p.Y * p.Y;
         public static int Length(this Point32 point)
         {
-            return IntegerMath.SquareRoot32(
-                (double)point.X * point.X + (double)point.Y * point.Y);
+            var x = (double)point.X;
+            var y = (double)point.Y;
+            return IntegerMath.SquareRoot32(x * x + y * y);
+        }
+
+        public static Point32 Normalized(this Point32 point, int length)
+        {
+            var v = new Vector2(point.X, point.Y);
+            var normalized = Vector2.Normalize(v) * length;
+            return new Point32((int)normalized.X, (int)normalized.Y);
         }
     }
 }
