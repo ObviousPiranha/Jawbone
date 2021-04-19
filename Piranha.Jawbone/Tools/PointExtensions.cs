@@ -54,5 +54,11 @@ namespace Piranha.Jawbone.Tools
             var normalized = Vector2.Normalize(v) * length;
             return new Point32((int)normalized.X, (int)normalized.Y);
         }
+
+        public static Point32 Limited(this Point32 point, int length)
+        {
+            var lengthSquared = length * length;
+            return lengthSquared < point.LengthSquared() ? point.Normalized(length) : point;
+        }
     }
 }
