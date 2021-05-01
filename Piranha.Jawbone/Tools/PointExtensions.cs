@@ -50,9 +50,16 @@ namespace Piranha.Jawbone.Tools
 
         public static Point32 Normalized(this Point32 point, int length)
         {
-            var v = new Vector2(point.X, point.Y);
-            var normalized = Vector2.Normalize(v) * length;
-            return new Point32((int)normalized.X, (int)normalized.Y);
+            if (point == default || length == 0)
+            {
+                return default;
+            }
+            else
+            {
+                var v = new Vector2(point.X, point.Y);
+                var normalized = Vector2.Normalize(v) * length;
+                return new Point32((int)normalized.X, (int)normalized.Y);
+            }
         }
 
         public static Point32 Limited(this Point32 point, int length)
