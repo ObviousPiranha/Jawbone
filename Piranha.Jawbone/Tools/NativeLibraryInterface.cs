@@ -26,8 +26,7 @@ namespace Piranha.Jawbone.Tools
 
         public static NativeLibraryInterface<T> FromFile<T>(
             string libraryPath,
-            Func<string, string> methodNameToFunctionName,
-            Action<T>? beforeDispose = null)
+            Func<string, string> methodNameToFunctionName)
             where T : class
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !libraryPath.Contains('/'))
@@ -45,8 +44,7 @@ namespace Piranha.Jawbone.Tools
                     libraryName,
                     libraryHandle,
                     methodNameToFunctionName,
-                    NativeLibrary.GetExport,
-                    beforeDispose);
+                    NativeLibrary.GetExport);
             }
             catch
             {
@@ -59,8 +57,7 @@ namespace Piranha.Jawbone.Tools
             string libraryName,
             IntPtr libraryHandle,
             Func<string, string> methodNameToFunctionName,
-            Func<IntPtr, string, IntPtr> procAddressLoader,
-            Action<T>? beforeDispose = null)
+            Func<IntPtr, string, IntPtr> procAddressLoader)
             where T : class
         {
             if (!typeof(T).IsInterface)
@@ -141,7 +138,7 @@ namespace Piranha.Jawbone.Tools
 
             var type = typeBuilder.CreateType() ?? throw new NullReferenceException();
             var libraryInterface = (T)(Activator.CreateInstance(type) ?? throw new NullReferenceException());
-            return new NativeLibraryInterface<T>(libraryInterface, libraryHandle, beforeDispose);
+            return new NativeLibraryInterface<T>(libraryInterface, libraryHandle);
         }
 
         public static IServiceCollection AddNativeLibrary<T>(
@@ -161,30 +158,18 @@ namespace Piranha.Jawbone.Tools
         public T Library { get; }
 
         private readonly IntPtr _handle;
-        private readonly Action<T>? _beforeDispose;
 
         public NativeLibraryInterface(
             T library,
-            IntPtr handle,
-            Action<T>? beforeDispose = null)
+            IntPtr handle)
         {
             Library = library;
             _handle = handle;
-            _beforeDispose = beforeDispose;
         }
-
-        public void DisposeHandle() => NativeLibrary.Free(_handle);
 
         public void Dispose()
         {
-            try
-            {
-                _beforeDispose?.Invoke(Library);
-            }
-            finally
-            {
-                DisposeHandle();
-            }
+            NativeLibrary.Free(_handle);
         }
     }
 }

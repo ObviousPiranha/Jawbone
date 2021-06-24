@@ -27,29 +27,18 @@ namespace Piranha.Jawbone.Sdl
                         BcmLibrary, name => name));
             }
 
-            return services.AddNativeLibrary<ISdl2>(
-                serviceProvider =>
-                {
-                    var bcm = serviceProvider.GetService<IBcm>();
-                    bcm?.HostInit();
-
-                    var library = SdlLoader.LoadSdl();
-
-                    try
+            return services
+                .AddSingleton<SdlLibrary>(
+                    serviceProvider =>
                     {
-                        int result = library.Library.Init(flags);
+                        var bcm = serviceProvider.GetService<IBcm>();
+                        bcm?.HostInit();
 
-                        if (result != 0)
-                            throw new SdlException("Failed to initialize SDL: " + library.Library.GetError());
-
+                        var library = new SdlLibrary(flags);
                         return library;
-                    }
-                    catch
-                    {
-                        library.DisposeHandle();
-                        throw;
-                    }
-                });
+                    })
+                .AddSingleton<ISdl2>(
+                    serviceProvider => serviceProvider.GetRequiredService<SdlLibrary>().Library);
         }
 
         public static IServiceCollection AddWindowManager(this IServiceCollection services)

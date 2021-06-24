@@ -9,56 +9,11 @@ namespace Piranha.Jawbone.Sqlite
     {
         public static IServiceCollection AddSqlite3(this IServiceCollection services)
         {
-            return services.AddNativeLibrary<ISqlite3>(
-                _ =>
-                {
-                    var library = NativeLibraryInterface.FromFile<ISqlite3>(
-                        "PiranhaNative.dll",
-                        ResolveName,
-                        sqlite3 => sqlite3.Shutdown());
-                    
-                    try
-                    {
-                        // https://www.sqlite.org/c3ref/initialize.html
-                        var result = library.Library.Initialize();
-
-                        if (result != SqliteResult.Ok)
-                            throw new SqliteException("Error on sqlite3_initialize().", KeyValuePair.Create(result, result.ToString()));
-                        
-                        return library;
-                    }
-                    catch
-                    {
-                        library.DisposeHandle();
-                        throw;
-                    }
-                });
-        }
-        
-        public static string ResolveName(string methodName)
-        {
-            var prefix = "sqlite3";
-            var chars = new char[prefix.Length + methodName.Length * 2];
-            prefix.AsSpan().CopyTo(chars);
-
-            int n = prefix.Length;
-
-            for (int i = 0; i < methodName.Length; ++i)
-            {
-                char c = methodName[i];
-
-                if (char.IsUpper(c))
-                {
-                    chars[n++] = '_';
-                    chars[n++] = char.ToLowerInvariant(c);
-                }
-                else
-                {
-                    chars[n++] = c;
-                }
-            }
-
-            return new string(chars, 0, n);
+            return services
+                .AddSingleton<SqliteLibrary>(
+                    _ => new SqliteLibrary("PiranhaNative.dll"))
+                .AddSingleton<ISqlite3>(
+                    serviceProvider => serviceProvider.GetRequiredService<SqliteLibrary>().Library);
         }
 
         public static KeyValuePair<int, string> GetError(this ISqlite3 sqlite3, int errorCode)
