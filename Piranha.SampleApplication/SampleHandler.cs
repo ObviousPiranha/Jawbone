@@ -9,9 +9,9 @@ using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.TestApplication
+namespace Piranha.SampleApplication
 {
-    class MyTestHandler : IWindowEventHandler
+    class SampleHandler : IWindowEventHandler
     {
         private const uint Target = Gl.Texture2d;
         public static readonly Rectangle32 PiranhaSprite = new(
@@ -21,7 +21,7 @@ namespace Piranha.TestApplication
         private readonly float[] _bufferData = new float[24];
         private readonly IStb _stb;
         private readonly ISdl2 _sdl;
-        private readonly ILogger<MyTestHandler> _logger;
+        private readonly ILogger<SampleHandler> _logger;
         private readonly IWindowManager _windowManager;
         private readonly IAudioSystem _audioRenderer;
         private readonly Random _random = new();
@@ -42,8 +42,8 @@ namespace Piranha.TestApplication
 
         private float Randumb() => (float)_random.NextDouble();
 
-        public MyTestHandler(
-            ILogger<MyTestHandler> logger,
+        public SampleHandler(
+            ILogger<SampleHandler> logger,
             IWindowManager windowManager,
             IAudioSystem audioRenderer,
             IStb stb,

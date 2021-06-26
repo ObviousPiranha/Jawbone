@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.TestApplication
+namespace Piranha.SampleApplication
 {
     class GameLoop : IGameLoop
     {
@@ -54,7 +54,7 @@ namespace Piranha.TestApplication
             var radians = t * 2f * (float)Math.PI;
             var matrix = Matrix4x4.CreateRotationZ(radians);
             var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F)).Transformed(matrix);
-            var textureCoordinates = MyTestHandler.PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
+            var textureCoordinates = SampleHandler.PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
             var n = 0;
             scene.VertexData[n++] = positions.A.X;
             scene.VertexData[n++] = positions.A.Y;

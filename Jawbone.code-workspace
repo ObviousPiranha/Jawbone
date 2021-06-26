@@ -1,9 +1,6 @@
 {
 	"folders": [
 		{
-			"path": "Piranha.TestApplication"
-		},
-		{
 			"path": "Piranha.Jawbone"
 		},
 		{
@@ -11,6 +8,9 @@
 		},
 		{
 			"path": "Piranha.SheetTool"
+		},
+		{
+			"path": "Piranha.SampleApplication"
 		}
 	],
 	"settings": {}

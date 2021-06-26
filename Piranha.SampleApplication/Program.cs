@@ -9,7 +9,7 @@ using Piranha.Jawbone.Sqlite;
 using Piranha.Jawbone.Stb;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.TestApplication
+namespace Piranha.SampleApplication
 {
     class Program
     {
@@ -54,8 +54,8 @@ namespace Piranha.TestApplication
                 var scenePool = new ScenePool<PiranhaScene>();
                 var gameLoop = ActivatorUtilities.CreateInstance<GameLoop>(serviceProvider, scenePool);
                 var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
-                var handler = ActivatorUtilities.CreateInstance<MyTestHandler>(serviceProvider, scenePool);
-                var windowId = windowManager.AddWindow("Test Application", 1024, 768, fullscreen, handler);
+                var handler = ActivatorUtilities.CreateInstance<SampleHandler>(serviceProvider, scenePool);
+                var windowId = windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
 
                 using (ActivatorUtilities.CreateInstance<GameLoopManager>(serviceProvider, gameLoop, handler))
                     windowManager.Run();

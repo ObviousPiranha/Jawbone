@@ -8,36 +8,61 @@ namespace Piranha.Jawbone.OpenGl
 {
     public static class GlTools
     {
-        public static uint LoadShaderProgram(
+        public static uint LoadShaderProgramFromFiles(
             IOpenGl gl,
             string vertexShaderPath,
             string fragmentShaderPath)
         {
-            var program = gl.CreateProgram();
             var vertexSource = File.ReadAllBytes(vertexShaderPath);
             var fragmentSource = File.ReadAllBytes(fragmentShaderPath);
-            var vertexShader = GlTools.LoadShader(gl, vertexSource, Gl.VertexShader);
-            var fragmentShader = GlTools.LoadShader(gl, fragmentSource, Gl.FragmentShader);
-            gl.AttachShader(program, vertexShader);
-            gl.AttachShader(program, fragmentShader);
-            gl.LinkProgram(program);
-            gl.DeleteShader(fragmentShader);
-            gl.DeleteShader(vertexShader);
-            gl.GetProgramiv(program, Gl.LinkStatus, out var result);
-            if (result == Gl.False)
-            {
-                gl.GetProgramiv(program, Gl.InfoLogLength, out var logLength);
-                var buffer = new byte[logLength];
-                gl.GetProgramInfoLog(program, buffer.Length, out var actualLength, buffer);
-                var errors = Encoding.UTF8.GetString(buffer);
-                throw new OpenGlException("Error linking program: " + errors);
-            }
-
-            return program;
+            return LoadShaderProgram(gl, vertexSource, fragmentSource);
         }
+
+        public static uint LoadShaderProgram(
+            IOpenGl gl,
+            ReadOnlySpan<byte> vertexSource,
+            ReadOnlySpan<byte> fragmentSource)
+        {
+            var vertexShader = LoadShader(gl, vertexSource, Gl.VertexShader);
+
+            try
+            {
+                var fragmentShader = LoadShader(gl, fragmentSource, Gl.FragmentShader);
+
+                try
+                {
+                    var program = gl.CreateProgram();
+                    gl.AttachShader(program, vertexShader);
+                    gl.AttachShader(program, fragmentShader);
+                    gl.LinkProgram(program);
+                    gl.DeleteShader(fragmentShader);
+                    gl.DeleteShader(vertexShader);
+                    gl.GetProgramiv(program, Gl.LinkStatus, out var result);
+                    if (result == Gl.False)
+                    {
+                        gl.GetProgramiv(program, Gl.InfoLogLength, out var logLength);
+                        var buffer = new byte[logLength];
+                        gl.GetProgramInfoLog(program, buffer.Length, out _, buffer);
+                        var errors = Encoding.UTF8.GetString(buffer);
+                        throw new OpenGlException("Error linking program: " + errors);
+                    }
+
+                    return program;
+                }
+                finally
+                {
+                    gl.DeleteShader(fragmentShader);
+                }
+            }
+            finally
+            {
+                gl.DeleteShader(vertexShader);
+            }
+        }
+
         public static uint LoadShader(
             IOpenGl gl,
-            byte[] source,
+            ReadOnlySpan<byte> source,
             uint shaderType)
         {
             unsafe
@@ -45,21 +70,30 @@ namespace Piranha.Jawbone.OpenGl
                 fixed (byte* pointer = source)
                 {
                     var shader = gl.CreateShader(shaderType);
-                    var ptr = new IntPtr(pointer);
-                    gl.ShaderSource(shader, 1, ptr, source.Length);
-                    gl.CompileShader(shader);
-                    gl.GetShaderiv(shader, Gl.CompileStatus, out var result);
-                    if (result == Gl.False)
-                    {
-                        gl.GetShaderiv(shader, Gl.InfoLogLength, out var logLength);
-                        var buffer = new byte[logLength];
-                        gl.GetShaderInfoLog(shader, buffer.Length, out var actualLength, buffer);
-                        // We can disregard the actual length because we queried the actual length up above.
-                        var errors = Encoding.UTF8.GetString(buffer);
-                        throw new OpenGlException("Error compiling shader: " + errors);
-                    }
 
-                    return shader;
+                    try
+                    {
+                        var ptr = new IntPtr(pointer);
+                        gl.ShaderSource(shader, 1, ptr, source.Length);
+                        gl.CompileShader(shader);
+                        gl.GetShaderiv(shader, Gl.CompileStatus, out var result);
+                        if (result == Gl.False)
+                        {
+                            gl.GetShaderiv(shader, Gl.InfoLogLength, out var logLength);
+                            var buffer = new byte[logLength];
+                            gl.GetShaderInfoLog(shader, buffer.Length, out var actualLength, buffer);
+                            // We can disregard the actual length because we queried the actual length up above.
+                            var errors = Encoding.UTF8.GetString(buffer);
+                            throw new OpenGlException("Error compiling shader: " + errors);
+                        }
+
+                        return shader;
+                    }
+                    catch
+                    {
+                        gl.DeleteShader(shader);
+                        throw;
+                    }
                 }
             }
         }

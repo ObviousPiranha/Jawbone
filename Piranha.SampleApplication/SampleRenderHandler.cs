@@ -1,19 +1,17 @@
 using System;
-using System.IO;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
+using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.TestApplication
+namespace Piranha.SampleApplication
 {
-    public class TestRenderHandler : IWindowEventHandler
+    public class SampleRenderHandler : IWindowEventHandler
     {
-        private IStb _stb;
+        private readonly ILogger<SampleRenderHandler> _logger;
+        private readonly IStb _stb;
         private uint _program = default;
         private bool _wasInitialized = false;
         private Matrix4x4 _projectionMatrix = Matrix4x4.Identity;
@@ -28,112 +26,25 @@ namespace Piranha.TestApplication
         private int _textureCoordinateAttribute;
         private uint _vertexArray;
 
-        private uint LoadShader(
-            IOpenGl gl,
-            byte[] source,
-            uint shaderType)
-        {
-            var shader = gl.CreateShader(shaderType);
-            var ptr = Marshal.AllocHGlobal(source.Length);
-            try
-            {
-                Marshal.Copy(source, 0, ptr, source.Length);
-                gl.ShaderSource(shader, 1, ptr, source.Length);
-                gl.CompileShader(shader);
-                gl.GetShaderiv(shader, Gl.CompileStatus, out var result);
-                if (result == Gl.False)
-                {
-                    gl.GetShaderiv(shader, Gl.InfoLogLength, out var logLength);
-                    var buffer = new byte[logLength];
-                    gl.GetShaderInfoLog(shader, buffer.Length, out var actualLength, buffer);
-                    var errors = Encoding.UTF8.GetString(buffer);
-                    Console.WriteLine("Error compiling shader:");
-                    Console.WriteLine(errors);
-                }
-                else
-                {
-                    Console.WriteLine("Compiled shader!");
-                }
-
-                return shader;
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
-        }
-
-        private static void DumpErrors(
-            IOpenGl gl,
-            [CallerLineNumber] int lineNumber = 0,
-            [CallerMemberName] string? caller = null)
-        {
-            while (true)
-            {
-                var err = gl.GetError();
-
-                if (err == Gl.NoError)
-                    break;
-
-                Console.Write($"{caller} : {lineNumber} - ");
-                
-                switch (err)
-                {
-                    case Gl.InvalidEnum: Console.WriteLine("GL_INVALID_ENUM"); break;
-                    case Gl.InvalidValue: Console.WriteLine("GL_INVALID_VALUE"); break;
-                    case Gl.InvalidOperation: Console.WriteLine("GL_INVALID_OPERATION"); break;
-                    case Gl.StackOverflow: Console.WriteLine("GL_STACK_OVERFLOW"); break;
-                    case Gl.StackUnderflow: Console.WriteLine("GL_STACK_UNDERFLOW"); break;
-                    case Gl.OutOfMemory: Console.WriteLine("GL_OUT_OF_MEMORY"); break;
-                    case Gl.InvalidFramebufferOperation: Console.WriteLine("GL_INVALID_FRAMEBUFFER_OPERATION"); break;
-                    case Gl.ContextLost: Console.WriteLine("GL_CONTEXT_LOST"); break;
-                    default: Console.WriteLine("Everything is fine. Nothing is broken."); break;
-                }
-
-                // Console.WriteLine(new System.Diagnostics.StackTrace());
-            }
-        }
-
         private void InitializeGl(IOpenGl gl)
         {
-            _program = gl.CreateProgram();
-            var vertexSource = File.ReadAllBytes(Platform.GetShaderPath("simple.vertex.shader"));
-            var fragmentSource = File.ReadAllBytes(Platform.GetShaderPath("simple.fragment.shader"));
-            var vertexShader = LoadShader(gl, vertexSource, Gl.VertexShader);
-            var fragmentShader = LoadShader(gl, fragmentSource, Gl.FragmentShader);
-            gl.AttachShader(_program, vertexShader);
-            gl.AttachShader(_program, fragmentShader);
-            gl.LinkProgram(_program);
-            gl.GetProgramiv(_program, Gl.LinkStatus, out var result);
-            if (result == Gl.False)
-            {
-                gl.GetProgramiv(_program, Gl.InfoLogLength, out var logLength);
-                var buffer = new byte[logLength];
-                gl.GetProgramInfoLog(_program, buffer.Length, out var actualLength, buffer);
-                var errors = Encoding.UTF8.GetString(buffer);
-                Console.WriteLine("Error linking program:");
-                Console.WriteLine(errors);
-            }
-            else
-            {
-                Console.WriteLine("Linked program!");
-            }
+            _program = GlTools.LoadShaderProgramFromFiles(
+                gl,
+                Platform.GetShaderPath("simple.vertex.shader"),
+                Platform.GetShaderPath("simple.fragment.shader"));
 
-            gl.DeleteShader(fragmentShader);
-            gl.DeleteShader(vertexShader);
-
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
 
             _matrixUniform = gl.GetUniformLocation(_program, "theMatrix");
             _textureUniform = gl.GetUniformLocation(_program, "theTexture");
             _positionAttribute = gl.GetAttribLocation(_program, "position");
             _colorAttribute = gl.GetAttribLocation(_program, "lightColor");
             _textureCoordinateAttribute = gl.GetAttribLocation(_program, "textureCoordinates");
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
 
             _vertexArray = gl.GenVertexArray();
             gl.BindVertexArray(_vertexArray);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
 
             var data = _stb.StbiLoad("../op.png", out var x, out var y, out var comp, 4);
             
@@ -141,7 +52,7 @@ namespace Piranha.TestApplication
             _texture = gl.GenTexture();
             gl.BindTexture(Gl.Texture2d, _texture);
 
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
 
             gl.TexImage2D(Gl.Texture2d, 0, Gl.Rgba, x, y, 0, Gl.Rgba, Gl.UnsignedByte, data);
             _stb.StbiImageFree(data);
@@ -150,7 +61,7 @@ namespace Piranha.TestApplication
             gl.TexParameteri(Gl.Texture2d, Gl.TextureWrapT, Gl.ClampToEdge);
             gl.TexParameteri(Gl.Texture2d, Gl.TextureMagFilter, Gl.Nearest);
             gl.TexParameteri(Gl.Texture2d, Gl.TextureMinFilter, Gl.Nearest);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
 
             var debugTriangle = new float[]
             {
@@ -170,8 +81,11 @@ namespace Piranha.TestApplication
             _wasInitialized = true;
         }
 
-        public TestRenderHandler(IStb stb)
+        public SampleRenderHandler(
+            ILogger<SampleRenderHandler> logger,
+            IStb stb)
         {
+            _logger = logger;
             _stb = stb;
         }
 
@@ -192,30 +106,30 @@ namespace Piranha.TestApplication
             else
                 gl.BindVertexArray(_vertexArray);
             
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.Viewport(0, 0, _width, _height);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.UseProgram(_program);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.Enable(Gl.Blend);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.BlendFunc(Gl.SrcAlpha, Gl.OneMinusSrcAlpha);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.EnableVertexAttribArray(_positionAttribute);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.EnableVertexAttribArray(_colorAttribute);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.EnableVertexAttribArray(_textureCoordinateAttribute);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.ActiveTexture(Gl.Texture0);
             gl.Uniform1i(_textureUniform, 0);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.ClearColor(0, 0, 0.5f, 1);
             gl.Clear(Gl.ColorBufferBit);
             gl.BindTexture(Gl.Texture2d, _texture);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.BindBuffer(Gl.ArrayBuffer, _buffer);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             
             gl.UniformMatrix4fv(
                 _matrixUniform,
@@ -223,7 +137,7 @@ namespace Piranha.TestApplication
                 Gl.True,
                 _projectionMatrix);
             const int Stride = 4 * 7;
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
 
             gl.VertexAttribPointer(
                 _positionAttribute,
@@ -233,7 +147,7 @@ namespace Piranha.TestApplication
                 Stride,
                 IntPtr.Zero);
             
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.VertexAttribPointer(
                 _textureCoordinateAttribute,
                 2,
@@ -242,7 +156,7 @@ namespace Piranha.TestApplication
                 Stride,
                 new IntPtr(8));
 
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.VertexAttribPointer(
                 _colorAttribute,
                 3,
@@ -250,16 +164,16 @@ namespace Piranha.TestApplication
                 Gl.False,
                 Stride,
                 new IntPtr(16));
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
             gl.DrawArrays(Gl.Triangles, 0, 3);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
 
             gl.DisableVertexAttribArray(_textureCoordinateAttribute);
             gl.DisableVertexAttribArray(_colorAttribute);
             gl.DisableVertexAttribArray(_positionAttribute);
             gl.Disable(Gl.Blend);
             gl.UseProgram(0);
-            DumpErrors(gl);
+            _ = GlTools.TryLogErrors(gl, _logger);
         }
 
         public void OnInputBlur()

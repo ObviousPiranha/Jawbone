@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace Piranha.TestApplication
+namespace Piranha.SampleApplication
 {
     class PiranhaScene
     {
