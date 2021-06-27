@@ -11,7 +11,7 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sdl
 {
-    sealed class WindowManager : IWindowManager, IDisposable
+    public sealed class WindowManager : IWindowManager, IDisposable
     {
         private static IntPtr CreateWindowPtr(
             ISdl2 sdl,

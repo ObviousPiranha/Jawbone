@@ -74,5 +74,15 @@ namespace Piranha.Jawbone.Tools
                 r.FarY() <= other.Position.Y ||
                 other.FarY() <= r.Position.Y);
         }
+
+        public static Rectangle32 Shrunk(this Rectangle32 r, int n)
+        {
+            var offset = new Point32(n, n);
+            return new Rectangle32(r.Position + offset, r.Size - offset * 2);
+        }
+
+        public static Point32 High(this Rectangle32 r) => r.Position + r.Size;
+        public static int HighX(this Rectangle32 r) => r.Position.X + r.Size.X;
+        public static int HighY(this Rectangle32 r) => r.Position.Y + r.Size.Y;
     }
 }
