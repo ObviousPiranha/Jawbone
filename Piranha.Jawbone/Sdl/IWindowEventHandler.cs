@@ -1,3 +1,4 @@
+using System;
 using Piranha.Jawbone.OpenGl;
 
 namespace Piranha.Jawbone.Sdl
@@ -30,5 +31,6 @@ namespace Piranha.Jawbone.Sdl
         void OnClose();
         void OnQuit();
         void OnSecond();
+        void ReportTimes(TimeSpan sdlMakeCurrent, TimeSpan sdlSwapWindow) {}
     }
 }

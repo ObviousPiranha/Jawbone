@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 
@@ -39,25 +40,19 @@ namespace Piranha.Jawbone.Sdl
         {
             try
             {
-                var eventData = new byte[64];
-                var userEventView = new UserEventView(eventData);
                 int hertz = 60;
-                var hertz64 = (ulong)hertz;
-                ulong second = _sdl.GetPerformanceFrequency();
-                ulong shortFrame = second / hertz64;
-                var longFrameCount = (int)(second - (shortFrame * hertz64));
+                var second = Stopwatch.Frequency;
+                var shortFrame = second / hertz;
+                var longFrameCount = (int)(second % hertz);
 
-                ulong nextFrame = _sdl.GetPerformanceCounter();
-                ulong nextSecond = nextFrame + second;
-                var denominator = second / 1000.0;
-                // var updateMilliseconds = new List<double>(64);
-                // var renderMilliseconds = new List<double>(64);
+                var nextFrame = Stopwatch.GetTimestamp();
+                var nextSecond = nextFrame + second;
                 int frameIndex = 0;
                 bool wasPrepared = true;
 
                 while (_running && _gameLoop.Running)
                 {
-                    ulong now = _sdl.GetPerformanceCounter();
+                    var now = Stopwatch.GetTimestamp();
 
                     if (nextSecond <= now)
                     {
@@ -82,20 +77,16 @@ namespace Piranha.Jawbone.Sdl
                             _gameLoop.PrepareScene();
                             wasPrepared = true;
                             _windowEventHandler.RequestExpose();
-                            // renderMilliseconds.Add((_sdl.GetPerformanceCounter() - now) / denominator);
                         }
                     }
                     else
                     {
                         _gameLoop.FrameUpdate();
                         wasPrepared = false;
-                        // updateMilliseconds.Add((_sdl.GetPerformanceCounter() - now) / denominator);
 
                         // Stretch the leftover sub-frame across all the other frames.
-                        nextFrame += shortFrame + Convert.ToUInt64(frameIndex < longFrameCount);
-
-                        if (++frameIndex >= hertz)
-                            frameIndex = 0;
+                        nextFrame += shortFrame + Convert.ToInt64(frameIndex < longFrameCount);
+                        frameIndex = (frameIndex + 1) % hertz;
                     }
                 }
 

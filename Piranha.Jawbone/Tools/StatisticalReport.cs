@@ -130,9 +130,15 @@ namespace Piranha.Jawbone.Tools
             }
         }
 
+        public static StatisticalReport<double> CreateAndClear(List<double> values)
+        {
+            var result = Create(values);
+            values.Clear();
+            return result;
+        }
+
         private static bool IsOdd(int n) => (n & 1) == 1;
 
-        
         public static StringBuilder AppendReport<T, TState>(
             this StringBuilder builder,
             in StatisticalReport<T> report,

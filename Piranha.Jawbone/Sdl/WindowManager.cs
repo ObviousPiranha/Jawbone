@@ -62,6 +62,7 @@ namespace Piranha.Jawbone.Sdl
         private IntPtr _contextPtr = default;
         private readonly List<KeyValuePair<uint, IWindowEventHandler>> _activeWindows = new();
         private readonly Dictionary<uint, int> _exposeVersionId = new();
+        private readonly Stopwatch _stopwatch = new();
 
         public WindowManager(
             ISdl2 sdl,
@@ -376,9 +377,17 @@ namespace Piranha.Jawbone.Sdl
             }
             else if (windowPtr.IsValid())
             {
+                _stopwatch.Restart();
                 _sdl.GlMakeCurrent(windowPtr, _contextPtr);
+                var sdlMakeCurrent = _stopwatch.Elapsed;
+
                 handler.OnExpose(_gl.Library);
+
+                _stopwatch.Restart();
                 _sdl.GlSwapWindow(windowPtr);
+                var sdlSwapWindow = _stopwatch.Elapsed;
+
+                handler.ReportTimes(sdlMakeCurrent, sdlSwapWindow);
             }
             else
             {
