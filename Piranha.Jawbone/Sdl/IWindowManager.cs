@@ -11,6 +11,6 @@ namespace Piranha.Jawbone.Sdl
         
         bool TryExpose(uint windowId);
         
-        void Run();
+        void Run(IWindowManagerMetricHandler? windowManagerMetricHandler = null);
     }
 }

@@ -62,7 +62,6 @@ namespace Piranha.Jawbone.Sdl
         private IntPtr _contextPtr = default;
         private readonly List<KeyValuePair<uint, IWindowEventHandler>> _activeWindows = new();
         private readonly Dictionary<uint, int> _exposeVersionId = new();
-        private readonly Stopwatch _stopwatch = new();
 
         public WindowManager(
             ISdl2 sdl,
@@ -243,7 +242,7 @@ namespace Piranha.Jawbone.Sdl
             }
         }
 
-        public void Run()
+        public void Run(IWindowManagerMetricHandler? windowManagerMetricHandler = null)
         {
             var nextSecond = Stopwatch.GetTimestamp() + Stopwatch.Frequency;
 
@@ -283,7 +282,11 @@ namespace Piranha.Jawbone.Sdl
                 DestroyInactiveWindows();
 
                 if (doSleep)
+                {
+                    var stopwatch = ValueStopwatch.Start();
                     Thread.Sleep(1);
+                    windowManagerMetricHandler?.ReportSleepTime(stopwatch.GetElapsed());
+                }
             }
 
             // Flush the queue before exiting.
@@ -377,15 +380,15 @@ namespace Piranha.Jawbone.Sdl
             }
             else if (windowPtr.IsValid())
             {
-                _stopwatch.Restart();
+                var stopwatch = ValueStopwatch.Start();
                 _sdl.GlMakeCurrent(windowPtr, _contextPtr);
-                var sdlMakeCurrent = _stopwatch.Elapsed;
+                var sdlMakeCurrent = stopwatch.GetElapsed();
 
                 handler.OnExpose(_gl.Library);
 
-                _stopwatch.Restart();
+                stopwatch = ValueStopwatch.Start();
                 _sdl.GlSwapWindow(windowPtr);
-                var sdlSwapWindow = _stopwatch.Elapsed;
+                var sdlSwapWindow = stopwatch.GetElapsed();
 
                 handler.ReportTimes(sdlMakeCurrent, sdlSwapWindow);
             }
