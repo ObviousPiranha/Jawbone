@@ -30,6 +30,7 @@ namespace Piranha.Jawbone.OpenGl
         void DrawArrays(uint mode, int first, long count);
         void Enable(uint cap);
         void EnableVertexAttribArray(int index);
+        void Flush();
         int GetAttribLocation(uint program, string name);
         void GetBufferParameteriv(uint target, uint value, out int data);
         void GenBuffers(int n, out uint buffers);
