@@ -10,13 +10,6 @@ namespace Piranha.Jawbone.Sqlite
 {
     public sealed class SqliteTable<T> where T : class
     {
-        private const MethodAttributes MyMethodAttributes =
-            MethodAttributes.Public |
-            MethodAttributes.Final |
-            MethodAttributes.HideBySig |
-            MethodAttributes.NewSlot |
-            MethodAttributes.Virtual;
-
         public string TableName { get; }
         public int FieldCount => _properties.Length;
 
@@ -24,6 +17,10 @@ namespace Piranha.Jawbone.Sqlite
         private readonly ImmutableArray<SqliteProperty<T>> _keyProperties;
 
         public SqliteTable() : this(typeof(T).Name, s => s)
+        {
+        }
+
+        public SqliteTable(string tableName) : this(tableName, s => s)
         {
         }
         
@@ -39,9 +36,6 @@ namespace Piranha.Jawbone.Sqlite
             var propArrayBuilder = ImmutableArray.CreateBuilder<SqliteProperty<T>>();
             foreach (var propertyInfo in typeof(T).GetProperties())
             {
-                // if (System.Diagnostics.Debugger.IsAttached)
-                //     Console.WriteLine($"{propertyInfo.Name} : {propertyInfo.PropertyType}");
-
                 var propertyHandlerType = typeof(PropertyHandler<,>).MakeGenericType(typeof(T), propertyInfo.PropertyType);
                 var typeHandlerType = typeof(ITypeHandler<>).MakeGenericType(propertyInfo.PropertyType);
                 var typeHandler = TypeHandler.Get(propertyInfo.PropertyType);

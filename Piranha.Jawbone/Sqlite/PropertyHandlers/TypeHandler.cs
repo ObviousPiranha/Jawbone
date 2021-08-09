@@ -38,6 +38,7 @@ namespace Piranha.Jawbone.Sqlite
                 [typeof(double)] = new Float64Handler(),
                 [typeof(string)] = new StringHandler(),
                 [typeof(byte[])] = new ByteArrayHandler(),
+                [typeof(ImmutableArray<byte>)] = new ImmutableByteArrayHandler(),
                 [typeof(Guid)] = new GuidHandler(),
                 [typeof(DateTime)] = new DateTimeHandler(),
                 [typeof(DateTimeOffset)] = new DateTimeOffsetHandler()
