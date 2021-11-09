@@ -15,11 +15,22 @@ namespace Piranha.Jawbone.Tools
                 Vector2.Transform(q.D, matrix));
         }
 
+        public static Quadrilateral<Vector2> Transformed(
+            in this Quadrilateral<Vector2> q,
+            in Matrix3x2 matrix)
+        {
+            return new Quadrilateral<Vector2>(
+                Vector2.Transform(q.A, matrix),
+                Vector2.Transform(q.B, matrix),
+                Vector2.Transform(q.C, matrix),
+                Vector2.Transform(q.D, matrix));
+        }
+
         public static Quadrilateral<Vector2> Rotated(
             in this Quadrilateral<Vector2> q,
             float radians)
         {
-            var matrix = Matrix4x4.CreateRotationZ(radians);
+            var matrix = Matrix3x2.CreateRotation(radians);
             return q.Transformed(matrix);
         }
 
