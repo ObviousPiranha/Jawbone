@@ -13,5 +13,10 @@
 			"path": "Piranha.SampleApplication"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"stdio.h": "c",
+			"sdl.h": "c"
+		}
+	}
 }

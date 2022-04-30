@@ -2,8 +2,6 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone;
-using Piranha.Jawbone.OpenAl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Sqlite;
 using Piranha.Jawbone.Stb;
@@ -27,12 +25,11 @@ namespace Piranha.SampleApplication
                                 options.IncludeScopes = true;
                             });
                 })
-                .AddOpenAl()
                 .AddSqlite3()
                 .AddSdl2()
                 .AddStb()
                 .AddWindowManager()
-                .AddAudioSystem();
+                .AddAudioManager();
         }
 
         static void RunApplication(bool fullscreen)

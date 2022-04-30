@@ -71,5 +71,14 @@ namespace Piranha.Jawbone.Tools.CollectionExtensions
                 return -1 <= n && n <= 3;
             }
         }
+
+        public static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length)
+        {
+            unsafe
+            {
+                var result = new ReadOnlySpan<T>(ptr.ToPointer(), length);
+                return result;
+            }
+        }
     }
 }

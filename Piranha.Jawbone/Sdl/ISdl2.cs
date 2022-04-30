@@ -71,6 +71,18 @@ namespace Piranha.Jawbone.Sdl
         int WaitEvent(byte[] eventData);
         uint RegisterEvents(int numEvents);
         int PushEvent(byte[] eventData);
+        uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, out AudioSpec obtained, int allowedChanges);
+        uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, IntPtr obtained, int allowedChanges);
+        void CloseAudioDevice(uint dev);
+        void PauseAudioDevice(uint dev, int pauseOn);
+        int QueueAudio(uint dev, in byte data, uint len);
+        IntPtr NewAudioStream(ushort sourceFormat, byte sourceChannels, int sourceRate, ushort destinationFormat, byte destinationChannels, int destinationRate);
+        void FreeAudioStream(IntPtr stream);
+        int AudioStreamPut(IntPtr stream, in byte buffer, int length);
+        int AudioStreamFlush(IntPtr stream);
+        int AudioStreamAvailable(IntPtr stream);
+        int AudioStreamGet(IntPtr stream, out byte buffer, int length);
+        int AudioStreamGet(IntPtr stream, out float buffer, int length);
 
         IntPtr GlCreateContext(IntPtr window);
         void GlDeleteContext(IntPtr context);

@@ -12,7 +12,7 @@ namespace Piranha.Jawbone.Sdl
 
         public static IServiceCollection AddSdl2(this IServiceCollection services)
         {
-            return services.AddSdl2(SdlInit.Video | SdlInit.Timer | SdlInit.Events);
+            return services.AddSdl2(SdlInit.Everything);
         }
 
         public static IServiceCollection AddSdl2(
@@ -44,6 +44,11 @@ namespace Piranha.Jawbone.Sdl
         public static IServiceCollection AddWindowManager(this IServiceCollection services)
         {
             return services.AddSingleton<IWindowManager, WindowManager>();
+        }
+
+        public static IServiceCollection AddAudioManager(this IServiceCollection services)
+        {
+            return services.AddSingleton<IAudioManager, AudioManager>();
         }
     }
 }

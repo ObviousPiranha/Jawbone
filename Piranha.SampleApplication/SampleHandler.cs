@@ -1,13 +1,14 @@
 using System;
 using System.IO;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.OpenAl;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
 using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.SampleApplication
 {
@@ -22,8 +23,8 @@ namespace Piranha.SampleApplication
         private readonly IStb _stb;
         private readonly ISdl2 _sdl;
         private readonly ILogger<SampleHandler> _logger;
+        private readonly IAudioManager _audioManager;
         private readonly IWindowManager _windowManager;
-        private readonly IAudioSystem _audioRenderer;
         private readonly Random _random = new();
         private readonly ScenePool<PiranhaScene> _scenePool;
         private PiranhaScene _currentScene = new();
@@ -45,7 +46,7 @@ namespace Piranha.SampleApplication
         public SampleHandler(
             ILogger<SampleHandler> logger,
             IWindowManager windowManager,
-            IAudioSystem audioRenderer,
+            IAudioManager audioManager,
             IStb stb,
             ISdl2 sdl,
             ScenePool<PiranhaScene> scenePool)
@@ -53,8 +54,8 @@ namespace Piranha.SampleApplication
             _stb = stb;
             _sdl = sdl;
             _logger = logger;
+            _audioManager = audioManager;
             _windowManager = windowManager;
-            _audioRenderer = audioRenderer;
             _scenePool = scenePool;
         }
 
@@ -191,7 +192,29 @@ namespace Piranha.SampleApplication
             // neck_snap-Vladimir-719669812.wav
             // Public domain audio: http://soundbible.com/1953-Neck-Snap.html
             var audioBytes = File.ReadAllBytes("crunch.ogg");
-            _audioRenderer.AddAudioSource("crunch", audioBytes);
+            int samples = _stb.StbVorbisDecodeMemory(
+                audioBytes[0],
+                audioBytes.Length,
+                out var channelCount,
+                out var sampleRate,
+                out var output);
+            
+            if (output.IsInvalid())
+                throw new Exception("Failed to load audio file.");
+            
+            try
+            {
+                _audioManager.PrepareAudio(
+                    SdlAudio.S16Lsb,
+                    sampleRate,
+                    channelCount,
+                    output.ToReadOnlySpan<byte>(samples * channelCount * Unsafe.SizeOf<short>()));
+            }
+            finally
+            {
+                _stb.PiranhaFree(output);
+            }
+            
         }
         
         public void OnClose()
@@ -290,8 +313,10 @@ namespace Piranha.SampleApplication
 
         public void OnMouseButtonDown(MouseButtonEventView eventData)
         {
-            var id = _audioRenderer.GetBufferIndex("crunch");
-            _audioRenderer.Play(id, false);
+            _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            // _audioManager.ScheduleAudio(0, default);
+            // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.2));
+            // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));
         }
 
         public void OnMouseButtonUp(MouseButtonEventView eventData)
