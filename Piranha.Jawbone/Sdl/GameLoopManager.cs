@@ -12,19 +12,16 @@ namespace Piranha.Jawbone.Sdl
         private readonly ILogger<GameLoopManager> _logger;
         private readonly ISdl2 _sdl;
         private readonly IGameLoop _gameLoop;
-        private readonly IWindowEventHandler _windowEventHandler;
         private bool _running = true;
 
         public GameLoopManager(
             ILogger<GameLoopManager> logger,
             ISdl2 sdl,
-            IGameLoop gameLoop,
-            IWindowEventHandler windowEventHandler)
+            IGameLoop gameLoop)
         {
             _logger = logger;
             _sdl = sdl;
             _gameLoop = gameLoop;
-            _windowEventHandler = windowEventHandler;
 
             _thread = new Thread(RunGameLoopInBackground);
             _thread.Start();
@@ -76,7 +73,6 @@ namespace Piranha.Jawbone.Sdl
                         {
                             _gameLoop.PrepareScene();
                             wasPrepared = true;
-                            _windowEventHandler.RequestExpose();
                         }
                     }
                     else

@@ -2,7 +2,7 @@ namespace Piranha.Jawbone.Sdl
 {
     public interface IWindowManager
     {
-        uint AddWindow(
+        void AddWindow(
             string title,
             int width,
             int height,

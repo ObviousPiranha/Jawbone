@@ -21,17 +21,12 @@ namespace Piranha.SampleApplication
 
         private readonly float[] _bufferData = new float[24];
         private readonly IStb _stb;
-        private readonly ISdl2 _sdl;
         private readonly ILogger<SampleHandler> _logger;
         private readonly IAudioManager _audioManager;
-        private readonly IWindowManager _windowManager;
         private readonly Random _random = new();
         private readonly ScenePool<PiranhaScene> _scenePool;
         private PiranhaScene _currentScene = new();
         private Matrix4x4 _matrix = default;
-        private uint _windowId = 0;
-        private int _width = 0;
-        private int _height = 0;
         private uint _program = 0;
         private uint _texture = 0;
         private uint _buffer = default;
@@ -45,32 +40,19 @@ namespace Piranha.SampleApplication
 
         public SampleHandler(
             ILogger<SampleHandler> logger,
-            IWindowManager windowManager,
             IAudioManager audioManager,
             IStb stb,
-            ISdl2 sdl,
             ScenePool<PiranhaScene> scenePool)
         {
             _stb = stb;
-            _sdl = sdl;
             _logger = logger;
             _audioManager = audioManager;
-            _windowManager = windowManager;
             _scenePool = scenePool;
         }
 
-        public bool Running { get; private set; }
-        public int ExposeVersionId { get; private set; }
-
-        public void RequestExpose() => ++ExposeVersionId;
-
-        public void OnOpen(uint windowId, int width, int height, IOpenGl gl)
+        public void OnWindowCreated(Window window)
         {
-            _windowId = windowId;
-            _width = width;
-            _height = height;
-            Running = true;
-
+            var gl = window.OpenGl;
             _ = GlTools.TryLogErrors(gl, _logger);
 
             _program = gl.CreateProgram();
@@ -180,7 +162,9 @@ namespace Piranha.SampleApplication
             _bufferData[n++] = textureCoordinates.D.X;
             _bufferData[n++] = textureCoordinates.D.Y;
 
-            var aspectRatio = width / (float)height;
+            var size = window.Size;
+            gl.Viewport(0, 0, size.X, size.Y);
+            var aspectRatio = size.X / (float)size.Y;
             _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
 
             _buffer = gl.GenBuffer();
@@ -214,26 +198,24 @@ namespace Piranha.SampleApplication
             {
                 _stb.PiranhaFree(output);
             }
-            
         }
         
-        public void OnClose()
+        public void OnClose(Window window)
         {
             _logger.LogDebug("OnClose");
-            Running = false;
+            window.Close();
             _scenePool.Closed = true;
         }
 
-        public void OnQuit()
+        public void OnQuit(Window window)
         {
             _logger.LogDebug("OnQuit");
-            Running = false;
+            window.Close();
         }
 
-        public void OnExpose(IOpenGl gl)
+        public bool OnExpose(Window window)
         {
-
-            gl.Viewport(0, 0, _width, _height);
+            var gl = window.OpenGl;
             gl.ClearColor(
                 _currentScene.Color.X,
                 _currentScene.Color.Y,
@@ -283,35 +265,17 @@ namespace Piranha.SampleApplication
             gl.Disable(Gl.Blend);
             gl.UseProgram(0);
             _ = GlTools.TryLogErrors(gl, _logger);
+
+            return true;
         }
 
-        public void OnInputBlur()
-        {
-        }
-
-        public void OnInputFocus()
-        {
-        }
-
-        public void OnKeyDown(KeyboardEventView eventData)
-        {
-        }
-
-        public void OnKeyUp(KeyboardEventView eventData)
+        public void OnKeyUp(Window window, KeyboardEventView eventData)
         {
             if (eventData.PhysicalKeyCode == SdlScancode.Escape)
-                Running = false;
+                window.Close();
         }
 
-        public void OnMaximize()
-        {
-        }
-
-        public void OnMinimize()
-        {
-        }
-
-        public void OnMouseButtonDown(MouseButtonEventView eventData)
+        public void OnMouseButtonDown(Window window, MouseButtonEventView eventData)
         {
             _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
             // _audioManager.ScheduleAudio(0, default);
@@ -319,65 +283,11 @@ namespace Piranha.SampleApplication
             // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));
         }
 
-        public void OnMouseButtonUp(MouseButtonEventView eventData)
+        public void OnSizeChanged(Window window, WindowEventView eventData)
         {
-        }
-
-        public void OnMouseEnter()
-        {
-        }
-
-        public void OnMouseLeave()
-        {
-        }
-
-        public void OnMouseMove(MouseMotionEventView eventData)
-        {
-        }
-
-        public void OnMouseWheel(MouseWheelEventView eventData)
-        {
-        }
-
-        public void OnMove(WindowEventView eventData)
-        {
-        }
-
-        public void OnPrepareRender()
-        {
-        }
-
-        public void OnRender()
-        {
-        }
-
-        public void OnResize(WindowEventView eventData)
-        {
-            _width = eventData.X;
-            _height = eventData.Y;
-
-            var aspectRatio = _width / (float)_height;
+            window.OpenGl.Viewport(0, 0, eventData.X, eventData.Y);
+            var aspectRatio = eventData.X / (float)eventData.Y;
             _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
-        }
-
-        public void OnRestore()
-        {
-        }
-
-        public void OnSizeChanged(WindowEventView eventData)
-        {
-            _width = eventData.X;
-            _height = eventData.Y;
-        }
-
-        public void OnUpdate()
-        {
-        }
-
-        public bool OnUser(UserEventView eventdata) => false;
-
-        public void OnSecond()
-        {
         }
     }
 }

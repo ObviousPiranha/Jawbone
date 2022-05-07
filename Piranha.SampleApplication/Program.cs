@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Sdl;
@@ -52,9 +51,9 @@ namespace Piranha.SampleApplication
                 var gameLoop = ActivatorUtilities.CreateInstance<GameLoop>(serviceProvider, scenePool);
                 var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
                 var handler = ActivatorUtilities.CreateInstance<SampleHandler>(serviceProvider, scenePool);
-                var windowId = windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
+                windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
 
-                using (ActivatorUtilities.CreateInstance<GameLoopManager>(serviceProvider, gameLoop, handler))
+                using (ActivatorUtilities.CreateInstance<GameLoopManager>(serviceProvider, gameLoop))
                     windowManager.Run();
             }
             catch (Exception ex)

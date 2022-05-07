@@ -60,8 +60,7 @@ namespace Piranha.Jawbone.Sdl
         private readonly ILogger<WindowManager> _logger;
         private NativeLibraryInterface<IOpenGl>? _gl = default;
         private IntPtr _contextPtr = default;
-        private readonly List<KeyValuePair<uint, IWindowEventHandler>> _activeWindows = new();
-        private readonly Dictionary<uint, int> _exposeVersionId = new();
+        private readonly List<Window> _activeWindows = new();
 
         public WindowManager(
             ISdl2 sdl,
@@ -73,28 +72,6 @@ namespace Piranha.Jawbone.Sdl
             var displayCount = _sdl.GetNumVideoDisplays();
             var word = displayCount == 1 ? "display" : "displays";
             _logger.LogDebug($"{displayCount} {word}");
-
-            _sdl.GlSetAttribute(SdlGl.RedSize, 8);
-            _sdl.GlSetAttribute(SdlGl.GreenSize, 8);
-            _sdl.GlSetAttribute(SdlGl.BlueSize, 8);
-            _sdl.GlSetAttribute(SdlGl.AlphaSize, 8);
-            // _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
-            _sdl.GlSetAttribute(SdlGl.DoubleBuffer, 1);
-
-            if (Platform.IsRaspberryPi)
-            {
-                _logger.LogDebug("configuring OpenGL ES 3.0");
-                _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-                _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
-                _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Es);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                _logger.LogDebug("configuring OpenGL 3.2");
-                _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-                _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
-                _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
-            }
         }
 
         public void Dispose()
@@ -115,7 +92,7 @@ namespace Piranha.Jawbone.Sdl
             return windowId;
         }
         
-        public uint AddWindow(
+        public void AddWindow(
             string title,
             int width,
             int height,
@@ -128,6 +105,28 @@ namespace Piranha.Jawbone.Sdl
             {
                 if (_gl is null)
                 {
+                    _sdl.GlSetAttribute(SdlGl.RedSize, 8);
+                    _sdl.GlSetAttribute(SdlGl.GreenSize, 8);
+                    _sdl.GlSetAttribute(SdlGl.BlueSize, 8);
+                    _sdl.GlSetAttribute(SdlGl.AlphaSize, 8);
+                    // _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
+                    _sdl.GlSetAttribute(SdlGl.DoubleBuffer, 1);
+
+                    if (Platform.IsRaspberryPi)
+                    {
+                        _logger.LogDebug("configuring OpenGL ES 3.0");
+                        _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
+                        _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
+                        _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Es);
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        _logger.LogDebug("configuring OpenGL 3.2");
+                        _sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
+                        _sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
+                        _sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
+                    }
+
                     _contextPtr = _sdl.GlCreateContext(windowPtr);
 
                     if (_contextPtr.IsInvalid())
@@ -180,10 +179,9 @@ namespace Piranha.Jawbone.Sdl
                 }
 
                 var id = GetWindowId(windowPtr);
-                _activeWindows.Add(KeyValuePair.Create(id, handler));
-                _sdl.GetWindowSize(windowPtr, out var w, out var h);
-                handler.OnOpen(id, w, h, _gl.Library);
-                return id;
+                var window = new Window(_sdl, _gl.Library, handler, windowPtr, id);
+                _activeWindows.Add(window);
+                handler.OnWindowCreated(window);
             }
             catch
             {
@@ -218,26 +216,17 @@ namespace Piranha.Jawbone.Sdl
 
             while (i < _activeWindows.Count)
             {
-                var pair = _activeWindows[i];
+                var window = _activeWindows[i];
                 
-                if (pair.Value.Running)
+                if (window.WasClosed)
                 {
-                    ++i;
+                    window.WindowEventHandler.OnDestroyingWindow(window);
+                    _sdl.DestroyWindow(window.WindowPointer);
+                    _activeWindows.RemoveAt(i);
                 }
                 else
                 {
-                    var ptr = _sdl.GetWindowFromID(pair.Key);
-
-                    if (ptr.IsValid())
-                    {
-                        _sdl.DestroyWindow(ptr);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("No window pointer found for window ID: {0}.", pair.Key);
-                    }
-
-                    _activeWindows.RemoveAt(i);
+                    ++i;
                 }
             }
         }
@@ -255,26 +244,18 @@ namespace Piranha.Jawbone.Sdl
                     doSleep = false;
                 }
 
-                foreach (var pair in _activeWindows)
+                foreach (var window in _activeWindows)
                 {
-                    var evi = pair.Value.ExposeVersionId;
-                    if (0 < evi)
-                    {
-                        if (!_exposeVersionId.TryGetValue(pair.Key, out var id) || evi != id)
-                        {
-                            _exposeVersionId[pair.Key] = evi;
-                            doSleep = false;
-                            Expose(pair.Key, pair.Value);
-                        }
-                    }
+                    if (window.Loop(_contextPtr))
+                        doSleep = false;
                 }
 
                 if (nextSecond <= Stopwatch.GetTimestamp())
                 {
                     doSleep = false;
 
-                    foreach (var pair in _activeWindows)
-                        pair.Value.OnSecond();
+                    foreach (var window in _activeWindows)
+                        window.WindowEventHandler.OnSecond(window);
                     
                     nextSecond += Stopwatch.Frequency;
                 }
@@ -296,15 +277,15 @@ namespace Piranha.Jawbone.Sdl
             }
         }
 
-        private IWindowEventHandler? GetHandler(uint windowId)
+        private Window? GetWindow(uint windowId)
         {
-            foreach (var pair in _activeWindows)
+            foreach (var window in _activeWindows)
             {
-                if (pair.Key == windowId)
-                    return pair.Value;
+                if (window.WindowId == windowId)
+                    return window;
             }
-            
-            _logger.LogWarning("Unrecognized window ID: " + windowId);
+
+            _logger.LogWarning("Unrecognized window ID: {windowId}", windowId);
             return null;
         }
 
@@ -322,105 +303,96 @@ namespace Piranha.Jawbone.Sdl
                 case SdlEvent.KeyDown:
                 {
                     var view = new KeyboardEventView(_eventData);
-                    GetHandler(view.WindowId)?.OnKeyDown(view);
+                    var window = GetWindow(view.WindowId);
+
+                    if (window is not null)
+                        window.WindowEventHandler.OnKeyDown(window, view);
                     break;
                 }
                 case SdlEvent.KeyUp:
                 {
                     var view = new KeyboardEventView(_eventData);
-                    GetHandler(view.WindowId)?.OnKeyUp(view);
+                    var window = GetWindow(view.WindowId);
+
+                    if (window is not null)
+                        window.WindowEventHandler.OnKeyUp(window, view);
                     break;
                 }
                 case SdlEvent.MouseMotion:
                 {
                     var view = new MouseMotionEventView(_eventData);
-                    GetHandler(view.WindowId)?.OnMouseMove(view);
+                    var window = GetWindow(view.WindowId);
+
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseMove(window, view);
                     break;
                 }
                 case SdlEvent.MouseWheel:
                 {
                     var view = new MouseWheelEventView(_eventData);
-                    GetHandler(view.WindowId)?.OnMouseWheel(view);
+                    var window = GetWindow(view.WindowId);
+
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseWheel(window, view);
                     break; 
                 }
                 case SdlEvent.MouseButtonDown:
                 {
                     var view = new MouseButtonEventView(_eventData);
-                    GetHandler(view.WindowId)?.OnMouseButtonDown(view);
+                    var window = GetWindow(view.WindowId);
+
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseButtonDown(window, view);
                     break;
                 }
                 case SdlEvent.MouseButtonUp:
                 {
                     var view = new MouseButtonEventView(_eventData);
-                    GetHandler(view.WindowId)?.OnMouseButtonUp(view);
+                    var window = GetWindow(view.WindowId);
+
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseButtonUp(window, view);
                     break;
                 }
                 case SdlEvent.Quit:
                 {
-                    foreach (var pair in _activeWindows)
-                        pair.Value.OnQuit();
+                    foreach (var window in _activeWindows)
+                        window.WindowEventHandler.OnQuit(window);
                     
                     break;
                 }
                 default:
                 {
-                    _logger.LogTrace("event " + eventType);
+                    _logger.LogTrace("event {eventType}", eventType);
                     break;
                 }
-            }
-        }
-
-        private void Expose(uint windowId, IWindowEventHandler handler)
-        {
-            var windowPtr = _sdl.GetWindowFromID(windowId);
-
-            if (_gl is null)
-            {
-                _logger.LogWarning("GL interface is null. Skipping OnExpose.");
-            }
-            else if (windowPtr.IsValid())
-            {
-                var stopwatch = ValueStopwatch.Start();
-                _sdl.GlMakeCurrent(windowPtr, _contextPtr);
-                var sdlMakeCurrent = stopwatch.GetElapsed();
-
-                handler.OnExpose(_gl.Library);
-
-                stopwatch = ValueStopwatch.Start();
-                _sdl.GlSwapWindow(windowPtr);
-                var sdlSwapWindow = stopwatch.GetElapsed();
-
-                handler.ReportTimes(sdlMakeCurrent, sdlSwapWindow);
-            }
-            else
-            {
-                _logger.LogWarning($"Window {windowId} has no window pointer. Skipping OnExpose.");
             }
         }
 
         private void HandleWindowEvent()
         {
             var view = new WindowEventView(_eventData);
-            var handler = GetHandler(view.WindowId);
+            var window = GetWindow(view.WindowId);
 
-            if (handler is not null)
+            if (window is not null)
             {
+                var handler = window.WindowEventHandler;
                 switch (view.Event)
                 {
-                    case SdlWindowEvent.Shown: break;
-                    case SdlWindowEvent.Hidden: break;
-                    case SdlWindowEvent.Exposed: Expose(view.WindowId, handler); break; 
-                    case SdlWindowEvent.Moved: handler.OnMove(view); break;
-                    case SdlWindowEvent.Resized: handler.OnResize(view); break;
-                    case SdlWindowEvent.SizeChanged: handler.OnSizeChanged(view); break;
-                    case SdlWindowEvent.Minimized: handler.OnMinimize(); break;
-                    case SdlWindowEvent.Maximized: handler.OnMaximize(); break;
-                    case SdlWindowEvent.Restored: handler.OnRestore(); break;
-                    case SdlWindowEvent.Enter: handler.OnMouseEnter(); break;
-                    case SdlWindowEvent.Leave: handler.OnMouseLeave(); break;
-                    case SdlWindowEvent.FocusGained: handler.OnInputFocus(); break;
-                    case SdlWindowEvent.FocusLost: handler.OnInputBlur(); break;
-                    case SdlWindowEvent.Close: handler.OnClose(); break;
+                    case SdlWindowEvent.Shown: handler.OnShown(window); break;
+                    case SdlWindowEvent.Hidden: handler.OnHidden(window); break;
+                    case SdlWindowEvent.Exposed: window.Expose(_contextPtr); break; 
+                    case SdlWindowEvent.Moved: handler.OnMove(window, view); break;
+                    case SdlWindowEvent.Resized: handler.OnResize(window, view); break;
+                    case SdlWindowEvent.SizeChanged: handler.OnSizeChanged(window, view); break;
+                    case SdlWindowEvent.Minimized: handler.OnMinimize(window); break;
+                    case SdlWindowEvent.Maximized: handler.OnMaximize(window); break;
+                    case SdlWindowEvent.Restored: handler.OnRestore(window); break;
+                    case SdlWindowEvent.Enter: handler.OnMouseEnter(window); break;
+                    case SdlWindowEvent.Leave: handler.OnMouseLeave(window); break;
+                    case SdlWindowEvent.FocusGained: handler.OnInputFocus(window); break;
+                    case SdlWindowEvent.FocusLost: handler.OnInputBlur(window); break;
+                    case SdlWindowEvent.Close: handler.OnClose(window); break;
                     default: break;
                 }
             }
