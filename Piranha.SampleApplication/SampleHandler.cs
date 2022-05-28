@@ -52,7 +52,8 @@ namespace Piranha.SampleApplication
 
         public void OnWindowCreated(Window window)
         {
-            var gl = window.OpenGl;
+            var graphicsProvider = window.GetGraphics();
+            var gl = graphicsProvider.Graphics;
             _ = GlTools.TryLogErrors(gl, _logger);
 
             _program = gl.CreateProgram();
@@ -213,9 +214,15 @@ namespace Piranha.SampleApplication
             window.Close();
         }
 
-        public bool OnExpose(Window window)
+        public void OnLoop(Window window)
         {
-            var gl = window.OpenGl;
+            OnExpose(window);
+        }
+
+        public void OnExpose(Window window)
+        {
+            var graphicsProvider = window.GetGraphics();
+            var gl = graphicsProvider.Graphics;
             gl.ClearColor(
                 _currentScene.Color.X,
                 _currentScene.Color.Y,
@@ -266,7 +273,7 @@ namespace Piranha.SampleApplication
             gl.UseProgram(0);
             _ = GlTools.TryLogErrors(gl, _logger);
 
-            return true;
+            graphicsProvider.Present();
         }
 
         public void OnKeyUp(Window window, KeyboardEventView eventData)
@@ -285,7 +292,9 @@ namespace Piranha.SampleApplication
 
         public void OnSizeChanged(Window window, WindowEventView eventData)
         {
-            window.OpenGl.Viewport(0, 0, eventData.X, eventData.Y);
+            var graphicsProvider = window.GetGraphics();
+            var gl = graphicsProvider.Graphics;
+            gl.Viewport(0, 0, eventData.X, eventData.Y);
             var aspectRatio = eventData.X / (float)eventData.Y;
             _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
         }

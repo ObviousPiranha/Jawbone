@@ -179,7 +179,7 @@ namespace Piranha.Jawbone.Sdl
                 }
 
                 var id = GetWindowId(windowPtr);
-                var window = new Window(_sdl, _gl.Library, handler, windowPtr, id);
+                var window = new Window(_sdl, _gl.Library, handler, windowPtr, _contextPtr, id);
                 _activeWindows.Add(window);
                 handler.OnWindowCreated(window);
             }
@@ -187,26 +187,6 @@ namespace Piranha.Jawbone.Sdl
             {
                 _sdl.DestroyWindow(windowPtr);
                 throw;
-            }
-        }
-
-        public bool TryExpose(uint windowId)
-        {
-            var eventData = ArrayPool<byte>.Shared.Rent(64);
-
-            try
-            {
-                _ = BitConverter.TryWriteBytes(eventData, SdlEvent.WindowEvent);
-                _ = BitConverter.TryWriteBytes(eventData.AsSpan(4), _sdl.GetTicks());
-                _ = BitConverter.TryWriteBytes(eventData.AsSpan(8), windowId);
-                eventData[12] = SdlWindowEvent.Exposed;
-
-                var result = _sdl.PushEvent(eventData);
-                return result == 1;
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(eventData, true);
             }
         }
 
@@ -246,8 +226,7 @@ namespace Piranha.Jawbone.Sdl
 
                 foreach (var window in _activeWindows)
                 {
-                    if (window.Loop(_contextPtr))
-                        doSleep = false;
+                    window.WindowEventHandler.OnLoop(window);
                 }
 
                 if (nextSecond <= Stopwatch.GetTimestamp())
@@ -381,7 +360,7 @@ namespace Piranha.Jawbone.Sdl
                 {
                     case SdlWindowEvent.Shown: handler.OnShown(window); break;
                     case SdlWindowEvent.Hidden: handler.OnHidden(window); break;
-                    case SdlWindowEvent.Exposed: window.Expose(_contextPtr); break; 
+                    case SdlWindowEvent.Exposed: handler.OnExpose(window); break; 
                     case SdlWindowEvent.Moved: handler.OnMove(window, view); break;
                     case SdlWindowEvent.Resized: handler.OnResize(window, view); break;
                     case SdlWindowEvent.SizeChanged: handler.OnSizeChanged(window, view); break;

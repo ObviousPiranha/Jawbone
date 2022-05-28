@@ -9,8 +9,6 @@ namespace Piranha.Jawbone.Sdl
             bool fullscreen,
             IWindowEventHandler handler);
         
-        bool TryExpose(uint windowId);
-        
         void Run(IWindowManagerMetricHandler? windowManagerMetricHandler = null);
     }
 }

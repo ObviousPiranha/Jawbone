@@ -13,8 +13,8 @@ public interface IWindowEventHandler
     void OnMaximize(Window window) {}
     void OnShown(Window window) {}
     void OnHidden(Window window) {}
-    bool OnExpose(Window window) => false;
-    bool OnLoop(Window window) => OnExpose(window);
+    void OnExpose(Window window) {}
+    void OnLoop(Window window) {}
     void OnMove(Window window, WindowEventView eventData) {}
     void OnResize(Window window, WindowEventView eventData) {}
     void OnSizeChanged(Window window, WindowEventView eventData) {}

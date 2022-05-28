@@ -6,10 +6,12 @@ namespace Piranha.Jawbone.Sdl;
 
 public class Window
 {
+    private readonly GraphicsProvider _graphicsProvider;
+
     internal ISdl2 Sdl { get; }
-    public IOpenGl OpenGl { get; }
     internal IWindowEventHandler WindowEventHandler { get; }
     internal IntPtr WindowPointer { get; }
+    internal IntPtr ContextPointer { get; }
     internal uint WindowId { get; }
 
     public bool WasClosed { get; private set; }
@@ -33,52 +35,23 @@ public class Window
         IOpenGl openGl,
         IWindowEventHandler windowEventHandler,
         IntPtr windowPointer,
+        IntPtr contextPointer,
         uint windowId)
     {
         Sdl = sdl;
-        OpenGl = openGl;
         WindowEventHandler = windowEventHandler;
         WindowPointer = windowPointer;
+        ContextPointer = contextPointer;
         WindowId = windowId;
+
+        _graphicsProvider = new GraphicsProvider(sdl, openGl, windowPointer);
     }
 
     public void Close() => WasClosed = true;
 
-    internal bool Loop(IntPtr contextPointer)
+    public GraphicsProvider GetGraphics()
     {
-        var stopwatch = ValueStopwatch.Start();
-        Sdl.GlMakeCurrent(WindowPointer, contextPointer);
-        var sdlMakeCurrent = stopwatch.GetElapsed();
-        var sdlSwapWindow = TimeSpan.Zero;
-        var result = WindowEventHandler.OnLoop(this);
-
-        if (result)
-        {
-            stopwatch = ValueStopwatch.Start();
-            Sdl.GlSwapWindow(WindowPointer);
-            sdlSwapWindow = stopwatch.GetElapsed();
-        }
-
-        WindowEventHandler.ReportTimes(this, sdlMakeCurrent, sdlSwapWindow);
-        return result;
-    }
-
-    internal bool Expose(IntPtr contextPointer)
-    {
-        var stopwatch = ValueStopwatch.Start();
-        Sdl.GlMakeCurrent(WindowPointer, contextPointer);
-        var sdlMakeCurrent = stopwatch.GetElapsed();
-        var sdlSwapWindow = TimeSpan.Zero;
-        var result = WindowEventHandler.OnExpose(this);
-
-        if (result)
-        {
-            stopwatch = ValueStopwatch.Start();
-            Sdl.GlSwapWindow(WindowPointer);
-            sdlSwapWindow = stopwatch.GetElapsed();
-        }
-
-        WindowEventHandler.ReportTimes(this, sdlMakeCurrent, sdlSwapWindow);
-        return result;
+        Sdl.GlMakeCurrent(WindowPointer, ContextPointer);
+        return _graphicsProvider;
     }
 }
