@@ -19,6 +19,31 @@ namespace Piranha.Jawbone.Tools
             MethodAttributes.NewSlot |
             MethodAttributes.Virtual;
         
+        public static string PascalCaseToSnakeCase(string prefix, string methodName)
+        {
+            var chars = new char[prefix.Length + methodName.Length * 2];
+            prefix.AsSpan().CopyTo(chars);
+
+            int n = prefix.Length;
+
+            for (int i = 0; i < methodName.Length; ++i)
+            {
+                char c = methodName[i];
+
+                if (char.IsUpper(c))
+                {
+                    chars[n++] = '_';
+                    chars[n++] = char.ToLowerInvariant(c);
+                }
+                else
+                {
+                    chars[n++] = c;
+                }
+            }
+
+            return new string(chars, 0, n);
+        }
+        
         public static string? GetCString(IntPtr ptr)
         {
             return ptr.IsInvalid() ? null : Marshal.PtrToStringUTF8(ptr);

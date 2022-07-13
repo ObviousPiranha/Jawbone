@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Tools;
+using System;
 
 namespace Piranha.Jawbone.Stb
 {
@@ -8,7 +9,7 @@ namespace Piranha.Jawbone.Stb
     {
         public static IServiceCollection AddStb(this IServiceCollection services)
         {
-            return services.AddNativeLibrary<IStb>(
+            return services.AddNativeLibrary(
                 _ => NativeLibraryInterface.FromFile<IStb>("PiranhaNative.dll", ResolveName));
         }
 
@@ -17,7 +18,7 @@ namespace Piranha.Jawbone.Stb
             const string TtPrefix = "Stbtt";
             if (methodName.StartsWith(TtPrefix))
             {
-                return "stbtt_" + methodName.Substring(TtPrefix.Length);
+                return string.Concat("stbtt_", methodName.AsSpan(TtPrefix.Length));
             }
             else
             {

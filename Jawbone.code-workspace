@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "Piranha.SampleApplication"
+		},
+		{
+			"path": "Piranha.Sample.OpusEncoding"
 		}
 	],
 	"settings": {

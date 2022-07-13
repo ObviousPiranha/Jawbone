@@ -10,7 +10,7 @@ namespace Piranha.Jawbone.Sdl
         private static string ResolveName(string methodName)
         {
             if (methodName.StartsWith("Gl"))
-                return "SDL_GL_" + methodName.Substring(2);
+                return string.Concat("SDL_GL_", methodName.AsSpan(2));
             
             return "SDL_" + methodName;
         }

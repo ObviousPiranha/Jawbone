@@ -10,9 +10,9 @@ namespace Piranha.Jawbone.Sqlite
         public static IServiceCollection AddSqlite3(this IServiceCollection services)
         {
             return services
-                .AddSingleton<SqliteLibrary>(
+                .AddSingleton(
                     _ => new SqliteLibrary("PiranhaNative.dll"))
-                .AddSingleton<ISqlite3>(
+                .AddSingleton(
                     serviceProvider => serviceProvider.GetRequiredService<SqliteLibrary>().Library);
         }
 
