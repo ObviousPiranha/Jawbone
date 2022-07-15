@@ -11,6 +11,10 @@ public sealed class OpusDecoder : IDisposable
     public int SamplingRate { get; }
     public int Channels { get; }
 
+    public OpusDecoder(IOpus opus) : this(opus, 48000, 2)
+    {
+    }
+    
     public OpusDecoder(IOpus opus, int samplingRate, int channels)
     {
         SamplingRate = samplingRate;
@@ -68,7 +72,7 @@ public sealed class OpusDecoder : IDisposable
             data.Length,
             out pcm[0],
             frameSize,
-            0);
+            1);
         OpusException.ThrowOnError(length);
         return length;
     }

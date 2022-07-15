@@ -12,6 +12,7 @@ public interface IOpus
     int Encode(IntPtr st, in short pcm, int frameSize, out byte data, int maxDataBytes);
     int EncodeFloat(IntPtr st, in float pcm, int frameSize, out byte data, int maxDataBytes);
     void EncoderDestroy(IntPtr st);
+    int EncoderCtl(IntPtr st, int request, out int value);
     int EncoderCtl(IntPtr st, int request, int value);
 
     IntPtr DecoderCreate(int fs, int channels, out int error);

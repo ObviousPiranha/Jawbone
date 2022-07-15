@@ -1,8 +1,11 @@
+using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Bcm;
 using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sdl
 {
@@ -49,6 +52,65 @@ namespace Piranha.Jawbone.Sdl
         public static IServiceCollection AddAudioManager(this IServiceCollection services)
         {
             return services.AddSingleton<IAudioManager, AudioManager>();
+        }
+
+        public static float[] ConvertAudioToFloat(
+            this ISdl2 sdl,
+            ReadOnlySpan<short> pcm,
+            int sourceFrequency,
+            int sourceChannels,
+            int destinationFrequency,
+            int destinationChannels)
+        {
+            var stream = sdl.NewAudioStream(
+                (ushort)SdlAudio.S16Lsb,
+                (byte)sourceChannels,
+                sourceFrequency,
+                (ushort)SdlAudio.F32,
+                (byte)destinationChannels,
+                destinationFrequency);
+            
+            if (stream.IsInvalid())
+                throw new SdlException(sdl.GetError());
+            
+            try
+            {
+                // https://wiki.libsdl.org/SDL_AudioStreamPut
+                var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
+
+                if (result != 0)
+                    throw new SdlException(sdl.GetError());
+                
+                // https://wiki.libsdl.org/SDL_AudioStreamFlush
+                result = sdl.AudioStreamFlush(stream);
+
+                if (result != 0)
+                    throw new SdlException(sdl.GetError());
+                
+                var length = sdl.AudioStreamAvailable(stream);
+
+                if ((length & 3) != 0)
+                    throw new SdlException("Audio data must align to 4 bytes.");
+
+                if (0 < length)
+                {
+                    var floats = new float[length / Unsafe.SizeOf<float>()];
+                    var bytesRead = sdl.AudioStreamGet(stream, out floats[0], length);
+
+                    if (bytesRead == -1)
+                        throw new SdlException(sdl.GetError());
+                    
+                    return floats;
+                }
+                else
+                {
+                    throw new SdlException("Empty audio data.");
+                }
+            }
+            finally
+            {
+                sdl.FreeAudioStream(stream);
+            }
         }
     }
 }

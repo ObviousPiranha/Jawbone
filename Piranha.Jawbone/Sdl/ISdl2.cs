@@ -79,6 +79,7 @@ namespace Piranha.Jawbone.Sdl
         IntPtr NewAudioStream(ushort sourceFormat, byte sourceChannels, int sourceRate, ushort destinationFormat, byte destinationChannels, int destinationRate);
         void FreeAudioStream(IntPtr stream);
         int AudioStreamPut(IntPtr stream, in byte buffer, int length);
+        int AudioStreamPut(IntPtr stream, in short buffer, int length);
         int AudioStreamFlush(IntPtr stream);
         int AudioStreamAvailable(IntPtr stream);
         int AudioStreamGet(IntPtr stream, out byte buffer, int length);

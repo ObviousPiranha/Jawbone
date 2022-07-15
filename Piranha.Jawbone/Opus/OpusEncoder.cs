@@ -11,6 +11,24 @@ public sealed class OpusEncoder : IDisposable
     public int SamplingRate { get; }
     public int Channels { get; }
 
+    public int Bitrate
+    {
+        get
+        {
+            EnsureNotDestroyed();
+            var error = _opus.EncoderCtl(_encoder, Request.GetBitrate, out int bitrate);
+            OpusException.ThrowOnError(error);
+            return bitrate;
+        }
+
+        set
+        {
+            EnsureNotDestroyed();
+            var error = _opus.EncoderCtl(_encoder, Request.SetBitrate, value);
+            OpusException.ThrowOnError(error);
+        }
+    }
+
     public OpusEncoder(IOpus opus) : this(opus, 48000, 2, OpusApplication.Audio)
     {
     }
