@@ -9,7 +9,7 @@ public sealed class OpusEncoder : IDisposable
     private bool _destroyed;
 
     public int SamplingRate { get; }
-    public int Channels { get; }
+    public int ChannelCount { get; }
 
     public int Bitrate
     {
@@ -29,19 +29,15 @@ public sealed class OpusEncoder : IDisposable
         }
     }
 
-    public OpusEncoder(IOpus opus) : this(opus, 48000, 2, OpusApplication.Audio)
-    {
-    }
-
-    public OpusEncoder(IOpus opus, int samplingRate, int channels, OpusApplication application)
+    internal OpusEncoder(IOpus opus, int samplingRate, int channelCount, OpusApplication application)
     {
         SamplingRate = samplingRate;
-        Channels = channels;
+        ChannelCount = channelCount;
 
         _opus = opus;
         _encoder = _opus.EncoderCreate(
             samplingRate,
-            channels,
+            channelCount,
             (int)application,
             out var error);
 
@@ -77,7 +73,7 @@ public sealed class OpusEncoder : IDisposable
 
         // https://opus-codec.org/docs/opus_api-1.3.1/group__opus__encoder.html#ga4ae9905859cd241ef4bb5c59cd5e5309
         // For example, at 48 kHz the permitted values are 120, 240, 480, 960, 1920, and 2880.
-        var frameSize = pcm.Length / Channels;
+        var frameSize = pcm.Length / ChannelCount;
         var length = _opus.EncodeFloat(
             _encoder,
             pcm[0],
@@ -91,7 +87,7 @@ public sealed class OpusEncoder : IDisposable
     public int Encode(ReadOnlySpan<short> pcm, Span<byte> data)
     {
         EnsureNotDestroyed();
-        var frameSize = pcm.Length / Channels;
+        var frameSize = pcm.Length / ChannelCount;
         var length = _opus.Encode(
             _encoder,
             pcm[0],

@@ -4,7 +4,7 @@ using Piranha.Jawbone.Tools;
 namespace Piranha.Jawbone.Opus;
 
 // https://opus-codec.org/docs/opus_api-1.3.1/group__opus__encoder.html
-public interface IOpus
+interface IOpus
 {
     int EncoderGetSize(int channels);
     IntPtr EncoderCreate(int fs, int channels, int application, out int error);

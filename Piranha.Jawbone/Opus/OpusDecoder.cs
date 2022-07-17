@@ -9,19 +9,15 @@ public sealed class OpusDecoder : IDisposable
     private bool _destroyed;
 
     public int SamplingRate { get; }
-    public int Channels { get; }
-
-    public OpusDecoder(IOpus opus) : this(opus, 48000, 2)
-    {
-    }
+    public int ChannelCount { get; }
     
-    public OpusDecoder(IOpus opus, int samplingRate, int channels)
+    internal OpusDecoder(IOpus opus, int sampleRate, int channelCount)
     {
-        SamplingRate = samplingRate;
-        Channels = channels;
+        SamplingRate = sampleRate;
+        ChannelCount = channelCount;
 
         _opus = opus;
-        _decoder = _opus.DecoderCreate(samplingRate, channels, out var error);
+        _decoder = _opus.DecoderCreate(sampleRate, channelCount, out var error);
 
         OpusException.ThrowOnError(error);
     }
@@ -51,7 +47,7 @@ public sealed class OpusDecoder : IDisposable
 
     public int Decode(ReadOnlySpan<byte> data, Span<short> pcm, bool decodeFec = false)
     {
-        var frameSize = pcm.Length / Channels;
+        var frameSize = pcm.Length / ChannelCount;
         var length =_opus.Decode(
             _decoder,
             data[0],
@@ -65,7 +61,7 @@ public sealed class OpusDecoder : IDisposable
 
     public int Decode(ReadOnlySpan<byte> data, Span<float> pcm, bool decodeFec = false)
     {
-        var frameSize = pcm.Length / Channels;
+        var frameSize = pcm.Length / ChannelCount;
         var length = _opus.DecodeFloat(
             _decoder,
             data[0],
