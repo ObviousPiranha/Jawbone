@@ -83,6 +83,7 @@ namespace Piranha.Jawbone.Sdl
         int AudioStreamFlush(IntPtr stream);
         int AudioStreamAvailable(IntPtr stream);
         int AudioStreamGet(IntPtr stream, out byte buffer, int length);
+        int AudioStreamGet(IntPtr stream, out short buffer, int length);
         int AudioStreamGet(IntPtr stream, out float buffer, int length);
 
         IntPtr GlCreateContext(IntPtr window);

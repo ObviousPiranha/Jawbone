@@ -71,7 +71,7 @@ public sealed class OpusEncoder : IDisposable
             throw new ObjectDisposedException(nameof(OpusEncoder));
     }
 
-    public int Encode(ReadOnlySpan<float> pcm, Span<byte> packet)
+    public int Encode(ReadOnlySpan<float> pcm, Span<byte> data)
     {
         EnsureNotDestroyed();
 
@@ -82,13 +82,13 @@ public sealed class OpusEncoder : IDisposable
             _encoder,
             pcm[0],
             frameSize,
-            out packet[0],
-            packet.Length);
+            out data[0],
+            data.Length);
         OpusException.ThrowOnError(length);
         return length;
     }
 
-    public int Encode(ReadOnlySpan<short> pcm, Span<byte> packet)
+    public int Encode(ReadOnlySpan<short> pcm, Span<byte> data)
     {
         EnsureNotDestroyed();
         var frameSize = pcm.Length / Channels;
@@ -96,8 +96,8 @@ public sealed class OpusEncoder : IDisposable
             _encoder,
             pcm[0],
             frameSize,
-            out packet[0],
-            packet.Length);
+            out data[0],
+            data.Length);
         OpusException.ThrowOnError(length);
         return length;
     }

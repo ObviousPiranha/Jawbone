@@ -54,7 +54,66 @@ namespace Piranha.Jawbone.Sdl
             return services.AddSingleton<IAudioManager, AudioManager>();
         }
 
-        public static float[] ConvertAudioToFloat(
+        public static short[] ConvertAudioToInt16(
+            this ISdl2 sdl,
+            ReadOnlySpan<short> pcm,
+            int sourceFrequency,
+            int sourceChannels,
+            int destinationFrequency,
+            int destinationChannels)
+        {
+            var stream = sdl.NewAudioStream(
+                (ushort)SdlAudio.S16Lsb,
+                (byte)sourceChannels,
+                sourceFrequency,
+                (ushort)SdlAudio.S16Lsb,
+                (byte)destinationChannels,
+                destinationFrequency);
+            
+            if (stream.IsInvalid())
+                throw new SdlException(sdl.GetError());
+            
+            try
+            {
+                // https://wiki.libsdl.org/SDL_AudioStreamPut
+                var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
+
+                if (result != 0)
+                    throw new SdlException(sdl.GetError());
+                
+                // https://wiki.libsdl.org/SDL_AudioStreamFlush
+                result = sdl.AudioStreamFlush(stream);
+
+                if (result != 0)
+                    throw new SdlException(sdl.GetError());
+                
+                var length = sdl.AudioStreamAvailable(stream);
+
+                if ((length & 1) != 0)
+                    throw new SdlException("Audio data must align to 2 bytes.");
+
+                if (0 < length)
+                {
+                    var shorts = new short[length / Unsafe.SizeOf<short>()];
+                    var bytesRead = sdl.AudioStreamGet(stream, out shorts[0], length);
+
+                    if (bytesRead == -1)
+                        throw new SdlException(sdl.GetError());
+                    
+                    return shorts;
+                }
+                else
+                {
+                    throw new SdlException("Empty audio data.");
+                }
+            }
+            finally
+            {
+                sdl.FreeAudioStream(stream);
+            }
+        }
+
+        public static float[] ConvertAudioToFloat32(
             this ISdl2 sdl,
             ReadOnlySpan<short> pcm,
             int sourceFrequency,

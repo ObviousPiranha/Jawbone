@@ -49,7 +49,7 @@ public sealed class OpusDecoder : IDisposable
             throw new ObjectDisposedException(nameof(OpusEncoder));
     }
 
-    public int Decode(ReadOnlySpan<byte> data, Span<short> pcm)
+    public int Decode(ReadOnlySpan<byte> data, Span<short> pcm, bool decodeFec = false)
     {
         var frameSize = pcm.Length / Channels;
         var length =_opus.Decode(
@@ -58,12 +58,12 @@ public sealed class OpusDecoder : IDisposable
             data.Length,
             out pcm[0],
             frameSize,
-            0);
+            Convert.ToInt32(decodeFec));
         OpusException.ThrowOnError(length);
         return length;
     }
 
-    public int Decode(ReadOnlySpan<byte> data, Span<float> pcm)
+    public int Decode(ReadOnlySpan<byte> data, Span<float> pcm, bool decodeFec = false)
     {
         var frameSize = pcm.Length / Channels;
         var length = _opus.DecodeFloat(
@@ -72,7 +72,7 @@ public sealed class OpusDecoder : IDisposable
             data.Length,
             out pcm[0],
             frameSize,
-            1);
+            Convert.ToInt32(decodeFec));
         OpusException.ThrowOnError(length);
         return length;
     }
