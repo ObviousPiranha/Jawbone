@@ -42,7 +42,7 @@ public sealed class OpusDecoder : IDisposable
     private void EnsureNotDestroyed()
     {
         if (_destroyed)
-            throw new ObjectDisposedException(nameof(OpusEncoder));
+            throw new ObjectDisposedException(nameof(OpusDecoder));
     }
 
     public int Decode(ReadOnlySpan<byte> data, Span<short> pcm, bool decodeFec = false)

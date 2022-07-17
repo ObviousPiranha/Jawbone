@@ -9,6 +9,7 @@ public sealed class OpusProvider : IDisposable
     // TODO: Refactor to properly locate lib folder.
     private static readonly string[] LibraryPaths = new string[]
     {
+        "opus.dll",
         "/usr/lib/x86_64-linux-gnu/libopus.so.0",
         "/usr/lib/libopus.so"
     };

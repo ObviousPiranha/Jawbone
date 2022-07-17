@@ -184,7 +184,7 @@ namespace Piranha.Jawbone.Tools
 
         private readonly IntPtr _handle;
 
-        public NativeLibraryInterface(
+        internal NativeLibraryInterface(
             T library,
             IntPtr handle)
         {
