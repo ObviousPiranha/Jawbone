@@ -9,7 +9,7 @@ using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Sample.OpusEncoding;
 
-static class Program
+class Program
 {
     static void EncodeAndThenDecode()
     {
@@ -41,8 +41,9 @@ static class Program
         var sdl = serviceProvider.GetRequiredService<ISdl2>();
         var stb = serviceProvider.GetRequiredService<IStb>();
         var opusProvider = serviceProvider.GetRequiredService<OpusProvider>();
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         using var encoder = opusProvider.CreateEncoder();
-        Console.WriteLine("Encoder bitrate: " + encoder.Bitrate);
+        logger.LogInformation("Encoder bitrate: {0}", encoder.Bitrate);
         var oggBytes = File.ReadAllBytes("../Piranha.SampleApplication/crunch.ogg");
         int oggSampleCount = stb.StbVorbisDecodeMemory(
             oggBytes[0],
@@ -66,13 +67,13 @@ static class Program
         var debugView = opusBuffer.AsSpan(opusLength - 4); // Just making sure it becomes all zero after the end.
 
         var encodedWord = opusLength == 1 ? "byte" : "bytes";
-        Console.WriteLine($"Encoded to {opusLength} {encodedWord}.");
+        logger.LogInformation("Encoded to {0} {1}.", opusLength, encodedWord);
 
         using var decoder = opusProvider.CreateDecoder();
         var opusDecoded = new short[pcm.Length];
         var opusDecodedSampleCount = decoder.Decode(opusEncoded, opusDecoded, true);
         var decodedWord = opusDecodedSampleCount == 1 ? "sample" : "samples";
-        Console.WriteLine($"Decoded to {opusDecodedSampleCount} {decodedWord}.");
+        logger.LogInformation("Decoded to {0} {1}.", opusDecodedSampleCount, decodedWord);
         stb.PiranhaFree(oggBuffer);
     }
 
