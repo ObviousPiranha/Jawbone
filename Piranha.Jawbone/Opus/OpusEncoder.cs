@@ -2,6 +2,7 @@ using System;
 
 namespace Piranha.Jawbone.Opus;
 
+// https://opus-codec.org/docs/opus_api-1.3.1/group__opus__encoder.html
 public sealed class OpusEncoder : IDisposable
 {
     private readonly IOpus _opus;

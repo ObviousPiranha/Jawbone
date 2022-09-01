@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
@@ -57,7 +56,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
             _device = _sdl.OpenAudioDevice(null, 0, audioSpec, IntPtr.Zero, 0);
 
             if (_device == 0)
-                throw new SdlException(_sdl.GetError());
+                _sdl.ThrowException();
         }
         catch
         {
@@ -94,7 +93,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
             Frequency);
         
         if (stream.IsInvalid())
-            throw new SdlException(_sdl.GetError());
+            _sdl.ThrowException();
         
         try
         {
@@ -102,13 +101,13 @@ public sealed class AudioManager : IAudioManager, IDisposable
             var result = _sdl.AudioStreamPut(stream, data[0], data.Length);
 
             if (result != 0)
-                throw new SdlException(_sdl.GetError());
+                _sdl.ThrowException();
             
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = _sdl.AudioStreamFlush(stream);
 
             if (result != 0)
-                throw new SdlException(_sdl.GetError());
+                _sdl.ThrowException();
             
             var length = _sdl.AudioStreamAvailable(stream);
 
@@ -121,7 +120,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
                 var bytesRead = _sdl.AudioStreamGet(stream, out floats[0], length);
 
                 if (bytesRead == -1)
-                    throw new SdlException(_sdl.GetError());
+                    _sdl.ThrowException();
                 
                 lock (_lock)
                 {

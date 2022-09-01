@@ -54,6 +54,12 @@ namespace Piranha.Jawbone.Sdl
             return services.AddSingleton<IAudioManager, AudioManager>();
         }
 
+        public static void ThrowException(this ISdl2 sdl)
+        {
+            var message = sdl.GetError();
+            throw new SdlException(message);
+        }
+
         public static short[] ConvertAudioToInt16(
             this ISdl2 sdl,
             ReadOnlySpan<short> pcm,
@@ -71,7 +77,7 @@ namespace Piranha.Jawbone.Sdl
                 destinationFrequency);
             
             if (stream.IsInvalid())
-                throw new SdlException(sdl.GetError());
+                sdl.ThrowException();
             
             try
             {
@@ -79,13 +85,13 @@ namespace Piranha.Jawbone.Sdl
                 var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
                 if (result != 0)
-                    throw new SdlException(sdl.GetError());
+                    sdl.ThrowException();
                 
                 // https://wiki.libsdl.org/SDL_AudioStreamFlush
                 result = sdl.AudioStreamFlush(stream);
 
                 if (result != 0)
-                    throw new SdlException(sdl.GetError());
+                    sdl.ThrowException();
                 
                 var length = sdl.AudioStreamAvailable(stream);
 
@@ -98,7 +104,7 @@ namespace Piranha.Jawbone.Sdl
                     var bytesRead = sdl.AudioStreamGet(stream, out shorts[0], length);
 
                     if (bytesRead == -1)
-                        throw new SdlException(sdl.GetError());
+                        sdl.ThrowException();
                     
                     return shorts;
                 }
@@ -130,7 +136,7 @@ namespace Piranha.Jawbone.Sdl
                 destinationFrequency);
             
             if (stream.IsInvalid())
-                throw new SdlException(sdl.GetError());
+                sdl.ThrowException();
             
             try
             {
@@ -138,13 +144,13 @@ namespace Piranha.Jawbone.Sdl
                 var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
                 if (result != 0)
-                    throw new SdlException(sdl.GetError());
+                    sdl.ThrowException();
                 
                 // https://wiki.libsdl.org/SDL_AudioStreamFlush
                 result = sdl.AudioStreamFlush(stream);
 
                 if (result != 0)
-                    throw new SdlException(sdl.GetError());
+                    sdl.ThrowException();
                 
                 var length = sdl.AudioStreamAvailable(stream);
 
@@ -157,7 +163,7 @@ namespace Piranha.Jawbone.Sdl
                     var bytesRead = sdl.AudioStreamGet(stream, out floats[0], length);
 
                     if (bytesRead == -1)
-                        throw new SdlException(sdl.GetError());
+                        sdl.ThrowException();
                     
                     return floats;
                 }

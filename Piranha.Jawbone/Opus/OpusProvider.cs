@@ -41,20 +41,25 @@ public sealed class OpusProvider : IDisposable
         _native.Dispose();
     }
 
-    public OpusEncoder CreateEncoder() => CreateEncoder(Default.SampleRate, Default.ChannelCount, OpusApplication.Audio);
-
     public OpusEncoder CreateEncoder(
-        int sampleRate,
-        int channelCount,
-        OpusApplication application)
+        int sampleRate = Default.SampleRate,
+        int channelCount = Default.ChannelCount,
+        OpusApplication application = Default.Application)
     {
-        return new OpusEncoder(_native.Library, sampleRate, channelCount, application);
+        return new OpusEncoder(
+            _native.Library,
+            sampleRate,
+            channelCount,
+            application);
     }
 
-    public OpusDecoder CreateDecoder() => CreateDecoder(Default.SampleRate, Default.ChannelCount);
-
-    public OpusDecoder CreateDecoder(int sampleRate, int channelCount)
+    public OpusDecoder CreateDecoder(
+        int sampleRate = Default.SampleRate,
+        int channelCount = Default.ChannelCount)
     {
-        return new OpusDecoder(_native.Library, sampleRate, channelCount);
+        return new OpusDecoder(
+            _native.Library,
+            sampleRate,
+            channelCount);
     }
 }

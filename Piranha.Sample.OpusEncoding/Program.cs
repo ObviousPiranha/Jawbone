@@ -11,7 +11,7 @@ namespace Piranha.Sample.OpusEncoding;
 
 class Program
 {
-    static void EncodeAndThenDecode()
+    static ServiceProvider CreateServiceProvider()
     {
         var services = new ServiceCollection();
         services
@@ -36,8 +36,13 @@ class Program
             ValidateOnBuild = true,
             ValidateScopes = true
         };
-        
-        using var serviceProvider = services.BuildServiceProvider(options);
+
+        return services.BuildServiceProvider(options);
+    }
+    
+    static void EncodeAndThenDecode()
+    {
+        using var serviceProvider = CreateServiceProvider();
         var sdl = serviceProvider.GetRequiredService<ISdl2>();
         var stb = serviceProvider.GetRequiredService<IStb>();
         var opusProvider = serviceProvider.GetRequiredService<OpusProvider>();
@@ -70,18 +75,46 @@ class Program
         logger.LogInformation("Encoded to {0} {1}.", opusLength, encodedWord);
 
         using var decoder = opusProvider.CreateDecoder();
-        var opusDecoded = new short[pcm.Length];
-        var opusDecodedSampleCount = decoder.Decode(opusEncoded, opusDecoded, true);
+        var opusDecoded = new short[pcm.Length * 16];
+        var opusDecodedSampleCount = decoder.Decode(opusEncoded, opusDecoded);
         var decodedWord = opusDecodedSampleCount == 1 ? "sample" : "samples";
         logger.LogInformation("Decoded to {0} {1}.", opusDecodedSampleCount, decodedWord);
         stb.PiranhaFree(oggBuffer);
     }
 
+    static short[] ReadAllShorts(string path)
+    {
+        var bytes = File.ReadAllBytes(path);
+        if ((bytes.Length & 1) == 1)
+            throw new Exception("Odd byte count in " + path);
+        var result = new short[bytes.Length / 2];
+        Buffer.BlockCopy(bytes, 0, result, 0, bytes.Length);
+        return result;
+    }
+
+    static void TestVector(string inputFile, string outputFile)
+    {
+        // https://chromium.googlesource.com/chromium/deps/opus/+/1.1.1/doc/trivial_example.c
+        using var serviceProvider = CreateServiceProvider();
+        var opusProvider = serviceProvider.GetRequiredService<OpusProvider>();
+
+        var inputBytes = File.ReadAllBytes(inputFile);
+        var outputBytes = File.ReadAllBytes(outputFile);
+        var buffer = new short[outputBytes.Length];
+
+        var decoder = opusProvider.CreateDecoder();
+
+        var n = decoder.Decode(inputBytes, buffer);
+    }
+    
     static void Main(string[] args)
     {
         try
         {
             EncodeAndThenDecode();
+
+            // if (1 < args.Length)
+            //     TestVector(args[0], args[1]);
         }
         catch (Exception ex)
         {
