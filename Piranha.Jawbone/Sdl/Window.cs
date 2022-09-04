@@ -30,6 +30,8 @@ public class Window
         }
     }
 
+    public int DisplayIndex => Sdl.GetWindowDisplayIndex(WindowPointer);
+
     internal Window(
         ISdl2 sdl,
         IOpenGl openGl,
@@ -53,5 +55,23 @@ public class Window
     {
         Sdl.GlMakeCurrent(WindowPointer, ContextPointer);
         return _graphicsProvider;
+    }
+
+    public void ToggleFullScreen()
+    {
+        // https://superuser.com/a/1251294
+        // http://lists.libsdl.org/pipermail/commits-libsdl.org/2018-January/002542.html
+        // https://discourse.libsdl.org/t/cannot-remove-the-window-title-bar-and-borders/25615
+        // https://discourse.libsdl.org/t/true-borderless-fullscreen-behaviour/24622
+
+        int displayIndex = Sdl.GetWindowDisplayIndex(WindowPointer);
+        if (displayIndex < 0)
+            throw new SdlException("error getting window display");
+        
+        if (Sdl.GetDisplayUsableBounds(displayIndex, out var rect) != 0)
+            throw new SdlException("error getting usable bounds");
+
+        var flag = Sdl.GetWindowFlags(WindowPointer) & SdlWindow.FullScreenDesktop;
+        Sdl.SetWindowFullscreen(WindowPointer, flag ^ SdlWindow.FullScreenDesktop);
     }
 }

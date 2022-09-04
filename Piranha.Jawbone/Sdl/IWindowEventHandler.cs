@@ -28,6 +28,5 @@ public interface IWindowEventHandler
     void OnClose(Window window) {}
     void OnQuit(Window window) {}
     void OnSecond(Window window) {}
-    void ReportTimes(Window window, TimeSpan sdlMakeCurrent, TimeSpan sdlSwapWindow) {}
     void OnDestroyingWindow(Window window) {}
 }
