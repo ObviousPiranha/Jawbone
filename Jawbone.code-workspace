@@ -14,6 +14,12 @@
 		},
 		{
 			"path": "Piranha.Sample.OpusEncoding"
+		},
+		{
+			"path": "Piranha.Jawbone.Benchmark"
+		},
+		{
+			"path": "Piranha.Sandbox"
 		}
 	],
 	"settings": {

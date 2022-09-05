@@ -7,3 +7,5 @@ obj/
 *.dll
 *.bin
 *.so
+
+BenchmarkDotNet.Artifacts/
