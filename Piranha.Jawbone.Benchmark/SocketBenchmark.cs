@@ -8,10 +8,10 @@ using Piranha.Jawbone.Net;
 
 namespace Piranha.Jawbone.Benchmark
 {
-    [MemoryDiagnoser]
+    [MemoryDiagnoser(false)]
     public class SocketBenchmark
     {
-        private const int Port = 9999;
+        private const int Port = 11111;
 
         private static readonly Endpoint<Address32> JawboneDestination = new Endpoint<Address32>(Address32.Local, Port);
         private static readonly IPEndPoint DotNetDestination = new IPEndPoint(IPAddress.Loopback, Port);
@@ -36,13 +36,13 @@ namespace Piranha.Jawbone.Benchmark
                 ValidateScopes = true
             };
 
-            serviceCollection.AddNetworking();
+            serviceCollection.AddSocketProvider();
 
             _serviceProvider = serviceCollection.BuildServiceProvider(options);
-            var networkProvider = _serviceProvider.GetRequiredService<NetworkProvider>();
+            var socketProvider = _serviceProvider.GetRequiredService<SocketProvider>();
 
-            _serverSocket = networkProvider.CreateAndBindUdpV4Socket(new Endpoint<Address32>(default, Port));
-            _jawboneClientSocket = networkProvider.CreateAndBindUdpV4Socket(default);
+            _serverSocket = socketProvider.CreateAndBindUdpV4Socket(new Endpoint<Address32>(default, Port));
+            _jawboneClientSocket = socketProvider.CreateAndBindUdpV4Socket(default);
             _dotNetClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _dotNetClientSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
             _random.NextBytes(_sendBuffer);
@@ -62,7 +62,7 @@ namespace Piranha.Jawbone.Benchmark
         {
             int n = _serverSocket.Receive(_receiveBuffer, out var origin);
             if (n != _sendBuffer.Length)
-                throw new Exception("Hey, I didn't get the right number of bytes.");
+                throw new Exception($"Hey, I didn't get the right number of bytes. Expected {_sendBuffer.Length} Actual {n}");
             
             if (!_receiveBuffer.AsSpan(0, n).SequenceEqual(_sendBuffer))
                 throw new Exception("They didn't match.");

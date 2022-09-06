@@ -41,5 +41,7 @@ class Program
         Dump(info1);
         var info2 = socketProvider.GetAddressInfo("thebuzzsaw.duckdns.org", null);
         Dump(info2);
+        var info3 = socketProvider.GetAddressInfo("192.168.50.1", "8080");
+        Dump(info3);
     }
 }

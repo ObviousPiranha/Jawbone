@@ -37,7 +37,7 @@ public sealed class UdpSocket : IDisposable
             _handle,
             message[0],
             message.Length,
-            destination.Address.RawAddress,
+            destination.Address,
             destination.RawPort);
         
         return result;
@@ -49,12 +49,12 @@ public sealed class UdpSocket : IDisposable
             _handle,
             out buffer[0],
             buffer.Length,
-            out var rawAddress,
+            out var address,
             out var rawPort);
         
         origin = new Endpoint<Address32>
         {
-            Address = new Address32 { RawAddress = rawAddress },
+            Address = address,
             RawPort = rawPort
         };
 
@@ -65,7 +65,7 @@ public sealed class UdpSocket : IDisposable
     {
         var result = JawboneNetworking.GetV4SocketName(
             _handle,
-            out var rawAddress,
+            out var address,
             out var rawPort);
 
         if (result != 0)
@@ -75,7 +75,7 @@ public sealed class UdpSocket : IDisposable
 
         return new Endpoint<Address32>
         {
-            Address = new Address32 { RawAddress = rawAddress },
+            Address = address,
             RawPort = rawPort
         };
     }

@@ -20,21 +20,21 @@ public static class JawboneNetworking
     [DllImport(Library, EntryPoint = "jawboneGetV4SocketName", CallingConvention = CallingConvention.Cdecl)]
     public static extern int GetV4SocketName(
         in long inSocket,
-        out uint outAddress,
+        out Address32 outAddress,
         out ushort outPort);
     [DllImport(Library, EntryPoint = "jawboneSendToV4", CallingConvention = CallingConvention.Cdecl)]
     public static extern int SendToV4(
         in long inSocket,
         in byte inBuffer,
         int bufferLength,
-        uint address,
+        Address32 address,
         ushort port);
     [DllImport(Library, EntryPoint = "jawboneReceiveFromV4", CallingConvention = CallingConvention.Cdecl)]
     public static extern int ReceiveFromV4(
         in long inSocket,
         out byte outBuffer,
         int bufferLength,
-        out uint outAddress,
+        out Address32 outAddress,
         out ushort outPort);
     [DllImport(Library, EntryPoint = "jawboneCloseSocket", CallingConvention = CallingConvention.Cdecl)]
     public static extern void CloseSocket(in long closingSocket);
