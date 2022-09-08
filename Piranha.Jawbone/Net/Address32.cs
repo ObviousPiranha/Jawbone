@@ -20,14 +20,13 @@ public readonly struct Address32 : IAddress<Address32>
         values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
     }
 
-    public Address32(byte a, byte b, byte c, byte d)
+    public Address32(byte a, byte b, byte c, byte d) : this()
     {
-        Span<byte> bytes = stackalloc byte[4];
+        var bytes = Address.GetSpanU8(this);
         bytes[3] = d;
         bytes[2] = c;
         bytes[1] = b;
         bytes[0] = a;
-        RawAddress = BitConverter.ToUInt32(bytes);
     }
 
     public bool Equals(Address32 other) => RawAddress == other.RawAddress;

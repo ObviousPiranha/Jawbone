@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,7 +12,23 @@ public readonly struct Address128 : IAddress<Address128>
 {
     public static Address128 Create(params byte[] values) => new Address128(values);
 
-    public static readonly Address128 Local = Create(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1);
+    public static Address128 Create(SpanAction<byte> action)
+    {
+        var result = default(Address128);
+        var span = Address.GetSpanU8(result);
+        action.Invoke(span);
+        return result;
+    }
+
+    public static Address128 Create<TState>(TState state, SpanAction<byte, TState> action)
+    {
+        var result = default(Address128);
+        var span = Address.GetSpanU8(result);
+        action.Invoke(span, state);
+        return result;
+    }
+
+    public static readonly Address128 Local = Create(span => span[15] = 1);
 
     private readonly uint _a;
     private readonly uint _b;

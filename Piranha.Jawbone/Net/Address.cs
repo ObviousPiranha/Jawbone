@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net;
 
+public delegate void SpanAction<T>(Span<T> span);
+
 static class Address
 {
     public static Span<byte> GetSpanU8<T>(in T item) where T : unmanaged

@@ -12,8 +12,11 @@ public sealed class SocketProvider : IDisposable
         JawboneNetworking.StartNetworking();
     }
     
-    public UdpSocket CreateAndBindUdpV4Socket(Endpoint<Address32> endpoint)
-        => new UdpSocket(endpoint);
+    public UdpSocket32 CreateAndBindUdpSocket32(Endpoint<Address32> endpoint)
+        => new UdpSocket32(endpoint);
+    
+    public UdpSocket128 CreateAndBindUdpSocket128(Endpoint<Address128> endpoint)
+        => new UdpSocket128(endpoint);
     
     public AddressInfo GetAddressInfo(string? node, string? service)
     {

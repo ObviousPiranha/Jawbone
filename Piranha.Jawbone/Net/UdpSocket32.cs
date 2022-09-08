@@ -2,14 +2,14 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public sealed class UdpSocket : IDisposable
+public sealed class UdpSocket32 : IDisposable
 {
     private readonly long _handle;
 
-    internal UdpSocket(Endpoint<Address32> endpoint)
+    internal UdpSocket32(Endpoint<Address32> endpoint)
     {
         JawboneNetworking.CreateAndBindUdpV4Socket(
-            endpoint.Address.RawAddress,
+            endpoint.Address,
             endpoint.RawPort,
             out _handle,
             out var socketError,

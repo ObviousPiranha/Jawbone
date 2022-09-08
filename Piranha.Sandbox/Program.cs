@@ -25,9 +25,9 @@ class Program
         Console.WriteLine(v6);
 
         Console.WriteLine(new Address128());
+        Console.WriteLine(Address128.Local);
         Console.WriteLine(Address128.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
         Console.WriteLine(Address128.Create(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
-        Console.WriteLine(Address128.Create(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1));
         Console.WriteLine(Address128.Create(0,0,0,0,1,1));
         Console.WriteLine(Address128.Create(0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0));
 
@@ -43,5 +43,34 @@ class Program
         Dump(info2);
         var info3 = socketProvider.GetAddressInfo("192.168.50.1", "8080");
         Dump(info3);
+
+        Console.WriteLine("yo yo yo");
+        var clientInfo = socketProvider.GetAddressInfo(null, null);
+        Dump(clientInfo);
+        
+        var serverInfo = socketProvider.GetAddressInfo(null, "12345");
+        Dump(serverInfo);
+
+        using var myServer = socketProvider.CreateAndBindUdpSocket128(serverInfo.V6[0]);
+        Console.WriteLine("Server bound!");
+        var serverEndpoint = myServer.GetEndpoint();
+        Console.WriteLine(serverEndpoint);
+
+        using var myClient = socketProvider.CreateAndBindUdpSocket128(default);
+        Console.Write("Client bound!");
+        Console.WriteLine(myClient.GetEndpoint());
+        
+        var message = new byte[] { 0xec, 0xc0, 0xfa, 0x11 };
+        myClient.Send(message, serverEndpoint);
+
+        var buffer = new byte[1024];
+        var n = myServer.Receive(buffer, out var origin);
+        Console.WriteLine($"Received {n} bytes!");
+
+        if (buffer.AsSpan(0, n).SequenceEqual(message))
+            Console.WriteLine("They match!");
+        else
+            Console.WriteLine("They do not match...");
     }
 }
+

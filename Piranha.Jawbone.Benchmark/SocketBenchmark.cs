@@ -21,8 +21,8 @@ namespace Piranha.Jawbone.Benchmark
         private readonly byte[] _receiveBuffer = new byte[2048];
 
         private ServiceProvider _serviceProvider;
-        private UdpSocket _serverSocket;
-        private UdpSocket _jawboneClientSocket;
+        private UdpSocket32 _serverSocket;
+        private UdpSocket32 _jawboneClientSocket;
         private Socket _dotNetClientSocket;
 
         [GlobalSetup]
