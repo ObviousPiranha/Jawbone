@@ -2,7 +2,7 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public sealed class UdpSocket32 : IDisposable
+public sealed class UdpSocket32 : IUdpSocket<Address32>
 {
     private readonly long _handle;
 
@@ -24,6 +24,11 @@ public sealed class UdpSocket32 : IDisposable
         {
             throw new SocketException("Socket bind error: " + bindError);
         }
+    }
+
+    public void Shutdown()
+    {
+        JawboneNetworking.ShutdownSocket(_handle);
     }
 
     public void Dispose()

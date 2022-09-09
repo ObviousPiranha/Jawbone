@@ -62,6 +62,8 @@ public static class JawboneNetworking
         int bufferLength,
         out Address128 outAddress,
         out ushort outPort);
+    [DllImport(Library, EntryPoint = "jawboneShutdownSocket", CallingConvention = CallingConvention.Cdecl)]
+    public static extern void ShutdownSocket(in long targetSocket);
     [DllImport(Library, EntryPoint = "jawboneCloseSocket", CallingConvention = CallingConvention.Cdecl)]
     public static extern void CloseSocket(in long closingSocket);
     [DllImport(Library, EntryPoint = "jawboneGetAddressInfo", CallingConvention = CallingConvention.Cdecl)]

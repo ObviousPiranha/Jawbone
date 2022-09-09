@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
@@ -71,6 +72,24 @@ class Program
             Console.WriteLine("They match!");
         else
             Console.WriteLine("They do not match...");
+        
+        var thread = new Thread(
+            () =>
+            {
+                Thread.Sleep(3000);
+                Console.WriteLine("Shutting down server...");
+                myServer.Shutdown();
+                Console.WriteLine("Shutdown issued.");
+            });
+        
+        thread.Start();
+
+
+        Console.WriteLine("Receiving one more time...");
+        n = myServer.Receive(buffer, out origin);
+        Console.WriteLine("Nevermind! " + n);
+        thread.Join();
+        Console.WriteLine("Bye");
     }
 }
 
