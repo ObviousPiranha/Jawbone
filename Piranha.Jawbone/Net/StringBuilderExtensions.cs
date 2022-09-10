@@ -65,17 +65,17 @@ public static class StringBuilderExtensions
         return builder;
     }
 
-    public static StringBuilder AppendAddress<T>(
+    public static StringBuilder AppendAddress<TAddress>(
         this StringBuilder builder,
-        T address) where T : unmanaged, IAddress<T>
+        TAddress address) where TAddress : unmanaged, IAddress<TAddress>
     {
         address.AppendTo(builder);
         return builder;
     }
 
-    public static StringBuilder AppendEndpoint<T>(
+    public static StringBuilder AppendEndpoint<TAddress>(
         this StringBuilder builder,
-        Endpoint<T> endpoint) where T : unmanaged, IAddress<T>
+        Endpoint<TAddress> endpoint) where TAddress : unmanaged, IAddress<TAddress>
     {
         return builder
             .AppendAddress(endpoint.Address)

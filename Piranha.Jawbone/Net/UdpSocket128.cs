@@ -48,14 +48,20 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
         return result;
     }
 
-    public int Receive(Span<byte> buffer, out Endpoint<Address128> origin)
+    public int Receive(Span<byte> buffer, out Endpoint<Address128> origin, TimeSpan timeout)
     {
+        var milliseconds = (int)(timeout.Ticks / TimeSpan.TicksPerMillisecond);
         var result = JawboneNetworking.ReceiveFromV6(
             _handle,
             out buffer[0],
             buffer.Length,
             out var address,
-            out var rawPort);
+            out var rawPort,
+            out var errorCode,
+            milliseconds);
+        
+        if (errorCode != 0)
+            throw new SocketException("Error on receive: " + errorCode);
         
         origin = new Endpoint<Address128>
         {

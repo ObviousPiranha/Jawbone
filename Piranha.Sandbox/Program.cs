@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
@@ -46,6 +46,49 @@ class Program
         Dump(info3);
 
         Console.WriteLine("yo yo yo");
+        // TryTimeout(socketProvider);
+        TryOutV6(socketProvider);
+    }
+
+    static void TryTimeout(SocketProvider socketProvider)
+    {
+        var clientInfo = socketProvider.GetAddressInfo(null, null);
+        Dump(clientInfo);
+        
+        var serverInfo = socketProvider.GetAddressInfo(null, "12345");
+        Dump(serverInfo);
+
+        using var myServer = socketProvider.CreateAndBindUdpSocket32(serverInfo.V4[0]);
+        Console.WriteLine("Server bound!");
+        var serverEndpoint = myServer.GetEndpoint();
+        Console.WriteLine(serverEndpoint);
+
+        using var myClient = socketProvider.CreateAndBindUdpSocket32(default);
+        Console.Write("Client bound!");
+        Console.WriteLine(myClient.GetEndpoint());
+        
+        var message = new byte[] { 0xec, 0xc0, 0xfa, 0x11 };
+        myClient.Send(message, serverEndpoint);
+
+        var buffer = new byte[1024];
+        var n = myServer.Receive(buffer, out var origin, TimeSpan.FromSeconds(1));
+        Console.WriteLine($"Received {n} bytes!");
+
+        if (buffer.AsSpan(0, n).SequenceEqual(message))
+            Console.WriteLine("They match!");
+        else
+            Console.WriteLine("They do not match...");
+        
+        Console.WriteLine("One more time...");
+        var stopwatch = Stopwatch.StartNew();
+        n = myServer.Receive(buffer, out origin, TimeSpan.FromSeconds(2));
+        Console.WriteLine(stopwatch.Elapsed);
+        Console.WriteLine(origin);
+        Console.WriteLine("Bye");
+    }
+
+    static void TryOutV6(SocketProvider socketProvider)
+    {
         var clientInfo = socketProvider.GetAddressInfo(null, null);
         Dump(clientInfo);
         
@@ -65,7 +108,7 @@ class Program
         myClient.Send(message, serverEndpoint);
 
         var buffer = new byte[1024];
-        var n = myServer.Receive(buffer, out var origin);
+        var n = myServer.Receive(buffer, out var origin, TimeSpan.Zero);
         Console.WriteLine($"Received {n} bytes!");
 
         if (buffer.AsSpan(0, n).SequenceEqual(message))
@@ -73,22 +116,6 @@ class Program
         else
             Console.WriteLine("They do not match...");
         
-        var thread = new Thread(
-            () =>
-            {
-                Thread.Sleep(3000);
-                Console.WriteLine("Shutting down server...");
-                myServer.Shutdown();
-                Console.WriteLine("Shutdown issued.");
-            });
-        
-        thread.Start();
-
-
-        Console.WriteLine("Receiving one more time...");
-        n = myServer.Receive(buffer, out origin);
-        Console.WriteLine("Nevermind! " + n);
-        thread.Join();
         Console.WriteLine("Bye");
     }
 }

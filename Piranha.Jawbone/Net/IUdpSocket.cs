@@ -7,9 +7,14 @@ public interface IUdpSocket : IDisposable
     void Shutdown();
 }
 
-public interface IUdpSocket<T> : IUdpSocket where T : unmanaged, IAddress<T>
+public interface IUdpSocket<TAddress> : IUdpSocket where TAddress : unmanaged, IAddress<TAddress>
 {
-    int Send(ReadOnlySpan<byte> message, Endpoint<T> destination);
-    int Receive(Span<byte> buffer, out Endpoint<T> origin);
-    Endpoint<T> GetEndpoint();
+    int Send(
+        ReadOnlySpan<byte> message,
+        Endpoint<TAddress> destination);
+    int Receive(
+        Span<byte> buffer,
+        out Endpoint<TAddress> origin,
+        TimeSpan timeout);
+    Endpoint<TAddress> GetEndpoint();
 }

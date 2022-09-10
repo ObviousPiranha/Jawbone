@@ -48,14 +48,23 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         return result;
     }
 
-    public int Receive(Span<byte> buffer, out Endpoint<Address32> origin)
+    public int Receive(
+        Span<byte> buffer,
+        out Endpoint<Address32> origin,
+        TimeSpan timeout)
     {
+        var milliseconds = (int)(timeout.Ticks / TimeSpan.TicksPerMillisecond);
         var result = JawboneNetworking.ReceiveFromV4(
             _handle,
             out buffer[0],
             buffer.Length,
             out var address,
-            out var rawPort);
+            out var rawPort,
+            out var errorCode,
+            milliseconds);
+        
+        if (errorCode != 0)
+            throw new SocketException("Error on receive: " + errorCode);
         
         origin = new Endpoint<Address32>
         {
@@ -74,9 +83,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             out var rawPort);
 
         if (result != 0)
-        {
             throw new SocketException("Failed to get socket name: " + result);
-        }
 
         return new Endpoint<Address32>
         {

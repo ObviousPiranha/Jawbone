@@ -9,8 +9,6 @@ namespace Piranha.Jawbone.Net;
 public readonly struct Address32 : IAddress<Address32>
 {
     public static readonly Address32 Local = new Address32(127, 0, 0, 1);
-
-    public static Address32 Create(params byte[] values) => new Address32(values);
     
     public readonly uint RawAddress { get; init; }
 

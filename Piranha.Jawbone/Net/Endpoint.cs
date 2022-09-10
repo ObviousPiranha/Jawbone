@@ -5,7 +5,7 @@ using System.Text;
 namespace Piranha.Jawbone.Net;
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Endpoint<T> : IEquatable<Endpoint<T>> where T : unmanaged, IAddress<T>
+public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>> where TAddress : unmanaged, IAddress<TAddress>
 {
     private static void ValidatePort(int port)
     {
@@ -17,7 +17,7 @@ public readonly struct Endpoint<T> : IEquatable<Endpoint<T>> where T : unmanaged
         }
     }
 
-    public readonly T Address { get; init; }
+    public readonly TAddress Address { get; init; }
     public readonly ushort RawPort { get; init; }
     public readonly int Port
     {
@@ -29,14 +29,14 @@ public readonly struct Endpoint<T> : IEquatable<Endpoint<T>> where T : unmanaged
         }
     }
 
-    public Endpoint(T address, int port) : this()
+    public Endpoint(TAddress address, int port) : this()
     {
         Address = address;
         Port = port;
     }
 
-    public bool Equals(Endpoint<T> other) => Address.Equals(other.Address) && RawPort == other.RawPort;
-    public override bool Equals(object? obj) => obj is Endpoint<T> other && Equals(other);
+    public bool Equals(Endpoint<TAddress> other) => Address.Equals(other.Address) && RawPort == other.RawPort;
+    public override bool Equals(object? obj) => obj is Endpoint<TAddress> other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(Address, RawPort);
     public override string? ToString()
     {
@@ -50,6 +50,6 @@ public readonly struct Endpoint<T> : IEquatable<Endpoint<T>> where T : unmanaged
         return ((n & 0xff) << 8) | (n >> 8);
     }
 
-    public static bool operator ==(Endpoint<T> a, Endpoint<T> b) => a.Equals(b);
-    public static bool operator !=(Endpoint<T> a, Endpoint<T> b) => !a.Equals(b);
+    public static bool operator ==(Endpoint<TAddress> a, Endpoint<TAddress> b) => a.Equals(b);
+    public static bool operator !=(Endpoint<TAddress> a, Endpoint<TAddress> b) => !a.Equals(b);
 }
