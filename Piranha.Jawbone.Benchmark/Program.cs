@@ -11,7 +11,7 @@ namespace Piranha.Jawbone.Benchmark
     {
         static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<SocketBenchmark>();
+            var summary = BenchmarkRunner.Run<AesBenchmark>();
         }
     }
 }

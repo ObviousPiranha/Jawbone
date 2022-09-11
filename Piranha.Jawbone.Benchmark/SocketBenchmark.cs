@@ -20,7 +20,6 @@ namespace Piranha.Jawbone.Benchmark
         private readonly byte[] _sendBuffer = new byte[713];
         private readonly byte[] _receiveBuffer = new byte[2048];
 
-        private ServiceProvider _serviceProvider;
         private UdpSocket32 _serverSocket;
         private UdpSocket32 _jawboneClientSocket;
         private Socket _dotNetClientSocket;
@@ -28,21 +27,8 @@ namespace Piranha.Jawbone.Benchmark
         [GlobalSetup]
         public void GlobalSetup()
         {
-            var serviceCollection = new ServiceCollection();
-
-            var options = new ServiceProviderOptions
-            {
-                ValidateOnBuild = true,
-                ValidateScopes = true
-            };
-
-            serviceCollection.AddSocketProvider();
-
-            _serviceProvider = serviceCollection.BuildServiceProvider(options);
-            var socketProvider = _serviceProvider.GetRequiredService<SocketProvider>();
-
-            _serverSocket = socketProvider.CreateAndBindUdpV4Socket(new Endpoint<Address32>(default, Port));
-            _jawboneClientSocket = socketProvider.CreateAndBindUdpV4Socket(default);
+            _serverSocket = new UdpSocket32(Endpoint.Create(Address32.Local, Port));
+            _jawboneClientSocket = new UdpSocket32(default);
             _dotNetClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             _dotNetClientSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
             _random.NextBytes(_sendBuffer);
@@ -54,13 +40,12 @@ namespace Piranha.Jawbone.Benchmark
             _dotNetClientSocket.Dispose();
             _jawboneClientSocket.Dispose();
             _serverSocket.Dispose();
-            _serviceProvider.Dispose();
         }
 
         // [IterationCleanup]
         public void IterationCleanup()
         {
-            int n = _serverSocket.Receive(_receiveBuffer, out var origin);
+            int n = _serverSocket.Receive(_receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
             if (n != _sendBuffer.Length)
                 throw new Exception($"Hey, I didn't get the right number of bytes. Expected {_sendBuffer.Length} Actual {n}");
             

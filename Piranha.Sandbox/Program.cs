@@ -92,7 +92,7 @@ class Program
                     if (!origin.IsDefault)
                     {
                         var message = Encoding.UTF8.GetString(buffer.AsSpan(0, n));
-                        Console.WriteLine(origin.ToString() + " -- " + message);
+                        Console.WriteLine(origin.ToString() + " >>> " + message);
                     }
                 }
 
