@@ -4,6 +4,15 @@ using System.Text;
 
 namespace Piranha.Jawbone.Net;
 
+public static class Endpoint
+{
+    public static Endpoint<TAddress> Create<TAddress>(TAddress address, int port)
+        where TAddress : unmanaged, IAddress<TAddress>
+    {
+        return new(address, port);
+    }
+}
+
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>> where TAddress : unmanaged, IAddress<TAddress>
 {

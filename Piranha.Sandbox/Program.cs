@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
@@ -18,7 +19,7 @@ class Program
         Console.WriteLine($"{typeof(T)}: {Unsafe.SizeOf<T>()}");
     }
 
-    static void Main(string[] args)
+    static void AddressShenanigans()
     {
         var bytes = new byte[16];
         Random.Shared.NextBytes(bytes);
@@ -46,7 +47,54 @@ class Program
         Dump(info3);
 
         Console.WriteLine("yo yo yo");
-        TryOutV6(socketProvider);
+    }
+
+    static void Main(string[] args)
+    {
+        try
+        {
+            using var socketProvider = new SocketProvider();
+            if (1 < args.Length)
+            {
+                var info = socketProvider.GetAddressInfo(args[0], args[1]);
+                var endpoint = info.V4[0];
+                
+                using var client = socketProvider.CreateAndBindUdpSocket32(default);
+                Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
+                var message = Encoding.UTF8.GetBytes("Greetings!");
+                client.Send(message, endpoint);
+                Console.WriteLine("Message sent!");
+            }
+            else if (args.Length == 1)
+            {
+                var info = socketProvider.GetAddressInfo(null, args[0]);
+                var endpoint = info.V4[0];
+                using var server = socketProvider.CreateAndBindUdpSocket32(endpoint);
+                Console.WriteLine("Listening on " + endpoint.ToString());
+                var buffer = new byte[4096];
+                var n = server.Receive(buffer, out var origin, TimeSpan.FromMinutes(5));
+
+                if (origin.IsDefault)
+                {
+                    Console.WriteLine("Timed out.");
+                }
+                else
+                {
+                    var message = Encoding.UTF8.GetString(buffer.AsSpan(0, n));
+                    Console.WriteLine("Received: " + message);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Client provides IP and port. Server provides port.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine();
+            Console.WriteLine(ex);
+            Console.WriteLine();
+        }
     }
 
     static void TryOutV6(SocketProvider socketProvider)
