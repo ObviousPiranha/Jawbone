@@ -15,20 +15,14 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             out var socketError,
             out var bindError);
         
-        if (socketError != 0)
-        {
-            throw new SocketException("Socket creation error: " + socketError);
-        }
-
-        if (bindError != 0)
-        {
-            throw new SocketException("Socket bind error: " + bindError);
-        }
+        SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
     }
 
     public void Shutdown()
     {
-        JawboneNetworking.ShutdownSocket(_handle);
+        var error = JawboneNetworking.ShutdownSocket(_handle);
+        SocketException.ThrowOnError(error, "Unable to shutdown socket.");
     }
 
     public void Dispose()
@@ -43,7 +37,10 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             message[0],
             message.Length,
             destination.Address,
-            destination.RawPort);
+            destination.RawPort,
+            out var errorCode);
+        
+        SocketException.ThrowOnError(errorCode, "Unable to send data.");
         
         return result;
     }
@@ -63,8 +60,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             out var errorCode,
             milliseconds);
         
-        if (errorCode != 0)
-            throw new SocketException("Error on receive: " + errorCode);
+        SocketException.ThrowOnError(errorCode, "Error on receive.");
         
         origin = new Endpoint<Address32>
         {
@@ -82,8 +78,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             out var address,
             out var rawPort);
 
-        if (result != 0)
-            throw new SocketException("Failed to get socket name: " + result);
+        SocketException.ThrowOnError(result, "Unable to get socket name.");
 
         return new Endpoint<Address32>
         {

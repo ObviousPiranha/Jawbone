@@ -46,45 +46,7 @@ class Program
         Dump(info3);
 
         Console.WriteLine("yo yo yo");
-        // TryTimeout(socketProvider);
         TryOutV6(socketProvider);
-    }
-
-    static void TryTimeout(SocketProvider socketProvider)
-    {
-        var clientInfo = socketProvider.GetAddressInfo(null, null);
-        Dump(clientInfo);
-        
-        var serverInfo = socketProvider.GetAddressInfo(null, "12345");
-        Dump(serverInfo);
-
-        using var myServer = socketProvider.CreateAndBindUdpSocket32(serverInfo.V4[0]);
-        Console.WriteLine("Server bound!");
-        var serverEndpoint = myServer.GetEndpoint();
-        Console.WriteLine(serverEndpoint);
-
-        using var myClient = socketProvider.CreateAndBindUdpSocket32(default);
-        Console.Write("Client bound!");
-        Console.WriteLine(myClient.GetEndpoint());
-        
-        var message = new byte[] { 0xec, 0xc0, 0xfa, 0x11 };
-        myClient.Send(message, serverEndpoint);
-
-        var buffer = new byte[1024];
-        var n = myServer.Receive(buffer, out var origin, TimeSpan.FromSeconds(1));
-        Console.WriteLine($"Received {n} bytes!");
-
-        if (buffer.AsSpan(0, n).SequenceEqual(message))
-            Console.WriteLine("They match!");
-        else
-            Console.WriteLine("They do not match...");
-        
-        Console.WriteLine("One more time...");
-        var stopwatch = Stopwatch.StartNew();
-        n = myServer.Receive(buffer, out origin, TimeSpan.FromSeconds(2));
-        Console.WriteLine(stopwatch.Elapsed);
-        Console.WriteLine(origin);
-        Console.WriteLine("Bye");
     }
 
     static void TryOutV6(SocketProvider socketProvider)
@@ -96,6 +58,7 @@ class Program
         Dump(serverInfo);
 
         using var myServer = socketProvider.CreateAndBindUdpSocket128(serverInfo.V6[0]);
+        // using var myServer = socketProvider.CreateAndBindUdpSocket128(new Endpoint<Address128>(Address128.Create(span => span.Fill((byte)0xff)), 1));
         Console.WriteLine("Server bound!");
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
@@ -116,7 +79,11 @@ class Program
         else
             Console.WriteLine("They do not match...");
         
-        Console.WriteLine("Bye");
+        Console.WriteLine("One more receive...");
+        var stopwatch = Stopwatch.StartNew();
+        n = myServer.Receive(buffer, out origin, TimeSpan.FromSeconds(2));
+        Console.WriteLine($"{n} : {stopwatch.Elapsed}");
+        Console.WriteLine("Nevermind. Bye!");
     }
 }
 

@@ -10,7 +10,9 @@ public readonly struct Address32 : IAddress<Address32>
 {
     public static readonly Address32 Local = new Address32(127, 0, 0, 1);
     
-    public readonly uint RawAddress { get; init; }
+    private readonly uint _rawAddress;
+
+    public readonly bool IsDefault => _rawAddress == 0;
 
     public Address32(ReadOnlySpan<byte> values) : this()
     {
@@ -27,10 +29,10 @@ public readonly struct Address32 : IAddress<Address32>
         bytes[0] = a;
     }
 
-    public bool Equals(Address32 other) => RawAddress == other.RawAddress;
+    public bool Equals(Address32 other) => _rawAddress == other._rawAddress;
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj is Address32 other && Equals(other);
-    public override int GetHashCode() => RawAddress.GetHashCode();
+    public override int GetHashCode() => _rawAddress.GetHashCode();
     public override string? ToString()
     {
         var builder = new StringBuilder(15);

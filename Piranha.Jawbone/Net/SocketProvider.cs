@@ -23,7 +23,7 @@ public sealed class SocketProvider : IDisposable
         var v4 = ArrayPool<Endpoint<Address32>>.Shared.Rent(64);
         var v6 = ArrayPool<Endpoint<Address128>>.Shared.Rent(64);
 
-        JawboneNetworking.GetAddressInfo(
+        var error = JawboneNetworking.GetAddressInfo(
             node,
             service,
             out v4[0],
@@ -35,6 +35,8 @@ public sealed class SocketProvider : IDisposable
             v6.Length,
             out var countV6);
 
+        SocketException.ThrowOnError(error, "Unable to get address info.");
+        
         var result = new AddressInfo
         {
             V4 = ImmutableArray.Create<Endpoint<Address32>>(v4, 0, countV4),

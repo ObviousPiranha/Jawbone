@@ -19,6 +19,7 @@ public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>> where
 
     public readonly TAddress Address { get; init; }
     public readonly ushort RawPort { get; init; }
+    public readonly bool IsDefault => Address.IsDefault && RawPort == 0;
     public readonly int Port
     {
         get => BitConverter.IsLittleEndian ? SwapBytes(RawPort) : RawPort;

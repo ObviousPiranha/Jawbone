@@ -40,14 +40,16 @@ public static class JawboneNetworking
         in byte inBuffer,
         int bufferLength,
         Address32 address,
-        ushort port);
+        ushort port,
+        out int errorCode);
     [DllImport(Library, EntryPoint = "jawboneSendToV6", CallingConvention = CallingConvention.Cdecl)]
     public static extern int SendToV6(
         in long inSocket,
         in byte inBuffer,
         int bufferLength,
         in Address128 address,
-        ushort port);
+        ushort port,
+        out int errorCode);
     [DllImport(Library, EntryPoint = "jawboneReceiveFromV4", CallingConvention = CallingConvention.Cdecl)]
     public static extern int ReceiveFromV4(
         in long inSocket,
@@ -67,9 +69,9 @@ public static class JawboneNetworking
         out int errorCode,
         int milliseconds);
     [DllImport(Library, EntryPoint = "jawboneShutdownSocket", CallingConvention = CallingConvention.Cdecl)]
-    public static extern void ShutdownSocket(in long targetSocket);
+    public static extern int ShutdownSocket(in long targetSocket);
     [DllImport(Library, EntryPoint = "jawboneCloseSocket", CallingConvention = CallingConvention.Cdecl)]
-    public static extern void CloseSocket(in long closingSocket);
+    public static extern int CloseSocket(in long closingSocket);
     [DllImport(Library, EntryPoint = "jawboneGetAddressInfo", CallingConvention = CallingConvention.Cdecl)]
     public static extern int GetAddressInfo(
         string? node,
