@@ -7,7 +7,8 @@ public interface IUdpSocket : IDisposable
     void Shutdown();
 }
 
-public interface IUdpSocket<TAddress> : IUdpSocket where TAddress : unmanaged, IAddress<TAddress>
+public interface IUdpSocket<TAddress> : IUdpSocket
+    where TAddress : unmanaged, IAddress<TAddress>
 {
     int Send(
         ReadOnlySpan<byte> message,

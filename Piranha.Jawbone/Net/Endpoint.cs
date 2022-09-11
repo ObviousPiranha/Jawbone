@@ -14,7 +14,8 @@ public static class Endpoint
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>> where TAddress : unmanaged, IAddress<TAddress>
+public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>>
+    where TAddress : unmanaged, IAddress<TAddress>
 {
     private static void ValidatePort(int port)
     {

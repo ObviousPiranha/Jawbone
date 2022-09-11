@@ -12,6 +12,7 @@ public readonly struct Address128 : IAddress<Address128>
 {
     public static readonly Address128 Any = default(Address128);
     public static readonly Address128 Local = Create(span => span[15] = 1);
+    private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
     public static Address128 Create(params byte[] values) => new Address128(values);
 
@@ -31,12 +32,15 @@ public readonly struct Address128 : IAddress<Address128>
         return result;
     }
 
+    public static Address128 Map(Address32 address) => new(0, 0, PrefixV4, address.RawAddress);
+
     private readonly uint _a;
     private readonly uint _b;
     private readonly uint _c;
     private readonly uint _d;
 
     public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
+    public readonly bool IsIpv4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
     public byte this[int index] => Address.GetReadOnlySpanU8(this)[index];
 
@@ -44,6 +48,14 @@ public readonly struct Address128 : IAddress<Address128>
     {
         var span = Address.GetSpanU8(this);
         values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
+    }
+
+    private Address128(uint a, uint b, uint c, uint d)
+    {
+        _a = a;
+        _b = b;
+        _c = c;
+        _d = d;
     }
 
     public bool Equals(Address128 other)

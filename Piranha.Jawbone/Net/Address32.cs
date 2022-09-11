@@ -14,6 +14,7 @@ public readonly struct Address32 : IAddress<Address32>
     private readonly uint _rawAddress;
 
     public readonly bool IsDefault => _rawAddress == 0;
+    internal readonly uint RawAddress => _rawAddress;
 
     public Address32(ReadOnlySpan<byte> values) : this()
     {

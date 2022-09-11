@@ -26,6 +26,7 @@ class Program
         var v6 = new Address128(bytes);
         Console.WriteLine(v6);
 
+        Console.WriteLine(Address128.Map(Address32.Local));
         Console.WriteLine(new Address128());
         Console.WriteLine(Address128.Local);
         Console.WriteLine(Address128.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
@@ -54,6 +55,8 @@ class Program
         try
         {
             using var socketProvider = new SocketProvider();
+            AddressShenanigans();
+            return;
             if (1 < args.Length)
             {
                 var info = socketProvider.GetAddressInfo(args[0], args[1]);
