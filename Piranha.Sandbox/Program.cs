@@ -63,12 +63,12 @@ class Program
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
                 client.Send(message, endpoint);
-                Console.WriteLine("Message sent!");
+                Console.WriteLine("Message sent to " + endpoint.ToString());
             }
             else if (args.Length == 1)
             {
-                var info = socketProvider.GetAddressInfo(null, args[0]);
-                var endpoint = info.V4[0];
+                var port = int.Parse(args[0]);
+                var endpoint = Endpoint.Create(Address32.Any, port);
                 using var server = socketProvider.CreateAndBindUdpSocket32(endpoint);
                 Console.WriteLine("Listening on " + endpoint.ToString());
                 var buffer = new byte[4096];

@@ -10,6 +10,9 @@ namespace Piranha.Jawbone.Net;
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Address128 : IAddress<Address128>
 {
+    public static readonly Address128 Any = default(Address128);
+    public static readonly Address128 Local = Create(span => span[15] = 1);
+
     public static Address128 Create(params byte[] values) => new Address128(values);
 
     public static Address128 Create(SpanAction<byte> action)
@@ -27,8 +30,6 @@ public readonly struct Address128 : IAddress<Address128>
         action.Invoke(span, state);
         return result;
     }
-
-    public static readonly Address128 Local = Create(span => span[15] = 1);
 
     private readonly uint _a;
     private readonly uint _b;

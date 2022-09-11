@@ -8,6 +8,7 @@ namespace Piranha.Jawbone.Net;
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Address32 : IAddress<Address32>
 {
+    public static readonly Address32 Any = default(Address32);
     public static readonly Address32 Local = new Address32(127, 0, 0, 1);
     
     private readonly uint _rawAddress;
