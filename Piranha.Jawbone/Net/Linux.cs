@@ -63,7 +63,7 @@ static class Linux
         new(55, "ENOANO", "No anode"),
         new(56, "EBADRQC", "Invalid request code"),
         new(57, "EBADSLT", "Invalid slot"),
-        new(58, "EDEADLOCK", "Resource deadlock would occur"), // Mapped to DEADLK
+        new(58, "EDEADLOCK", "Resource deadlock would occur"), // Mapped to DEADLK(35)
         new(59, "EBFONT", "Bad font file format"),
         new(60, "ENOSTR", "Device not a stream"),
         new(61, "ENODATA", "No data available"),

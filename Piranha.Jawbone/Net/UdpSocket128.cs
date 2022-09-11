@@ -6,7 +6,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 {
     private readonly long _handle;
 
-    internal UdpSocket128(Endpoint<Address128> endpoint)
+    public UdpSocket128(Endpoint<Address128> endpoint)
     {
         JawboneNetworking.CreateAndBindUdpV6Socket(
             endpoint.Address,

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
@@ -39,12 +40,11 @@ class Program
 
         ShowSize<Endpoint<Address32>>();
         ShowSize<Endpoint<Address128>>();
-        using var socketProvider = new SocketProvider();
-        var info1 = socketProvider.GetAddressInfo("google.com", "443");
+        var info1 = AddressInfo.Get("google.com", "443");
         Dump(info1);
-        var info2 = socketProvider.GetAddressInfo("thebuzzsaw.duckdns.org", null);
+        var info2 = AddressInfo.Get("thebuzzsaw.duckdns.org", null);
         Dump(info2);
-        var info3 = socketProvider.GetAddressInfo("192.168.50.1", "8080");
+        var info3 = AddressInfo.Get("192.168.50.1", "8080");
         Dump(info3);
 
         Console.WriteLine("yo yo yo");
@@ -54,15 +54,15 @@ class Program
     {
         try
         {
-            using var socketProvider = new SocketProvider();
             AddressShenanigans();
-            return;
+            TryOutV6();
+
             if (1 < args.Length)
             {
-                var info = socketProvider.GetAddressInfo(args[0], args[1]);
+                var info = AddressInfo.Get(args[0], args[1]);
                 var endpoint = info.V4[0];
                 
-                using var client = socketProvider.CreateAndBindUdpSocket32(default);
+                using var client = new UdpSocket32(default);
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
                 client.Send(message, endpoint);
@@ -72,20 +72,31 @@ class Program
             {
                 var port = int.Parse(args[0]);
                 var endpoint = Endpoint.Create(Address32.Any, port);
-                using var server = socketProvider.CreateAndBindUdpSocket32(endpoint);
+                using var server = new UdpSocket32(endpoint);
                 Console.WriteLine("Listening on " + endpoint.ToString());
                 var buffer = new byte[4096];
-                var n = server.Receive(buffer, out var origin, TimeSpan.FromMinutes(5));
 
-                if (origin.IsDefault)
+                using var cancellationTokenSource = new CancellationTokenSource();
+
+                Console.CancelKeyPress += (sender, e) =>
+                    {
+                        e.Cancel = true;
+                        Console.WriteLine("Exiting...");
+                        cancellationTokenSource.Cancel();
+                    };
+
+                while (!cancellationTokenSource.IsCancellationRequested)
                 {
-                    Console.WriteLine("Timed out.");
+                    var n = server.Receive(buffer, out var origin, TimeSpan.FromSeconds(0.5));
+
+                    if (!origin.IsDefault)
+                    {
+                        var message = Encoding.UTF8.GetString(buffer.AsSpan(0, n));
+                        Console.WriteLine(origin.ToString() + " -- " + message);
+                    }
                 }
-                else
-                {
-                    var message = Encoding.UTF8.GetString(buffer.AsSpan(0, n));
-                    Console.WriteLine("Received: " + message);
-                }
+
+                Console.WriteLine("Done.");
             }
             else
             {
@@ -100,21 +111,21 @@ class Program
         }
     }
 
-    static void TryOutV6(SocketProvider socketProvider)
+    static void TryOutV6()
     {
         // var clientInfo = socketProvider.GetAddressInfo(null, null);
         // Dump(clientInfo);
         
-        var serverInfo = socketProvider.GetAddressInfo(null, "12345");
+        var serverInfo = AddressInfo.Get(null, "12345");
         Dump(serverInfo);
 
-        using var myServer = socketProvider.CreateAndBindUdpSocket128(serverInfo.V6[0]);
+        using var myServer = new UdpSocket128(serverInfo.V6[0]);
         // using var myServer = socketProvider.CreateAndBindUdpSocket128(new Endpoint<Address128>(Address128.Create(span => span.Fill((byte)0xff)), 1));
         Console.WriteLine("Server bound!");
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
 
-        using var myClient = socketProvider.CreateAndBindUdpSocket128(default);
+        using var myClient = new UdpSocket128(default);
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
         

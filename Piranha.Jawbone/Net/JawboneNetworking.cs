@@ -6,8 +6,13 @@ public static class JawboneNetworking
 {
     private const string Library = "PiranhaNative.dll";
 
+    static JawboneNetworking()
+    {
+        StartNetworking();
+    }
+
     [DllImport(Library, EntryPoint = "jawboneStartNetworking", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int StartNetworking();
+    private static extern int StartNetworking();
     [DllImport(Library, EntryPoint = "jawboneStopNetworking", CallingConvention = CallingConvention.Cdecl)]
     public static extern void StopNetworking();
     [DllImport(Library, EntryPoint = "jawboneCreateAndBindUdpV4Socket", CallingConvention = CallingConvention.Cdecl)]

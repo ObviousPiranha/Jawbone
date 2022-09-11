@@ -10,6 +10,7 @@ public readonly struct Address32 : IAddress<Address32>
 {
     public static readonly Address32 Any = default(Address32);
     public static readonly Address32 Local = new Address32(127, 0, 0, 1);
+    public static readonly Address32 Broadcast = new Address32(255, 255, 255, 255);
     
     private readonly uint _rawAddress;
 

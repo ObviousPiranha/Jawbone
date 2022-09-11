@@ -6,7 +6,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
 {
     private readonly long _handle;
 
-    internal UdpSocket32(Endpoint<Address32> endpoint)
+    public UdpSocket32(Endpoint<Address32> endpoint)
     {
         JawboneNetworking.CreateAndBindUdpV4Socket(
             endpoint.Address,
