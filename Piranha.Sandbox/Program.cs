@@ -51,8 +51,8 @@ class Program
 
     static void TryOutV6(SocketProvider socketProvider)
     {
-        var clientInfo = socketProvider.GetAddressInfo(null, null);
-        Dump(clientInfo);
+        // var clientInfo = socketProvider.GetAddressInfo(null, null);
+        // Dump(clientInfo);
         
         var serverInfo = socketProvider.GetAddressInfo(null, "12345");
         Dump(serverInfo);

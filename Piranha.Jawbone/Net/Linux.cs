@@ -2,10 +2,8 @@ using System.Collections.Immutable;
 
 namespace Piranha.Jawbone.Net;
 
-public static class Linux
+static class Linux
 {
-    // /usr/include/asm-generic/errno-base.h
-    // /usr/include/asm-generic/errno.h
     public static readonly ImmutableArray<ErrorCode> ErrorCodes = ImmutableArray.Create<ErrorCode>(
         ErrorCode.None,
         new(1, "EPERM", "Operation not permitted"),
