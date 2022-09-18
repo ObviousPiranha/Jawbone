@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using Piranha.Jawbone.Collections;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
@@ -26,6 +28,12 @@ class Program
         Random.Shared.NextBytes(bytes);
         var v6 = new Address128(bytes);
         Console.WriteLine(v6);
+
+        var byteBuffer = new ByteBuffer();
+        var endpoints = new Endpoint<Address128>[16];
+        var randomAddress = Address128.Create(span => RandomNumberGenerator.Fill(span));
+        endpoints.AsSpan().Fill(Endpoint.Create(randomAddress, 200));
+        byteBuffer.AddAllAsBytes(endpoints);
 
         Console.WriteLine(Address128.Map(Address32.Local));
         Console.WriteLine(new Address128());

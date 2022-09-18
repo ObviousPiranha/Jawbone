@@ -4,7 +4,11 @@ namespace Piranha.Jawbone.Collections;
 
 public sealed class ByteBuffer
 {
-    private static void ThrowIfNegative(int length) => throw new ArgumentOutOfRangeException(nameof(length));
+    private static void ThrowIfNegative(int length)
+    {
+        if (length < 0)
+            throw new ArgumentOutOfRangeException(nameof(length));
+    }
 
     private byte[] _array = Array.Empty<byte>();
 

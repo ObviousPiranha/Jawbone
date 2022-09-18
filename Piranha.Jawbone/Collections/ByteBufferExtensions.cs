@@ -15,6 +15,13 @@ public static class ByteBufferExtensions
 
     public static ByteBuffer AddAllAsBytes<T>(
         this ByteBuffer byteBuffer,
+        T[] items) where T : unmanaged
+    {
+        return byteBuffer.AddAllAsBytes<T>(items.AsSpan());
+    }
+
+    public static ByteBuffer AddAllAsBytes<T>(
+        this ByteBuffer byteBuffer,
         ReadOnlySpan<T> items) where T : unmanaged
     {
         var byteCount = items.Length * Unsafe.SizeOf<T>();
