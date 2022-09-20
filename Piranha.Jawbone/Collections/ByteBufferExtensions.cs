@@ -25,17 +25,17 @@ public static class ByteBufferExtensions
         ReadOnlySpan<T> items) where T : unmanaged
     {
         var byteCount = items.Length * Unsafe.SizeOf<T>();
-        var allocated = byteBuffer.ReserveRaw(byteCount);
+        var reserved = byteBuffer.ReserveRaw(byteCount);
 
         unsafe
         {
             fixed (void* source = items)
-            fixed (void* destination = allocated)
+            fixed (void* destination = reserved)
             {
                 Buffer.MemoryCopy(
                     source,
                     destination,
-                    allocated.Length,
+                    reserved.Length,
                     byteCount);
             }
         }
@@ -47,14 +47,14 @@ public static class ByteBufferExtensions
         this ByteBuffer byteBuffer,
         in T item) where T : unmanaged
     {
-        var allocated = byteBuffer.ReserveRaw(Unsafe.SizeOf<T>());
+        var reserved = byteBuffer.ReserveRaw(Unsafe.SizeOf<T>());
 
         unsafe
         {
             fixed (void* a = &item)
             {
                 var bytes = new ReadOnlySpan<byte>(a, Unsafe.SizeOf<T>());
-                bytes.CopyTo(allocated);
+                bytes.CopyTo(reserved);
             }
         }
 

@@ -12,9 +12,9 @@ public sealed class ByteBuffer
 
     private byte[] _array = Array.Empty<byte>();
 
-    public int Count { get; private set; }
+    public int Length { get; private set; }
     public int Capacity => _array.Length;
-    public Span<byte> Span => _array;
+    public Span<byte> Span => _array.AsSpan(0, Length);
 
     private void Grow(int minCapacity)
     {
@@ -22,22 +22,20 @@ public sealed class ByteBuffer
 
         while (newCapacity < minCapacity)
             newCapacity *= 2;
-        
-        var array = new byte[newCapacity];
-        Span.CopyTo(array);
-        _array = array;
+
+        Array.Resize(ref _array, newCapacity);
     }
 
     public Span<byte> ReserveRaw(int length)
     {
         ThrowIfNegative(length);
-        var minCapacity = Count + length;
+        var minCapacity = Length + length;
         if (Capacity < minCapacity)
             Grow(minCapacity);
-        var result = _array.AsSpan(Count, length);
-        Count += length;
+        var result = _array.AsSpan(Length, length);
+        Length += length;
         return result;
     }
 
-    public void Reset() => Count = 0;
+    public void Reset() => Length = 0;
 }
