@@ -51,7 +51,7 @@ public sealed class UnmanagedList<T> where T : unmanaged
         return this;
     }
 
-    public UnmanagedList<T> Add(ReadOnlySpan<T> items)
+    public UnmanagedList<T> AddAll(ReadOnlySpan<T> items)
     {
         var minCapacity = Count + items.Length;
         if (Capacity < minCapacity)

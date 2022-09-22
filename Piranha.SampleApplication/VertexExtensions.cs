@@ -12,11 +12,11 @@ static class VertexExtensions
         Quadrilateral<Vector2> textureCoordinates)
     {
         return list
-            .Add(new Vertex(position.A, textureCoordinates.A))
-            .Add(new Vertex(position.B, textureCoordinates.B))
-            .Add(new Vertex(position.C, textureCoordinates.C))
-            .Add(new Vertex(position.A, textureCoordinates.A))
-            .Add(new Vertex(position.C, textureCoordinates.C))
-            .Add(new Vertex(position.D, textureCoordinates.D));
+            .Add(new(position.A, textureCoordinates.A))
+            .Add(new(position.B, textureCoordinates.B))
+            .Add(new(position.C, textureCoordinates.C))
+            .Add(new(position.A, textureCoordinates.A))
+            .Add(new(position.C, textureCoordinates.C))
+            .Add(new(position.D, textureCoordinates.D));
     }
 }
