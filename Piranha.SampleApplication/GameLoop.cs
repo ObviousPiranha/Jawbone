@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.Collections;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Tools;
 
@@ -55,36 +56,20 @@ namespace Piranha.SampleApplication
             var matrix = Matrix4x4.CreateRotationZ(radians);
             var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F)).Transformed(matrix);
             var textureCoordinates = SampleHandler.PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
-            var n = 0;
-            scene.VertexData[n++] = positions.A.X;
-            scene.VertexData[n++] = positions.A.Y;
-            scene.VertexData[n++] = textureCoordinates.A.X;
-            scene.VertexData[n++] = textureCoordinates.A.Y;
-
-            scene.VertexData[n++] = positions.B.X;
-            scene.VertexData[n++] = positions.B.Y;
-            scene.VertexData[n++] = textureCoordinates.B.X;
-            scene.VertexData[n++] = textureCoordinates.B.Y;
-
-            scene.VertexData[n++] = positions.C.X;
-            scene.VertexData[n++] = positions.C.Y;
-            scene.VertexData[n++] = textureCoordinates.C.X;
-            scene.VertexData[n++] = textureCoordinates.C.Y;
-
-            scene.VertexData[n++] = positions.A.X;
-            scene.VertexData[n++] = positions.A.Y;
-            scene.VertexData[n++] = textureCoordinates.A.X;
-            scene.VertexData[n++] = textureCoordinates.A.Y;
-
-            scene.VertexData[n++] = positions.C.X;
-            scene.VertexData[n++] = positions.C.Y;
-            scene.VertexData[n++] = textureCoordinates.C.X;
-            scene.VertexData[n++] = textureCoordinates.C.Y;
-
-            scene.VertexData[n++] = positions.D.X;
-            scene.VertexData[n++] = positions.D.Y;
-            scene.VertexData[n++] = textureCoordinates.D.X;
-            scene.VertexData[n++] = textureCoordinates.D.Y;
+            scene.VertexData
+                .Reset()
+                .AddAsBytes(positions.A)
+                .AddAsBytes(textureCoordinates.A)
+                .AddAsBytes(positions.B)
+                .AddAsBytes(textureCoordinates.B)
+                .AddAsBytes(positions.C)
+                .AddAsBytes(textureCoordinates.C)
+                .AddAsBytes(positions.A)
+                .AddAsBytes(textureCoordinates.A)
+                .AddAsBytes(positions.C)
+                .AddAsBytes(textureCoordinates.C)
+                .AddAsBytes(positions.D)
+                .AddAsBytes(textureCoordinates.D);
             
             if (!_scenePool.SetLatestScene(scene))
             {

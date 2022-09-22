@@ -1,11 +1,12 @@
 using System;
 using System.Numerics;
+using Piranha.Jawbone.Collections;
 
 namespace Piranha.SampleApplication
 {
     class PiranhaScene
     {
         public Vector4 Color { get; set; }
-        public float[] VertexData { get; } = new float[24];
+        public ByteBuffer VertexData { get; } = new();
     }
 }

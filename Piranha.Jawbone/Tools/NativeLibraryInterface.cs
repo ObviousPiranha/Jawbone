@@ -99,7 +99,7 @@ namespace Piranha.Jawbone.Tools
             var moduleBuilder = assemblyBuilder.DefineDynamicModule(assemblyName.Name);
             var typeBuilder = moduleBuilder.DefineType(
                 "NativeLibrary",
-                TypeAttributes.Class | TypeAttributes.Public);
+                TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed);
             typeBuilder.AddInterfaceImplementation(typeof(T));
             
             var constructorBuilder = typeBuilder.DefineDefaultConstructor(

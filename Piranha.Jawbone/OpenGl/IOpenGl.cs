@@ -12,9 +12,9 @@ namespace Piranha.Jawbone.OpenGl
         void BindTexture(uint target, uint texture);
         void BindVertexArray(uint array);
         void BlendFunc(uint sfactor, uint dfactor);
-        void BufferData(uint target, IntPtr size, in float data, uint useage);
+        void BufferData(uint target, IntPtr size, in byte data, uint useage);
         void BufferData(uint target, IntPtr size, IntPtr data, uint useage);
-        void BufferSubData(uint target, IntPtr offset, IntPtr size, in float data);
+        void BufferSubData(uint target, IntPtr offset, IntPtr size, in byte data);
         void Clear(uint mask);
         void ClearColor(float red, float green, float blue, float alpha);
         void CompileShader(uint shader);
@@ -39,8 +39,8 @@ namespace Piranha.Jawbone.OpenGl
         uint GetError();
         void GetIntegerv(uint pname, out int value);
         void GetProgramiv(uint program, uint pname, out int parameters);
-        void GetProgramInfoLog(uint program, int maxLength, out int length, byte[] infoLog);
-        void GetShaderInfoLog(uint shader, int maxLength, out int length, byte[] infoLog);
+        void GetProgramInfoLog(uint program, int maxLength, out int length, out byte infoLog);
+        void GetShaderInfoLog(uint shader, int maxLength, out int length, out byte infoLog);
         void GetShaderiv(uint shader, uint pname, out uint parameters);
         string GetString(uint name);
         int GetUniformLocation(uint program, string name);
@@ -104,7 +104,7 @@ namespace Piranha.Jawbone.OpenGl
             int depth,
             uint format,
             uint type,
-            byte[]? data);
+            in byte data);
 
         void Uniform1i(int location, int v0);
         void UniformMatrix4fv(int location, int count, uint transpose, in Matrix4x4 matrix);

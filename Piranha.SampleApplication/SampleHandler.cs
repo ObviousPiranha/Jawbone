@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.Collections;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
@@ -19,7 +20,7 @@ namespace Piranha.SampleApplication
             new Point32(1, 1),
             new Point32(500, 250));
 
-        private readonly float[] _bufferData = new float[24];
+        private readonly ByteBuffer _bufferData = new();
         private readonly IStb _stb;
         private readonly ILogger<SampleHandler> _logger;
         private readonly IAudioManager _audioManager;
@@ -69,7 +70,7 @@ namespace Piranha.SampleApplication
             {
                 gl.GetProgramiv(_program, Gl.InfoLogLength, out var logLength);
                 var buffer = new byte[logLength];
-                gl.GetProgramInfoLog(_program, buffer.Length, out var actualLength, buffer);
+                gl.GetProgramInfoLog(_program, buffer.Length, out var actualLength, out buffer[0]);
                 var errors = Encoding.UTF8.GetString(buffer);
                 throw new OpenGlException("Error linking program: " + errors);
             }
@@ -132,36 +133,20 @@ namespace Piranha.SampleApplication
 
             var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
             var textureCoordinates = PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
-            var n = 0;
-            _bufferData[n++] = positions.A.X;
-            _bufferData[n++] = positions.A.Y;
-            _bufferData[n++] = textureCoordinates.A.X;
-            _bufferData[n++] = textureCoordinates.A.Y;
-
-            _bufferData[n++] = positions.B.X;
-            _bufferData[n++] = positions.B.Y;
-            _bufferData[n++] = textureCoordinates.B.X;
-            _bufferData[n++] = textureCoordinates.B.Y;
-
-            _bufferData[n++] = positions.C.X;
-            _bufferData[n++] = positions.C.Y;
-            _bufferData[n++] = textureCoordinates.C.X;
-            _bufferData[n++] = textureCoordinates.C.Y;
-
-            _bufferData[n++] = positions.A.X;
-            _bufferData[n++] = positions.A.Y;
-            _bufferData[n++] = textureCoordinates.A.X;
-            _bufferData[n++] = textureCoordinates.A.Y;
-
-            _bufferData[n++] = positions.C.X;
-            _bufferData[n++] = positions.C.Y;
-            _bufferData[n++] = textureCoordinates.C.X;
-            _bufferData[n++] = textureCoordinates.C.Y;
-
-            _bufferData[n++] = positions.D.X;
-            _bufferData[n++] = positions.D.Y;
-            _bufferData[n++] = textureCoordinates.D.X;
-            _bufferData[n++] = textureCoordinates.D.Y;
+            _bufferData
+                .Reset()
+                .AddAsBytes(positions.A)
+                .AddAsBytes(textureCoordinates.A)
+                .AddAsBytes(positions.B)
+                .AddAsBytes(textureCoordinates.B)
+                .AddAsBytes(positions.C)
+                .AddAsBytes(textureCoordinates.C)
+                .AddAsBytes(positions.A)
+                .AddAsBytes(textureCoordinates.A)
+                .AddAsBytes(positions.C)
+                .AddAsBytes(textureCoordinates.C)
+                .AddAsBytes(positions.D)
+                .AddAsBytes(textureCoordinates.D);
 
             var size = window.Size;
             gl.Viewport(0, 0, size.X, size.Y);
@@ -170,7 +155,7 @@ namespace Piranha.SampleApplication
 
             _buffer = gl.GenBuffer();
             gl.BindBuffer(Gl.ArrayBuffer, _buffer);
-            gl.BufferData(Gl.ArrayBuffer, new IntPtr(_bufferData.Length * 4), _bufferData[0], Gl.StreamDraw);
+            gl.BufferData(Gl.ArrayBuffer, new IntPtr(_bufferData.Length), _bufferData.Span[0], Gl.StreamDraw);
 
             _ = GlTools.TryLogErrors(gl, _logger);
 
@@ -244,8 +229,8 @@ namespace Piranha.SampleApplication
                 gl.BufferSubData(
                     Gl.ArrayBuffer,
                     IntPtr.Zero,
-                    new IntPtr(_currentScene.VertexData.Length * 4),
-                    _currentScene.VertexData[0]);
+                    new IntPtr(_currentScene.VertexData.Length),
+                    _currentScene.VertexData.Span[0]);
             }
             gl.BindTexture(Gl.Texture2d, _texture);
             gl.EnableVertexAttribArray(_positionAttribute);

@@ -42,7 +42,7 @@ namespace Piranha.Jawbone.OpenGl
                     {
                         gl.GetProgramiv(program, Gl.InfoLogLength, out var logLength);
                         var buffer = new byte[logLength];
-                        gl.GetProgramInfoLog(program, buffer.Length, out _, buffer);
+                        gl.GetProgramInfoLog(program, buffer.Length, out _, out buffer[0]);
                         var errors = Encoding.UTF8.GetString(buffer);
                         throw new OpenGlException("Error linking program: " + errors);
                     }
@@ -81,7 +81,7 @@ namespace Piranha.Jawbone.OpenGl
                         {
                             gl.GetShaderiv(shader, Gl.InfoLogLength, out var logLength);
                             var buffer = new byte[logLength];
-                            gl.GetShaderInfoLog(shader, buffer.Length, out var actualLength, buffer);
+                            gl.GetShaderInfoLog(shader, buffer.Length, out var actualLength, out buffer[0]);
                             // We can disregard the actual length because we queried the actual length up above.
                             var errors = Encoding.UTF8.GetString(buffer);
                             throw new OpenGlException("Error compiling shader: " + errors);
