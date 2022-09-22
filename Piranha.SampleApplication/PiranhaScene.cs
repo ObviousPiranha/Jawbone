@@ -7,6 +7,6 @@ namespace Piranha.SampleApplication
     class PiranhaScene
     {
         public Vector4 Color { get; set; }
-        public ByteBuffer VertexData { get; } = new();
+        public UnmanagedList<Vertex> VertexData { get; } = new();
     }
 }

@@ -56,20 +56,7 @@ namespace Piranha.SampleApplication
             var matrix = Matrix4x4.CreateRotationZ(radians);
             var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F)).Transformed(matrix);
             var textureCoordinates = SampleHandler.PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
-            scene.VertexData
-                .Reset()
-                .AddAsBytes(positions.A)
-                .AddAsBytes(textureCoordinates.A)
-                .AddAsBytes(positions.B)
-                .AddAsBytes(textureCoordinates.B)
-                .AddAsBytes(positions.C)
-                .AddAsBytes(textureCoordinates.C)
-                .AddAsBytes(positions.A)
-                .AddAsBytes(textureCoordinates.A)
-                .AddAsBytes(positions.C)
-                .AddAsBytes(textureCoordinates.C)
-                .AddAsBytes(positions.D)
-                .AddAsBytes(textureCoordinates.D);
+            scene.VertexData.Clear().Add(positions, textureCoordinates);
             
             if (!_scenePool.SetLatestScene(scene))
             {

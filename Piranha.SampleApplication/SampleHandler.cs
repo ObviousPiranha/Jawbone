@@ -20,7 +20,7 @@ namespace Piranha.SampleApplication
             new Point32(1, 1),
             new Point32(500, 250));
 
-        private readonly ByteBuffer _bufferData = new();
+        private readonly UnmanagedList<Vertex> _bufferData = new();
         private readonly IStb _stb;
         private readonly ILogger<SampleHandler> _logger;
         private readonly IAudioManager _audioManager;
@@ -133,20 +133,7 @@ namespace Piranha.SampleApplication
 
             var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
             var textureCoordinates = PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
-            _bufferData
-                .Reset()
-                .AddAsBytes(positions.A)
-                .AddAsBytes(textureCoordinates.A)
-                .AddAsBytes(positions.B)
-                .AddAsBytes(textureCoordinates.B)
-                .AddAsBytes(positions.C)
-                .AddAsBytes(textureCoordinates.C)
-                .AddAsBytes(positions.A)
-                .AddAsBytes(textureCoordinates.A)
-                .AddAsBytes(positions.C)
-                .AddAsBytes(textureCoordinates.C)
-                .AddAsBytes(positions.D)
-                .AddAsBytes(textureCoordinates.D);
+            _bufferData.Clear().Add(positions, textureCoordinates);
 
             var size = window.Size;
             gl.Viewport(0, 0, size.X, size.Y);
@@ -154,8 +141,9 @@ namespace Piranha.SampleApplication
             _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
 
             _buffer = gl.GenBuffer();
+            var bytes = _bufferData.ByteSpan;
             gl.BindBuffer(Gl.ArrayBuffer, _buffer);
-            gl.BufferData(Gl.ArrayBuffer, new IntPtr(_bufferData.Length), _bufferData.Span[0], Gl.StreamDraw);
+            gl.BufferData(Gl.ArrayBuffer, new IntPtr(bytes.Length), bytes[0], Gl.StreamDraw);
 
             _ = GlTools.TryLogErrors(gl, _logger);
 
@@ -225,12 +213,13 @@ namespace Piranha.SampleApplication
             {
                 _scenePool.ReturnScene(_currentScene);
                 _currentScene = latestScene;
+                var bytes = _currentScene.VertexData.ByteSpan;
                 
                 gl.BufferSubData(
                     Gl.ArrayBuffer,
                     IntPtr.Zero,
-                    new IntPtr(_currentScene.VertexData.Length),
-                    _currentScene.VertexData.Span[0]);
+                    new IntPtr(bytes.Length),
+                    bytes[0]);
             }
             gl.BindTexture(Gl.Texture2d, _texture);
             gl.EnableVertexAttribArray(_positionAttribute);
@@ -242,15 +231,15 @@ namespace Piranha.SampleApplication
                 2,
                 Gl.Float,
                 Gl.False,
-                16,
+                Unsafe.SizeOf<Vertex>(),
                 IntPtr.Zero);
             gl.VertexAttribPointer(
                 _textureCoordinateAttribute,
                 2,
                 Gl.Float,
                 Gl.False,
-                16,
-                new IntPtr(2 * 4));
+                Unsafe.SizeOf<Vertex>(),
+                new IntPtr(Unsafe.SizeOf<Vector2>()));
             gl.DrawArrays(Gl.Triangles, 0, 6);
             gl.DisableVertexAttribArray(_textureCoordinateAttribute);
             gl.DisableVertexAttribArray(_positionAttribute);
