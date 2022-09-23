@@ -141,7 +141,7 @@ namespace Piranha.SampleApplication
             _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
 
             _buffer = gl.GenBuffer();
-            var bytes = _bufferData.ByteSpan;
+            var bytes = _bufferData.Bytes;
             gl.BindBuffer(Gl.ArrayBuffer, _buffer);
             gl.BufferData(Gl.ArrayBuffer, new IntPtr(bytes.Length), bytes[0], Gl.StreamDraw);
 
@@ -213,7 +213,7 @@ namespace Piranha.SampleApplication
             {
                 _scenePool.ReturnScene(_currentScene);
                 _currentScene = latestScene;
-                var bytes = _currentScene.VertexData.ByteSpan;
+                var bytes = _currentScene.VertexData.Bytes;
                 
                 gl.BufferSubData(
                     Gl.ArrayBuffer,

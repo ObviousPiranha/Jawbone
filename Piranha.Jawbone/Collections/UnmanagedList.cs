@@ -3,15 +3,15 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Collections;
 
-public sealed class UnmanagedList<T> where T : unmanaged
+public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
     private T[] _items;
+    private int _count;
 
     public int Capacity => _items.Length;
-    public int Count { get; private set; }
-    public Span<T> Span => _items.AsSpan(0, Count);
-
-    public Span<byte> ByteSpan
+    public int Count => _count;
+    public Span<T> Items => _items.AsSpan(0, Count);
+    public Span<byte> Bytes
     {
         get
         {
@@ -39,7 +39,7 @@ public sealed class UnmanagedList<T> where T : unmanaged
 
     public UnmanagedList<T> Clear()
     {
-        Count = 0;
+        _count = 0;
         return this;
     }
 
@@ -47,7 +47,7 @@ public sealed class UnmanagedList<T> where T : unmanaged
     {
         if (Count == Capacity)
             Array.Resize(ref _items, Capacity * 2);
-        _items[Count++] = item;
+        _items[_count++] = item;
         return this;
     }
 
@@ -58,7 +58,7 @@ public sealed class UnmanagedList<T> where T : unmanaged
             Grow(minCapacity);
         
         items.CopyTo(_items.AsSpan(Count));
-        Count = minCapacity;
+        _count = minCapacity;
         return this;
     }
 
