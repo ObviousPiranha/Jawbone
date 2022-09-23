@@ -8,6 +8,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     private T[] _items;
     private int _count;
 
+    public bool IsEmpty => _count == 0;
     public int Capacity => _items.Length;
     public int Count => _count;
     public Span<T> Items => _items.AsSpan(0, Count);
