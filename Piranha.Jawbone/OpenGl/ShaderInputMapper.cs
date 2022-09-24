@@ -83,8 +83,13 @@ public readonly struct ShaderInputMapper
     public void Enable(IOpenGl gl)
     {
         foreach (var vertexInfo in _vertexInfo)
-        {
             gl.EnableVertexAttribArray(vertexInfo.Index);
+    }
+
+    public void VertexAttribPointers(IOpenGl gl)
+    {
+        foreach (var vertexInfo in _vertexInfo)
+        {
             gl.VertexAttribPointer(
                 vertexInfo.Index,
                 vertexInfo.Common.Size,

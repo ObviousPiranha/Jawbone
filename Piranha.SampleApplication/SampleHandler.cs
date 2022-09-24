@@ -218,6 +218,7 @@ namespace Piranha.SampleApplication
             }
             gl.BindTexture(Gl.Texture2d, _texture);
             _shaderInputMapper.Enable(gl);
+            _shaderInputMapper.VertexAttribPointers(gl);
             gl.Uniform1i(_textureUniform, 0);
             gl.UniformMatrix4fv(_matrixUniform, 1, Gl.False, _matrix);
             gl.DrawArrays(Gl.Triangles, 0, 6);
