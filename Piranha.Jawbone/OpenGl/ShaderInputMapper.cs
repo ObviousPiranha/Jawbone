@@ -11,38 +11,56 @@ namespace Piranha.Jawbone.OpenGl;
 
 public readonly struct ShaderInputMapper
 {
-    private static readonly ImmutableDictionary<Type, CommonVertexInfo> CommonVertexInfoByType = new Dictionary<Type, CommonVertexInfo>
-    {
-        [typeof(Vector2)] = new CommonVertexInfo { Size = 2, Type = Gl.Float },
-        [typeof(Vector3)] = new CommonVertexInfo { Size = 3, Type = Gl.Float },
-        [typeof(Vector4)] = new CommonVertexInfo { Size = 4, Type = Gl.Float },
-        [typeof(Vector2<sbyte>)] = new CommonVertexInfo { Size = 2, Type = Gl.Byte },
-        [typeof(Vector2<byte>)] = new CommonVertexInfo { Size = 2, Type = Gl.UnsignedByte },
-        [typeof(Vector2<short>)] = new CommonVertexInfo { Size = 2, Type = Gl.Short },
-        [typeof(Vector2<ushort>)] = new CommonVertexInfo { Size = 2, Type = Gl.UnsignedShort },
-        [typeof(Vector2<int>)] = new CommonVertexInfo { Size = 2, Type = Gl.Int },
-        [typeof(Vector2<uint>)] = new CommonVertexInfo { Size = 2, Type = Gl.UnsignedInt },
-        [typeof(Vector3<sbyte>)] = new CommonVertexInfo { Size = 3, Type = Gl.Byte },
-        [typeof(Vector3<byte>)] = new CommonVertexInfo { Size = 3, Type = Gl.UnsignedByte },
-        [typeof(Vector3<short>)] = new CommonVertexInfo { Size = 3, Type = Gl.Short },
-        [typeof(Vector3<ushort>)] = new CommonVertexInfo { Size = 3, Type = Gl.UnsignedShort },
-        [typeof(Vector3<int>)] = new CommonVertexInfo { Size = 3, Type = Gl.Int },
-        [typeof(Vector3<uint>)] = new CommonVertexInfo { Size = 3, Type = Gl.UnsignedInt },
-        [typeof(Vector4<sbyte>)] = new CommonVertexInfo { Size = 4, Type = Gl.Byte },
-        [typeof(Vector4<byte>)] = new CommonVertexInfo { Size = 4, Type = Gl.UnsignedByte },
-        [typeof(Vector4<short>)] = new CommonVertexInfo { Size = 4, Type = Gl.Short },
-        [typeof(Vector4<ushort>)] = new CommonVertexInfo { Size = 4, Type = Gl.UnsignedShort },
-        [typeof(Vector4<int>)] = new CommonVertexInfo { Size = 4, Type = Gl.Int },
-        [typeof(Vector4<uint>)] = new CommonVertexInfo { Size = 4, Type = Gl.UnsignedInt },
-        [typeof(sbyte)] = new CommonVertexInfo { Size = 1, Type = Gl.Byte },
-        [typeof(byte)] = new CommonVertexInfo { Size = 1, Type = Gl.UnsignedByte },
-        [typeof(short)] = new CommonVertexInfo { Size = 1, Type = Gl.Short },
-        [typeof(ushort)] = new CommonVertexInfo { Size = 1, Type = Gl.UnsignedShort },
-        [typeof(int)] = new CommonVertexInfo { Size = 1, Type = Gl.Int },
-        [typeof(uint)] = new CommonVertexInfo { Size = 1, Type = Gl.UnsignedInt },
-        [typeof(float)] = new CommonVertexInfo { Size = 1, Type = Gl.Float },
-        [typeof(double)] = new CommonVertexInfo { Size = 1, Type = Gl.Double }
-    }.ToImmutableDictionary();
+    private static KeyValuePair<Type, CommonVertexInfo> Pair(Type type, int glSize, uint glType)
+        => KeyValuePair.Create(type, new CommonVertexInfo { Size = glSize, Type = glType });
+    private static readonly ImmutableDictionary<Type, CommonVertexInfo> CommonVertexInfoByType =
+        new KeyValuePair<Type, CommonVertexInfo>[]
+        {
+            Pair(typeof(Half), 1, Gl.HalfFloat),
+            Pair(typeof(Vector2<Half>), 2, Gl.HalfFloat),
+            Pair(typeof(Vector3<Half>), 3, Gl.HalfFloat),
+            Pair(typeof(Vector4<Half>), 4, Gl.HalfFloat),
+            Pair(typeof(float), 1, Gl.Float),
+            Pair(typeof(Vector2), 2, Gl.Float),
+            Pair(typeof(Vector2<float>), 2, Gl.Float),
+            Pair(typeof(Vector3), 3, Gl.Float),
+            Pair(typeof(Vector3<float>), 3, Gl.Float),
+            Pair(typeof(Vector4), 4, Gl.Float),
+            Pair(typeof(Vector4<float>), 4, Gl.Float),
+            Pair(typeof(double), 1, Gl.Double),
+            Pair(typeof(Vector2<double>), 2, Gl.Double),
+            Pair(typeof(Vector3<double>), 3, Gl.Double),
+            Pair(typeof(Vector4<double>), 4, Gl.Double),
+            Pair(typeof(bool), 1, Gl.UnsignedByte),
+            Pair(typeof(Vector2<bool>), 2, Gl.UnsignedByte),
+            Pair(typeof(Vector3<bool>), 3, Gl.UnsignedByte),
+            Pair(typeof(Vector4<bool>), 4, Gl.UnsignedByte),
+            Pair(typeof(sbyte), 1, Gl.Byte),
+            Pair(typeof(Vector2<sbyte>), 2, Gl.Byte),
+            Pair(typeof(Vector3<sbyte>), 3, Gl.Byte),
+            Pair(typeof(Vector4<sbyte>), 4, Gl.Byte),
+            Pair(typeof(byte), 1, Gl.UnsignedByte),
+            Pair(typeof(Vector2<byte>), 2, Gl.UnsignedByte),
+            Pair(typeof(Vector3<byte>), 3, Gl.UnsignedByte),
+            Pair(typeof(Vector4<byte>), 4, Gl.UnsignedByte),
+            Pair(typeof(short), 1, Gl.Short),
+            Pair(typeof(Vector2<short>), 2, Gl.Short),
+            Pair(typeof(Vector3<short>), 3, Gl.Short),
+            Pair(typeof(Vector4<short>), 4, Gl.Short),
+            Pair(typeof(ushort), 1, Gl.UnsignedShort),
+            Pair(typeof(Vector2<ushort>), 2, Gl.UnsignedShort),
+            Pair(typeof(Vector3<ushort>), 3, Gl.UnsignedShort),
+            Pair(typeof(Vector4<ushort>), 4, Gl.UnsignedShort),
+            Pair(typeof(int), 1, Gl.Int),
+            Pair(typeof(Vector2<int>), 2, Gl.Int),
+            Pair(typeof(Vector3<int>), 3, Gl.Int),
+            Pair(typeof(Vector4<int>), 4, Gl.Int),
+            Pair(typeof(uint), 1, Gl.UnsignedInt),
+            Pair(typeof(Vector2<uint>), 2, Gl.UnsignedInt),
+            Pair(typeof(Vector3<uint>), 3, Gl.UnsignedInt),
+            Pair(typeof(Vector4<uint>), 4, Gl.UnsignedInt),
+            Pair(typeof(PackedUnsignedVector4), (int)Gl.Bgra, Gl.UnsignedInt2101010Rev)
+        }.ToImmutableDictionary();
 
     public static ShaderInputMapper Create<T>(IOpenGl gl, uint program) where T : unmanaged
     {
