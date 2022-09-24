@@ -24,20 +24,16 @@ namespace Piranha.SampleApplication
         private readonly IStb _stb;
         private readonly ILogger<SampleHandler> _logger;
         private readonly IAudioManager _audioManager;
-        private readonly Random _random = new();
         private readonly ScenePool<PiranhaScene> _scenePool;
         private PiranhaScene _currentScene = new();
+        private ShaderInputMapper _shaderInputMapper = default;
         private Matrix4x4 _matrix = default;
-        private uint _program = 0;
-        private uint _texture = 0;
+        private uint _program = default;
+        private uint _texture = default;
         private uint _buffer = default;
         private uint _vertexArray = default;
         private int _matrixUniform = default;
         private int _textureUniform = default;
-        private int _positionAttribute = default;
-        private int _textureCoordinateAttribute = default;
-
-        private float Randumb() => (float)_random.NextDouble();
 
         public SampleHandler(
             ILogger<SampleHandler> logger,
@@ -86,8 +82,7 @@ namespace Piranha.SampleApplication
 
             _matrixUniform = gl.GetUniformLocation(_program, "theMatrix");
             _textureUniform = gl.GetUniformLocation(_program, "theTexture");
-            _positionAttribute = gl.GetAttribLocation(_program, "position");
-            _textureCoordinateAttribute = gl.GetAttribLocation(_program, "textureCoordinates");
+            _shaderInputMapper = ShaderInputMapper.Create<Vertex>(gl, _program);
 
             _ = GlTools.TryLogErrors(gl, _logger);
 
@@ -222,27 +217,11 @@ namespace Piranha.SampleApplication
                     bytes[0]);
             }
             gl.BindTexture(Gl.Texture2d, _texture);
-            gl.EnableVertexAttribArray(_positionAttribute);
-            gl.EnableVertexAttribArray(_textureCoordinateAttribute);
+            _shaderInputMapper.Enable(gl);
             gl.Uniform1i(_textureUniform, 0);
             gl.UniformMatrix4fv(_matrixUniform, 1, Gl.False, _matrix);
-            gl.VertexAttribPointer(
-                _positionAttribute,
-                2,
-                Gl.Float,
-                Gl.False,
-                Unsafe.SizeOf<Vertex>(),
-                IntPtr.Zero);
-            gl.VertexAttribPointer(
-                _textureCoordinateAttribute,
-                2,
-                Gl.Float,
-                Gl.False,
-                Unsafe.SizeOf<Vertex>(),
-                new IntPtr(Unsafe.SizeOf<Vector2>()));
             gl.DrawArrays(Gl.Triangles, 0, 6);
-            gl.DisableVertexAttribArray(_textureCoordinateAttribute);
-            gl.DisableVertexAttribArray(_positionAttribute);
+            _shaderInputMapper.Disable(gl);
             gl.Disable(Gl.Blend);
             gl.UseProgram(0);
             _ = GlTools.TryLogErrors(gl, _logger);

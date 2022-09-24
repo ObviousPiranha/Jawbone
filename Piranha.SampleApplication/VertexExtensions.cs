@@ -8,8 +8,8 @@ static class VertexExtensions
 {
     public static UnmanagedList<Vertex> Add(
         this UnmanagedList<Vertex> list,
-        Quadrilateral<Vector2> position,
-        Quadrilateral<Vector2> textureCoordinates)
+        Quadrilateral<System.Numerics.Vector2> position,
+        Quadrilateral<System.Numerics.Vector2> textureCoordinates)
     {
         return list
             .Add(new(position.A, textureCoordinates.A))
