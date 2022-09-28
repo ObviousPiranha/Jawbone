@@ -80,9 +80,26 @@ namespace Piranha.Jawbone.Sqlite
             return _sqlite3.ColumnDouble(_statement, index);
         }
 
-        public string? ColumnText(int index)
+        public ReadOnlySpan<char> ColumnText(int index)
         {
-            return _sqlite3.ColumnText(_statement, index);
+            var pointer = _sqlite3.ColumnText16(_statement, index);
+            var errorCode = _sqlite3.Errcode(_database);
+            _sqlite3.ThrowOnError(_database, errorCode);
+            var byteCount = _sqlite3.ColumnBytes16(_statement, index);
+
+            if (0 < byteCount && pointer.IsValid())
+            {
+                unsafe
+                {
+                    return new ReadOnlySpan<char>(
+                        pointer.ToPointer(),
+                        byteCount / 2);
+                }
+            }
+            else
+            {
+                return default;
+            }
         }
 
         public ReadOnlySpan<byte> ColumnBlob(int index)
@@ -94,7 +111,7 @@ namespace Piranha.Jawbone.Sqlite
             var pointer = _sqlite3.ColumnBlob(_statement, index);
             var byteCount = _sqlite3.ColumnBytes(_statement, index);
 
-            if (byteCount > 0 && pointer.IsValid())
+            if (0 < byteCount && pointer.IsValid())
             {
                 unsafe
                 {

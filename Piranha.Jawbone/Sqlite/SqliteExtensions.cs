@@ -26,7 +26,9 @@ namespace Piranha.Jawbone.Sqlite
             IntPtr database,
             int result)
         {
-            if (result != SqliteResult.Ok)
+            if (result != SqliteResult.Ok &&
+                result != SqliteResult.RowReady &&
+                result != SqliteResult.Done)
             {
                 throw new SqliteException(
                     sqlite3.Errmsg(database) ?? string.Empty,

@@ -11,7 +11,8 @@ namespace Piranha.Jawbone.Sqlite
 
         public string LoadProperty(SqliteReader reader, int index)
         {
-            return reader.ColumnText(index) ?? string.Empty;
+            var span = reader.ColumnText(index);
+            return span.IsEmpty ? "" : new string(span);
         }
     }
 }

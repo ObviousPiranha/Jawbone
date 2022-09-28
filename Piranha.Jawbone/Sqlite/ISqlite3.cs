@@ -28,10 +28,13 @@ namespace Piranha.Jawbone.Sqlite
         int ColumnInt(IntPtr statement, int index);
         long ColumnInt64(IntPtr statement, int index);
         double ColumnDouble(IntPtr statement, int index);
-        string? ColumnText(IntPtr statement, int index);
+        IntPtr ColumnText(IntPtr statement, int index);
+        IntPtr ColumnText16(IntPtr statement, int index);
         int ColumnType(IntPtr statement, int index);
         IntPtr ColumnBlob(IntPtr statement, int index);
         int ColumnBytes(IntPtr statement, int index);
+        int ColumnBytes16(IntPtr statement, int index);
+        int Errcode(IntPtr database);
         string? Errmsg(IntPtr database);
         string? Errstr(int errorCode);
         int Changes(IntPtr database);

@@ -95,8 +95,8 @@ namespace Piranha.Jawbone.Sqlite
                 {
                     var column = reader.ColumnText(1);
 
-                    if (column != null)
-                        columns.Add(column);
+                    if (!column.IsEmpty)
+                        columns.Add(new string(column));
                 }
             }
 
@@ -124,8 +124,8 @@ namespace Piranha.Jawbone.Sqlite
                 {
                     var column = reader.ColumnText(1);
 
-                    if (column != null)
-                        currentFields.Add(column);
+                    if (!column.IsEmpty)
+                        currentFields.Add(new string(column));
                 }
             }
 

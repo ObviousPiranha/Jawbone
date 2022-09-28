@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Piranha.Jawbone.Net;
 
-static class Windows
+public static class Windows
 {
     public static readonly ImmutableArray<ErrorCode> ErrorCodes = ImmutableArray.Create<ErrorCode>(
         new(10004, "WSAEINTR", "A blocking operation was interrupted by a call to WSACancelBlockingCall."),

@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace Piranha.Jawbone.Net;
 
-static class Linux
+public static class Linux
 {
     public static readonly ImmutableArray<ErrorCode> ErrorCodes = ImmutableArray.Create<ErrorCode>(
         ErrorCode.None,
