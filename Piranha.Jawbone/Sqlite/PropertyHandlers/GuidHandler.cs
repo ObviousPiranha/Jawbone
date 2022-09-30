@@ -13,7 +13,7 @@ namespace Piranha.Jawbone.Sqlite
 
         public Guid LoadProperty(SqliteReader reader, int index)
         {
-            var text = reader.ColumnText(index);
+            var text = reader.ColumnUtf16(index);
             Guid.TryParse(text, out var result);
             return result;
         }

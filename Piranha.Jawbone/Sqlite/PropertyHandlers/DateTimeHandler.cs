@@ -13,7 +13,7 @@ namespace Piranha.Jawbone.Sqlite
 
         public DateTime LoadProperty(SqliteReader reader, int index)
         {
-            var text = reader.ColumnText(index);
+            var text = reader.ColumnUtf16(index);
             DateTime.TryParse(text, out var result);
             return result;
         }

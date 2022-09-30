@@ -93,7 +93,7 @@ namespace Piranha.Jawbone.Sqlite
             {
                 while (reader.TryRead())
                 {
-                    var column = reader.ColumnText(1);
+                    var column = reader.ColumnUtf16(1);
 
                     if (!column.IsEmpty)
                         columns.Add(new string(column));
@@ -122,7 +122,7 @@ namespace Piranha.Jawbone.Sqlite
             {
                 while (reader.TryRead())
                 {
-                    var column = reader.ColumnText(1);
+                    var column = reader.ColumnUtf16(1);
 
                     if (!column.IsEmpty)
                         currentFields.Add(new string(column));

@@ -13,7 +13,7 @@ namespace Piranha.Jawbone.Sqlite
 
         public DateTimeOffset LoadProperty(SqliteReader reader, int index)
         {
-            var text = reader.ColumnText(index);
+            var text = reader.ColumnUtf16(index);
             DateTimeOffset.TryParse(text, out var result);
             return result;
         }
