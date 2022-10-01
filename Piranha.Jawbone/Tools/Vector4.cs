@@ -24,4 +24,7 @@ public struct Vector4<T> : IEquatable<Vector4<T>> where T : unmanaged, IEquatabl
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is Vector4<T> other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
     public override string? ToString() => $"{X}, ${Y}, ${Z}, ${W}";
+
+    public static bool operator ==(Vector4<T> a, Vector4<T> b) => a.Equals(b);
+    public static bool operator !=(Vector4<T> a, Vector4<T> b) => !a.Equals(b);
 }

@@ -20,4 +20,7 @@ public struct Vector2<T> : IEquatable<Vector2<T>> where T : unmanaged, IEquatabl
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is Vector2<T> other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(X, Y);
     public override string? ToString() => $"{X}, ${Y}";
+
+    public static bool operator ==(Vector2<T> a, Vector2<T> b) => a.Equals(b);
+    public static bool operator !=(Vector2<T> a, Vector2<T> b) => !a.Equals(b);
 }

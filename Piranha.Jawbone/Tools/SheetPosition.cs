@@ -4,8 +4,8 @@ namespace Piranha.Jawbone.Tools
 {
     public readonly struct SheetPosition : IEquatable<SheetPosition>
     {
-        public readonly int SheetIndex;
         public readonly Rectangle32 Rectangle;
+        public readonly int SheetIndex;
 
         public SheetPosition(int sheetIndex, Rectangle32 rectangle)
         {

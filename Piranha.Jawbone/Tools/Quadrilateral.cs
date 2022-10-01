@@ -38,6 +38,9 @@ public readonly struct Quadrilateral<T> : IEquatable<Quadrilateral<T>> where T :
     public override bool Equals(object? obj) => obj is Quadrilateral<T> other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(A, B, C, D);
     public override string ToString() => $"{A} {B} {C} {D}";
+
+    public static bool operator ==(Quadrilateral<T> a, Quadrilateral<T> b) => a.Equals(b);
+    public static bool operator !=(Quadrilateral<T> a, Quadrilateral<T> b) => !a.Equals(b);
 }
 
 public static class Quadrilateral
@@ -50,6 +53,4 @@ public static class Quadrilateral
             c,
             new Vector2(c.X, a.Y));
     }
-
-    public static Quadrilateral<Vector2> Create(Rectangle<Vector2> rectangle) => Create(rectangle.A, rectangle.C);
 }

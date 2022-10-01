@@ -10,20 +10,6 @@ namespace Piranha.Jawbone.Tools
         public static int Min(this Point32 p) => Math.Min(p.X, p.Y);
         public static int Max(this Point32 p) => Math.Max(p.X, p.Y);
         public static Point32 Moved(this Point32 p, int dx, int dy) => new(p.X + dx, p.Y + dy);
-        
-        public static void InOrder(this Point32 p, out int low, out int high)
-        {
-            if (p.X < p.Y)
-            {
-                low = p.X;
-                high = p.Y;
-            }
-            else
-            {
-                low = p.Y;
-                high = p.X;
-            }
-        }
 
         public static Vector2 ToRatio(this Point32 p)
         {

@@ -19,35 +19,26 @@ namespace Piranha.Jawbone.Tools
 
         public SheetPosition Allocate(Point32 size)
         {
+            if (!size.AllPositive() || SheetSize.X < size.X || SheetSize.Y < size.Y)
+                return default;
+            
             var bestIndex = NoIndex;
-            Span<int> fitValues = stackalloc int[6]
-            {
-                int.MaxValue, // best fit (low)
-                int.MaxValue, // best fit (high)
-                int.MaxValue, // best sheet index
-                0, // current low fit
-                0, // current high fit
-                0 // current sheet index
-            };
+            var bestFit = SheetFit.WorstFit;
 
             for (int i = 0; i < _available.Count; ++i)
             {
-                var fit = _available[i].Rectangle.Size - size;
-                fit.InOrder(out fitValues[3], out fitValues[4]);
-                fitValues[5] = _available[i].SheetIndex;
+                var gaps = _available[i].Rectangle.Size - size;
+                var fit = SheetFit.Create(gaps);
 
-                if (0 <= fitValues[3] && Comparer.IsLessThan(fitValues[3..6], fitValues[0..3]))
+                if (fit.IsValid && fit < bestFit)
                 {
+                    bestFit = fit;
                     bestIndex = i;
-                    fitValues[3..6].CopyTo(fitValues);
                 }
             }
 
             if (bestIndex == NoIndex)
             {
-                if (SheetSize.X < size.X || SheetSize.Y < size.Y)
-                    throw new Exception("Cannot allocate space for item bigger than sheet.");
-                
                 bestIndex = _available.Count;
                 _available.Add(
                     new SheetPosition(
