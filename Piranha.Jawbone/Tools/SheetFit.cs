@@ -3,13 +3,15 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Piranha.Jawbone.Tools;
 
-public readonly struct SheetFit : IEquatable<SheetFit>, IComparable<SheetFit>
+readonly struct SheetFit : IEquatable<SheetFit>, IComparable<SheetFit>
 {
     public static SheetFit Create(Point32 point) => Create(point.X, point.Y);
     public static SheetFit Create(int fit1, int fit2)
         => fit2 < fit1 ? new(fit2, fit1) : new(fit1, fit2);
 
     public static readonly SheetFit WorstFit = new(int.MaxValue, int.MaxValue);
+    public static readonly SheetFit BestFit = new();
+    public static readonly SheetFit InvalidFit = new(-1, -1);
 
     public readonly int PrimaryFit;
     public readonly int SecondaryFit;
