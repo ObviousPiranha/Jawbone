@@ -5,6 +5,51 @@ namespace Piranha.Jawbone.Tools
 {
     public sealed class SheetBuilder
     {
+        private static void InnerPack(
+            Rectangle32 r,
+            Point32 size,
+            int rightHeight,
+            int bottomWidth,
+            out Rectangle32 rx,
+            out Rectangle32 ry)
+        {
+            rx = new Rectangle32(
+                new Point32(r.Position.X + size.X, r.Position.Y),
+                new Point32(r.Size.X - size.X, rightHeight));
+            ry = new Rectangle32(
+                new Point32(r.Position.X, r.Position.Y + size.Y),
+                new Point32(bottomWidth, r.Size.Y - size.Y));
+        }
+
+        private static void SmartPack(
+            Rectangle32 space,
+            Point32 size,
+            out Rectangle32 rx,
+            out Rectangle32 ry)
+        {
+            var fit = space.Size - size;
+
+            if (fit.X < fit.Y)
+            {
+                InnerPack(
+                    space,
+                    size,
+                    size.Y,
+                    space.Size.X,
+                    out rx,
+                    out ry);
+            }
+            else
+            {
+                InnerPack(
+                    space,
+                    size,
+                    space.Size.Y,
+                    size.X,
+                    out rx,
+                    out ry);
+            }
+        }
         private const int NoIndex = -1;
         private readonly List<SheetPosition> _available = new();
 
@@ -47,7 +92,7 @@ namespace Piranha.Jawbone.Tools
             }
 
             var slot = _available[bestIndex];
-            slot.Rectangle.Pack(size, out var rx, out var ry);
+            SmartPack(slot.Rectangle, size, out var rx, out var ry);
 
             if (rx.Size.AllPositive())
             {

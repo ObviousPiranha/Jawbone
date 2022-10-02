@@ -11,12 +11,12 @@ readonly struct SheetFit : IEquatable<SheetFit>, IComparable<SheetFit>
 
     public static readonly SheetFit WorstFit = new(int.MaxValue, int.MaxValue);
     public static readonly SheetFit BestFit = new();
-    public static readonly SheetFit InvalidFit = new(-1, -1);
+    public static readonly SheetFit InvalidFit = new(-1, -2);
 
     public readonly int PrimaryFit;
     public readonly int SecondaryFit;
 
-    public readonly bool IsValid => 0 <= PrimaryFit && 0 <= SecondaryFit;
+    public readonly bool IsValid => 0 <= PrimaryFit && PrimaryFit <= SecondaryFit;
 
     private SheetFit(int primaryFit, int secondaryFit)
     {

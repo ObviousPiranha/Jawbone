@@ -34,11 +34,11 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         _nextCapacity = 64;
     }
 
-    public UnmanagedList(int firstCapcity)
+    public UnmanagedList(int firstCapacity)
     {
-        if (firstCapcity < 1)
-            throw new ArgumentOutOfRangeException(nameof(firstCapcity), "Must be at least 1.");
-        _nextCapacity = firstCapcity;
+        if (firstCapacity < 1)
+            throw new ArgumentOutOfRangeException(nameof(firstCapacity), "Must be at least 1.");
+        _nextCapacity = firstCapacity;
     }
 
     public UnmanagedList<T> Clear()
