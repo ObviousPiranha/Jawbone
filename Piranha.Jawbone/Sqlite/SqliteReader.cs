@@ -92,14 +92,11 @@ namespace Piranha.Jawbone.Sqlite
             ThrowOnError();
             var byteCount = _sqlite3.ColumnBytes16(_statement, index);
 
-            if (0 < byteCount && pointer.IsValid())
+            if (0 < byteCount && pointer.IsValid()) unsafe
             {
-                unsafe
-                {
-                    return new ReadOnlySpan<char>(
-                        pointer.ToPointer(),
-                        byteCount / 2);
-                }
+                return new ReadOnlySpan<char>(
+                    pointer.ToPointer(),
+                    byteCount / 2);
             }
 
             return default;
@@ -111,14 +108,11 @@ namespace Piranha.Jawbone.Sqlite
             ThrowOnError();
             var byteCount = _sqlite3.ColumnBytes(_statement, index);
 
-            if (0 < byteCount && pointer.IsValid())
+            if (0 < byteCount && pointer.IsValid()) unsafe
             {
-                unsafe
-                {
-                    return new ReadOnlySpan<byte>(
-                        pointer.ToPointer(),
-                        byteCount);
-                }
+                return new ReadOnlySpan<byte>(
+                    pointer.ToPointer(),
+                    byteCount);
             }
 
             return default;
@@ -134,22 +128,14 @@ namespace Piranha.Jawbone.Sqlite
             ThrowOnError();
             var byteCount = _sqlite3.ColumnBytes(_statement, index);
 
-            if (0 < byteCount && pointer.IsValid())
+            if (0 < byteCount && pointer.IsValid()) unsafe
             {
-                unsafe
-                {
-                    return new ReadOnlySpan<byte>(
-                        pointer.ToPointer(),
-                        byteCount);
-                }
+                return new ReadOnlySpan<byte>(
+                    pointer.ToPointer(),
+                    byteCount);
             }
 
             return default;
-        }
-
-        public byte[] GetBytes(int index)
-        {
-            return ColumnBlob(index).ToArray();
         }
     }
 }
