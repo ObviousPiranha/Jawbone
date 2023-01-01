@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Net;
 
-public static class JawboneNetworking
+public static partial class JawboneNetworking
 {
     private const string Library = "PiranhaNative.dll";
 
@@ -11,52 +11,52 @@ public static class JawboneNetworking
         StartNetworking();
     }
 
-    [DllImport(Library, EntryPoint = "jawboneStartNetworking", CallingConvention = CallingConvention.Cdecl)]
-    private static extern int StartNetworking();
-    [DllImport(Library, EntryPoint = "jawboneStopNetworking", CallingConvention = CallingConvention.Cdecl)]
-    public static extern void StopNetworking();
-    [DllImport(Library, EntryPoint = "jawboneCreateAndBindUdpV4Socket", CallingConvention = CallingConvention.Cdecl)]
-    public static extern void CreateAndBindUdpV4Socket(
+    [LibraryImport(Library, EntryPoint = "jawboneStartNetworking")]
+    private static partial int StartNetworking();
+    [LibraryImport(Library, EntryPoint = "jawboneStopNetworking")]
+    public static partial void StopNetworking();
+    [LibraryImport(Library, EntryPoint = "jawboneCreateAndBindUdpV4Socket")]
+    public static partial void CreateAndBindUdpV4Socket(
         Address32 address,
         ushort port,
         out long outSocket,
         out int outSocketError,
         out int outBindError);
-    [DllImport(Library, EntryPoint = "jawboneCreateAndBindUdpV6Socket", CallingConvention = CallingConvention.Cdecl)]
-    public static extern void CreateAndBindUdpV6Socket(
+    [LibraryImport(Library, EntryPoint = "jawboneCreateAndBindUdpV6Socket")]
+    public static partial void CreateAndBindUdpV6Socket(
         in Address128 address,
         ushort port,
         out long outSocket,
         out int outSocketError,
         out int outBindError);
-    [DllImport(Library, EntryPoint = "jawboneGetV4SocketName", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int GetV4SocketName(
+    [LibraryImport(Library, EntryPoint = "jawboneGetV4SocketName")]
+    public static partial int GetV4SocketName(
         in long inSocket,
         out Address32 outAddress,
         out ushort outPort);
-    [DllImport(Library, EntryPoint = "jawboneGetV6SocketName", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int GetV6SocketName(
+    [LibraryImport(Library, EntryPoint = "jawboneGetV6SocketName")]
+    public static partial int GetV6SocketName(
         in long inSocket,
         out Address128 outAddress,
         out ushort outPort);
-    [DllImport(Library, EntryPoint = "jawboneSendToV4", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int SendToV4(
+    [LibraryImport(Library, EntryPoint = "jawboneSendToV4")]
+    public static partial int SendToV4(
         in long inSocket,
         in byte inBuffer,
         int bufferLength,
         Address32 address,
         ushort port,
         out int errorCode);
-    [DllImport(Library, EntryPoint = "jawboneSendToV6", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int SendToV6(
+    [LibraryImport(Library, EntryPoint = "jawboneSendToV6")]
+    public static partial int SendToV6(
         in long inSocket,
         in byte inBuffer,
         int bufferLength,
         in Address128 address,
         ushort port,
         out int errorCode);
-    [DllImport(Library, EntryPoint = "jawboneReceiveFromV4", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int ReceiveFromV4(
+    [LibraryImport(Library, EntryPoint = "jawboneReceiveFromV4")]
+    public static partial int ReceiveFromV4(
         in long inSocket,
         out byte outBuffer,
         int bufferLength,
@@ -64,8 +64,8 @@ public static class JawboneNetworking
         out ushort outPort,
         out int errorCode,
         int milliseconds);
-    [DllImport(Library, EntryPoint = "jawboneReceiveFromV6", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int ReceiveFromV6(
+    [LibraryImport(Library, EntryPoint = "jawboneReceiveFromV6")]
+    public static partial int ReceiveFromV6(
         in long inSocket,
         out byte outBuffer,
         int bufferLength,
@@ -73,12 +73,12 @@ public static class JawboneNetworking
         out ushort outPort,
         out int errorCode,
         int milliseconds);
-    [DllImport(Library, EntryPoint = "jawboneShutdownSocket", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int ShutdownSocket(in long targetSocket);
-    [DllImport(Library, EntryPoint = "jawboneCloseSocket", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int CloseSocket(in long closingSocket);
-    [DllImport(Library, EntryPoint = "jawboneGetAddressInfo", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int GetAddressInfo(
+    [LibraryImport(Library, EntryPoint = "jawboneShutdownSocket")]
+    public static partial int ShutdownSocket(in long targetSocket);
+    [LibraryImport(Library, EntryPoint = "jawboneCloseSocket")]
+    public static partial int CloseSocket(in long closingSocket);
+    [LibraryImport(Library, EntryPoint = "jawboneGetAddressInfo", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int GetAddressInfo(
         string? node,
         string? service,
         out Endpoint<Address32> resultsV4,
