@@ -22,9 +22,11 @@ public class SocketException : Exception
                 if (0 < error && error < Linux.ErrorCodes.Length)
                     errorCode = Linux.ErrorCodes[error];
             }
-            
-            var exception = new SocketException(message + " " + errorCode.ToString());
-            exception.Code = errorCode;
+
+            var exception = new SocketException(message + " " + errorCode.ToString())
+            {
+                Code = errorCode
+            };
             throw exception;
         }
     }

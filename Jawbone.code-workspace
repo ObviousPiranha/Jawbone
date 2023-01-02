@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "Piranha.Sandbox"
+		},
+		{
+			"path": "Piranha.Jawbone.SourceGenerator"
 		}
 	],
 	"settings": {

@@ -1,9 +1,8 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
+using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
-using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Jawbone.Benchmark;
@@ -13,10 +12,9 @@ public class SocketBenchmark
 {
     private const int Port = 11111;
 
-    private static readonly Endpoint<Address32> JawboneDestination = new Endpoint<Address32>(Address32.Local, Port);
-    private static readonly IPEndPoint DotNetDestination = new IPEndPoint(IPAddress.Loopback, Port);
+    private static readonly Endpoint<Address32> JawboneDestination = new(Address32.Local, Port);
+    private static readonly IPEndPoint DotNetDestination = new(IPAddress.Loopback, Port);
 
-    private readonly Random _random = new();
     private readonly byte[] _sendBuffer = new byte[713];
     private readonly byte[] _receiveBuffer = new byte[2048];
 
@@ -31,7 +29,7 @@ public class SocketBenchmark
         _jawboneClientSocket = new UdpSocket32(default);
         _dotNetClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         _dotNetClientSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
-        _random.NextBytes(_sendBuffer);
+        RandomNumberGenerator.Fill(_sendBuffer);
     }
 
     [GlobalCleanup]

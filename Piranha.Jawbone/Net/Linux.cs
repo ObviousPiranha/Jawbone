@@ -4,7 +4,7 @@ namespace Piranha.Jawbone.Net;
 
 public static class Linux
 {
-    public static readonly ImmutableArray<ErrorCode> ErrorCodes = ImmutableArray.Create<ErrorCode>(
+    public static readonly ImmutableArray<ErrorCode> ErrorCodes = ImmutableArray.Create(
         ErrorCode.None,
         new(1, "EPERM", "Operation not permitted"),
         new(2, "ENOENT", "No such file or directory"),
