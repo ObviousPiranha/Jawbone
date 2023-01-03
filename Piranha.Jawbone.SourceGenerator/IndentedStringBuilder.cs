@@ -6,6 +6,8 @@ namespace Piranha.Jawbone.SourceGenerator;
 
 class IndentedStringBuilder
 {
+    public const int DefaultSpacesPerIndent = 4;
+
     private readonly StringBuilder _builder;
     private readonly int _indentLevel;
     private readonly int _spacesPerLevel;
@@ -46,7 +48,7 @@ class IndentedStringBuilder
             foreach (var item in items)
                 AppendLine(item);
         }
-        
+
         return this;
     }
 
@@ -79,5 +81,5 @@ class IndentedStringBuilder
 
     public override string ToString() => _builder.ToString();
 
-    public static IndentedStringBuilder Create(int spacesPerLevel = 4) => new(new(), 0, spacesPerLevel);
+    public static IndentedStringBuilder Create(int spacesPerLevel = DefaultSpacesPerIndent) => new(new(), 0, spacesPerLevel);
 }
