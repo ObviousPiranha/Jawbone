@@ -73,6 +73,8 @@ public sealed class GameLoopManager : IDisposable
                         _gameLoop.PrepareScene();
                         wasPrepared = true;
                     }
+
+                    _gameLoop.BetweenFrames();
                 }
                 else
                 {
