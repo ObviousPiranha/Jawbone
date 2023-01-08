@@ -1,9 +1,8 @@
 using System;
 
-namespace Piranha.Jawbone.Sqlite
+namespace Piranha.Jawbone.Sqlite;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+public class SqliteIgnore : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public class SqliteIgnore : Attribute
-    {
-    }
 }

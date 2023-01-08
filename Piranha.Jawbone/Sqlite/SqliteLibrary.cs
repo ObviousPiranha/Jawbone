@@ -2,43 +2,42 @@ using System;
 using System.Collections.Generic;
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.Jawbone.Sqlite
+namespace Piranha.Jawbone.Sqlite;
+
+public sealed class SqliteLibrary : IDisposable
 {
-    public sealed class SqliteLibrary : IDisposable
+    private readonly NativeLibraryInterface<ISqlite3> _nativeLibraryInterface;
+
+    public ISqlite3 Library => _nativeLibraryInterface.Library;
+
+    public SqliteLibrary(string file)
     {
-        private readonly NativeLibraryInterface<ISqlite3> _nativeLibraryInterface;
+        _nativeLibraryInterface = NativeLibraryInterface.FromFile<ISqlite3>(
+            file,
+            methodName => NativeLibraryInterface.PascalCaseToSnakeCase("sqlite3", methodName));
 
-        public ISqlite3 Library => _nativeLibraryInterface.Library;
-
-        public SqliteLibrary(string file)
+        try
         {
-            _nativeLibraryInterface = NativeLibraryInterface.FromFile<ISqlite3>(
-                file,
-                methodName => NativeLibraryInterface.PascalCaseToSnakeCase("sqlite3", methodName));
+            // https://www.sqlite.org/c3ref/initialize.html
+            var result = Library.Initialize();
 
-            try
+            if (result != SqliteResult.Ok)
             {
-                // https://www.sqlite.org/c3ref/initialize.html
-                var result = Library.Initialize();
-
-                if (result != SqliteResult.Ok)
-                {
-                    throw new SqliteException(
-                        "Error on sqlite3_initialize().",
-                        KeyValuePair.Create(result, result.ToString()));
-                }
-            }
-            catch
-            {
-                _nativeLibraryInterface.Dispose();
-                throw;
+                throw new SqliteException(
+                    "Error on sqlite3_initialize().",
+                    KeyValuePair.Create(result, result.ToString()));
             }
         }
-
-        public void Dispose()
+        catch
         {
-            _nativeLibraryInterface.Library.Shutdown();
             _nativeLibraryInterface.Dispose();
+            throw;
         }
+    }
+
+    public void Dispose()
+    {
+        _nativeLibraryInterface.Library.Shutdown();
+        _nativeLibraryInterface.Dispose();
     }
 }

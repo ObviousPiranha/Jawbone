@@ -2,11 +2,10 @@ using System;
 using System.Numerics;
 using Piranha.Jawbone.Collections;
 
-namespace Piranha.SampleApplication
+namespace Piranha.SampleApplication;
+
+class PiranhaScene
 {
-    class PiranhaScene
-    {
-        public Vector4 Color { get; set; }
-        public UnmanagedList<Vertex> VertexData { get; } = new();
-    }
+    public Vector4 Color { get; set; }
+    public UnmanagedList<Vertex> VertexData { get; } = new();
 }

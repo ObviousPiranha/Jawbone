@@ -1,11 +1,10 @@
-namespace Piranha.Jawbone.Sdl
+namespace Piranha.Jawbone.Sdl;
+
+public interface IGameLoop
 {
-    public interface IGameLoop
-    {
-        bool Running { get => true; }
-        void PrepareScene() {}
-        void FrameUpdate() {}
-        void BetweenFrames() {}
-        void Close() {}
-    }
+    bool Running { get => true; }
+    void PrepareScene() {}
+    void FrameUpdate() {}
+    void BetweenFrames() {}
+    void Close() {}
 }

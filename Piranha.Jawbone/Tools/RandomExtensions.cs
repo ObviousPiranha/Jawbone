@@ -1,24 +1,23 @@
 using System;
 
-namespace Piranha.Jawbone.Tools.RandomExtensions
+namespace Piranha.Jawbone.Tools.RandomExtensions;
+
+public static class RandomExtensions
 {
-    public static class RandomExtensions
+    public static bool NextBoolean(this Random random) => random.Next(2) == 0;
+    public static bool NextBoolean(this Random random, int odds) => random.Next(odds) == 0;
+    public static double BoxMullerTransform(this Random random, double mean, double standardDeviation)
     {
-        public static bool NextBoolean(this Random random) => random.Next(2) == 0;
-        public static bool NextBoolean(this Random random, int odds) => random.Next(odds) == 0;
-        public static double BoxMullerTransform(this Random random, double mean, double standardDeviation)
-        {
-            return mean + BoxMullerTransform(random, standardDeviation);
-        }
-        
-        public static double BoxMullerTransform(this Random random, double standardDeviation)
-        {
-            // https://stackoverflow.com/a/218600
-            var u1 = 1.0 - random.NextDouble();
-            var u2 = 1.0 - random.NextDouble();
-            var randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
-            var result = standardDeviation * randStdNormal;
-            return result;
-        }
+        return mean + BoxMullerTransform(random, standardDeviation);
+    }
+    
+    public static double BoxMullerTransform(this Random random, double standardDeviation)
+    {
+        // https://stackoverflow.com/a/218600
+        var u1 = 1.0 - random.NextDouble();
+        var u2 = 1.0 - random.NextDouble();
+        var randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+        var result = standardDeviation * randStdNormal;
+        return result;
     }
 }

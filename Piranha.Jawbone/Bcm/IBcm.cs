@@ -1,10 +1,9 @@
 using Piranha.Jawbone.Tools;
 
-namespace Piranha.Jawbone.Bcm
+namespace Piranha.Jawbone.Bcm;
+
+public interface IBcm
 {
-    public interface IBcm
-    {
-        [FunctionName("bcm_host_init")]
-        void HostInit();
-    }
+    [FunctionName("bcm_host_init")]
+    void HostInit();
 }

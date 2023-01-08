@@ -1,10 +1,9 @@
 using System;
 
-namespace Piranha.Jawbone.Sqlite
+namespace Piranha.Jawbone.Sqlite;
+
+public class MissingTableException : Exception
 {
-    public class MissingTableException : Exception
-    {
-        public MissingTableException(string message) : base(message)
-        {}
-    }
+    public MissingTableException(string message) : base(message)
+    {}
 }

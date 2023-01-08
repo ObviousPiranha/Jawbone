@@ -1,33 +1,32 @@
 using System;
 
-namespace Piranha.Jawbone.Sqlite
+namespace Piranha.Jawbone.Sqlite;
+
+public class SqliteTransaction : IDisposable
 {
-    public class SqliteTransaction : IDisposable
+    private readonly SqliteDatabase _database;
+    private bool _wasCommitted = false;
+
+    public SqliteTransaction(SqliteDatabase database)
     {
-        private readonly SqliteDatabase _database;
-        private bool _wasCommitted = false;
+        _database = database;
+        _database.Execute("BEGIN TRANSACTION");
+    }
 
-        public SqliteTransaction(SqliteDatabase database)
+    public void Commit()
+    {
+        if (!_wasCommitted)
         {
-            _database = database;
-            _database.Execute("BEGIN TRANSACTION");
+            _database.Execute("COMMIT");
+            _wasCommitted = true;
         }
+    }
 
-        public void Commit()
+    public void Dispose()
+    {
+        if (!_wasCommitted)
         {
-            if (!_wasCommitted)
-            {
-                _database.Execute("COMMIT");
-                _wasCommitted = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            if (!_wasCommitted)
-            {
-                _database.Execute("ROLLBACK");
-            }
+            _database.Execute("ROLLBACK");
         }
     }
 }

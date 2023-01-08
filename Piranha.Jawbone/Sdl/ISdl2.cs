@@ -2,102 +2,101 @@ using System;
 using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 
-namespace Piranha.Jawbone.Sdl
+namespace Piranha.Jawbone.Sdl;
+
+public interface ISdl2
 {
-    public interface ISdl2
-    {
-        int Init(uint flags);
-        void Quit();
-        string GetError();
+    int Init(uint flags);
+    void Quit();
+    string GetError();
 
-        IntPtr CreateRGBSurface(
-            uint flags,
-            int width,
-            int height,
-            int depth,
-            uint rmask,
-            uint gmask,
-            uint bmask,
-            uint amask);
+    IntPtr CreateRGBSurface(
+        uint flags,
+        int width,
+        int height,
+        int depth,
+        uint rmask,
+        uint gmask,
+        uint bmask,
+        uint amask);
 
-        IntPtr CreateRGBSurfaceFrom(
-            IntPtr pixels,
-            int width,
-            int height,
-            int depth,
-            int pitch,
-            uint rmask,
-            uint gmask,
-            uint bmask,
-            uint amask);
-        IntPtr CreateWindow(string title, int x, int y, int w, int h, uint flags);
-        void DestroyWindow(IntPtr window);
-        void FreeSurface(IntPtr surface);
-        int GetDisplayBounds(int displayIndex, out SdlRect rect);
-        int GetDisplayUsableBounds(int displayIndex, out SdlRect rect);
-        uint GetWindowFlags(IntPtr window);
-        IntPtr GetWindowFromID(uint windowId);
-        uint GetWindowID(IntPtr window);
-        void GetWindowSize(IntPtr window, out int width, out int height);
-        int GetWindowDisplayIndex(IntPtr window);
-        IntPtr GetWindowSurface(IntPtr window);
-        IntPtr CreateSoftwareRenderer(IntPtr surface);
-        void MaximizeWindow(IntPtr window);
-        int SetRenderDrawColor(IntPtr renderer, byte r, byte g, byte b, byte a);
-        int RenderClear(IntPtr renderer);
-        void RenderPresent(IntPtr renderer);
-        void RestoreWindow(IntPtr window);
-        void SetWindowBordered(IntPtr window, int bordered);
-        int SetWindowFullscreen(IntPtr window, uint flags);
-        void SetWindowPosition(IntPtr window, int x, int y);
-        void SetWindowResizable(IntPtr window, int resizable);
-        void SetWindowSize(IntPtr window, int width, int height);
-        int UpdateWindowSurface(IntPtr window);
-        ulong GetPerformanceFrequency();
-        ulong GetPerformanceCounter();
-        int PollEvent(byte[] eventData);
-        [FunctionName("SDL_UpperBlit")]
-        int BlitSurface(
-            IntPtr source,
-            int[]? sourceRectangle,
-            IntPtr destination,
-            int[]? destinationRectangle);
-        [FunctionName("SDL_UpperBlit")]
-        int BlitSurface(
-            IntPtr source,
-            in int sourceRectangle,
-            IntPtr destination,
-            ref int destinationRectangle);
-        int WaitEvent(byte[] eventData);
-        uint RegisterEvents(int numEvents);
-        int PushEvent(byte[] eventData);
-        uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, out AudioSpec obtained, int allowedChanges);
-        uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, IntPtr obtained, int allowedChanges);
-        void CloseAudioDevice(uint dev);
-        void PauseAudioDevice(uint dev, int pauseOn);
-        int QueueAudio(uint dev, in byte data, uint len);
-        IntPtr NewAudioStream(ushort sourceFormat, byte sourceChannels, int sourceRate, ushort destinationFormat, byte destinationChannels, int destinationRate);
-        void FreeAudioStream(IntPtr stream);
-        int AudioStreamPut(IntPtr stream, in byte buffer, int length);
-        int AudioStreamPut(IntPtr stream, in short buffer, int length);
-        int AudioStreamFlush(IntPtr stream);
-        int AudioStreamAvailable(IntPtr stream);
-        int AudioStreamGet(IntPtr stream, out byte buffer, int length);
-        int AudioStreamGet(IntPtr stream, out short buffer, int length);
-        int AudioStreamGet(IntPtr stream, out float buffer, int length);
+    IntPtr CreateRGBSurfaceFrom(
+        IntPtr pixels,
+        int width,
+        int height,
+        int depth,
+        int pitch,
+        uint rmask,
+        uint gmask,
+        uint bmask,
+        uint amask);
+    IntPtr CreateWindow(string title, int x, int y, int w, int h, uint flags);
+    void DestroyWindow(IntPtr window);
+    void FreeSurface(IntPtr surface);
+    int GetDisplayBounds(int displayIndex, out SdlRect rect);
+    int GetDisplayUsableBounds(int displayIndex, out SdlRect rect);
+    uint GetWindowFlags(IntPtr window);
+    IntPtr GetWindowFromID(uint windowId);
+    uint GetWindowID(IntPtr window);
+    void GetWindowSize(IntPtr window, out int width, out int height);
+    int GetWindowDisplayIndex(IntPtr window);
+    IntPtr GetWindowSurface(IntPtr window);
+    IntPtr CreateSoftwareRenderer(IntPtr surface);
+    void MaximizeWindow(IntPtr window);
+    int SetRenderDrawColor(IntPtr renderer, byte r, byte g, byte b, byte a);
+    int RenderClear(IntPtr renderer);
+    void RenderPresent(IntPtr renderer);
+    void RestoreWindow(IntPtr window);
+    void SetWindowBordered(IntPtr window, int bordered);
+    int SetWindowFullscreen(IntPtr window, uint flags);
+    void SetWindowPosition(IntPtr window, int x, int y);
+    void SetWindowResizable(IntPtr window, int resizable);
+    void SetWindowSize(IntPtr window, int width, int height);
+    int UpdateWindowSurface(IntPtr window);
+    ulong GetPerformanceFrequency();
+    ulong GetPerformanceCounter();
+    int PollEvent(byte[] eventData);
+    [FunctionName("SDL_UpperBlit")]
+    int BlitSurface(
+        IntPtr source,
+        int[]? sourceRectangle,
+        IntPtr destination,
+        int[]? destinationRectangle);
+    [FunctionName("SDL_UpperBlit")]
+    int BlitSurface(
+        IntPtr source,
+        in int sourceRectangle,
+        IntPtr destination,
+        ref int destinationRectangle);
+    int WaitEvent(byte[] eventData);
+    uint RegisterEvents(int numEvents);
+    int PushEvent(byte[] eventData);
+    uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, out AudioSpec obtained, int allowedChanges);
+    uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, IntPtr obtained, int allowedChanges);
+    void CloseAudioDevice(uint dev);
+    void PauseAudioDevice(uint dev, int pauseOn);
+    int QueueAudio(uint dev, in byte data, uint len);
+    IntPtr NewAudioStream(ushort sourceFormat, byte sourceChannels, int sourceRate, ushort destinationFormat, byte destinationChannels, int destinationRate);
+    void FreeAudioStream(IntPtr stream);
+    int AudioStreamPut(IntPtr stream, in byte buffer, int length);
+    int AudioStreamPut(IntPtr stream, in short buffer, int length);
+    int AudioStreamFlush(IntPtr stream);
+    int AudioStreamAvailable(IntPtr stream);
+    int AudioStreamGet(IntPtr stream, out byte buffer, int length);
+    int AudioStreamGet(IntPtr stream, out short buffer, int length);
+    int AudioStreamGet(IntPtr stream, out float buffer, int length);
 
-        IntPtr GlCreateContext(IntPtr window);
-        void GlDeleteContext(IntPtr context);
-        int GlMakeCurrent(IntPtr window, IntPtr context);
-        int GlSetSwapInterval(int interval);
-        int GlSetAttribute(int attribute, int value);
-        void GlSwapWindow(IntPtr window);
-        uint GetTicks();
-        int GetCurrentDisplayMode(int displayIndex, out SdlDisplayMode mode);
-        int GetDesktopDisplayMode(int displayIndex, out SdlDisplayMode mode);
-        int GetNumVideoDisplays();
-        int ShowCursor(int toggle);
-        void SetWindowTitle(IntPtr window, string title);
-        void GetVersion(out byte v);
-    }
+    IntPtr GlCreateContext(IntPtr window);
+    void GlDeleteContext(IntPtr context);
+    int GlMakeCurrent(IntPtr window, IntPtr context);
+    int GlSetSwapInterval(int interval);
+    int GlSetAttribute(int attribute, int value);
+    void GlSwapWindow(IntPtr window);
+    uint GetTicks();
+    int GetCurrentDisplayMode(int displayIndex, out SdlDisplayMode mode);
+    int GetDesktopDisplayMode(int displayIndex, out SdlDisplayMode mode);
+    int GetNumVideoDisplays();
+    int ShowCursor(int toggle);
+    void SetWindowTitle(IntPtr window, string title);
+    void GetVersion(out byte v);
 }

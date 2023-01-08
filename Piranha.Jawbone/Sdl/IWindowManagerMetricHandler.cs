@@ -1,9 +1,8 @@
 using System;
 
-namespace Piranha.Jawbone.Sdl
+namespace Piranha.Jawbone.Sdl;
+
+public interface IWindowManagerMetricHandler
 {
-    public interface IWindowManagerMetricHandler
-    {
-        void ReportSleepTime(TimeSpan sleepTime);
-    }
+    void ReportSleepTime(TimeSpan sleepTime);
 }

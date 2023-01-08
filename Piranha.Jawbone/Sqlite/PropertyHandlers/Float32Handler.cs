@@ -1,17 +1,16 @@
-namespace Piranha.Jawbone.Sqlite
+namespace Piranha.Jawbone.Sqlite;
+
+class Float32Handler : ITypeHandler<float>
 {
-    class Float32Handler : ITypeHandler<float>
+    public string DataType => TypeHandler.Real;
+
+    public void BindProperty(SqliteStatement statement, int index, float value)
     {
-        public string DataType => TypeHandler.Real;
+        statement.BindFloat64(index, value);
+    }
 
-        public void BindProperty(SqliteStatement statement, int index, float value)
-        {
-            statement.BindFloat64(index, value);
-        }
-
-        public float LoadProperty(SqliteReader reader, int index)
-        {
-            return (float)reader.ColumnDouble(index);
-        }
+    public float LoadProperty(SqliteReader reader, int index)
+    {
+        return (float)reader.ColumnDouble(index);
     }
 }
