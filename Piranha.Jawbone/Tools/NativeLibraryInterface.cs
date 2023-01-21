@@ -54,14 +54,14 @@ public static class NativeLibraryInterface
         Func<string, string> methodNameToFunctionName)
         where T : class
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !libraryPath.Contains('/'))
-            libraryPath = "./" + libraryPath;
-        
         var libraryName = "Native." + Path.GetFileNameWithoutExtension(libraryPath);
-        var libraryHandle = NativeLibrary.Load(libraryPath);
+        var libraryHandle = NativeLibrary.Load(
+            libraryPath,
+            typeof(NativeLibraryInterface).Assembly,
+            DllImportSearchPath.AssemblyDirectory);
         
         if (libraryHandle.IsInvalid())
-            throw new Exception("Unable to load library " + libraryPath);
+            throw new DllNotFoundException("Unable to load library " + libraryPath);
         
         try
         {
