@@ -5,6 +5,7 @@
     <None Include="sheet.png" CopyToOutputDirectory="Always"/>
     <None Include="crunch.ogg" CopyToOutputDirectory="Always"/>
     <None Include="PiranhaNative.dll" CopyToOutputDirectory="Always"/>
+    <None Include="SDL2.dll" CopyToOutputDirectory="Always" Condition="Exists('SDL2.dll')"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Piranha.Jawbone\Piranha.Jawbone.csproj"/>
