@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Hexagon;
 
+// https://www.redblobgames.com/grids/hexagons/
+
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Axial32 : IEquatable<Axial32>
 {
