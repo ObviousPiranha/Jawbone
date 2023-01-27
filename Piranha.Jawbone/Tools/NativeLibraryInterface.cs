@@ -19,6 +19,8 @@ public static class NativeLibraryInterface
         MethodAttributes.NewSlot |
         MethodAttributes.Virtual;
     
+    private static readonly string BinFolder = Path.GetDirectoryName(typeof(NativeLibraryInterface).Assembly.Location) ?? ".";
+    
     public static string PascalCaseToSnakeCase(string prefix, string methodName)
     {
         var chars = new char[prefix.Length + methodName.Length * 2];
@@ -50,15 +52,13 @@ public static class NativeLibraryInterface
     }
 
     public static NativeLibraryInterface<T> FromFile<T>(
-        string libraryPath,
+        string file,
         Func<string, string> methodNameToFunctionName)
         where T : class
     {
-        var libraryName = "Native." + Path.GetFileNameWithoutExtension(libraryPath);
-        var libraryHandle = NativeLibrary.Load(
-            libraryPath,
-            typeof(NativeLibraryInterface).Assembly,
-            DllImportSearchPath.AssemblyDirectory);
+        var libraryName = "Native." + Path.GetFileNameWithoutExtension(file);
+        var libraryPath = file.Contains('/') || file.Contains('\\') ? file : Path.Combine(BinFolder, file);
+        var libraryHandle = NativeLibrary.Load(libraryPath);
         
         if (libraryHandle.IsInvalid())
             throw new DllNotFoundException("Unable to load library " + libraryPath);
