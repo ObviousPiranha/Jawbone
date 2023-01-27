@@ -99,4 +99,5 @@ public interface ISdl2
     int ShowCursor(int toggle);
     void SetWindowTitle(IntPtr window, string title);
     void GetVersion(out byte v);
+    string GetKeyName(int scanCode);
 }
