@@ -22,7 +22,7 @@ public static class ReflectionExtensions
         else
             generator.Emit(OpCodes.Ldc_I4, ptr.ToInt32());
     }
-    
+
     public static void EmitLdarg(
         this ILGenerator generator,
         int index)

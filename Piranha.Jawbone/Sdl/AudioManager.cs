@@ -91,10 +91,10 @@ public sealed class AudioManager : IAudioManager, IDisposable
             (ushort)Format,
             Channels,
             Frequency);
-        
+
         if (stream.IsInvalid())
             _sdl.ThrowException();
-        
+
         try
         {
             // https://wiki.libsdl.org/SDL_AudioStreamPut
@@ -102,13 +102,13 @@ public sealed class AudioManager : IAudioManager, IDisposable
 
             if (result != 0)
                 _sdl.ThrowException();
-            
+
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = _sdl.AudioStreamFlush(stream);
 
             if (result != 0)
                 _sdl.ThrowException();
-            
+
             var length = _sdl.AudioStreamAvailable(stream);
 
             if ((length & 3) != 0)
@@ -121,7 +121,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
 
                 if (bytesRead == -1)
                     _sdl.ThrowException();
-                
+
                 lock (_lock)
                 {
                     var soundIndex = _sounds.Count;
@@ -164,12 +164,12 @@ public sealed class AudioManager : IAudioManager, IDisposable
                 LoopDelaySampleCount = gapDelay,
                 Id = unchecked(_nextId++)
             };
-            
+
             _scheduledAudio.Add(scheduledAudio);
-            
+
             if (_scheduledAudio.Count == 1)
                 _sdl.PauseAudioDevice(_device, 0);
-            
+
             return scheduledAudio.Id;
         }
     }
@@ -249,7 +249,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
                         {
                             var lo = Math.Max(_sampleIndex, scheduledAudio.StartSampleIndex);
                             var hi = Math.Min(endSampleIndex, endAudioIndex);
-                            
+
                             for (var i = lo; i < hi; ++i)
                             {
                                 var index = (int)(i - _sampleIndex);
@@ -268,7 +268,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
 
             if (_scheduledAudio.Count == 0)
                 _sdl.PauseAudioDevice(_device, 1);
-            
+
             _sampleIndex = endSampleIndex;
         }
     }
@@ -279,11 +279,11 @@ public sealed class AudioManager : IAudioManager, IDisposable
         var audioManager = handle.Target as AudioManager;
 
         if (audioManager is not null) unsafe
-        {
-            var span = new Span<float>(
-                data.ToPointer(),
-                size / Unsafe.SizeOf<float>());
-            audioManager.AcquireData(span);
-        }
+            {
+                var span = new Span<float>(
+                    data.ToPointer(),
+                    size / Unsafe.SizeOf<float>());
+                audioManager.AcquireData(span);
+            }
     }
 }

@@ -38,7 +38,7 @@ public readonly ref struct UserEventView
                 new IntPtr(BitConverter.ToInt64(_data, 16)) :
                 new IntPtr(BitConverter.ToInt32(_data, 16));
         }
-        
+
         set
         {
             if (Environment.Is64BitProcess)
@@ -56,7 +56,7 @@ public readonly ref struct UserEventView
                 new IntPtr(BitConverter.ToInt64(_data, 24)) :
                 new IntPtr(BitConverter.ToInt32(_data, 20));
         }
-        
+
         set
         {
             if (Environment.Is64BitProcess)

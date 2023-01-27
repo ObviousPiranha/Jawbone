@@ -48,7 +48,7 @@ public sealed class ScenePool<T> where T : class, new()
         }
 
         Interlocked.Increment(ref _roamCount);
-        
+
         return scene;
     }
 

@@ -23,7 +23,7 @@ public readonly struct WavHeader
     public short BitsPerSample { get; }
     public short Excess { get; }
     public int DataOffset { get; }
-    
+
     public WavHeader(ReadOnlySpan<byte> data) : this()
     {
         var keySpan = _keys.AsSpan();

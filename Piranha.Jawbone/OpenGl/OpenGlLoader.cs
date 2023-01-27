@@ -8,7 +8,7 @@ namespace Piranha.Jawbone.OpenGl;
 public class OpenGlLoader : IPlatformLoader<NativeLibraryInterface<IOpenGl>>
 {
     public static NativeLibraryInterface<IOpenGl> Load() => new OpenGlLoader().CurrentPlatform();
-    
+
     private OpenGlLoader()
     {
     }

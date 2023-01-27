@@ -15,5 +15,5 @@ public static class SdlWindow
     public const uint MouseFocus = 1 << 10;
     public const uint FullScreenDesktop = FullScreen | 1 << 12;
     public const uint Foreign = 1 << 11;
-    public const uint AllowHighDpi =  1 << 13;
+    public const uint AllowHighDpi = 1 << 13;
 }

@@ -14,7 +14,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
             out _handle,
             out var socketError,
             out var bindError);
-        
+
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
     }
@@ -39,9 +39,9 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
             destination.Address,
             destination.RawPort,
             out var errorCode);
-        
+
         SocketException.ThrowOnError(errorCode, "Unable to send data.");
-        
+
         return result;
     }
 
@@ -56,9 +56,9 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
             out var rawPort,
             out var errorCode,
             milliseconds);
-        
+
         SocketException.ThrowOnError(errorCode, "Error on receive.");
-        
+
         origin = new Endpoint<Address128>
         {
             Address = address,

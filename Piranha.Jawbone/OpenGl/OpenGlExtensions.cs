@@ -32,7 +32,7 @@ public static class GlExtensions
 
             result = true;
             Console.Write($"{file} - {caller} : {lineNumber} - ");
-            
+
             switch (err)
             {
                 case Gl.InvalidEnum: Console.WriteLine("GL_INVALID_ENUM"); break;

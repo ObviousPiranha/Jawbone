@@ -126,7 +126,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     {
         while (_nextCapacity < minCapacity)
             _nextCapacity *= 2;
-        
+
         Array.Resize(ref _items, _nextCapacity);
         _nextCapacity *= 2;
     }

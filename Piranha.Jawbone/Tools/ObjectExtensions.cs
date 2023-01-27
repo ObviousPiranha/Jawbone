@@ -8,7 +8,7 @@ public static class ObjectExtensions
     {
         if (value is null)
             throw new NullReferenceException();
-        
+
         return value;
     }
 }

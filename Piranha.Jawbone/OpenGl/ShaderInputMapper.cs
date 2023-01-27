@@ -71,7 +71,7 @@ public readonly struct ShaderInputMapper
 
             if (attribute is null)
                 continue;
-            
+
             var info = new VertexInfo
             {
                 Common = CommonVertexInfoByType[fieldInfo.FieldType],
@@ -79,7 +79,7 @@ public readonly struct ShaderInputMapper
                 Normalized = Gl.False,
                 Offset = Marshal.OffsetOf<T>(fieldInfo.Name).ToInt32()
             };
-            
+
             if (info.Index == -1)
                 throw new OpenGlException($"Unable to locate attribute '{attribute.Name}' for shader program ({program}).");
 

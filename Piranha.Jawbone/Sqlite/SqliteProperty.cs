@@ -18,7 +18,7 @@ readonly struct SqliteProperty<T>
     public SqliteKey? Key { get; }
     public bool CanBeNull { get; }
     public IPropertyHandler<T> PropertyHandler { get; }
-    
+
     public SqliteProperty(
         PropertyInfo propertyInfo,
         IPropertyHandler<T> propertyHandler,
@@ -27,10 +27,10 @@ readonly struct SqliteProperty<T>
         Info = propertyInfo;
         Key = propertyInfo.GetCustomAttribute<SqliteKey>();
         PropertyHandler = propertyHandler;
-        
+
         var column = propertyInfo.GetCustomAttribute<SqliteColumn>();
         ColumnName = column is null ? namingPolicy.Invoke(Info.Name) : column.Name;
-        
+
         var notNull = propertyInfo.GetCustomAttribute<SqliteNotNull>();
         var t = Info.PropertyType;
         CanBeNull = t.IsValueType ? t.IsNullableValueType() : notNull is null;

@@ -11,7 +11,7 @@ public sealed class OpusDecoder : IDisposable
 
     public int SamplingRate { get; }
     public int ChannelCount { get; }
-    
+
     internal OpusDecoder(IOpus opus, int sampleRate, int channelCount)
     {
         SamplingRate = sampleRate;
@@ -49,7 +49,7 @@ public sealed class OpusDecoder : IDisposable
     public int Decode(ReadOnlySpan<byte> data, Span<short> pcm, bool decodeFec = false)
     {
         var frameSize = pcm.Length / ChannelCount;
-        var length =_opus.Decode(
+        var length = _opus.Decode(
             _decoder,
             data[0],
             data.Length,

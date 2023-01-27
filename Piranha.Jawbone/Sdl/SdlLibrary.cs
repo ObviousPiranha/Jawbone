@@ -11,7 +11,7 @@ public sealed class SdlLibrary : IPlatformLoader<string?>, IDisposable
     {
         if (methodName.StartsWith("Gl"))
             return string.Concat("SDL_GL_", methodName.AsSpan(2));
-        
+
         return "SDL_" + methodName;
     }
 

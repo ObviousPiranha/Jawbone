@@ -3,7 +3,8 @@ using System;
 namespace Piranha.Jawbone.Sqlite;
 
 // https://www.sqlite.org/c3ref/open.html
-[Flags] enum SqliteOpen : int
+[Flags]
+enum SqliteOpen : int
 {
     ReadOnly = 1 << 0,
     ReadWrite = 1 << 1,

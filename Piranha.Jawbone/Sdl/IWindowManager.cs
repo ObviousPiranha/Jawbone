@@ -8,6 +8,6 @@ public interface IWindowManager
         int height,
         bool fullscreen,
         IWindowEventHandler handler);
-    
+
     void Run(IWindowManagerMetricHandler? windowManagerMetricHandler = null);
 }

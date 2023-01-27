@@ -27,7 +27,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         var result = sdl.GetDesktopDisplayMode(0, out var mode);
         if (result < 0)
             throw new SdlException("Unable to get desktop display mode: " + sdl.GetError());
-        
+
         logger.LogDebug($"Detected display of {mode.w}x{mode.h}.");
 
         if (fullscreen)
@@ -40,7 +40,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         {
             flags |= SdlWindow.Resizable | SdlWindow.Shown;
         }
-        
+
         var windowPtr = sdl.CreateWindow(
             title,
             pos,
@@ -48,7 +48,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             width,
             height,
             flags);
-        
+
         if (windowPtr.IsInvalid())
             throw new SdlException($"Unable to create window ({windowPtr}): {sdl.GetError()}");
 
@@ -88,10 +88,10 @@ sealed class WindowManager : IWindowManager, IDisposable
 
         if (windowId == 0)
             throw new SdlException("No window ID for " + windowPtr);
-        
+
         return windowId;
     }
-    
+
     public void AddWindow(
         string title,
         int width,
@@ -141,7 +141,7 @@ sealed class WindowManager : IWindowManager, IDisposable
                     var gl = _gl.Library;
 
                     gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
-                    
+
                     var version = new byte[4];
                     _sdl.GetVersion(out version[0]);
 
@@ -163,7 +163,7 @@ sealed class WindowManager : IWindowManager, IDisposable
                         Environment.NewLine,
                         "OpenGL max texture size: ",
                         maxTextureSize);
-                    
+
                     _logger.LogDebug(log);
                 }
                 catch
@@ -197,7 +197,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         while (i < _activeWindows.Count)
         {
             var window = _activeWindows[i];
-            
+
             if (window.WasClosed)
             {
                 window.WindowEventHandler.OnDestroyingWindow(window);
@@ -235,7 +235,7 @@ sealed class WindowManager : IWindowManager, IDisposable
 
                 foreach (var window in _activeWindows)
                     window.WindowEventHandler.OnSecond(window);
-                
+
                 nextSecond += Stopwatch.Frequency;
             }
 
@@ -275,76 +275,76 @@ sealed class WindowManager : IWindowManager, IDisposable
         switch (eventType)
         {
             case SdlEvent.WindowEvent:
-            {
-                HandleWindowEvent();
-                break;
-            }
+                {
+                    HandleWindowEvent();
+                    break;
+                }
             case SdlEvent.KeyDown:
-            {
-                var view = new KeyboardEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                {
+                    var view = new KeyboardEventView(_eventData);
+                    var window = GetWindow(view.WindowId);
 
-                if (window is not null)
-                    window.WindowEventHandler.OnKeyDown(window, view);
-                break;
-            }
+                    if (window is not null)
+                        window.WindowEventHandler.OnKeyDown(window, view);
+                    break;
+                }
             case SdlEvent.KeyUp:
-            {
-                var view = new KeyboardEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                {
+                    var view = new KeyboardEventView(_eventData);
+                    var window = GetWindow(view.WindowId);
 
-                if (window is not null)
-                    window.WindowEventHandler.OnKeyUp(window, view);
-                break;
-            }
+                    if (window is not null)
+                        window.WindowEventHandler.OnKeyUp(window, view);
+                    break;
+                }
             case SdlEvent.MouseMotion:
-            {
-                var view = new MouseMotionEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                {
+                    var view = new MouseMotionEventView(_eventData);
+                    var window = GetWindow(view.WindowId);
 
-                if (window is not null)
-                    window.WindowEventHandler.OnMouseMove(window, view);
-                break;
-            }
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseMove(window, view);
+                    break;
+                }
             case SdlEvent.MouseWheel:
-            {
-                var view = new MouseWheelEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                {
+                    var view = new MouseWheelEventView(_eventData);
+                    var window = GetWindow(view.WindowId);
 
-                if (window is not null)
-                    window.WindowEventHandler.OnMouseWheel(window, view);
-                break; 
-            }
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseWheel(window, view);
+                    break;
+                }
             case SdlEvent.MouseButtonDown:
-            {
-                var view = new MouseButtonEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                {
+                    var view = new MouseButtonEventView(_eventData);
+                    var window = GetWindow(view.WindowId);
 
-                if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonDown(window, view);
-                break;
-            }
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseButtonDown(window, view);
+                    break;
+                }
             case SdlEvent.MouseButtonUp:
-            {
-                var view = new MouseButtonEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                {
+                    var view = new MouseButtonEventView(_eventData);
+                    var window = GetWindow(view.WindowId);
 
-                if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonUp(window, view);
-                break;
-            }
+                    if (window is not null)
+                        window.WindowEventHandler.OnMouseButtonUp(window, view);
+                    break;
+                }
             case SdlEvent.Quit:
-            {
-                foreach (var window in _activeWindows)
-                    window.WindowEventHandler.OnQuit(window);
-                
-                break;
-            }
+                {
+                    foreach (var window in _activeWindows)
+                        window.WindowEventHandler.OnQuit(window);
+
+                    break;
+                }
             default:
-            {
-                _logger.LogTrace("event {eventType}", eventType);
-                break;
-            }
+                {
+                    _logger.LogTrace("event {eventType}", eventType);
+                    break;
+                }
         }
     }
 
@@ -360,7 +360,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             {
                 case SdlWindowEvent.Shown: handler.OnShown(window); break;
                 case SdlWindowEvent.Hidden: handler.OnHidden(window); break;
-                case SdlWindowEvent.Exposed: handler.OnExpose(window); break; 
+                case SdlWindowEvent.Exposed: handler.OnExpose(window); break;
                 case SdlWindowEvent.Moved: handler.OnMove(window, view); break;
                 case SdlWindowEvent.Resized: handler.OnResize(window, view); break;
                 case SdlWindowEvent.SizeChanged: handler.OnSizeChanged(window, view); break;

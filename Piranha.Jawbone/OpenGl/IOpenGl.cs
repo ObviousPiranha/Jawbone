@@ -91,7 +91,7 @@ public interface IOpenGl
         uint format,
         uint type,
         IntPtr data);
-    
+
     void TexSubImage3D(
         uint target,
         int level,

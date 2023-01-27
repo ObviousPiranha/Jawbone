@@ -9,12 +9,12 @@ public interface IAudioManager
         int frequency,
         int channels,
         ReadOnlySpan<byte> data);
-    
+
     int ScheduleAudio(int soundId, TimeSpan delay);
     int ScheduleLoopingAudio(
         int soundId,
         TimeSpan delay,
         TimeSpan delayBetweenLoops);
-    
-     bool CancelAudio(int scheduledAudioId);
+
+    bool CancelAudio(int scheduledAudioId);
 }

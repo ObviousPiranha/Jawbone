@@ -3,7 +3,7 @@ namespace Piranha.Jawbone.Sqlite;
 class StringHandler : ITypeHandler<string>
 {
     public string DataType => TypeHandler.Text;
-    
+
     public void BindProperty(SqliteStatement statement, int index, string value)
     {
         statement.BindText(index, value);

@@ -39,7 +39,7 @@ readonly struct SheetFit : IEquatable<SheetFit>, IComparable<SheetFit>
 
         if (result == 0)
             result = SecondaryFit.CompareTo(other.SecondaryFit);
-        
+
         return result;
     }
 

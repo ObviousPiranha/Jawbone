@@ -96,6 +96,6 @@ public static class Windows
         new(11031, "WSA_QOS_RESERVED_PETYPE", "A reserved policy element was found in the QOS provider-specific buffer."),
         new(11032, "WSA_SECURE_HOST_NOT_FOUND", "No such host is known securely."),
         new(11033, "WSA_IPSEC_NAME_POLICY_ERROR", "Name based IPSEC policy could not be added."));
-    
+
     public static readonly ImmutableDictionary<int, ErrorCode> ErrorCodeById = ErrorCodes.ToImmutableDictionary(v => v.Id);
 }

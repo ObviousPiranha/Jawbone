@@ -217,7 +217,7 @@ public static class SdlScancode
     public const int RShift = 229;
     public const int RAlt = 230;
     public const int RGui = 231;
-    
+
     public const int Mode = 257;
 
     public const int AudioNext = 258;

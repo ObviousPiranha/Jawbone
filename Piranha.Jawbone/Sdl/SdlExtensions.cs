@@ -75,10 +75,10 @@ public static class SdlExtensions
             (ushort)SdlAudio.S16Lsb,
             (byte)destinationChannels,
             destinationFrequency);
-        
+
         if (stream.IsInvalid())
             sdl.ThrowException();
-        
+
         try
         {
             // https://wiki.libsdl.org/SDL_AudioStreamPut
@@ -86,13 +86,13 @@ public static class SdlExtensions
 
             if (result != 0)
                 sdl.ThrowException();
-            
+
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = sdl.AudioStreamFlush(stream);
 
             if (result != 0)
                 sdl.ThrowException();
-            
+
             var length = sdl.AudioStreamAvailable(stream);
 
             if ((length & 1) != 0)
@@ -105,7 +105,7 @@ public static class SdlExtensions
 
                 if (bytesRead == -1)
                     sdl.ThrowException();
-                
+
                 return shorts;
             }
             else
@@ -134,10 +134,10 @@ public static class SdlExtensions
             (ushort)SdlAudio.F32,
             (byte)destinationChannels,
             destinationFrequency);
-        
+
         if (stream.IsInvalid())
             sdl.ThrowException();
-        
+
         try
         {
             // https://wiki.libsdl.org/SDL_AudioStreamPut
@@ -145,13 +145,13 @@ public static class SdlExtensions
 
             if (result != 0)
                 sdl.ThrowException();
-            
+
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = sdl.AudioStreamFlush(stream);
 
             if (result != 0)
                 sdl.ThrowException();
-            
+
             var length = sdl.AudioStreamAvailable(stream);
 
             if ((length & 3) != 0)
@@ -164,7 +164,7 @@ public static class SdlExtensions
 
                 if (bytesRead == -1)
                     sdl.ThrowException();
-                
+
                 return floats;
             }
             else

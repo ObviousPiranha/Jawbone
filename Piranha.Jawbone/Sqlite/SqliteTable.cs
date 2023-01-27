@@ -23,7 +23,7 @@ public sealed class SqliteTable<T> where T : class
     public SqliteTable(string tableName) : this(tableName, s => s)
     {
     }
-    
+
     public SqliteTable(Func<string, string> namingPolicy) : this(typeof(T).Name, namingPolicy)
     {
     }
@@ -39,12 +39,12 @@ public sealed class SqliteTable<T> where T : class
             var propertyHandlerType = typeof(PropertyHandler<,>).MakeGenericType(typeof(T), propertyInfo.PropertyType);
             var typeHandlerType = typeof(ITypeHandler<>).MakeGenericType(propertyInfo.PropertyType);
             var typeHandler = TypeHandler.Get(propertyInfo.PropertyType);
-            var constructor = propertyHandlerType.GetConstructor(new Type[] {typeof(PropertyInfo), typeHandlerType});
+            var constructor = propertyHandlerType.GetConstructor(new Type[] { typeof(PropertyInfo), typeHandlerType });
 
             if (constructor is null)
                 throw new NullReferenceException("Failed to locate appropriate constructor");
-            
-            var propertyHandler = (IPropertyHandler<T>)constructor.Invoke(new[] {propertyInfo, typeHandler});
+
+            var propertyHandler = (IPropertyHandler<T>)constructor.Invoke(new[] { propertyInfo, typeHandler });
 
             if (propertyInfo.GetCustomAttribute<SqliteIgnore>() is null)
             {
@@ -102,7 +102,7 @@ public sealed class SqliteTable<T> where T : class
 
         if (columns.Count < 1)
             throw new MissingTableException($"Table '{TableName}' does not exist.");
-        
+
         var properties = ImmutableArray.CreateRange(_properties.Where(p => columns.Contains(p.ColumnName)));
         var keyProperties = ImmutableArray.CreateRange(_keyProperties.Where(p => columns.Contains(p.ColumnName)));
 
@@ -141,7 +141,7 @@ public sealed class SqliteTable<T> where T : class
                 .AppendField(TableName)
                 .Append(" ADD COLUMN ")
                 .AppendProperty(field);
-            
+
             database.Execute(builder.ToString());
         }
     }
@@ -166,15 +166,15 @@ public sealed class SqliteTable<T> where T : class
             .AppendField(TableName)
             .Append(" (")
             .AppendField(_properties[0].ColumnName);
-        
+
         for (int i = 1; i < _properties.Length; ++i)
             builder.Append(", ").AppendField(_properties[i].ColumnName);
-        
+
         builder.Append(") VALUES (?");
 
         for (int i = 1; i < _properties.Length; ++i)
             builder.Append(",?");
-        
+
         for (int i = 1; i < rowCount; ++i)
         {
             builder.Append("), (?");
@@ -205,7 +205,7 @@ public sealed class SqliteTable<T> where T : class
         {
             for (int i = 0; i < _properties.Length; ++i)
                 _properties[i].PropertyHandler.BindRecord(statement, i + 1, record);
-            
+
             statement.Execute();
         }
     }
@@ -275,7 +275,7 @@ public sealed class SqliteTable<T> where T : class
                 {
                     for (int i = 0; i < _properties.Length; ++i)
                         _properties[i].PropertyHandler.BindRecord(statement, i + 1, record);
-                    
+
                     statement.Execute();
                 }
             }
@@ -292,9 +292,9 @@ public sealed class SqliteTable<T> where T : class
         var builder = new QueryBuilder($"`{TableName}`")
             .Select(p => $"`{p.ColumnName}`", _properties)
             .Select("`rowid`");
-        
+
         extendQuery?.Invoke(builder);
-        
+
         using (var reader = database.Read(builder.ToString()))
         {
             while (reader.TryRead())
@@ -303,7 +303,7 @@ public sealed class SqliteTable<T> where T : class
                 int index = 0;
                 foreach (var property in _properties)
                     property.PropertyHandler.LoadRecord(reader, index++, item);
-                
+
                 long rowId = reader.ColumnInt64(index++);
                 yield return KeyValuePair.Create(rowId, item);
             }
@@ -317,7 +317,7 @@ public sealed class SqliteTable<T> where T : class
     {
         var builder = new QueryBuilder($"`{TableName}`")
             .Select(p => $"`{p.ColumnName}`", _properties);
-        
+
         extendQuery?.Invoke(builder);
 
         using (var reader = database.Read(builder.ToString()))
@@ -345,19 +345,19 @@ public sealed class SqliteTable<T> where T : class
             .AppendField(TableName)
             .Append(" (")
             .AppendProperty(_properties[0]);
-        
+
         for (int i = 1; i < _properties.Length; ++i)
             builder.Append(", ").AppendProperty(_properties[i]);
-        
+
         if (!_keyProperties.IsDefaultOrEmpty)
         {
             builder
                 .Append(", PRIMARY KEY (")
                 .AppendKey(_keyProperties[0]);
-            
+
             for (int i = 1; i < _keyProperties.Length; ++i)
                 builder.Append(", ").AppendKey(_keyProperties[i]);
-            
+
             builder.Append(")");
         }
 

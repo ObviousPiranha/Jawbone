@@ -22,7 +22,7 @@ public interface IStb
         int comp,
         IntPtr data,
         int strideBytes);
-    
+
     int StbiWritePng(
         string filename,
         int x,
@@ -37,20 +37,20 @@ public interface IStb
         out int channels,
         out int sampleRate,
         out IntPtr output);
-    
+
     int StbVorbisDecodeFilename(
         string filename,
         out int channels,
         out int sampleRate,
         out IntPtr output);
-    
+
     int StbttGetFontOffsetForIndex(byte[] data, int index);
-    
+
     int StbttInitFont(
         byte[] fontInfo,
         byte[] data,
         int offset);
-    
+
     int StbttPackBegin(
         byte[] packContext,
         byte[] pixels,
@@ -59,12 +59,12 @@ public interface IStb
         int strideInBytes,
         int padding,
         IntPtr allocContext);
-    
+
     void StbttPackSetOversampling(
         byte[] packContext,
         uint hOversample,
         uint vOversample);
-    
+
     int StbttPackFontRange(
         byte[] packContext,
         byte[] fontData,
@@ -73,12 +73,12 @@ public interface IStb
         int firstUnicodeCodePointInRange,
         int numCharsInRange,
         out PackedChar charDataForRange);
-    
+
     float StbttScaleForPixelHeight(byte[] fontInfo, float height);
     int StbttGetCodepointKernAdvance(byte[] fontInfo, int ch1, int ch2);
-    
+
     void StbttPackEnd(byte[] packContext);
-    
+
     void PiranhaFree(IntPtr pointer);
 
     // Tests
