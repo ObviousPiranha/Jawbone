@@ -39,4 +39,4 @@ jobs:
       
     # Execute tests
     - name: Execute unit tests
-      run: dotnet test Piranha.Jawbone/Piranha.Jawbone.csproj
+      run: dotnet test Piranha.Jawbone.Test/Piranha.Jawbone.Test.csproj
