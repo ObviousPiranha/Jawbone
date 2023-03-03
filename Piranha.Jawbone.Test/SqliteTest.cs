@@ -19,7 +19,7 @@ public class SqliteTest
         _sqlite3 = fixture.ServiceProvider.GetRequiredService<ISqlite3>();
     }
 
-    [Fact(Skip = "Native not ready")]
+    [Fact(Skip = "Native not now")]
     public void HasVersion()
     {
         var version = _sqlite3.Libversion();
