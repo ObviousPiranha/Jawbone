@@ -92,7 +92,8 @@ public sealed class SqliteReader : IDisposable
         ThrowOnError();
         var byteCount = _sqlite3.ColumnBytes16(_statement, index);
 
-        if (0 < byteCount && pointer.IsValid()) unsafe
+        if (0 < byteCount && pointer.IsValid())
+            unsafe
             {
                 return new ReadOnlySpan<char>(
                     pointer.ToPointer(),
@@ -108,7 +109,8 @@ public sealed class SqliteReader : IDisposable
         ThrowOnError();
         var byteCount = _sqlite3.ColumnBytes(_statement, index);
 
-        if (0 < byteCount && pointer.IsValid()) unsafe
+        if (0 < byteCount && pointer.IsValid())
+            unsafe
             {
                 return new ReadOnlySpan<byte>(
                     pointer.ToPointer(),
@@ -128,7 +130,8 @@ public sealed class SqliteReader : IDisposable
         ThrowOnError();
         var byteCount = _sqlite3.ColumnBytes(_statement, index);
 
-        if (0 < byteCount && pointer.IsValid()) unsafe
+        if (0 < byteCount && pointer.IsValid())
+            unsafe
             {
                 return new ReadOnlySpan<byte>(
                     pointer.ToPointer(),

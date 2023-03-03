@@ -275,76 +275,76 @@ sealed class WindowManager : IWindowManager, IDisposable
         switch (eventType)
         {
             case SdlEvent.WindowEvent:
-                {
-                    HandleWindowEvent();
-                    break;
-                }
+            {
+                HandleWindowEvent();
+                break;
+            }
             case SdlEvent.KeyDown:
-                {
-                    var view = new KeyboardEventView(_eventData);
-                    var window = GetWindow(view.WindowId);
+            {
+                var view = new KeyboardEventView(_eventData);
+                var window = GetWindow(view.WindowId);
 
-                    if (window is not null)
-                        window.WindowEventHandler.OnKeyDown(window, view);
-                    break;
-                }
+                if (window is not null)
+                    window.WindowEventHandler.OnKeyDown(window, view);
+                break;
+            }
             case SdlEvent.KeyUp:
-                {
-                    var view = new KeyboardEventView(_eventData);
-                    var window = GetWindow(view.WindowId);
+            {
+                var view = new KeyboardEventView(_eventData);
+                var window = GetWindow(view.WindowId);
 
-                    if (window is not null)
-                        window.WindowEventHandler.OnKeyUp(window, view);
-                    break;
-                }
+                if (window is not null)
+                    window.WindowEventHandler.OnKeyUp(window, view);
+                break;
+            }
             case SdlEvent.MouseMotion:
-                {
-                    var view = new MouseMotionEventView(_eventData);
-                    var window = GetWindow(view.WindowId);
+            {
+                var view = new MouseMotionEventView(_eventData);
+                var window = GetWindow(view.WindowId);
 
-                    if (window is not null)
-                        window.WindowEventHandler.OnMouseMove(window, view);
-                    break;
-                }
+                if (window is not null)
+                    window.WindowEventHandler.OnMouseMove(window, view);
+                break;
+            }
             case SdlEvent.MouseWheel:
-                {
-                    var view = new MouseWheelEventView(_eventData);
-                    var window = GetWindow(view.WindowId);
+            {
+                var view = new MouseWheelEventView(_eventData);
+                var window = GetWindow(view.WindowId);
 
-                    if (window is not null)
-                        window.WindowEventHandler.OnMouseWheel(window, view);
-                    break;
-                }
+                if (window is not null)
+                    window.WindowEventHandler.OnMouseWheel(window, view);
+                break;
+            }
             case SdlEvent.MouseButtonDown:
-                {
-                    var view = new MouseButtonEventView(_eventData);
-                    var window = GetWindow(view.WindowId);
+            {
+                var view = new MouseButtonEventView(_eventData);
+                var window = GetWindow(view.WindowId);
 
-                    if (window is not null)
-                        window.WindowEventHandler.OnMouseButtonDown(window, view);
-                    break;
-                }
+                if (window is not null)
+                    window.WindowEventHandler.OnMouseButtonDown(window, view);
+                break;
+            }
             case SdlEvent.MouseButtonUp:
-                {
-                    var view = new MouseButtonEventView(_eventData);
-                    var window = GetWindow(view.WindowId);
+            {
+                var view = new MouseButtonEventView(_eventData);
+                var window = GetWindow(view.WindowId);
 
-                    if (window is not null)
-                        window.WindowEventHandler.OnMouseButtonUp(window, view);
-                    break;
-                }
+                if (window is not null)
+                    window.WindowEventHandler.OnMouseButtonUp(window, view);
+                break;
+            }
             case SdlEvent.Quit:
-                {
-                    foreach (var window in _activeWindows)
-                        window.WindowEventHandler.OnQuit(window);
+            {
+                foreach (var window in _activeWindows)
+                    window.WindowEventHandler.OnQuit(window);
 
-                    break;
-                }
+                break;
+            }
             default:
-                {
-                    _logger.LogTrace("event {eventType}", eventType);
-                    break;
-                }
+            {
+                _logger.LogTrace("event {eventType}", eventType);
+                break;
+            }
         }
     }
 
@@ -358,21 +358,50 @@ sealed class WindowManager : IWindowManager, IDisposable
             var handler = window.WindowEventHandler;
             switch (view.Event)
             {
-                case SdlWindowEvent.Shown: handler.OnShown(window); break;
-                case SdlWindowEvent.Hidden: handler.OnHidden(window); break;
-                case SdlWindowEvent.Exposed: handler.OnExpose(window); break;
-                case SdlWindowEvent.Moved: handler.OnMove(window, view); break;
-                case SdlWindowEvent.Resized: handler.OnResize(window, view); break;
-                case SdlWindowEvent.SizeChanged: handler.OnSizeChanged(window, view); break;
-                case SdlWindowEvent.Minimized: handler.OnMinimize(window); break;
-                case SdlWindowEvent.Maximized: handler.OnMaximize(window); break;
-                case SdlWindowEvent.Restored: handler.OnRestore(window); break;
-                case SdlWindowEvent.Enter: handler.OnMouseEnter(window); break;
-                case SdlWindowEvent.Leave: handler.OnMouseLeave(window); break;
-                case SdlWindowEvent.FocusGained: handler.OnInputFocus(window); break;
-                case SdlWindowEvent.FocusLost: handler.OnInputBlur(window); break;
-                case SdlWindowEvent.Close: handler.OnClose(window); break;
-                default: break;
+                case SdlWindowEvent.Shown:
+                    handler.OnShown(window);
+                    break;
+                case SdlWindowEvent.Hidden:
+                    handler.OnHidden(window);
+                    break;
+                case SdlWindowEvent.Exposed:
+                    handler.OnExpose(window);
+                    break;
+                case SdlWindowEvent.Moved:
+                    handler.OnMove(window, view);
+                    break;
+                case SdlWindowEvent.Resized:
+                    handler.OnResize(window, view);
+                    break;
+                case SdlWindowEvent.SizeChanged:
+                    handler.OnSizeChanged(window, view);
+                    break;
+                case SdlWindowEvent.Minimized:
+                    handler.OnMinimize(window);
+                    break;
+                case SdlWindowEvent.Maximized:
+                    handler.OnMaximize(window);
+                    break;
+                case SdlWindowEvent.Restored:
+                    handler.OnRestore(window);
+                    break;
+                case SdlWindowEvent.Enter:
+                    handler.OnMouseEnter(window);
+                    break;
+                case SdlWindowEvent.Leave:
+                    handler.OnMouseLeave(window);
+                    break;
+                case SdlWindowEvent.FocusGained:
+                    handler.OnInputFocus(window);
+                    break;
+                case SdlWindowEvent.FocusLost:
+                    handler.OnInputBlur(window);
+                    break;
+                case SdlWindowEvent.Close:
+                    handler.OnClose(window);
+                    break;
+                default:
+                    break;
             }
         }
     }

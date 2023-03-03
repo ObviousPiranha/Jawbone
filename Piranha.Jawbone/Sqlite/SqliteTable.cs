@@ -152,13 +152,24 @@ public sealed class SqliteTable<T> where T : class
 
         switch (conflictResolution)
         {
-            case ConflictResolution.Replace: builder.Append(" OR REPLACE"); break;
-            case ConflictResolution.Rollback: builder.Append(" OR ROLLBACK"); break;
-            case ConflictResolution.Abort: builder.Append(" OR ABORT"); break;
-            case ConflictResolution.Fail: builder.Append(" OR FAIL"); break;
-            case ConflictResolution.Ignore: builder.Append(" OR IGNORE"); break;
+            case ConflictResolution.Replace:
+                builder.Append(" OR REPLACE");
+                break;
+            case ConflictResolution.Rollback:
+                builder.Append(" OR ROLLBACK");
+                break;
+            case ConflictResolution.Abort:
+                builder.Append(" OR ABORT");
+                break;
+            case ConflictResolution.Fail:
+                builder.Append(" OR FAIL");
+                break;
+            case ConflictResolution.Ignore:
+                builder.Append(" OR IGNORE");
+                break;
             case ConflictResolution.Default:
-            default: break;
+            default:
+                break;
         }
 
         builder

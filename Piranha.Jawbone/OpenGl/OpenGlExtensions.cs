@@ -35,15 +35,33 @@ public static class GlExtensions
 
             switch (err)
             {
-                case Gl.InvalidEnum: Console.WriteLine("GL_INVALID_ENUM"); break;
-                case Gl.InvalidValue: Console.WriteLine("GL_INVALID_VALUE"); break;
-                case Gl.InvalidOperation: Console.WriteLine("GL_INVALID_OPERATION"); break;
-                case Gl.StackOverflow: Console.WriteLine("GL_STACK_OVERFLOW"); break;
-                case Gl.StackUnderflow: Console.WriteLine("GL_STACK_UNDERFLOW"); break;
-                case Gl.OutOfMemory: Console.WriteLine("GL_OUT_OF_MEMORY"); break;
-                case Gl.InvalidFramebufferOperation: Console.WriteLine("GL_INVALID_FRAMEBUFFER_OPERATION"); break;
-                case Gl.ContextLost: Console.WriteLine("GL_CONTEXT_LOST"); break;
-                default: Console.WriteLine("Everything is fine. Nothing is broken."); break;
+                case Gl.InvalidEnum:
+                    Console.WriteLine("GL_INVALID_ENUM");
+                    break;
+                case Gl.InvalidValue:
+                    Console.WriteLine("GL_INVALID_VALUE");
+                    break;
+                case Gl.InvalidOperation:
+                    Console.WriteLine("GL_INVALID_OPERATION");
+                    break;
+                case Gl.StackOverflow:
+                    Console.WriteLine("GL_STACK_OVERFLOW");
+                    break;
+                case Gl.StackUnderflow:
+                    Console.WriteLine("GL_STACK_UNDERFLOW");
+                    break;
+                case Gl.OutOfMemory:
+                    Console.WriteLine("GL_OUT_OF_MEMORY");
+                    break;
+                case Gl.InvalidFramebufferOperation:
+                    Console.WriteLine("GL_INVALID_FRAMEBUFFER_OPERATION");
+                    break;
+                case Gl.ContextLost:
+                    Console.WriteLine("GL_CONTEXT_LOST");
+                    break;
+                default:
+                    Console.WriteLine("Everything is fine. Nothing is broken.");
+                    break;
             }
         }
 
