@@ -1,6 +1,6 @@
+using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
 using System.Diagnostics;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sqlite;
 
@@ -75,7 +75,7 @@ public sealed class SqliteDatabase : IDisposable
             IntPtr.Zero,
             IntPtr.Zero,
             IntPtr.Zero);
-        
+
         _sqlite3.ThrowOnError(_database, result);
     }
 
@@ -94,7 +94,7 @@ public sealed class SqliteDatabase : IDisposable
             -1,
             out var statement,
             IntPtr.Zero);
-        
+
         try
         {
             _sqlite3.ThrowOnError(_database, result);
@@ -103,10 +103,10 @@ public sealed class SqliteDatabase : IDisposable
         {
             if (statement.IsValid())
                 _sqlite3.Finalize(statement);
-            
+
             throw;
         }
-        
+
         return new SqliteReader(_sqlite3, _database, statement, true);
     }
 

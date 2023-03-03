@@ -27,7 +27,7 @@ public readonly struct AddressInfo
             out var countV6);
 
         SocketException.ThrowOnError(error, "Unable to get address info.");
-        
+
         var result = new AddressInfo
         {
             V4 = ImmutableArray.Create<Endpoint<Address32>>(v4, 0, countV4),

@@ -10,7 +10,7 @@ public static class RandomExtensions
     {
         return mean + BoxMullerTransform(random, standardDeviation);
     }
-    
+
     public static double BoxMullerTransform(this Random random, double standardDeviation)
     {
         // https://stackoverflow.com/a/218600

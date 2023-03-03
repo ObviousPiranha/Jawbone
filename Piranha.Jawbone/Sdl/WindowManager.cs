@@ -1,13 +1,13 @@
+using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.OpenGl;
+using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.OpenGl;
-using Piranha.Jawbone.Tools;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sdl;
 
@@ -27,7 +27,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         var result = sdl.GetDesktopDisplayMode(0, out var mode);
         if (result < 0)
             throw new SdlException("Unable to get desktop display mode: " + sdl.GetError());
-        
+
         logger.LogDebug($"Detected display of {mode.w}x{mode.h}.");
 
         if (fullscreen)
@@ -40,7 +40,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         {
             flags |= SdlWindow.Resizable | SdlWindow.Shown;
         }
-        
+
         var windowPtr = sdl.CreateWindow(
             title,
             pos,
@@ -48,7 +48,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             width,
             height,
             flags);
-        
+
         if (windowPtr.IsInvalid())
             throw new SdlException($"Unable to create window ({windowPtr}): {sdl.GetError()}");
 
@@ -88,10 +88,10 @@ sealed class WindowManager : IWindowManager, IDisposable
 
         if (windowId == 0)
             throw new SdlException("No window ID for " + windowPtr);
-        
+
         return windowId;
     }
-    
+
     public void AddWindow(
         string title,
         int width,
@@ -141,7 +141,7 @@ sealed class WindowManager : IWindowManager, IDisposable
                     var gl = _gl.Library;
 
                     gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
-                    
+
                     var version = new byte[4];
                     _sdl.GetVersion(out version[0]);
 
@@ -163,7 +163,7 @@ sealed class WindowManager : IWindowManager, IDisposable
                         Environment.NewLine,
                         "OpenGL max texture size: ",
                         maxTextureSize);
-                    
+
                     _logger.LogDebug(log);
                 }
                 catch
@@ -197,7 +197,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         while (i < _activeWindows.Count)
         {
             var window = _activeWindows[i];
-            
+
             if (window.WasClosed)
             {
                 window.WindowEventHandler.OnDestroyingWindow(window);
@@ -235,7 +235,7 @@ sealed class WindowManager : IWindowManager, IDisposable
 
                 foreach (var window in _activeWindows)
                     window.WindowEventHandler.OnSecond(window);
-                
+
                 nextSecond += Stopwatch.Frequency;
             }
 
@@ -313,7 +313,7 @@ sealed class WindowManager : IWindowManager, IDisposable
 
                 if (window is not null)
                     window.WindowEventHandler.OnMouseWheel(window, view);
-                break; 
+                break;
             }
             case SdlEvent.MouseButtonDown:
             {
@@ -337,7 +337,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             {
                 foreach (var window in _activeWindows)
                     window.WindowEventHandler.OnQuit(window);
-                
+
                 break;
             }
             default:
@@ -358,21 +358,50 @@ sealed class WindowManager : IWindowManager, IDisposable
             var handler = window.WindowEventHandler;
             switch (view.Event)
             {
-                case SdlWindowEvent.Shown: handler.OnShown(window); break;
-                case SdlWindowEvent.Hidden: handler.OnHidden(window); break;
-                case SdlWindowEvent.Exposed: handler.OnExpose(window); break; 
-                case SdlWindowEvent.Moved: handler.OnMove(window, view); break;
-                case SdlWindowEvent.Resized: handler.OnResize(window, view); break;
-                case SdlWindowEvent.SizeChanged: handler.OnSizeChanged(window, view); break;
-                case SdlWindowEvent.Minimized: handler.OnMinimize(window); break;
-                case SdlWindowEvent.Maximized: handler.OnMaximize(window); break;
-                case SdlWindowEvent.Restored: handler.OnRestore(window); break;
-                case SdlWindowEvent.Enter: handler.OnMouseEnter(window); break;
-                case SdlWindowEvent.Leave: handler.OnMouseLeave(window); break;
-                case SdlWindowEvent.FocusGained: handler.OnInputFocus(window); break;
-                case SdlWindowEvent.FocusLost: handler.OnInputBlur(window); break;
-                case SdlWindowEvent.Close: handler.OnClose(window); break;
-                default: break;
+                case SdlWindowEvent.Shown:
+                    handler.OnShown(window);
+                    break;
+                case SdlWindowEvent.Hidden:
+                    handler.OnHidden(window);
+                    break;
+                case SdlWindowEvent.Exposed:
+                    handler.OnExpose(window);
+                    break;
+                case SdlWindowEvent.Moved:
+                    handler.OnMove(window, view);
+                    break;
+                case SdlWindowEvent.Resized:
+                    handler.OnResize(window, view);
+                    break;
+                case SdlWindowEvent.SizeChanged:
+                    handler.OnSizeChanged(window, view);
+                    break;
+                case SdlWindowEvent.Minimized:
+                    handler.OnMinimize(window);
+                    break;
+                case SdlWindowEvent.Maximized:
+                    handler.OnMaximize(window);
+                    break;
+                case SdlWindowEvent.Restored:
+                    handler.OnRestore(window);
+                    break;
+                case SdlWindowEvent.Enter:
+                    handler.OnMouseEnter(window);
+                    break;
+                case SdlWindowEvent.Leave:
+                    handler.OnMouseLeave(window);
+                    break;
+                case SdlWindowEvent.FocusGained:
+                    handler.OnInputFocus(window);
+                    break;
+                case SdlWindowEvent.FocusLost:
+                    handler.OnInputBlur(window);
+                    break;
+                case SdlWindowEvent.Close:
+                    handler.OnClose(window);
+                    break;
+                default:
+                    break;
             }
         }
     }

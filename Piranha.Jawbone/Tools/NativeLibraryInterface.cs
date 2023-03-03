@@ -1,12 +1,12 @@
+using Microsoft.Extensions.DependencyInjection;
+using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Tools.ReflectionExtensions;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
-using Piranha.Jawbone.Tools.CollectionExtensions;
-using Piranha.Jawbone.Tools.ReflectionExtensions;
 
 namespace Piranha.Jawbone.Tools;
 
@@ -18,9 +18,9 @@ public static class NativeLibraryInterface
         MethodAttributes.HideBySig |
         MethodAttributes.NewSlot |
         MethodAttributes.Virtual;
-    
+
     private static readonly string BinFolder = Path.GetDirectoryName(typeof(NativeLibraryInterface).Assembly.Location) ?? ".";
-    
+
     public static string PascalCaseToSnakeCase(string prefix, string methodName)
     {
         var chars = new char[prefix.Length + methodName.Length * 2];
@@ -45,7 +45,7 @@ public static class NativeLibraryInterface
 
         return new string(chars, 0, n);
     }
-    
+
     public static string? GetCString(IntPtr ptr)
     {
         return ptr.IsInvalid() ? null : Marshal.PtrToStringUTF8(ptr);
@@ -59,10 +59,10 @@ public static class NativeLibraryInterface
         var libraryName = "Native." + Path.GetFileNameWithoutExtension(file);
         var libraryPath = file.Contains('/') || file.Contains('\\') ? file : Path.Combine(BinFolder, file);
         var libraryHandle = NativeLibrary.Load(libraryPath);
-        
+
         if (libraryHandle.IsInvalid())
             throw new DllNotFoundException("Unable to load library " + libraryPath);
-        
+
         try
         {
             return Create<T>(
@@ -77,7 +77,7 @@ public static class NativeLibraryInterface
             throw;
         }
     }
-    
+
     public static NativeLibraryInterface<T> Create<T>(
         string libraryName,
         IntPtr libraryHandle,
@@ -101,7 +101,7 @@ public static class NativeLibraryInterface
             "NativeLibrary",
             TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed);
         typeBuilder.AddInterfaceImplementation(typeof(T));
-        
+
         var constructorBuilder = typeBuilder.DefineDefaultConstructor(
             MethodAttributes.Public |
             MethodAttributes.HideBySig |
@@ -126,17 +126,17 @@ public static class NativeLibraryInterface
                 parameterTypes,
                 Array.ConvertAll(parameters, p => p.GetRequiredCustomModifiers()),
                 Array.ConvertAll(parameters, p => p.GetOptionalCustomModifiers()));
-            
+
             typeBuilder.DefineMethodOverride(methodBuilder, interfaceMethod);
 
             var functionName =
                 interfaceMethod.GetCustomAttribute<FunctionNameAttribute>()?.FunctionName ??
                 methodNameToFunctionName.Invoke(interfaceMethod.Name);
             var procAddress = procAddressLoader(libraryHandle, functionName);
-            
+
             if (procAddress.IsInvalid())
                 throw new Exception("Unable to load function " + functionName);
-            
+
             var returnsString = interfaceMethod.ReturnType == typeof(string);
             var returnType = returnsString ? typeof(IntPtr) : interfaceMethod.ReturnType;
 
@@ -144,10 +144,10 @@ public static class NativeLibraryInterface
 
             // No need to pin!
             // https://stackoverflow.com/a/2218540/264712
-            
+
             for (int j = 0; j < parameters.Length; ++j)
                 generator.EmitLdarg(j + 1);
-            
+
             generator.EmitPtr(procAddress);
             generator.EmitCalli(
                 OpCodes.Calli,

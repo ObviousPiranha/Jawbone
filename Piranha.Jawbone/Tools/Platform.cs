@@ -82,8 +82,8 @@ public static class Platform
         PiLibFolder,
         "/usr/lib"
     };
-    
-    
+
+
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
     public static readonly uint Rmask = IsRaspberryPi ? (uint)0x00ff0000 : (uint)0x000000ff;
     public static readonly uint Gmask = IsRaspberryPi ? (uint)0x0000ff00 : (uint)0x0000ff00;
@@ -134,7 +134,7 @@ public static class Platform
         else
             throw new NotSupportedException("Unknown platform.");
     }
-    
+
     public static T CurrentPlatform<T>(this IPlatformLoader<T> platform)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

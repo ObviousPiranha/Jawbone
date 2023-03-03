@@ -1,6 +1,6 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.Linq;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.Opus;
 
@@ -19,7 +19,7 @@ public sealed class OpusProvider : IDisposable
         var native = NativeLibraryInterface.FromFile<IOpus>(
             libraryPath,
             methodName => NativeLibraryInterface.PascalCaseToSnakeCase("opus", methodName));
-        
+
         return new OpusProvider(native);
     }
 
@@ -28,7 +28,7 @@ public sealed class OpusProvider : IDisposable
         var libraryPath = LibraryPaths.First(System.IO.File.Exists);
         return Create(libraryPath);
     }
-    
+
     private readonly NativeLibraryInterface<IOpus> _native;
 
     private OpusProvider(NativeLibraryInterface<IOpus> native)

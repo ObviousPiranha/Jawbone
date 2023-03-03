@@ -1,14 +1,14 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.IO;
 using System.Linq;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.OpenGl;
 
 public class OpenGlLoader : IPlatformLoader<NativeLibraryInterface<IOpenGl>>
 {
     public static NativeLibraryInterface<IOpenGl> Load() => new OpenGlLoader().CurrentPlatform();
-    
+
     private OpenGlLoader()
     {
     }

@@ -1,3 +1,4 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -5,7 +6,6 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.OpenGl;
 
@@ -71,7 +71,7 @@ public readonly struct ShaderInputMapper
 
             if (attribute is null)
                 continue;
-            
+
             var info = new VertexInfo
             {
                 Common = CommonVertexInfoByType[fieldInfo.FieldType],
@@ -79,7 +79,7 @@ public readonly struct ShaderInputMapper
                 Normalized = Gl.False,
                 Offset = Marshal.OffsetOf<T>(fieldInfo.Name).ToInt32()
             };
-            
+
             if (info.Index == -1)
                 throw new OpenGlException($"Unable to locate attribute '{attribute.Name}' for shader program ({program}).");
 

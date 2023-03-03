@@ -22,7 +22,7 @@ static class SqlitePropertyExtensions
 
         if (!property.CanBeNull)
             builder.Append(" NOT NULL");
-        
+
         return builder;
     }
 

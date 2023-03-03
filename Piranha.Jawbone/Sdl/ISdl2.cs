@@ -1,6 +1,6 @@
-using System;
 using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
+using System;
 
 namespace Piranha.Jawbone.Sdl;
 

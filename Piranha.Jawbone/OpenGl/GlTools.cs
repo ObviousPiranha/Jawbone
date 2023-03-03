@@ -1,8 +1,8 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.Extensions.Logging;
 
 namespace Piranha.Jawbone.OpenGl;
 

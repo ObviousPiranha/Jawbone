@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Tools;
+using System;
+using System.Collections.Generic;
 
 namespace Piranha.Jawbone.Sqlite;
 

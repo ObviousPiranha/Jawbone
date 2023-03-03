@@ -9,7 +9,7 @@ public static class AxialExtensions
     // +R +S +Q
     // -S -Q -R
     // +Q +R +S
-    
+
     public static Axial32 Rotate60(this Axial32 a) => new(-a.R, -a.S);
     public static Axial32 Rotate120(this Axial32 a) => new(a.S, a.Q);
     public static Axial32 Rotate180(this Axial32 a) => new(-a.Q, -a.R);

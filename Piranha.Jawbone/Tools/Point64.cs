@@ -14,7 +14,7 @@ public readonly struct Point64 : IEquatable<Point64>
         X = x;
         Y = y;
     }
-    
+
     public bool Equals(Point64 other) => X == other.X && Y == other.Y;
     public override bool Equals(object? obj) => obj is Point64 p && Equals(p);
     public override int GetHashCode() => HashCode.Combine(X, Y);

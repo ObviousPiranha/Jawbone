@@ -33,7 +33,7 @@ static class Address
                 return new ReadOnlySpan<byte>(a, Unsafe.SizeOf<T>());
         }
     }
-    
+
     public static ReadOnlySpan<ushort> GetReadOnlySpanU16<T>(in T item) where T : unmanaged
     {
         unsafe

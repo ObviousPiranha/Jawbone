@@ -150,7 +150,7 @@ public static class StatisticalReport
             .Append(report.SampleCount)
             .Append(' ')
             .Append(word);
-        
+
         append.Invoke(builder.Append(": median "), state, report.Median);
         append.Invoke(builder.Append(" mean "), state, report.Mean);
         append.Invoke(builder.Append(" stddev "), state, report.StandardDeviation);
@@ -193,7 +193,7 @@ public readonly struct StatisticalReport<T>
     public string ToString<TState>(TState state, Func<T, TState, string?> converter)
     {
         var word = SampleCount == 1 ? "sample" : "samples";
-        
+
         var result = string.Concat(
             SampleCount.ToString(),
             " ",
@@ -208,7 +208,7 @@ public readonly struct StatisticalReport<T>
             converter(Min, state),
             " max ",
             converter(Max, state));
-        
+
         return result;
     }
 

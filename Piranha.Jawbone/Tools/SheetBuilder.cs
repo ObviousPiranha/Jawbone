@@ -66,7 +66,7 @@ public sealed class SheetBuilder
     {
         if (!size.AllPositive() || SheetSize.X < size.X || SheetSize.Y < size.Y)
             return default;
-        
+
         var bestIndex = NoIndex;
         var bestFit = SheetFit.WorstFit;
 

@@ -5,7 +5,7 @@ namespace Piranha.Jawbone.Sqlite;
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public class SqliteKey : Attribute
 {
-    public int Ordinal { get ; set; }
+    public int Ordinal { get; set; }
     public bool IsDescending { get; set; }
     public bool IsAscending
     {

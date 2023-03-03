@@ -24,7 +24,7 @@ public static class StringBuilderExtensions
 
         if (0 < index)
             builder.Append(Hex[index]);
-        
+
         return builder.Append(Hex[value & 0xf]);
     }
 
@@ -51,7 +51,7 @@ public static class StringBuilderExtensions
     {
         if (span.IsEmpty)
             return builder;
-        
+
         builder
             .AppendCollapsedHex(span[0], span[1]);
 

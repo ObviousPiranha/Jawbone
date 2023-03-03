@@ -14,7 +14,7 @@ public readonly struct Point32 : IEquatable<Point32>
         X = x;
         Y = y;
     }
-    
+
     public bool Equals(Point32 other) => X == other.X && Y == other.Y;
     public override bool Equals(object? obj) => obj is Point32 p && Equals(p);
     public override int GetHashCode() => HashCode.Combine(X, Y);

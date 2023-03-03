@@ -39,7 +39,7 @@ public class QueryBuilder
     {
         foreach (var item in items)
             _select.Add(item);
-        
+
         return this;
     }
 
@@ -53,7 +53,7 @@ public class QueryBuilder
     {
         foreach (var item in items)
             _where.Add(item);
-        
+
         return this;
     }
 
@@ -84,7 +84,7 @@ public class QueryBuilder
 
             for (int i = 1; i < _where.Count; ++i)
                 builder.Append(") AND (").Append(_where[i]);
-            
+
             builder.Append(')');
         }
 

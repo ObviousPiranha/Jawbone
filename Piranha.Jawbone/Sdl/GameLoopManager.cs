@@ -1,7 +1,7 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.Extensions.Logging;
 
 namespace Piranha.Jawbone.Sdl;
 

@@ -1,7 +1,7 @@
-using System;
-using System.Runtime.InteropServices;
 using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
+using System;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.OpenGl;
 
@@ -18,20 +18,20 @@ public static class WindowsOpenGlLoader
 
         if (procAddress.IsInvalid())
             procAddress = NativeLibrary.GetExport(glModulePtr, functionName);
-        
+
         if (procAddress.IsInvalid())
             throw new Exception("Unable to load " + functionName);
-        
+
         return procAddress;
     }
 
     public static NativeLibraryInterface<IOpenGl> Load()
     {
         var libraryHandle = NativeLibrary.Load("opengl32");
-        
+
         if (libraryHandle.IsInvalid())
             throw new Exception("Unable to load opengl32.");
-        
+
         try
         {
             var wglGetProcAddressPtr = NativeLibrary.GetExport(libraryHandle, "wglGetProcAddress");

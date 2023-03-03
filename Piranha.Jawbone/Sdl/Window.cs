@@ -1,6 +1,6 @@
-using System;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Tools;
+using System;
 
 namespace Piranha.Jawbone.Sdl;
 
@@ -67,7 +67,7 @@ public class Window
         int displayIndex = Sdl.GetWindowDisplayIndex(WindowPointer);
         if (displayIndex < 0)
             throw new SdlException("error getting window display");
-        
+
         if (Sdl.GetDisplayUsableBounds(displayIndex, out var rect) != 0)
             throw new SdlException("error getting usable bounds");
 

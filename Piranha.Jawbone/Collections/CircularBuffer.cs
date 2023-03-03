@@ -22,7 +22,7 @@ public class CircularBuffer<T>
         {
             var firstSegment = _items.AsSpan(_startIndex);
             var secondSegment = _items.AsSpan(0, length - firstSegment.Length);
-            
+
             firstSegment.CopyTo(items);
             secondSegment.CopyTo(items[firstSegment.Length..]);
         }

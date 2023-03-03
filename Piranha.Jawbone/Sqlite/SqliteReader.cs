@@ -1,5 +1,5 @@
-using System;
 using Piranha.Jawbone.Tools.CollectionExtensions;
+using System;
 
 namespace Piranha.Jawbone.Sqlite;
 
@@ -29,7 +29,7 @@ public sealed class SqliteReader : IDisposable
         var result = _ownsStatement ?
             _sqlite3.Finalize(_statement) :
             _sqlite3.Reset(_statement);
-        
+
         _sqlite3.ThrowOnError(_database, result);
     }
 
@@ -55,7 +55,7 @@ public sealed class SqliteReader : IDisposable
 
             for (int i = 0; i < n; ++i)
                 result[i] = ColumnName(i);
-            
+
             return result;
         }
     }
@@ -92,12 +92,13 @@ public sealed class SqliteReader : IDisposable
         ThrowOnError();
         var byteCount = _sqlite3.ColumnBytes16(_statement, index);
 
-        if (0 < byteCount && pointer.IsValid()) unsafe
-        {
-            return new ReadOnlySpan<char>(
-                pointer.ToPointer(),
-                byteCount / 2);
-        }
+        if (0 < byteCount && pointer.IsValid())
+            unsafe
+            {
+                return new ReadOnlySpan<char>(
+                    pointer.ToPointer(),
+                    byteCount / 2);
+            }
 
         return default;
     }
@@ -108,12 +109,13 @@ public sealed class SqliteReader : IDisposable
         ThrowOnError();
         var byteCount = _sqlite3.ColumnBytes(_statement, index);
 
-        if (0 < byteCount && pointer.IsValid()) unsafe
-        {
-            return new ReadOnlySpan<byte>(
-                pointer.ToPointer(),
-                byteCount);
-        }
+        if (0 < byteCount && pointer.IsValid())
+            unsafe
+            {
+                return new ReadOnlySpan<byte>(
+                    pointer.ToPointer(),
+                    byteCount);
+            }
 
         return default;
     }
@@ -123,17 +125,18 @@ public sealed class SqliteReader : IDisposable
         // https://www.sqlite.org/c3ref/column_blob.html
         // "The safest policy is to invoke these routines in one of the following ways:"
         // "sqlite3_column_blob() followed by sqlite3_column_bytes()"
-        
+
         var pointer = _sqlite3.ColumnBlob(_statement, index);
         ThrowOnError();
         var byteCount = _sqlite3.ColumnBytes(_statement, index);
 
-        if (0 < byteCount && pointer.IsValid()) unsafe
-        {
-            return new ReadOnlySpan<byte>(
-                pointer.ToPointer(),
-                byteCount);
-        }
+        if (0 < byteCount && pointer.IsValid())
+            unsafe
+            {
+                return new ReadOnlySpan<byte>(
+                    pointer.ToPointer(),
+                    byteCount);
+            }
 
         return default;
     }

@@ -1,5 +1,5 @@
-using System;
 using Piranha.Jawbone.Tools.CollectionExtensions;
+using System;
 
 namespace Piranha.Jawbone.Sqlite;
 
@@ -26,14 +26,14 @@ public class SqliteStatement : IDisposable
         _database = database;
         _sqlite3 = sqlite3;
         Sql = sql;
-        
+
         var result = _sqlite3.PrepareV2(
             _database,
             sql,
             -1,
             out _statement,
             IntPtr.Zero);
-        
+
         try
         {
             ThrowOnError(result);

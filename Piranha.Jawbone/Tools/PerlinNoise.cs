@@ -10,10 +10,10 @@ public class PerlinNoise
     public static ImmutableArray<byte> CreatePermutation(Random random)
     {
         var builder = ImmutableArray.CreateBuilder<byte>(256);
-        
+
         for (int i = 0; i < 256; ++i)
             builder.Add(unchecked((byte)i));
-        
+
         for (int i = 0; i < 16; ++i)
         {
             for (int j = 0; j < builder.Count; ++j)
@@ -68,7 +68,7 @@ public class PerlinNoise
             _gradients[gi] * fx +
             _gradients[gi + 1] * fy +
             _gradients[gi + 2] * fz;
-        
+
         return result;
     }
 

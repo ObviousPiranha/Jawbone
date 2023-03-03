@@ -24,12 +24,12 @@ class PropertyHandler<TRecord, TProperty> : IPropertyHandler<TRecord>
     {
         var getMethod = property.GetMethod ?? throw new ArgumentException("Property must have getter.", nameof(property));
         var setMethod = property.SetMethod ?? throw new ArgumentException("Property must have setter.", nameof(property));
-        
+
         _setter = setMethod.CreateDelegate<Action<TRecord, TProperty>>();
         _getter = getMethod.CreateDelegate<Func<TRecord, TProperty>>();
         _converter = converter;
     }
-    
+
     public void BindRecord(SqliteStatement statement, int index, TRecord record)
     {
         var value = _getter.Invoke(record);

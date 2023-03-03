@@ -90,7 +90,7 @@ public readonly struct Address128 : IAddress<Address128>
                 int j = i + 1;
                 while (j < span16.Length && span16[j] == 0)
                     ++j;
-                
+
                 var length = j - i;
 
                 if (zeroLength < length)
