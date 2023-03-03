@@ -1,7 +1,7 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.IO;
 using System.Linq;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.Sdl;
 

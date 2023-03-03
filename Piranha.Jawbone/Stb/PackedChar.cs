@@ -1,7 +1,7 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.Stb;
 

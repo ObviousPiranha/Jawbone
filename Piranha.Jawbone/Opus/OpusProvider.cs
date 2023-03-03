@@ -1,6 +1,6 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.Linq;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.Opus;
 

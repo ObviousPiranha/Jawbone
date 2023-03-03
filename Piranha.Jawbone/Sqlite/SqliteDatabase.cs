@@ -1,6 +1,6 @@
+using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
 using System.Diagnostics;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sqlite;
 

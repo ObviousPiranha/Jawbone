@@ -1,3 +1,4 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -5,7 +6,6 @@ using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.OpenGl;
 

@@ -1,10 +1,10 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.Jawbone.Sqlite;
 

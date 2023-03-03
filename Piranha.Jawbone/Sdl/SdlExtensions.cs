@@ -1,11 +1,11 @@
-using System;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Bcm;
 using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
+using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl;
 

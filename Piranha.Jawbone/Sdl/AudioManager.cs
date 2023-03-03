@@ -1,9 +1,9 @@
+using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sdl;
 

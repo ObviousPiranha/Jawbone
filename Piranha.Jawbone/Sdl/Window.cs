@@ -1,6 +1,6 @@
-using System;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Tools;
+using System;
 
 namespace Piranha.Jawbone.Sdl;
 

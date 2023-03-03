@@ -1,7 +1,7 @@
-using System;
-using System.Runtime.InteropServices;
 using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
+using System;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.OpenGl;
 

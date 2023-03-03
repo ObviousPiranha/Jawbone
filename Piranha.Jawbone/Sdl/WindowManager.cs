@@ -1,13 +1,13 @@
+using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.OpenGl;
+using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.OpenGl;
-using Piranha.Jawbone.Tools;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Jawbone.Sdl;
 

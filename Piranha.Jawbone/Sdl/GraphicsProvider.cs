@@ -1,5 +1,5 @@
-using System;
 using Piranha.Jawbone.OpenGl;
+using System;
 
 namespace Piranha.Jawbone.Sdl;
 

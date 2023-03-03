@@ -1,5 +1,5 @@
-using System.Collections.Immutable;
 using Piranha.Jawbone.Tools;
+using System.Collections.Immutable;
 
 namespace Piranha.Jawbone.Sqlite;
 
