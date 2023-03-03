@@ -35,7 +35,7 @@ jobs:
       
     # Do Linting
     - name: Check Formatting
-      run: dotnet format --verify-no-changes
+      run: dotnet format Piranha.Jawbone/Piranha.Jawbone.csproj --verify-no-changes
 
     # Build
     - name: Test Build
