@@ -11,6 +11,11 @@ namespace Piranha.Sandbox;
 
 class Program
 {
+    static Span<byte> GenericTest<T>(T address) where T : unmanaged, IAddress<T>
+    {
+        var span = T.GetBytes(ref address);
+        return default;
+    }
     static void Dump(AddressInfo addressInfo)
     {
         Console.WriteLine("v4: " + string.Join(", ", addressInfo.V4));
@@ -35,7 +40,7 @@ class Program
         endpoints.AsSpan().Fill(Endpoint.Create(randomAddress, 200));
         byteBuffer.AddAllAsBytes(endpoints);
 
-        Console.WriteLine(Address128.Map(Address32.Local));
+        Console.WriteLine(Address128.Create(Address32.Local));
         Console.WriteLine(new Address128());
         Console.WriteLine(Address128.Local);
         Console.WriteLine(Address128.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
@@ -64,6 +69,7 @@ class Program
         {
             AddressShenanigans();
             TryOutV6();
+            return;
 
             if (1 < args.Length)
             {

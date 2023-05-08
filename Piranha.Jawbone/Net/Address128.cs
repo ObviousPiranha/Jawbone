@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -11,7 +12,7 @@ namespace Piranha.Jawbone.Net;
 public readonly struct Address128 : IAddress<Address128>
 {
     public static readonly Address128 Any = default(Address128);
-    public static readonly Address128 Local = Create(span => span[15] = 1);
+    public static readonly Address128 Local = Create(static span => span[15] = 1);
     private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
     public static Address128 Create(params byte[] values) => new Address128(values);
@@ -19,7 +20,7 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create(SpanAction<byte> action)
     {
         var result = default(Address128);
-        var span = Address.GetSpanU8(result);
+        var span = GetBytes(ref result);
         action.Invoke(span);
         return result;
     }
@@ -27,12 +28,12 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create<TState>(TState state, SpanAction<byte, TState> action)
     {
         var result = default(Address128);
-        var span = Address.GetSpanU8(result);
+        var span = GetBytes(ref result);
         action.Invoke(span, state);
         return result;
     }
 
-    public static Address128 Map(Address32 address) => new(0, 0, PrefixV4, address.RawAddress);
+    public static Address128 Create(Address32 address) => new(0, 0, PrefixV4, address.RawAddress);
 
     private readonly uint _a;
     private readonly uint _b;
@@ -42,11 +43,9 @@ public readonly struct Address128 : IAddress<Address128>
     public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
     public readonly bool IsIpv4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
-    public byte this[int index] => Address.GetReadOnlySpanU8(this)[index];
-
     public Address128(ReadOnlySpan<byte> values) : this()
     {
-        var span = Address.GetSpanU8(this);
+        var span = GetBytes(ref this);
         values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
     }
 
@@ -79,6 +78,13 @@ public readonly struct Address128 : IAddress<Address128>
 
     public void AppendTo(StringBuilder builder)
     {
+        if (_a == 0 && _b == 0 && _c == PrefixV4)
+        {
+            builder.Append("::ffff:");
+            new Address32(_d).AppendTo(builder);
+            return;
+        }
+
         int zeroIndex = 0;
         int zeroLength = 0;
 
@@ -103,7 +109,7 @@ public readonly struct Address128 : IAddress<Address128>
             }
         }
 
-        var span = Address.GetReadOnlySpanU8(this);
+        var span = GetReadOnlyBytes(this);
         builder.Append('[');
 
         if (1 < zeroLength)
@@ -120,4 +126,10 @@ public readonly struct Address128 : IAddress<Address128>
 
         builder.Append(']');
     }
+
+    public static Span<byte> GetBytes(ref Address128 address) => Address.GetSpanU8(ref address);
+    public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address128 address) => Address.GetReadOnlySpanU8(address);
+
+    public static bool operator ==(Address128 a, Address128 b) => a.Equals(b);
+    public static bool operator !=(Address128 a, Address128 b) => !a.Equals(b);
 }

@@ -7,21 +7,12 @@ public delegate void SpanAction<T>(Span<T> span);
 
 static class Address
 {
-    public static Span<byte> GetSpanU8<T>(in T item) where T : unmanaged
+    public static Span<byte> GetSpanU8<T>(ref T item) where T : unmanaged
     {
         unsafe
         {
             fixed (void* a = &item)
                 return new Span<byte>(a, Unsafe.SizeOf<T>());
-        }
-    }
-
-    public static Span<ushort> GetSpanU16<T>(in T item) where T : unmanaged
-    {
-        unsafe
-        {
-            fixed (void* a = &item)
-                return new Span<ushort>(a, Unsafe.SizeOf<T>() / Unsafe.SizeOf<ushort>());
         }
     }
 
