@@ -84,7 +84,7 @@ public readonly struct Address128 : IAddress<Address128>
             new Address32(_d).AppendTo(builder);
             return;
         }
-        
+
         int zeroIndex = 0;
         int zeroLength = 0;
 
