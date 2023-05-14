@@ -29,20 +29,20 @@ public static class Utf8
 
         if (sigBitCount == 0)
             return (utf8[0], 1);
-        
+
         if (sigBitCount == 1)
             throw new FormatException("Continuation byte found instead of lead byte");
-        
+
         if (4 < sigBitCount)
             throw new FormatException("UTF-8 only supports encodings up to 4 bytes.");
-        
+
         var codePoint = ~(int.MinValue >> (24 + sigBitCount)) & utf8[0];
 
         for (int i = 1; i <= sigBitCount; ++i)
         {
             if ((utf8[i] & LeadMask) != LeadBit)
                 throw new FormatException("Missing continuation byte");
-            
+
             codePoint = (codePoint << 6) | (utf8[i] & SixBits);
         }
 

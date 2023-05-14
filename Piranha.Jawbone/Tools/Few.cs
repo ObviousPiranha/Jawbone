@@ -37,12 +37,12 @@ public readonly struct Few<T> : IEquatable<Few<T>>
     public Few(ImmutableArray<T> items) => _items = items;
     public bool Equals(Few<T> other) => Items.SequenceEqual(other.Items);
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is Few<T> other && Equals(other);
-    
+
     public override int GetHashCode()
     {
         if (_items.IsDefaultOrEmpty)
             return 0;
-        
+
         var hashCode = new HashCode();
 
         foreach (var item in _items)
@@ -56,7 +56,7 @@ public readonly struct Few<T> : IEquatable<Few<T>>
     {
         if (_items.IsDefaultOrEmpty)
             return "[]";
-        
+
         var builder = new StringBuilder("[").Append(Items[0]?.ToString());
 
         for (int i = 1; i < Items.Length; ++i)
@@ -73,7 +73,7 @@ public readonly struct Few<T> : IEquatable<Few<T>>
         action.Invoke(items, state);
         return Unsafe.As<T[], ImmutableArray<T>>(ref items);
     }
-    
+
     public static Few<T> Create<TState>(
         int length, TState state, SpanAction<T, TState> action)
     {
