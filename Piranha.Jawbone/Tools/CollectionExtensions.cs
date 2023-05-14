@@ -80,4 +80,16 @@ public static class CollectionExtensions
             return result;
         }
     }
+
+    public static ReadOnlySpan<byte> NullTerminated(this ReadOnlySpan<byte> span)
+    {
+        var index = span.IndexOf(default(byte));
+        return index == -1 ? span : span.Slice(0, index);
+    }
+
+    public static void MutateAll<T, TState>(this Span<T> span, TState state, Func<TState, T, T> mutator)
+    {
+        for (int i = 0; i < span.Length; ++i)
+            span[i] = mutator.Invoke(state, span[i]);
+    }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -70,10 +71,18 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public UnmanagedList<T> AddRange(IEnumerable<T> items)
     {
-        if (items is List<T> list)
+        if (items is T[] array)
+        {
+            return AddAll(array);
+        }
+        else if (items is List<T> list)
         {
             var span = CollectionsMarshal.AsSpan(list);
             return AddAll(span);
+        }
+        else if (items is ImmutableArray<T> immutableArray)
+        {
+            return AddAll(immutableArray.AsSpan());
         }
         else if (items is IList<T> ilist)
         {
@@ -97,6 +106,40 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
                 Add(item);
         }
 
+        return this;
+    }
+
+    public UnmanagedList<T> Insert(int index, T item)
+    {
+        EnsureCapacity(_count + 1);
+        Items.Slice(index).CopyTo(_items.AsSpan(index + 1));
+        _items[index] = item;
+        ++_count;
+        return this;
+    }
+
+    public UnmanagedList<T> InsertAll(int index, ReadOnlySpan<T> items)
+    {
+        EnsureCapacity(_count + items.Length);
+        Items.Slice(index).CopyTo(_items.AsSpan(index + items.Length));
+        items.CopyTo(_items.AsSpan(index));
+        _count += items.Length;
+        return this;
+    }
+
+    public UnmanagedList<T> RemoveAt(int index)
+    {
+        Items.Slice(index + 1).CopyTo(_items.AsSpan(index));
+        --_count;
+        return this;
+    }
+
+    public UnmanagedList<T> RemoveAt(int index, int count)
+    {
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(count));
+        Items.Slice(index + count).CopyTo(_items.AsSpan(index));
+        _count -= count;
         return this;
     }
 

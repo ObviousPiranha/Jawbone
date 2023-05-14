@@ -20,6 +20,7 @@ public interface IWindowEventHandler
     void OnSizeChanged(Window window, WindowEventView eventData) { }
     void OnKeyDown(Window window, KeyboardEventView eventData) { }
     void OnKeyUp(Window window, KeyboardEventView eventData) { }
+    void OnTextInput(Window window, TextInputEventView eventData) { }
     void OnMouseMove(Window window, MouseMotionEventView eventData) { }
     void OnMouseWheel(Window window, MouseWheelEventView eventData) { }
     void OnMouseButtonDown(Window window, MouseButtonEventView eventData) { }

@@ -85,7 +85,6 @@ public interface ISdl2
     int AudioStreamGet(IntPtr stream, out byte buffer, int length);
     int AudioStreamGet(IntPtr stream, out short buffer, int length);
     int AudioStreamGet(IntPtr stream, out float buffer, int length);
-
     IntPtr GlCreateContext(IntPtr window);
     void GlDeleteContext(IntPtr context);
     int GlMakeCurrent(IntPtr window, IntPtr context);
@@ -100,4 +99,6 @@ public interface ISdl2
     void SetWindowTitle(IntPtr window, string title);
     void GetVersion(out byte v);
     string GetKeyName(int scanCode);
+    void StartTextInput();
+    void StopTextInput();
 }

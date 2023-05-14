@@ -3,7 +3,6 @@ using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -274,6 +273,15 @@ sealed class WindowManager : IWindowManager, IDisposable
 
         switch (eventType)
         {
+            case SdlEvent.TextInput:
+            {
+                var view = new TextInputEventView(_eventData);
+                var window = GetWindow(view.WindowId);
+
+                if (window is not null)
+                    window.WindowEventHandler.OnTextInput(window, view);
+                break;
+            }
             case SdlEvent.WindowEvent:
             {
                 HandleWindowEvent();
