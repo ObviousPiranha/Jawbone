@@ -28,7 +28,7 @@ public interface IStb
         int x,
         int y,
         int comp,
-        byte[] data,
+        in byte data,
         int strideBytes);
 
     int StbVorbisDecodeMemory(
