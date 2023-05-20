@@ -8,15 +8,15 @@ static class VertexExtensions
 {
     public static UnmanagedList<Vertex> Add(
         this UnmanagedList<Vertex> list,
-        Quadrilateral<System.Numerics.Vector2> position,
-        Quadrilateral<System.Numerics.Vector2> textureCoordinates)
+        Quadrilateral<Vector2> position,
+        Quadrilateral<Vector2> textureCoordinates)
     {
         return list
-            .Add(new(position.A, textureCoordinates.A))
-            .Add(new(position.B, textureCoordinates.B))
-            .Add(new(position.C, textureCoordinates.C))
-            .Add(new(position.A, textureCoordinates.A))
-            .Add(new(position.C, textureCoordinates.C))
-            .Add(new(position.D, textureCoordinates.D));
+            .Append(new(position.A, textureCoordinates.A))
+            .Append(new(position.B, textureCoordinates.B))
+            .Append(new(position.C, textureCoordinates.C))
+            .Append(new(position.A, textureCoordinates.A))
+            .Append(new(position.C, textureCoordinates.C))
+            .Append(new(position.D, textureCoordinates.D));
     }
 }

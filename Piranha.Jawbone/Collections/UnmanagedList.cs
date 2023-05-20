@@ -6,55 +6,6 @@ using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Collections;
 
-public static class UnmanagedList
-{
-    public static UnmanagedList<int> AppendUtf32(
-        this UnmanagedList<int> list,
-        ReadOnlySpan<char> text)
-    {
-        for (int i = 0; i < text.Length; ++i)
-        {
-            var c = text[i];
-            if (char.IsSurrogate(c))
-            {
-                list.Add(char.ConvertToUtf32(c, text[++i]));
-            }
-            else
-            {
-                list.Add(c);
-            }
-        }
-
-        return list;
-    }
-
-    public static UnmanagedList<int> AppendUtf32(
-        this UnmanagedList<int> list,
-        uint value)
-    {
-        if (value == 0)
-            return list.Add('0');
-
-        var firstIndex = list.Count;
-
-        for (var i = value; 0 < i; i /= 10)
-            list.Add('0' + (int)(i % 10));
-
-        list.Items.Slice(firstIndex).Reverse();
-        return list;
-    }
-
-    public static UnmanagedList<int> AppendUtf32(
-        this UnmanagedList<int> list,
-        int value)
-    {
-        if (value < 0)
-            return list.Add('-').AppendUtf32((uint)-value);
-
-        return list.AppendUtf32((uint)value);
-    }
-}
-
 public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
     private T[] _items = Array.Empty<T>();
@@ -91,13 +42,12 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         _nextCapacity = firstCapacity;
     }
 
-    public UnmanagedList<T> Clear()
+    public void Clear()
     {
         _count = 0;
-        return this;
     }
 
-    public UnmanagedList<T> Add(T item)
+    public void Add(T item)
     {
         if (_count == Capacity)
         {
@@ -106,32 +56,30 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         }
 
         _items[_count++] = item;
-        return this;
     }
 
-    public UnmanagedList<T> AddAll(ReadOnlySpan<T> items)
+    public void AddAll(ReadOnlySpan<T> items)
     {
         var minCapacity = _count + items.Length;
         EnsureCapacity(minCapacity);
         items.CopyTo(_items.AsSpan(_count));
         _count = minCapacity;
-        return this;
     }
 
-    public UnmanagedList<T> AddRange(IEnumerable<T> items)
+    public void AddRange(IEnumerable<T> items)
     {
         if (items is T[] array)
         {
-            return AddAll(array);
+            AddAll(array);
         }
         else if (items is List<T> list)
         {
             var span = CollectionsMarshal.AsSpan(list);
-            return AddAll(span);
+            AddAll(span);
         }
         else if (items is ImmutableArray<T> immutableArray)
         {
-            return AddAll(immutableArray.AsSpan());
+            AddAll(immutableArray.AsSpan());
         }
         else if (items is IList<T> ilist)
         {
@@ -154,50 +102,43 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
             foreach (var item in items)
                 Add(item);
         }
-
-        return this;
     }
 
-    public UnmanagedList<T> Insert(int index, T item)
+    public void Insert(int index, T item)
     {
         EnsureCapacity(_count + 1);
         Items.Slice(index).CopyTo(_items.AsSpan(index + 1));
         _items[index] = item;
         ++_count;
-        return this;
     }
 
-    public UnmanagedList<T> InsertAll(int index, ReadOnlySpan<T> items)
+    public void InsertAll(int index, ReadOnlySpan<T> items)
     {
         EnsureCapacity(_count + items.Length);
         Items.Slice(index).CopyTo(_items.AsSpan(index + items.Length));
         items.CopyTo(_items.AsSpan(index));
         _count += items.Length;
-        return this;
     }
 
-    public UnmanagedList<T> RemoveAt(int index)
+    public void RemoveAt(int index)
     {
         Items.Slice(index + 1).CopyTo(_items.AsSpan(index));
         --_count;
-        return this;
     }
 
-    public UnmanagedList<T> RemoveAt(int index, int count)
+    public void RemoveAt(int index, int count)
     {
         if (count < 0)
             throw new ArgumentOutOfRangeException(nameof(count));
         Items.Slice(index + count).CopyTo(_items.AsSpan(index));
         _count -= count;
-        return this;
     }
 
-    public UnmanagedList<T> Pop()
+    public T Pop()
     {
-        if (_count == 0)
-            throw new IndexOutOfRangeException("List is empty.");
+        var item = _items[_count - 1]; // Ensure throw happens without altering count.
         --_count;
-        return this;
+        return item;
     }
 
     private void AddEnumerable(IEnumerable<T> enumerable, int count)
