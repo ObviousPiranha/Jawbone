@@ -14,6 +14,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
     private const int Channels = 2;
     private const int SamplesPerSecond = Frequency * Channels;
 
+    private readonly List<AudioShader> _shaders = new();
     private readonly List<float[]> _sounds = new();
     private readonly List<ScheduledAudio> _scheduledAudio = new();
     private readonly object _lock = new();
@@ -264,10 +265,13 @@ public sealed class AudioManager : IAudioManager, IDisposable
                         _scheduledAudio.RemoveAt(scheduledAudioIndex);
                     }
                 }
+
+                foreach (var shader in _shaders)
+                    shader.Invoke(Frequency, Channels, samples);
             }
 
-            if (_scheduledAudio.Count == 0)
-                _sdl.PauseAudioDevice(_device, 1);
+            // if (_scheduledAudio.Count == 0)
+            //     _sdl.PauseAudioDevice(_device, 1);
 
             _sampleIndex = endSampleIndex;
         }
@@ -279,6 +283,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
         var audioManager = handle.Target as AudioManager;
 
         if (audioManager is not null)
+        {
             unsafe
             {
                 var span = new Span<float>(
@@ -286,5 +291,18 @@ public sealed class AudioManager : IAudioManager, IDisposable
                     size / Unsafe.SizeOf<float>());
                 audioManager.AcquireData(span);
             }
+        }
+    }
+
+    public void AddShader(AudioShader audioShader)
+    {
+        lock (_lock)
+            _shaders.Add(audioShader);
+    }
+
+    public void RemoveShader(AudioShader audioShader)
+    {
+        lock (_lock)
+            _shaders.Remove(audioShader);
     }
 }

@@ -2,8 +2,13 @@ using System;
 
 namespace Piranha.Jawbone.Sdl;
 
+public delegate void AudioShader(int frequency, int channels, Span<float> samples);
+
 public interface IAudioManager
 {
+    void AddShader(AudioShader audioShader);
+    void RemoveShader(AudioShader audioShader);
+
     int PrepareAudio(
         SdlAudio format,
         int frequency,
