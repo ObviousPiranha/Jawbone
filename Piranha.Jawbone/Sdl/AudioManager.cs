@@ -197,7 +197,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
 
     private void AcquireData(Span<float> samples)
     {
-        samples.Fill(0f);
+        samples.Clear();
         lock (_lock)
         {
             var endSampleIndex = _sampleIndex + samples.Length;
