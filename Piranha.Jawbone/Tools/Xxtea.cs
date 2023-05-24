@@ -18,10 +18,20 @@ public static class Xxtea
         return ((z>>5^y<<2) + (y>>3^z<<4)) ^ ((sum^y) + (key[(int)(p & 3 ^ e)] ^ z));
     }
 
+    private static void Validate(Span<uint> v, ReadOnlySpan<uint> key)
+    {
+        if (v.Length < 2)
+            throw new ArgumentException("Data must contain at least two 32-bit words", nameof(v));
+
+        if (key.Length < 4)
+            throw new ArgumentException("Key must contain four 32-bit words", nameof(key));
+    }
+
     public static void Encrypt(Span<uint> v, ReadOnlySpan<uint> key)
     {
+        Validate(v, key);
         int n = v.Length;
-        uint rounds = 6 + 52 / (uint)n;
+        uint rounds = 16 + 32 / (uint)n;
         uint sum = 0;
         uint z = v[n - 1];
 
@@ -46,8 +56,9 @@ public static class Xxtea
 
     public static void Decrypt(Span<uint> v, ReadOnlySpan<uint> key)
     {
+        Validate(v, key);
         int n = v.Length;
-        uint rounds = 6 + 52 / (uint)n;
+        uint rounds = 16 + 32 / (uint)n;
         uint sum = rounds * Delta;
         uint y = v[0];
 
