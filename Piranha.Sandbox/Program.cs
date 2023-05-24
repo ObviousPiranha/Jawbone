@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Piranha.Jawbone.Collections;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
@@ -75,7 +74,7 @@ class Program
             {
                 var info = AddressInfo.Get(args[0], args[1]);
                 var endpoint = info.V4[0];
-                
+
                 using var client = new UdpSocket32(default);
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
@@ -129,7 +128,7 @@ class Program
     {
         // var clientInfo = socketProvider.GetAddressInfo(null, null);
         // Dump(clientInfo);
-        
+
         var serverInfo = AddressInfo.Get(null, "12345");
         Dump(serverInfo);
 
@@ -142,7 +141,7 @@ class Program
         using var myClient = new UdpSocket128(default);
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
-        
+
         var message = new byte[] { 0xec, 0xc0, 0xfa, 0x11 };
         myClient.Send(message, serverEndpoint);
 
@@ -154,7 +153,7 @@ class Program
             Console.WriteLine("They match!");
         else
             Console.WriteLine("They do not match...");
-        
+
         Console.WriteLine("One more receive...");
         var stopwatch = Stopwatch.StartNew();
         n = myServer.Receive(buffer, out origin, TimeSpan.FromSeconds(2));

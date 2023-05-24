@@ -72,6 +72,9 @@ public sealed class AudioManager : IAudioManager, IDisposable
         // This object holds onto a GC handle to itself.
         // It would never die on its own.
 
+        lock (_lock)
+            _scheduledAudio.Clear();
+
         if (_handle.IsAllocated)
         {
             _sdl.CloseAudioDevice(_device);

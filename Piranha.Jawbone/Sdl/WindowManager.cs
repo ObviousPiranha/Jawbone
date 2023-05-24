@@ -75,10 +75,10 @@ sealed class WindowManager : IWindowManager, IDisposable
 
     public void Dispose()
     {
-        _gl?.Dispose();
-
         if (_contextPtr.IsValid())
             _sdl.GlDeleteContext(_contextPtr);
+
+        _gl?.Dispose();
     }
 
     private uint GetWindowId(IntPtr windowPtr)

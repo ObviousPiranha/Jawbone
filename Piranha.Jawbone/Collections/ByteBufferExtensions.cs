@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Collections;
+namespace Piranha.Jawbone;
 
 public static class ByteBufferExtensions
 {

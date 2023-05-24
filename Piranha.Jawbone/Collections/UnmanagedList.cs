@@ -1,11 +1,17 @@
+using Piranha.Jawbone.Tools;
+using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Collections;
+namespace Piranha.Jawbone;
 
+[DebuggerTypeProxy(typeof(UnmanagedListDebugView<>))]
+[DebuggerDisplay("Count = {Count}")]
 public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
     private T[] _items = Array.Empty<T>();
@@ -15,18 +21,28 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public bool IsEmpty => _count == 0;
     public int Capacity => _items.Length;
     public int Count => _count;
-    public Span<T> Items => _items.AsSpan(0, Count);
     public Span<byte> Bytes
     {
         get
         {
-            var length = Count * Unsafe.SizeOf<T>();
+            var length = _count * Unsafe.SizeOf<T>();
 
             unsafe
             {
                 fixed (void* pointer = _items)
                     return new Span<byte>(pointer, length);
             }
+        }
+    }
+
+    public ref T this[int index]
+    {
+        get
+        {
+            if (_count <= index)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
+            return ref _items[index];
         }
     }
 
@@ -47,13 +63,31 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         _count = 0;
     }
 
+    public Span<T> Acquire(int count)
+    {
+        var result = AcquireUninitialized(count);
+        result.Clear();
+        return result;
+    }
+
+    public Span<T> AcquireUninitialized(int count)
+    {
+        if (count < 0)
+            throw new ArgumentException("Count cannot be negative.", nameof(count));
+
+        if (count == 0)
+            return default;
+
+        EnsureCapacity(_count + count);
+        var result = _items.AsSpan(_count, count);
+        _count += count;
+        return result;
+    }
+
     public void Add(T item)
     {
         if (_count == Capacity)
-        {
-            Array.Resize(ref _items, _nextCapacity);
-            _nextCapacity *= 2;
-        }
+            Grow();
 
         _items[_count++] = item;
     }
@@ -107,7 +141,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public void Insert(int index, T item)
     {
         EnsureCapacity(_count + 1);
-        Items.Slice(index).CopyTo(_items.AsSpan(index + 1));
+        AsSpan(index).CopyTo(_items.AsSpan(index + 1));
         _items[index] = item;
         ++_count;
     }
@@ -115,14 +149,14 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public void InsertAll(int index, ReadOnlySpan<T> items)
     {
         EnsureCapacity(_count + items.Length);
-        Items.Slice(index).CopyTo(_items.AsSpan(index + items.Length));
+        AsSpan(index).CopyTo(_items.AsSpan(index + items.Length));
         items.CopyTo(_items.AsSpan(index));
         _count += items.Length;
     }
 
     public void RemoveAt(int index)
     {
-        Items.Slice(index + 1).CopyTo(_items.AsSpan(index));
+        AsSpan(index + 1).CopyTo(_items.AsSpan(index));
         --_count;
     }
 
@@ -130,7 +164,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     {
         if (count < 0)
             throw new ArgumentOutOfRangeException(nameof(count));
-        Items.Slice(index + count).CopyTo(_items.AsSpan(index));
+        AsSpan(index + count).CopyTo(_items.AsSpan(index));
         _count -= count;
     }
 
@@ -140,6 +174,10 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         --_count;
         return item;
     }
+
+    public Span<T> AsSpan() => _items.AsSpan(0, _count);
+    public Span<T> AsSpan(int start) => _items.AsSpan(start, _count - start);
+    public Span<T> AsSpan(int start, int length) => AsSpan().Slice(start, length);
 
     private void AddEnumerable(IEnumerable<T> enumerable, int count)
     {
@@ -168,7 +206,32 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         while (_nextCapacity < minCapacity)
             _nextCapacity *= 2;
 
-        Array.Resize(ref _items, _nextCapacity);
+        Grow();
+    }
+
+    private void Grow()
+    {
+        var items = new T[_nextCapacity];
         _nextCapacity *= 2;
+        AsSpan().CopyTo(items);
+        _items = items;
+    }
+
+    public static T[] CreateArray(int length, SpanAction<byte> action)
+    {
+        var result = new T[length];
+        action.Invoke(result.AsSpan().ToByteSpan());
+        return result;
+    }
+
+    public static T[] CreateArray<TState>(int length, TState state, SpanAction<byte, TState> action)
+    {
+        var result = new T[length];
+
+        action.Invoke(
+            result.AsSpan().ToByteSpan(),
+            state);
+
+        return result;
     }
 }

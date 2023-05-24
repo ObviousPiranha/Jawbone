@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Piranha.Jawbone.Collections;
+namespace Piranha.Jawbone;
 
 public static class UnmanagedListExtensions
 {
@@ -97,7 +97,7 @@ public static class UnmanagedListExtensions
         for (var i = value; 0 < i; i /= 10)
             list.Add('0' + (int)(i % 10));
 
-        list.Items.Slice(firstIndex).Reverse();
+        list.AsSpan(firstIndex).Reverse();
         return list;
     }
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Collections;
+namespace Piranha.Jawbone;
 
 public interface IUnmanagedList
 {

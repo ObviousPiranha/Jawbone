@@ -1,4 +1,3 @@
-using Piranha.Jawbone.Collections;
 using System;
 using System.Text;
 using Xunit;
@@ -18,7 +17,7 @@ public class UnmanagedListTest
 
         list.Pop();
         Assert.Equal(3, list.Count);
-        Assert.True(list.Items.SequenceEqual(new int[] { 1, 2, 3 }));
+        Assert.True(list.AsSpan().SequenceEqual(new int[] { 1, 2, 3 }));
 
         list.Clear();
         Assert.True(list.IsEmpty);
