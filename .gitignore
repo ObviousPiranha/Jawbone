@@ -9,3 +9,5 @@ obj/
 *.so
 
 BenchmarkDotNet.Artifacts/
+
+.DS_Store
