@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Piranha.Jawbone.Tools.CollectionExtensions;
 
@@ -132,5 +131,21 @@ public static class CollectionExtensions
         dictionary[key] = nextValue;
 
         return nextValue;
+    }
+
+    public static TResult[] ToArray<T, TResult>(this Span<T> span, Func<T, TResult> conversion)
+    {
+        var result = new TResult[span.Length];
+        for (int i = 0; i < span.Length; ++i)
+            result[i] = conversion.Invoke(span[i]);
+        return result;
+    }
+
+    public static TResult[] ToArray<T, TResult>(this ReadOnlySpan<T> span, Func<T, TResult> conversion)
+    {
+        var result = new TResult[span.Length];
+        for (int i = 0; i < span.Length; ++i)
+            result[i] = conversion.Invoke(span[i]);
+        return result;
     }
 }

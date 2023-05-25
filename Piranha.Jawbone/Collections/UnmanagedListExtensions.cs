@@ -1,3 +1,4 @@
+using Piranha.Jawbone.Tools;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -42,16 +43,87 @@ public static class UnmanagedListExtensions
         return list;
     }
 
-    public static UnmanagedList<int> AppendUtf32(
-        this UnmanagedList<int> list,
-        ReadOnlySpan<char> text)
+    public static UnmanagedList<byte> AppendUtf8CodePoint(
+        this UnmanagedList<byte> list,
+        int codePoint)
     {
-        for (int i = 0; i < text.Length; ++i)
+        if (codePoint < 0)
         {
-            var c = text[i];
+            throw new ArgumentOutOfRangeException(nameof(codePoint), "Negative code points not allowed.");
+        }
+        else if (codePoint < 0x80)
+        {
+            list.Add((byte)codePoint);
+        }
+        else if (codePoint < 0x800)
+        {
+            list.Add(
+                (byte)(0xc0 | (codePoint >> 6)),
+                (byte)Utf8.GetContinuationByte(codePoint, 0));
+        }
+        else if (codePoint < 0x10000)
+        {
+            list.Add(
+                (byte)(0xe0 | (codePoint >> 12)),
+                (byte)Utf8.GetContinuationByte(codePoint, 1),
+                (byte)Utf8.GetContinuationByte(codePoint, 0));
+        }
+        else if (codePoint < 0x110000)
+        {
+            list.Add(
+                (byte)(0xf0 | (codePoint >> 18)),
+                (byte)Utf8.GetContinuationByte(codePoint, 2),
+                (byte)Utf8.GetContinuationByte(codePoint, 1),
+                (byte)Utf8.GetContinuationByte(codePoint, 0));
+        }
+        else
+        {
+            throw new ArgumentOutOfRangeException(nameof(codePoint), $"Invalid code point {codePoint}");
+        }
+
+        return list;
+    }
+
+    public static UnmanagedList<byte> AppendUtf8(
+        this UnmanagedList<byte> list,
+        ReadOnlySpan<char> utf16)
+    {
+        for (int i = 0; i < utf16.Length; ++i)
+        {
+            var c = utf16[i];
             if (char.IsSurrogate(c))
             {
-                list.Add(char.ConvertToUtf32(c, text[++i]));
+                list.AppendUtf8CodePoint(char.ConvertToUtf32(c, utf16[++i]));
+            }
+            else
+            {
+                list.AppendUtf8CodePoint(c);
+            }
+        }
+
+        return list;
+    }
+
+    public static UnmanagedList<byte> AppendUtf8(
+        this UnmanagedList<byte> list,
+        ReadOnlySpan<int> utf32)
+    {
+        foreach (var codePoint in utf32)
+            list.AppendUtf8CodePoint(codePoint);
+
+        return list;
+    }
+
+    public static UnmanagedList<int> AppendUtf32(
+        this UnmanagedList<int> list,
+        ReadOnlySpan<char> utf16)
+    {
+        for (int i = 0; i < utf16.Length; ++i)
+        {
+            var c = utf16[i];
+            if (char.IsSurrogate(c))
+            {
+                list.Add(char.ConvertToUtf32(c, utf16[++i]));
             }
             else
             {
@@ -112,5 +184,17 @@ public static class UnmanagedListExtensions
         }
 
         return list.AppendUtf32((uint)value);
+    }
+
+    public static string AsUtf32String(this UnmanagedList<int> list)
+    {
+        var result = Encoding.UTF32.GetString(list.Bytes);
+        return result;
+    }
+
+    public static string AsUtf8String(this UnmanagedList<byte> list)
+    {
+        var result = Encoding.UTF8.GetString(list.AsSpan());
+        return result;
     }
 }

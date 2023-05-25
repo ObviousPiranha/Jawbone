@@ -28,6 +28,24 @@ public class UnmanagedListTest
     [InlineData("")]
     [InlineData("asdf")]
     [InlineData("surrogate pair \U0001F01C")]
+    // https://www.w3.org/2001/06/utf-8-test/UTF-8-demo.html
+    [InlineData("∮ E⋅da = Q,  n → ∞, ∑ f(i) = ∏ g(i), ∀x∈ℝ: ⌈x⌉ = −⌊−x⌋, α ∧ ¬β = ¬(¬α ∨ β)")]
+    [InlineData("Σὲ γνωρίζω ἀπὸ τὴν κόψη")]
+    public void AppendUtf8_Utf32(string utf16)
+    {
+        var utf8 = Encoding.UTF8.GetBytes(utf16);
+        var utf32 = Encoding.UTF32.GetBytes(utf16);
+        var listUtf32 = new UnmanagedList<int>().AppendUtf32(utf16);
+        var listUtf8 = new UnmanagedList<byte>().AppendUtf8(listUtf32.AsSpan());
+
+        Assert.True(listUtf32.Bytes.SequenceEqual(utf32));
+        Assert.True(listUtf8.AsSpan().SequenceEqual(utf8));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("asdf")]
+    [InlineData("surrogate pair \U0001F01C")]
     public void AppendUtf32_String(string expected)
     {
         var list = new UnmanagedList<int>();

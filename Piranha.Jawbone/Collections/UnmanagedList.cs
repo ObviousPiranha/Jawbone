@@ -92,6 +92,30 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         _items[_count++] = item;
     }
 
+    public void Add(T item0, T item1)
+    {
+        EnsureCapacity(_count + 2);
+        _items[_count++] = item0;
+        _items[_count++] = item1;
+    }
+
+    public void Add(T item0, T item1, T item2)
+    {
+        EnsureCapacity(_count + 3);
+        _items[_count++] = item0;
+        _items[_count++] = item1;
+        _items[_count++] = item2;
+    }
+
+    public void Add(T item0, T item1, T item2, T item3)
+    {
+        EnsureCapacity(_count + 4);
+        _items[_count++] = item0;
+        _items[_count++] = item1;
+        _items[_count++] = item2;
+        _items[_count++] = item3;
+    }
+
     public void AddAll(ReadOnlySpan<T> items)
     {
         var minCapacity = _count + items.Length;
