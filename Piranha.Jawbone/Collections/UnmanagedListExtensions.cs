@@ -7,6 +7,14 @@ namespace Piranha.Jawbone;
 
 public static class UnmanagedListExtensions
 {
+    public static bool StartsWith<T>(
+        this UnmanagedList<T> list,
+        T item
+        ) where T : unmanaged, IEquatable<T>
+    {
+        return !list.IsEmpty && list[0].Equals(item);
+    }
+
     public static UnmanagedList<T> Append<T>(
         this UnmanagedList<T> list,
         T item
