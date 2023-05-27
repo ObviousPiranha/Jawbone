@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
-using Piranha.Jawbone.Tools;
 using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.SheetTool;
@@ -50,7 +49,7 @@ class Program
 
             foreach (var innerFolder in Directory.EnumerateDirectories(folder))
                 folders.Push(innerFolder);
-            
+
             foreach (var pngFile in Directory.EnumerateFiles(folder, "*.png"))
             {
                 logger.LogDebug("Loading {0}", pngFile);
@@ -62,10 +61,10 @@ class Program
                     out var height,
                     out var comp,
                     4);
-                
+
                 if (pixelBytes.IsInvalid())
                     throw new Exception("Unable to load PNG.");
-                
+
                 var surface = sdl.CreateRGBSurfaceFrom(
                     pixelBytes,
                     width,
@@ -76,13 +75,13 @@ class Program
                     Platform.Gmask,
                     Platform.Bmask,
                     Platform.Amask);
-                
+
                 if (surface.IsInvalid())
                 {
                     stb.StbiImageFree(pixelBytes);
                     throw new SdlException("Unable to create surface: " + sdl.GetError());
                 }
-                
+
                 surfaces.Add(surface);
                 nameBySurface.Add(surface, Path.GetFileNameWithoutExtension(pngFile));
             }
@@ -139,7 +138,7 @@ class Program
             sdl.FreeSurface(surface);
         }
     }
-    
+
     static void Main(string[] args)
     {
         try
@@ -152,7 +151,7 @@ class Program
                 ValidateOnBuild = true,
                 ValidateScopes = true
             };
-            
+
             using var serviceProvider = serviceCollection.BuildServiceProvider(options);
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
