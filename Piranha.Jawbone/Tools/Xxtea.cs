@@ -16,7 +16,7 @@ public static class Xxtea
         uint p,
         uint sum)
     {
-        return ((z>>5^y<<2) + (y>>3^z<<4)) ^ ((sum^y) + (key[(int)(p & 3 ^ e)] ^ z));
+        return ((z >> 5 ^ y << 2) + (y >> 3 ^ z << 4)) ^ ((sum ^ y) + (key[(int)(p & 3 ^ e)] ^ z));
     }
 
     private static uint Rounds(int n) => 16 + 32 / (uint)n;

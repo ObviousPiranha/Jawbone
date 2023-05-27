@@ -9,5 +9,8 @@ obj/
 *.so
 
 BenchmarkDotNet.Artifacts/
+*.speedscope.json
+*.nettrace
+*.gcdump
 
 .DS_Store
