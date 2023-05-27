@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public readonly struct Quadrilateral<T> : IEquatable<Quadrilateral<T>> where T : IEquatable<T>
 {

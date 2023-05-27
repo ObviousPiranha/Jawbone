@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 // https://en.wikipedia.org/wiki/XXTEA#Reference_code
 // https://crypto.stackexchange.com/a/12997/50663

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

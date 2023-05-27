@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Tools.DateTimeOffsetExtensions;
+namespace Piranha.Jawbone.Extensions;
 
 public static class DateTimeOffsetExtensions
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Tools.CollectionExtensions;
+namespace Piranha.Jawbone.Extensions;
 
 public struct ArrayWithIndexEnumerator<T>
 {

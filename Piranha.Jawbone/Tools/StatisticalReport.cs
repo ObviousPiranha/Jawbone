@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public static class StatisticalReport
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public readonly struct ValueStopwatch : IEquatable<ValueStopwatch>
 {

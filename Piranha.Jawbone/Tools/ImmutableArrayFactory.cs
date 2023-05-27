@@ -3,7 +3,7 @@ using System.Buffers;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public static class ImmutableArrayFactory
 {

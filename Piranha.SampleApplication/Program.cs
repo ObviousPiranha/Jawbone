@@ -1,10 +1,10 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Piranha.Jawbone;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Sqlite;
 using Piranha.Jawbone.Stb;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.SampleApplication;
 
@@ -41,7 +41,7 @@ class Program
             ValidateOnBuild = true,
             ValidateScopes = true
         };
-        
+
         using var serviceProvider = serviceCollection.BuildServiceProvider(options);
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
@@ -72,7 +72,7 @@ class Program
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(ex);
-            Console.ResetColor();   
+            Console.ResetColor();
         }
     }
 }

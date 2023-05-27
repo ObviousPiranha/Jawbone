@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Bcm;
-using Piranha.Jawbone.Tools;
-using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Extensions;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;

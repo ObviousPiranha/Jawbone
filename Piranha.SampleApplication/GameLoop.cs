@@ -1,8 +1,8 @@
 using System;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
+using Piranha.Jawbone;
 using Piranha.Jawbone.Sdl;
-using Piranha.Jawbone.Tools;
 
 namespace Piranha.SampleApplication;
 

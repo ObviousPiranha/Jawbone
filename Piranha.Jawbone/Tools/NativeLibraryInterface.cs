@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.Tools.ReflectionExtensions;
 using System;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public static class NativeLibraryInterface
 {

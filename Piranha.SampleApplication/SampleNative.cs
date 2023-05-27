@@ -1,4 +1,4 @@
-using Piranha.Jawbone.Tools;
+using Piranha.Jawbone;
 
 namespace Piranha.SampleApplication;
 

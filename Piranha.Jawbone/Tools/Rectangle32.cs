@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Rectangle32 : IEquatable<Rectangle32>

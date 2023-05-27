@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 public class FunctionNameAttribute : Attribute

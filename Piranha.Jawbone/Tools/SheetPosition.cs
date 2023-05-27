@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public readonly struct SheetPosition : IEquatable<SheetPosition>
 {
