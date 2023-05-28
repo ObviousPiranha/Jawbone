@@ -1,7 +1,7 @@
 using System;
 using System.Reflection.Emit;
 
-namespace Piranha.Jawbone.Tools.ReflectionExtensions;
+namespace Piranha.Jawbone.Extensions;
 
 public static class ReflectionExtensions
 {

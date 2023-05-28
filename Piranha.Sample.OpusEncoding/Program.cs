@@ -2,10 +2,10 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.Opus;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.Sample.OpusEncoding;
 
@@ -29,7 +29,7 @@ class Program
             .AddSdl2()
             .AddStb()
             .AddOpus();
-        
+
 
         var options = new ServiceProviderOptions
         {
@@ -39,7 +39,7 @@ class Program
 
         return services.BuildServiceProvider(options);
     }
-    
+
     static void EncodeAndThenDecode()
     {
         using var serviceProvider = CreateServiceProvider();
@@ -106,7 +106,7 @@ class Program
 
         var n = decoder.Decode(inputBytes, buffer);
     }
-    
+
     static void Main(string[] args)
     {
         try
