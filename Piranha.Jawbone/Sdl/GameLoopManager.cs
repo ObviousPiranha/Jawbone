@@ -54,6 +54,7 @@ public sealed class GameLoopManager : IDisposable
                 {
                     // TODO: Add metric reporting
                     nextSecond += second;
+                    _gameLoop.SecondUpdate();
                 }
 
                 // Erase all the empty seconds (due to a long application pause).
