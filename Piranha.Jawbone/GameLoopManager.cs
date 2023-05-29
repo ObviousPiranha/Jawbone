@@ -3,23 +3,20 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Piranha.Jawbone.Sdl;
+namespace Piranha.Jawbone;
 
 public sealed class GameLoopManager : IDisposable
 {
     private readonly Thread _thread;
     private readonly ILogger<GameLoopManager> _logger;
-    private readonly ISdl2 _sdl;
     private readonly IGameLoop _gameLoop;
     private bool _running = true;
 
     public GameLoopManager(
         ILogger<GameLoopManager> logger,
-        ISdl2 sdl,
         IGameLoop gameLoop)
     {
         _logger = logger;
-        _sdl = sdl;
         _gameLoop = gameLoop;
 
         _thread = new Thread(RunGameLoopInBackground);

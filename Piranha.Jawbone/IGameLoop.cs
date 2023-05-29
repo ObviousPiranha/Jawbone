@@ -1,4 +1,4 @@
-namespace Piranha.Jawbone.Sdl;
+namespace Piranha.Jawbone;
 
 public interface IGameLoop
 {
