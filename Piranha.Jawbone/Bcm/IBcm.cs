@@ -1,5 +1,3 @@
-using Piranha.Jawbone.Tools;
-
 namespace Piranha.Jawbone.Bcm;
 
 public interface IBcm

@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -14,6 +14,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
     private const int Channels = 2;
     private const int SamplesPerSecond = Frequency * Channels;
 
+    private readonly List<AudioShader> _shaders = new();
     private readonly List<float[]> _sounds = new();
     private readonly List<ScheduledAudio> _scheduledAudio = new();
     private readonly object _lock = new();
@@ -70,6 +71,9 @@ public sealed class AudioManager : IAudioManager, IDisposable
         // No point in making a finalizer.
         // This object holds onto a GC handle to itself.
         // It would never die on its own.
+
+        lock (_lock)
+            _scheduledAudio.Clear();
 
         if (_handle.IsAllocated)
         {
@@ -196,7 +200,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
 
     private void AcquireData(Span<float> samples)
     {
-        samples.Fill(0f);
+        samples.Clear();
         lock (_lock)
         {
             var endSampleIndex = _sampleIndex + samples.Length;
@@ -264,10 +268,13 @@ public sealed class AudioManager : IAudioManager, IDisposable
                         _scheduledAudio.RemoveAt(scheduledAudioIndex);
                     }
                 }
+
+                foreach (var shader in _shaders)
+                    shader.Invoke(Frequency, Channels, samples);
             }
 
-            if (_scheduledAudio.Count == 0)
-                _sdl.PauseAudioDevice(_device, 1);
+            // if (_scheduledAudio.Count == 0)
+            //     _sdl.PauseAudioDevice(_device, 1);
 
             _sampleIndex = endSampleIndex;
         }
@@ -279,6 +286,7 @@ public sealed class AudioManager : IAudioManager, IDisposable
         var audioManager = handle.Target as AudioManager;
 
         if (audioManager is not null)
+        {
             unsafe
             {
                 var span = new Span<float>(
@@ -286,5 +294,18 @@ public sealed class AudioManager : IAudioManager, IDisposable
                     size / Unsafe.SizeOf<float>());
                 audioManager.AcquireData(span);
             }
+        }
+    }
+
+    public void AddShader(AudioShader audioShader)
+    {
+        lock (_lock)
+            _shaders.Add(audioShader);
+    }
+
+    public void RemoveShader(AudioShader audioShader)
+    {
+        lock (_lock)
+            _shaders.Remove(audioShader);
     }
 }

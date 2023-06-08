@@ -2,7 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 // https://lotsacode.wordpress.com/2010/02/24/perlin-noise-in-c/
 public class PerlinNoise

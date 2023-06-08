@@ -1,9 +1,7 @@
 using System;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.Collections;
-using Piranha.Jawbone.Sdl;
-using Piranha.Jawbone.Tools;
+using Piranha.Jawbone;
 
 namespace Piranha.SampleApplication;
 
@@ -51,13 +49,14 @@ class GameLoop : IGameLoop
 
         var t = _frameCount / (float)CycleFrameCount;
         scene.Color = Vector4.Lerp(_startColor, _endColor, t);
-        
+
         var radians = t * 2f * (float)Math.PI;
         var matrix = Matrix4x4.CreateRotationZ(radians);
         var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F)).Transformed(matrix);
         var textureCoordinates = SampleHandler.PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
-        scene.VertexData.Clear().Add(positions, textureCoordinates);
-        
+        scene.VertexData.Clear();
+        scene.VertexData.Add(positions, textureCoordinates);
+
         if (!_scenePool.SetLatestScene(scene))
         {
             ++_staleCount;

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public delegate void SpanAction<T>(Span<T> span);
 

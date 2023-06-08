@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 readonly struct SheetFit : IEquatable<SheetFit>, IComparable<SheetFit>
 {

@@ -1,4 +1,4 @@
-namespace Piranha.Jawbone.Sdl;
+namespace Piranha.Jawbone;
 
 public interface IGameLoop
 {
@@ -6,5 +6,6 @@ public interface IGameLoop
     void PrepareScene() { }
     void FrameUpdate() { }
     void BetweenFrames() { }
+    void SecondUpdate() { }
     void Close() { }
 }

@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct PackedUnsignedVector4 : IEquatable<PackedUnsignedVector4>

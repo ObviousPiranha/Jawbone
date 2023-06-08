@@ -1,4 +1,4 @@
-using Piranha.Jawbone.Tools.CollectionExtensions;
+using Piranha.Jawbone.Extensions;
 using System;
 using System.Diagnostics;
 

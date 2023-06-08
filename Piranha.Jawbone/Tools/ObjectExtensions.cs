@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Tools.ObjectExtensions;
+namespace Piranha.Jawbone.Extensions;
 
 public static class ObjectExtensions
 {

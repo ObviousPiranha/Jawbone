@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Tools.RandomExtensions;
+namespace Piranha.Jawbone.Extensions;
 
 public static class RandomExtensions
 {

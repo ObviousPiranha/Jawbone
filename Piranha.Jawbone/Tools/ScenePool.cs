@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public sealed class ScenePool<T> where T : class, new()
 {

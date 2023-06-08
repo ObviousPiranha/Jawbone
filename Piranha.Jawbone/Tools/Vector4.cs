@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct Vector4<T> : IEquatable<Vector4<T>> where T : unmanaged, IEquatable<T>

@@ -1,6 +1,6 @@
 using System;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public static class Utf8
 {
@@ -48,4 +48,6 @@ public static class Utf8
 
         return (codePoint, sigBitCount);
     }
+
+    internal static int GetContinuationByte(int codePoint, int shift) => LeadBit | ((codePoint >> (6 * shift)) & SixBits);
 }

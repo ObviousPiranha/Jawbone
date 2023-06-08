@@ -1,4 +1,4 @@
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public static class CircleExtensions
 {

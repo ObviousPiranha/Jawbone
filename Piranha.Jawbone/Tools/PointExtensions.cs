@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-namespace Piranha.Jawbone.Tools;
+namespace Piranha.Jawbone;
 
 public static class PointExtensions
 {

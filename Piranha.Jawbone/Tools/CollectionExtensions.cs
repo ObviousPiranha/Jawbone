@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace Piranha.Jawbone.Tools.CollectionExtensions;
+namespace Piranha.Jawbone.Extensions;
 
 public struct ArrayWithIndexEnumerator<T>
 {
@@ -91,5 +91,61 @@ public static class CollectionExtensions
     {
         for (int i = 0; i < span.Length; ++i)
             span[i] = mutator.Invoke(state, span[i]);
+    }
+
+    public static Span<byte> ToByteSpan<T>(this Span<T> span) where T : unmanaged
+    {
+        unsafe
+        {
+            fixed (void* p = span)
+                return new Span<byte>(p, span.Length * Unsafe.SizeOf<T>());
+        }
+    }
+
+    public static ReadOnlySpan<byte> ToByteSpan<T>(this ReadOnlySpan<T> span) where T : unmanaged
+    {
+        unsafe
+        {
+            fixed (void* p = span)
+                return new Span<byte>(p, span.Length * Unsafe.SizeOf<T>());
+        }
+    }
+
+    public static int Increment<TKey>(this IDictionary<TKey, int> dictionary, TKey key)
+    {
+        var nextValue = 1;
+        if (dictionary.TryGetValue(key, out var value))
+            nextValue = value + 1;
+
+        dictionary[key] = nextValue;
+
+        return nextValue;
+    }
+
+    public static long Increment<TKey>(this IDictionary<TKey, long> dictionary, TKey key)
+    {
+        var nextValue = 1L;
+        if (dictionary.TryGetValue(key, out var value))
+            nextValue = value + 1;
+
+        dictionary[key] = nextValue;
+
+        return nextValue;
+    }
+
+    public static TResult[] ToArray<T, TResult>(this Span<T> span, Func<T, TResult> conversion)
+    {
+        var result = new TResult[span.Length];
+        for (int i = 0; i < span.Length; ++i)
+            result[i] = conversion.Invoke(span[i]);
+        return result;
+    }
+
+    public static TResult[] ToArray<T, TResult>(this ReadOnlySpan<T> span, Func<T, TResult> conversion)
+    {
+        var result = new TResult[span.Length];
+        for (int i = 0; i < span.Length; ++i)
+            result[i] = conversion.Invoke(span[i]);
+        return result;
     }
 }

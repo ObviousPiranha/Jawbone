@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.OpenGl;
-using Piranha.Jawbone.Tools;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -75,10 +74,10 @@ sealed class WindowManager : IWindowManager, IDisposable
 
     public void Dispose()
     {
-        _gl?.Dispose();
-
         if (_contextPtr.IsValid())
             _sdl.GlDeleteContext(_contextPtr);
+
+        _gl?.Dispose();
     }
 
     private uint GetWindowId(IntPtr windowPtr)

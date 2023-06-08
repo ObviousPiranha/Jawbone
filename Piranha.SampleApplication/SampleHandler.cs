@@ -4,12 +4,11 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.Collections;
+using Piranha.Jawbone;
+using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
-using Piranha.Jawbone.Tools;
-using Piranha.Jawbone.Tools.CollectionExtensions;
 
 namespace Piranha.SampleApplication;
 
@@ -118,9 +117,9 @@ class SampleHandler : IWindowEventHandler
             Gl.Rgba,
             Gl.UnsignedByte,
             pixelBytes);
-        
+
         _stb.StbiImageFree(pixelBytes);
-        
+
         gl.TexParameteri(Target, Gl.TextureWrapS, Gl.ClampToEdge);
         gl.TexParameteri(Target, Gl.TextureWrapT, Gl.ClampToEdge);
         gl.TexParameteri(Target, Gl.TextureMagFilter, Gl.Linear);
@@ -128,7 +127,8 @@ class SampleHandler : IWindowEventHandler
 
         var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
         var textureCoordinates = PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
-        _bufferData.Clear().Add(positions, textureCoordinates);
+        _bufferData.Clear();
+        _bufferData.Add(positions, textureCoordinates);
 
         var size = window.Size;
         gl.Viewport(0, 0, size.X, size.Y);
@@ -151,10 +151,10 @@ class SampleHandler : IWindowEventHandler
             out var channelCount,
             out var sampleRate,
             out var output);
-        
+
         if (output.IsInvalid())
             throw new Exception("Failed to load audio file.");
-        
+
         try
         {
             _audioManager.PrepareAudio(
@@ -168,7 +168,7 @@ class SampleHandler : IWindowEventHandler
             _stb.PiranhaFree(output);
         }
     }
-    
+
     public void OnClose(Window window)
     {
         _logger.LogDebug("OnClose");
@@ -209,7 +209,7 @@ class SampleHandler : IWindowEventHandler
             _scenePool.ReturnScene(_currentScene);
             _currentScene = latestScene;
             var bytes = _currentScene.VertexData.Bytes;
-            
+
             gl.BufferSubData(
                 Gl.ArrayBuffer,
                 IntPtr.Zero,

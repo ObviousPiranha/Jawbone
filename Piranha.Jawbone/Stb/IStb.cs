@@ -28,7 +28,7 @@ public interface IStb
         int x,
         int y,
         int comp,
-        byte[] data,
+        in byte data,
         int strideBytes);
 
     int StbVorbisDecodeMemory(
@@ -76,6 +76,7 @@ public interface IStb
 
     float StbttScaleForPixelHeight(byte[] fontInfo, float height);
     int StbttGetCodepointKernAdvance(byte[] fontInfo, int ch1, int ch2);
+    int StbttFindGlyphIndex(byte[] fontInfo, int unicodeCodepoint);
 
     void StbttPackEnd(byte[] packContext);
 
