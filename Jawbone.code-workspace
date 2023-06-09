@@ -26,6 +26,7 @@
 		"files.associations": {
 			"stdio.h": "c",
 			"sdl.h": "c"
-		}
+		},
+		"dotnet.defaultSolution": "/home/kelly/Documents/Code/ObviousPiranha/Echofall/Jawbone/Piranha.Jawbone/Piranha.Jawbone.sln"
 	}
 }

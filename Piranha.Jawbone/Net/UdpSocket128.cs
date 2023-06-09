@@ -6,16 +6,19 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 {
     private readonly long _handle;
 
-    public UdpSocket128(Endpoint<Address128> endpoint)
+    public UdpSocket128(Endpoint<Address128> endpoint, bool allowV4)
     {
         JawboneNetworking.CreateAndBindUdpV6Socket(
             endpoint.Address,
             endpoint.RawPort,
+            Convert.ToInt32(allowV4),
             out _handle,
             out var socketError,
+            out var setSocketOptionError,
             out var bindError);
 
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
     }
 

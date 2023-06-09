@@ -79,8 +79,9 @@ public readonly struct Address128 : IAddress<Address128>
     {
         if (_a == 0 && _b == 0 && _c == PrefixV4)
         {
-            builder.Append("::ffff:");
+            builder.Append("[::ffff:");
             new Address32(_d).AppendTo(builder);
+            builder.Append(']');
             return;
         }
 

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using Piranha.Jawbone;
 using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
@@ -60,15 +61,54 @@ class Program
         Dump(info3);
 
         Console.WriteLine("yo yo yo");
+
+        using (var socket = new UdpSocket32(default))
+            Console.WriteLine(socket.GetEndpoint().ToString());
+
+        using (var socket = new UdpSocket128(default, false))
+            Console.WriteLine(socket.GetEndpoint().ToString());
+    }
+
+    static void AllowV4(bool allowV4)
+    {
+        var sendBuffer = new byte[256];
+        var receiveBuffer = new byte[sendBuffer.Length];
+
+        RandomNumberGenerator.Fill(sendBuffer);
+        using (var socketV6 = new UdpSocket128(default, allowV4))
+        {
+            var endpointV6 = socketV6.GetEndpoint();
+            var word = allowV4 ? "enabled" : "disabled";
+            Console.WriteLine($"Bound on {endpointV6} with V4 {word}.");
+            var destination = Endpoint.Create(Address32.Local, endpointV6.Port);
+            using (var socketV4 = new UdpSocket32(default))
+            {
+                var endpointV4 = socketV4.GetEndpoint();
+                socketV4.Send(sendBuffer, destination);
+                Console.WriteLine($"Sent message from {endpointV4}.");
+            }
+
+            var length = socketV6.Receive(receiveBuffer, out var origin, TimeSpan.Zero);
+            if (length == sendBuffer.Length && sendBuffer.AsSpan().SequenceEqual(receiveBuffer))
+            {
+                Console.WriteLine($"Received correct message from {origin}.");
+            }
+            else
+            {
+                Console.WriteLine($"Received nothing from {origin}. :(");
+            }
+        }
     }
 
     static void Main(string[] args)
     {
         try
         {
+            AllowV4(true);
+            AllowV4(false);
+            return;
             AddressShenanigans();
             TryOutV6();
-            return;
 
             if (1 < args.Length)
             {
@@ -132,13 +172,13 @@ class Program
         var serverInfo = AddressInfo.Get(null, "12345");
         Dump(serverInfo);
 
-        using var myServer = new UdpSocket128(serverInfo.V6[0]);
+        using var myServer = new UdpSocket128(serverInfo.V6[0], false);
         // using var myServer = socketProvider.CreateAndBindUdpSocket128(new Endpoint<Address128>(Address128.Create(span => span.Fill((byte)0xff)), 1));
         Console.WriteLine("Server bound!");
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
 
-        using var myClient = new UdpSocket128(default);
+        using var myClient = new UdpSocket128(default, false);
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
 

@@ -45,6 +45,11 @@ class Program
         using var serviceProvider = serviceCollection.BuildServiceProvider(options);
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
+        using (var process = System.Diagnostics.Process.GetCurrentProcess())
+        {
+            logger.LogInformation("Process ID - " + process.Id);
+        }
+
         try
         {
             var scenePool = new ScenePool<PiranhaScene>();

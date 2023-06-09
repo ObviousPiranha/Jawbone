@@ -26,8 +26,10 @@ public static partial class JawboneNetworking
     public static partial void CreateAndBindUdpV6Socket(
         in Address128 address,
         ushort port,
+        int allowV4,
         out long outSocket,
         out int outSocketError,
+        out int outSetSocketOptionError,
         out int outBindError);
     [LibraryImport(Library, EntryPoint = "jawboneGetV4SocketName")]
     public static partial int GetV4SocketName(
