@@ -4,13 +4,19 @@ namespace Piranha.Jawbone.Net;
 
 public static partial class JawboneNetworking
 {
+    private const int ExpectedVersion = 1;
     private const string Library = "PiranhaNative.dll";
 
     static JawboneNetworking()
     {
+        var version = GetVersion();
+        if (version != ExpectedVersion)
+            throw new System.Exception($"Expected version {ExpectedVersion}; found version {version}.");
         StartNetworking();
     }
 
+    [LibraryImport(Library, EntryPoint = "jawboneGetVersion")]
+    private static partial int GetVersion();
     [LibraryImport(Library, EntryPoint = "jawboneStartNetworking")]
     private static partial int StartNetworking();
     [LibraryImport(Library, EntryPoint = "jawboneStopNetworking")]

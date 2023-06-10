@@ -2,7 +2,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Sqlite;
 
-namespace Piranha.Jawbone.Test;
+namespace Piranha.Jawbone.Test.Native;
 
 // https://xunit.net/docs/shared-context
 
@@ -22,7 +22,7 @@ public sealed class ServiceFixture : IDisposable
             ValidateOnBuild = true,
             ValidateScopes = true
         };
-        
+
         _serviceProvider = services.BuildServiceProvider(options);
     }
 

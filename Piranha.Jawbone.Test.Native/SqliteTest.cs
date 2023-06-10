@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Sqlite;
 using Xunit;
 
-namespace Piranha.Jawbone.Test;
+namespace Piranha.Jawbone.Test.Native;
 
 [Collection(JawboneServiceCollection.Name)]
 public class SqliteTest
@@ -19,14 +19,14 @@ public class SqliteTest
         _sqlite3 = fixture.ServiceProvider.GetRequiredService<ISqlite3>();
     }
 
-    [Fact(Skip = "Native not ready")]
+    [Fact]
     public void HasVersion()
     {
         var version = _sqlite3.Libversion();
         Assert.NotNull(version);
     }
 
-    [Fact(Skip = "Native not ready")]
+    [Fact]
     public void DoTheThing()
     {
         var records = new SqliteRecord[]

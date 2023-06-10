@@ -100,14 +100,32 @@ class Program
         }
     }
 
+    static void ErrorOnPurpose()
+    {
+        try
+        {
+            using var socketA = new UdpSocket32(default);
+            var endpoint = socketA.GetEndpoint();
+            Console.WriteLine($"Bound socket on {endpoint}.");
+
+            using var socketB = new UdpSocket32(Endpoint.Create(Address32.Any, endpoint.Port));
+            Console.WriteLine("Hm. This shouldn't be possible.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
+
     static void Main(string[] args)
     {
         try
         {
             AllowV4(true);
             AllowV4(false);
-            return;
+            // ErrorOnPurpose();
             AddressShenanigans();
+            return;
             TryOutV6();
 
             if (1 < args.Length)

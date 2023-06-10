@@ -2,7 +2,7 @@ namespace Piranha.Jawbone;
 
 public interface IGameLoop
 {
-    bool Running { get => true; }
+    bool Running => true;
     void PrepareScene() { }
     void FrameUpdate() { }
     void BetweenFrames() { }

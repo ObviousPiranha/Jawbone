@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace Piranha.Jawbone.Test;
+namespace Piranha.Jawbone.Test.Native;
 
 [CollectionDefinition(JawboneServiceCollection.Name)]
 public class JawboneServiceCollection : ICollectionFixture<ServiceFixture>

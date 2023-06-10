@@ -40,7 +40,7 @@ public readonly struct Address128 : IAddress<Address128>
     private readonly uint _d;
 
     public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
-    public readonly bool IsIpv4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
+    public readonly bool IsIpV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
     public Address128(ReadOnlySpan<byte> values) : this()
     {
@@ -77,7 +77,7 @@ public readonly struct Address128 : IAddress<Address128>
 
     public void AppendTo(StringBuilder builder)
     {
-        if (_a == 0 && _b == 0 && _c == PrefixV4)
+        if (IsIpV4Mapped)
         {
             builder.Append("[::ffff:");
             new Address32(_d).AppendTo(builder);
