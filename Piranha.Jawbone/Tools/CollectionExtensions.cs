@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Extensions;
@@ -98,7 +97,7 @@ public static class CollectionExtensions
         unsafe
         {
             fixed (void* p = span)
-                return new Span<byte>(p, span.Length * Unsafe.SizeOf<T>());
+                return new Span<byte>(p, span.Length * sizeof(T));
         }
     }
 
@@ -107,7 +106,7 @@ public static class CollectionExtensions
         unsafe
         {
             fixed (void* p = span)
-                return new Span<byte>(p, span.Length * Unsafe.SizeOf<T>());
+                return new Span<byte>(p, span.Length * sizeof(T));
         }
     }
 

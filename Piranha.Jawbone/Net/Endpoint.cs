@@ -14,6 +14,9 @@ public static class Endpoint
 
     public static Endpoint<Address32> Local32(int port) => new(Address32.Local, port);
     public static Endpoint<Address128> Local128(int port) => new(Address128.Local, port);
+
+    public static Endpoint<Address32> Any32(int port) => new(Address32.Any, port);
+    public static Endpoint<Address128> Any128(int port) => new(Address128.Any, port);
 }
 
 [StructLayout(LayoutKind.Sequential)]
