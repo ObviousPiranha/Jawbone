@@ -1,5 +1,6 @@
 using Piranha.Jawbone.Extensions;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl;
 
@@ -15,7 +16,7 @@ public static class AudioManagerExtensions
             SdlAudio.F32,
             frequency,
             channels,
-            f32Data.ToByteSpan());
+            MemoryMarshal.AsBytes(f32Data));
     }
 
     public static int PrepareAudio(
@@ -28,6 +29,6 @@ public static class AudioManagerExtensions
             SdlAudio.S16Lsb,
             frequency,
             channels,
-            s16Data.ToByteSpan());
+            MemoryMarshal.AsBytes(s16Data));
     }
 }

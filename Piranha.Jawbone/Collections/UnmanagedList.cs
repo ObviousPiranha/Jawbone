@@ -20,19 +20,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public bool IsEmpty => _count == 0;
     public int Capacity => _items.Length;
     public int Count => _count;
-    public Span<byte> Bytes
-    {
-        get
-        {
-            var length = _count * Unsafe.SizeOf<T>();
-
-            unsafe
-            {
-                fixed (void* pointer = _items)
-                    return new Span<byte>(pointer, length);
-            }
-        }
-    }
+    public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
 
     public ref T this[int index]
     {
@@ -243,18 +231,16 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public static T[] CreateArray(int length, SpanAction<byte> action)
     {
         var result = new T[length];
-        action.Invoke(result.AsSpan().ToByteSpan());
+        var span = MemoryMarshal.AsBytes(result.AsSpan());
+        action.Invoke(span);
         return result;
     }
 
     public static T[] CreateArray<TState>(int length, TState state, SpanAction<byte, TState> action)
     {
         var result = new T[length];
-
-        action.Invoke(
-            result.AsSpan().ToByteSpan(),
-            state);
-
+        var span = MemoryMarshal.AsBytes(result.AsSpan());
+        action.Invoke(span, state);
         return result;
     }
 }

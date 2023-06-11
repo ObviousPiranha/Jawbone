@@ -8,14 +8,13 @@ namespace Piranha.Jawbone.Net;
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Address32 : IAddress<Address32>
 {
-    public static readonly Address32 Any = default(Address32);
-    public static readonly Address32 Local = new Address32(127, 0, 0, 1);
-    public static readonly Address32 Broadcast = new Address32(255, 255, 255, 255);
+    public static readonly Address32 Any = default;
+    public static readonly Address32 Local = new(127, 0, 0, 1);
+    public static readonly Address32 Broadcast = new(255, 255, 255, 255);
 
     private readonly uint _rawAddress;
 
     public readonly bool IsDefault => _rawAddress == 0;
-    internal readonly uint RawAddress => _rawAddress;
 
     public Address32(ReadOnlySpan<byte> values) : this()
     {
@@ -34,18 +33,20 @@ public readonly struct Address32 : IAddress<Address32>
 
     internal Address32(uint rawAddress) => _rawAddress = rawAddress;
 
-    public bool Equals(Address32 other) => _rawAddress == other._rawAddress;
-    public override bool Equals([NotNullWhen(true)] object? obj)
+    public readonly Address128 MapToV6() => new(0, 0, Address128.PrefixV4, _rawAddress);
+
+    public readonly bool Equals(Address32 other) => _rawAddress == other._rawAddress;
+    public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is Address32 other && Equals(other);
-    public override int GetHashCode() => _rawAddress.GetHashCode();
-    public override string? ToString()
+    public override readonly int GetHashCode() => _rawAddress.GetHashCode();
+    public override readonly string? ToString()
     {
         var builder = new StringBuilder(15);
         AppendTo(builder);
         return builder.ToString();
     }
 
-    public void AppendTo(StringBuilder builder)
+    public readonly void AppendTo(StringBuilder builder)
     {
         var span = GetReadOnlyBytes(this);
         builder
@@ -63,5 +64,8 @@ public readonly struct Address32 : IAddress<Address32>
 
     public static bool operator ==(Address32 a, Address32 b) => a.Equals(b);
     public static bool operator !=(Address32 a, Address32 b) => !a.Equals(b);
+    public static Address32 operator &(Address32 a, Address32 b) => new(a._rawAddress & b._rawAddress);
+    public static Address32 operator |(Address32 a, Address32 b) => new(a._rawAddress | b._rawAddress);
+    public static Address32 operator ^(Address32 a, Address32 b) => new(a._rawAddress ^ b._rawAddress);
 }
 

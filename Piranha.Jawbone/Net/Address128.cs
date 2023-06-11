@@ -10,11 +10,11 @@ namespace Piranha.Jawbone.Net;
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Address128 : IAddress<Address128>
 {
-    public static readonly Address128 Any = default(Address128);
+    public static readonly Address128 Any = default;
     public static readonly Address128 Local = Create(static span => span[15] = 1);
-    private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
+    internal static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
-    public static Address128 Create(params byte[] values) => new Address128(values);
+    public static Address128 Create(params byte[] values) => new(values);
 
     public static Address128 Create(SpanAction<byte> action)
     {
@@ -32,8 +32,6 @@ public readonly struct Address128 : IAddress<Address128>
         return result;
     }
 
-    public static Address128 Create(Address32 address) => new(0, 0, PrefixV4, address.RawAddress);
-
     private readonly uint _a;
     private readonly uint _b;
     private readonly uint _c;
@@ -48,7 +46,7 @@ public readonly struct Address128 : IAddress<Address128>
         values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
     }
 
-    private Address128(uint a, uint b, uint c, uint d)
+    internal Address128(uint a, uint b, uint c, uint d)
     {
         _a = a;
         _b = b;
@@ -56,7 +54,7 @@ public readonly struct Address128 : IAddress<Address128>
         _d = d;
     }
 
-    public bool Equals(Address128 other)
+    public readonly bool Equals(Address128 other)
     {
         return
             _a == other._a &&
@@ -65,17 +63,17 @@ public readonly struct Address128 : IAddress<Address128>
             _d == other._d;
     }
 
-    public override bool Equals([NotNullWhen(true)] object? obj)
+    public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is Address128 other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(_a, _b, _c, _d);
-    public override string? ToString()
+    public override readonly int GetHashCode() => HashCode.Combine(_a, _b, _c, _d);
+    public override readonly string? ToString()
     {
         var builder = new StringBuilder(48);
         AppendTo(builder);
         return builder.ToString();
     }
 
-    public void AppendTo(StringBuilder builder)
+    public readonly void AppendTo(StringBuilder builder)
     {
         if (IsIpV4Mapped)
         {
@@ -132,4 +130,7 @@ public readonly struct Address128 : IAddress<Address128>
 
     public static bool operator ==(Address128 a, Address128 b) => a.Equals(b);
     public static bool operator !=(Address128 a, Address128 b) => !a.Equals(b);
+    public static Address128 operator &(Address128 a, Address128 b) => new(a._a & b._a, a._b & b._b, a._c & b._c, a._d & b._d);
+    public static Address128 operator |(Address128 a, Address128 b) => new(a._a | b._a, a._b | b._b, a._c | b._c, a._d | b._d);
+    public static Address128 operator ^(Address128 a, Address128 b) => new(a._a ^ b._a, a._b ^ b._b, a._c ^ b._c, a._d ^ b._d);
 }

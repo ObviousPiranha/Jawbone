@@ -1,7 +1,6 @@
 using Piranha.Jawbone.Net;
 using System;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using Xunit;
 
 namespace Piranha.Jawbone.Test.Native;
@@ -30,7 +29,7 @@ public class NetworkTest
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Endpoint.Local32(endpointA.Port));
 
-        var length = socketA.Receive(receiveBuffer, out var origin, TimeSpan.Zero);
+        var length = socketA.Receive(receiveBuffer, out var origin);
         Assert.Equal(endpointB.Port, origin.Port);
         Assert.Equal(Address32.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
@@ -52,7 +51,7 @@ public class NetworkTest
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Endpoint.Local128(endpointA.Port));
 
-        var length = socketA.Receive(receiveBuffer, out var origin, TimeSpan.Zero);
+        var length = socketA.Receive(receiveBuffer, out var origin);
         Assert.Equal(endpointB.Port, origin.Port);
         Assert.Equal(Address128.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
@@ -70,21 +69,23 @@ public class NetworkTest
 
         using var socketA = new UdpSocket32(default);
         var endpointA = socketA.GetEndpoint();
-        var destinationA = Endpoint.Create(Address128.Create(Address32.Local), endpointA.Port);
+        var destinationA = Endpoint.Create(Address32.Local.MapToV6(), endpointA.Port);
 
         using var socketB = new UdpSocket128(default, true);
         var endpointB = socketB.GetEndpoint();
         var destinationB = Endpoint.Local32(endpointB.Port);
 
         socketA.Send(sendBuffer, destinationB);
-        var lengthV6 = socketB.Receive(receiveBuffer, out var originV6, TimeSpan.Zero);
-        Assert.Equal(Address128.Create(Address32.Local), originV6.Address);
+        var lengthV6 = socketB.Receive(receiveBuffer, out var originV6);
+        Assert.Equal(Address32.Local.MapToV6(), originV6.Address);
         Assert.Equal(sendBuffer.Length, lengthV6);
         Assert.True(receiveBuffer.AsSpan(0, lengthV6).SequenceEqual(sendBuffer));
 
         receiveBuffer.AsSpan().Clear();
+        Assert.False(receiveBuffer.AsSpan(0, lengthV6).SequenceEqual(sendBuffer));
+
         socketB.Send(sendBuffer, destinationA);
-        int lengthV4 = socketA.Receive(receiveBuffer, out var originV4, TimeSpan.Zero);
+        int lengthV4 = socketA.Receive(receiveBuffer, out var originV4);
         Assert.Equal(Address32.Local, originV4.Address);
         Assert.Equal(sendBuffer.Length, lengthV4);
         Assert.True(receiveBuffer.AsSpan(0, lengthV4).SequenceEqual(sendBuffer));
