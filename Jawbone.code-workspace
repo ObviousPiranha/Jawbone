@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "Piranha.Jawbone.SourceGenerator"
+		},
+		{
+			"path": "Piranha.Jawbone.Test.Native"
 		}
 	],
 	"settings": {

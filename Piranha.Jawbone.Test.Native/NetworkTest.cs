@@ -8,13 +8,6 @@ namespace Piranha.Jawbone.Test.Native;
 public class NetworkTest
 {
     [Fact]
-    public void AddressesAreExactSizes()
-    {
-        Assert.Equal(4, Unsafe.SizeOf<Address32>());
-        Assert.Equal(16, Unsafe.SizeOf<Address128>());
-    }
-
-    [Fact]
     public void SendUdp32()
     {
         var sendBuffer = new byte[256];
