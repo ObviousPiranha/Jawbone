@@ -7,6 +7,7 @@ namespace Piranha.Jawbone.Net;
 public interface IAddress<TAddress> : IEquatable<TAddress> where TAddress : unmanaged
 {
     bool IsDefault { get; }
+    bool IsLinkLocal { get; }
     void AppendTo(StringBuilder builder);
 
     static abstract Span<byte> GetBytes(ref TAddress address);

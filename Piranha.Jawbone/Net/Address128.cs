@@ -10,6 +10,9 @@ namespace Piranha.Jawbone.Net;
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Address128 : IAddress<Address128>
 {
+    private static readonly uint LinkLocalMask = BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
+    private static readonly uint LinkLocalSubnet = BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
+
     public static readonly Address128 Any = default;
     public static readonly Address128 Local = Create(static span => span[15] = 1);
     internal static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
@@ -38,6 +41,7 @@ public readonly struct Address128 : IAddress<Address128>
     private readonly uint _d;
 
     public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
+    public readonly bool IsLinkLocal => (_a & LinkLocalMask) == LinkLocalSubnet;
     public readonly bool IsIpV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
     public Address128(ReadOnlySpan<byte> values) : this()
