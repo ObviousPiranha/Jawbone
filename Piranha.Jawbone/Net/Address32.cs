@@ -10,10 +10,10 @@ public readonly struct Address32 : IAddress<Address32>
 {
     private static readonly uint LinkLocalMask = BitConverter.IsLittleEndian ? 0x0000ffff : 0xffff0000;
     private static readonly uint LinkLocalSubnet = BitConverter.IsLittleEndian ? 0x0000fea9 : 0xa9fe0000;
-    
-    public static readonly Address32 Any = default;
-    public static readonly Address32 Local = new(127, 0, 0, 1);
-    public static readonly Address32 Broadcast = new(255, 255, 255, 255);
+
+    public static Address32 Any => default;
+    public static Address32 Local { get; } = new(127, 0, 0, 1);
+    public static Address32 Broadcast { get; } = new(255, 255, 255, 255);
 
     private readonly uint _rawAddress;
 

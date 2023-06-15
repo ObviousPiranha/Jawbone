@@ -13,8 +13,9 @@ public readonly struct Address128 : IAddress<Address128>
     private static readonly uint LinkLocalMask = BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
     private static readonly uint LinkLocalSubnet = BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 
-    public static readonly Address128 Any = default;
-    public static readonly Address128 Local = Create(static span => span[15] = 1);
+    public static Address128 Any => default;
+    public static Address128 Local { get; } = Create(static span => span[15] = 1);
+
     internal static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
     public static Address128 Create(params byte[] values) => new(values);
