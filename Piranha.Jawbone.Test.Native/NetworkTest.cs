@@ -95,9 +95,13 @@ public class NetworkTest
             using var socketB = new UdpSocket32(Endpoint.Any32(endpointA.Port));
         });
 
-        Assert.Throws<SocketException>(() =>
+        if (!OperatingSystem.IsWindows())
         {
-            using var socketB = new UdpSocket128(Endpoint.Any128(endpointA.Port), true);
-        });
+            // I guess Windows is cool with this.
+            Assert.Throws<SocketException>(() =>
+            {
+                using var socketB = new UdpSocket128(Endpoint.Any128(endpointA.Port), true);
+            });
+        }
     }
 }
