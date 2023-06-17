@@ -40,7 +40,7 @@ class Program
         endpoints.AsSpan().Fill(Endpoint.Create(randomAddress, 200));
         byteBuffer.AddAllAsBytes(endpoints);
 
-        Console.WriteLine(Address128.Create(Address32.Local));
+        Console.WriteLine(Address32.Local.MapToV6());
         Console.WriteLine(new Address128());
         Console.WriteLine(Address128.Local);
         Console.WriteLine(Address128.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
