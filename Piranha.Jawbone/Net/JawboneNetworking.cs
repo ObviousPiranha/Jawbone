@@ -4,13 +4,19 @@ namespace Piranha.Jawbone.Net;
 
 public static partial class JawboneNetworking
 {
+    private const int ExpectedVersion = 1;
     private const string Library = "PiranhaNative.dll";
 
     static JawboneNetworking()
     {
+        var version = GetVersion();
+        if (version != ExpectedVersion)
+            throw new System.Exception($"Expected version {ExpectedVersion}; found version {version}.");
         StartNetworking();
     }
 
+    [LibraryImport(Library, EntryPoint = "jawboneGetVersion")]
+    private static partial int GetVersion();
     [LibraryImport(Library, EntryPoint = "jawboneStartNetworking")]
     private static partial int StartNetworking();
     [LibraryImport(Library, EntryPoint = "jawboneStopNetworking")]
@@ -26,8 +32,10 @@ public static partial class JawboneNetworking
     public static partial void CreateAndBindUdpV6Socket(
         in Address128 address,
         ushort port,
+        int allowV4,
         out long outSocket,
         out int outSocketError,
+        out int outSetSocketOptionError,
         out int outBindError);
     [LibraryImport(Library, EntryPoint = "jawboneGetV4SocketName")]
     public static partial int GetV4SocketName(

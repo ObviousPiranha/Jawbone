@@ -3,9 +3,12 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net;
 
-static class Address
+public static class Address
 {
-    public static Span<byte> GetSpanU8<T>(ref T item) where T : unmanaged
+    public static AnyAddress Any => default;
+    public static LocalAddress Local => default;
+
+    internal static Span<byte> GetSpanU8<T>(ref T item) where T : unmanaged
     {
         unsafe
         {
@@ -14,7 +17,7 @@ static class Address
         }
     }
 
-    public static ReadOnlySpan<byte> GetReadOnlySpanU8<T>(in T item) where T : unmanaged
+    internal static ReadOnlySpan<byte> GetReadOnlySpanU8<T>(in T item) where T : unmanaged
     {
         unsafe
         {
@@ -23,7 +26,7 @@ static class Address
         }
     }
 
-    public static ReadOnlySpan<ushort> GetReadOnlySpanU16<T>(in T item) where T : unmanaged
+    internal static ReadOnlySpan<ushort> GetReadOnlySpanU16<T>(in T item) where T : unmanaged
     {
         unsafe
         {

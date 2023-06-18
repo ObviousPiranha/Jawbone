@@ -47,6 +47,13 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
 
     public int Receive(
         Span<byte> buffer,
+        out Endpoint<Address32> origin)
+    {
+        return Receive(buffer, out origin, TimeSpan.Zero);
+    }
+
+    public int Receive(
+        Span<byte> buffer,
         out Endpoint<Address32> origin,
         TimeSpan timeout)
     {

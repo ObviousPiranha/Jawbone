@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Extensions;
@@ -51,6 +50,34 @@ public static class CollectionExtensions
         return result;
     }
 
+    public static TValue GetOrAdd<TKey, TValue>(
+        this IDictionary<TKey, TValue> dictionary,
+        TKey key,
+        Func<TKey, TValue> factory)
+    {
+        if (!dictionary.TryGetValue(key, out var value))
+        {
+            value = factory.Invoke(key);
+            dictionary.Add(key, value);
+        }
+
+        return value;
+    }
+
+    public static TValue GetOrAdd<TKey, TValue>(
+        this IDictionary<TKey, TValue> dictionary,
+        TKey key,
+        TValue defaultValue)
+    {
+        if (!dictionary.TryGetValue(key, out var value))
+        {
+            value = defaultValue;
+            dictionary.Add(key, value);
+        }
+
+        return value;
+    }
+
     public static string? AsCString(this IntPtr ptr)
     {
         return ptr.IsInvalid() ? null : Marshal.PtrToStringUTF8(ptr);
@@ -91,24 +118,6 @@ public static class CollectionExtensions
     {
         for (int i = 0; i < span.Length; ++i)
             span[i] = mutator.Invoke(state, span[i]);
-    }
-
-    public static Span<byte> ToByteSpan<T>(this Span<T> span) where T : unmanaged
-    {
-        unsafe
-        {
-            fixed (void* p = span)
-                return new Span<byte>(p, span.Length * Unsafe.SizeOf<T>());
-        }
-    }
-
-    public static ReadOnlySpan<byte> ToByteSpan<T>(this ReadOnlySpan<T> span) where T : unmanaged
-    {
-        unsafe
-        {
-            fixed (void* p = span)
-                return new Span<byte>(p, span.Length * Unsafe.SizeOf<T>());
-        }
     }
 
     public static int Increment<TKey>(this IDictionary<TKey, int> dictionary, TKey key)

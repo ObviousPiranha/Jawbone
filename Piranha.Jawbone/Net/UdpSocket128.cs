@@ -6,17 +6,24 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 {
     private readonly long _handle;
 
-    public UdpSocket128(Endpoint<Address128> endpoint)
+    public bool AllowV4 { get; }
+
+    public UdpSocket128(Endpoint<Address128> endpoint, bool allowV4)
     {
         JawboneNetworking.CreateAndBindUdpV6Socket(
             endpoint.Address,
             endpoint.RawPort,
+            Convert.ToInt32(allowV4),
             out _handle,
             out var socketError,
+            out var setSocketOptionError,
             out var bindError);
 
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+
+        AllowV4 = allowV4;
     }
 
     public void Shutdown()
@@ -45,7 +52,17 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
         return result;
     }
 
-    public int Receive(Span<byte> buffer, out Endpoint<Address128> origin, TimeSpan timeout)
+    public int Receive(
+        Span<byte> buffer,
+        out Endpoint<Address128> origin)
+    {
+        return Receive(buffer, out origin, TimeSpan.Zero);
+    }
+
+    public int Receive(
+        Span<byte> buffer,
+        out Endpoint<Address128> origin,
+        TimeSpan timeout)
     {
         var milliseconds = (int)(timeout.Ticks / TimeSpan.TicksPerMillisecond);
         var result = JawboneNetworking.ReceiveFromV6(

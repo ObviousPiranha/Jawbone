@@ -1,7 +1,7 @@
 using System;
 using Piranha.Jawbone.Sqlite;
 
-namespace Piranha.Jawbone.Test;
+namespace Piranha.Jawbone.Test.Native;
 
 public record SqliteRecord
 {
