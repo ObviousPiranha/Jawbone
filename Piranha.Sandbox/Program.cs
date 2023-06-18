@@ -108,7 +108,7 @@ class Program
             var endpoint = socketA.GetEndpoint();
             Console.WriteLine($"Bound socket on {endpoint}.");
 
-            using var socketB = new UdpSocket32(Address32.Any.OnPort(endpoint.Port));
+            using var socketB = new UdpSocket32(AnyAddress.OnPort(endpoint.Port));
             Console.WriteLine("Hm. This shouldn't be possible.");
         }
         catch (Exception ex)
