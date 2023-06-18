@@ -6,6 +6,8 @@ namespace Piranha.Jawbone.Net;
 
 public static class Endpoint
 {
+    public static AnyEndpoint Any => default;
+    
     public static Endpoint<TAddress> Create<TAddress>(TAddress address, int port)
         where TAddress : unmanaged, IAddress<TAddress>
     {

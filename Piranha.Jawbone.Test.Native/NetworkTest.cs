@@ -16,9 +16,9 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32(default);
+        using var socketA = new UdpSocket32(Endpoint.Any);
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket32(default);
+        using var socketB = new UdpSocket32(Endpoint.Any);
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Endpoint.Local32(endpointA.Port));
 
@@ -38,9 +38,9 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket128(default, false);
+        using var socketA = new UdpSocket128(Endpoint.Any, false);
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket128(default, false);
+        using var socketB = new UdpSocket128(Endpoint.Any, false);
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Endpoint.Local128(endpointA.Port));
 
@@ -60,11 +60,11 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32(default);
+        using var socketA = new UdpSocket32(Endpoint.Any);
         var endpointA = socketA.GetEndpoint();
         var destinationA = Endpoint.Create(Address32.Local.MapToV6(), endpointA.Port);
 
-        using var socketB = new UdpSocket128(default, true);
+        using var socketB = new UdpSocket128(Endpoint.Any, true);
         var endpointB = socketB.GetEndpoint();
         var destinationB = Endpoint.Local32(endpointB.Port);
 
@@ -87,7 +87,7 @@ public class NetworkTest
     [Fact]
     public void CannotBindSamePort()
     {
-        using var socketA = new UdpSocket32(default);
+        using var socketA = new UdpSocket32(Endpoint.Any);
         var endpointA = socketA.GetEndpoint();
 
         Assert.Throws<SocketException>(() =>
