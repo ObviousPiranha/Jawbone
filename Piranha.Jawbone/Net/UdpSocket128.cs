@@ -12,7 +12,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
     {
         JawboneNetworking.CreateAndBindUdpV6Socket(
             endpoint.Address,
-            endpoint.RawPort,
+            endpoint.NetworkOrderPort,
             Convert.ToInt32(allowV4),
             out _handle,
             out var socketError,
@@ -44,7 +44,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
             message[0],
             message.Length,
             destination.Address,
-            destination.RawPort,
+            destination.NetworkOrderPort,
             out var errorCode);
 
         SocketException.ThrowOnError(errorCode, "Unable to send data.");
@@ -79,7 +79,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
         origin = new Endpoint<Address128>
         {
             Address = address,
-            RawPort = rawPort
+            NetworkOrderPort = rawPort
         };
 
         return result;
@@ -97,7 +97,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
         return new Endpoint<Address128>
         {
             Address = address,
-            RawPort = rawPort
+            NetworkOrderPort = rawPort
         };
     }
 }

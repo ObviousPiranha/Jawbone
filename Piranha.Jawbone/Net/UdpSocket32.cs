@@ -10,7 +10,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
     {
         JawboneNetworking.CreateAndBindUdpV4Socket(
             endpoint.Address,
-            endpoint.RawPort,
+            endpoint.NetworkOrderPort,
             out _handle,
             out var socketError,
             out var bindError);
@@ -37,7 +37,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             message[0],
             message.Length,
             destination.Address,
-            destination.RawPort,
+            destination.NetworkOrderPort,
             out var errorCode);
 
         SocketException.ThrowOnError(errorCode, "Unable to send data.");
@@ -72,7 +72,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         origin = new Endpoint<Address32>
         {
             Address = address,
-            RawPort = rawPort
+            NetworkOrderPort = rawPort
         };
 
         return result;
@@ -90,7 +90,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         return new Endpoint<Address32>
         {
             Address = address,
-            RawPort = rawPort
+            NetworkOrderPort = rawPort
         };
     }
 }
