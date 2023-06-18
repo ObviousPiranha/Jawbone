@@ -16,7 +16,7 @@ public static class Address
         unsafe
         {
             fixed (void* a = &item)
-                return new Span<byte>(a, Unsafe.SizeOf<T>());
+                return new Span<byte>(a, sizeof(T));
         }
     }
 
@@ -25,7 +25,7 @@ public static class Address
         unsafe
         {
             fixed (void* a = &item)
-                return new ReadOnlySpan<byte>(a, Unsafe.SizeOf<T>());
+                return new ReadOnlySpan<byte>(a, sizeof(T));
         }
     }
 
@@ -34,7 +34,7 @@ public static class Address
         unsafe
         {
             fixed (void* a = &item)
-                return new ReadOnlySpan<ushort>(a, Unsafe.SizeOf<T>() / Unsafe.SizeOf<ushort>());
+                return new ReadOnlySpan<ushort>(a, sizeof(T) / sizeof(ushort));
         }
     }
 }

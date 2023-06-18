@@ -8,6 +8,7 @@ public interface IAddress<TAddress> : IEquatable<TAddress> where TAddress : unma
 {
     bool IsDefault { get; }
     bool IsLinkLocal { get; }
+    bool IsLoopback { get; }
     void AppendTo(StringBuilder builder);
 
     static abstract TAddress Any { get; }
