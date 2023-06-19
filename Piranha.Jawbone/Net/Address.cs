@@ -8,8 +8,13 @@ public static class Address
     public static AnyAddress Any => default;
     public static LocalAddress Local => default;
 
-    public static Endpoint<Address32> OnPort(this Address32 address, int port) => new(address, port);
-    public static Endpoint<Address128> OnPort(this Address128 address, int port) => new(address, port);
+    public static Endpoint<TAddress> OnPort<TAddress>(
+        this TAddress address,
+        int port
+        ) where TAddress : unmanaged, IAddress<TAddress>
+    {
+        return new(address, port);
+    }
 
     internal static Span<byte> GetSpanU8<T>(ref T item) where T : unmanaged
     {

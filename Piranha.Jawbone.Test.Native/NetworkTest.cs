@@ -16,9 +16,9 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort);
+        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort());
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket32(AnyAddress.OnAnyPort);
+        using var socketB = new UdpSocket32(AnyAddress.OnAnyPort());
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Address32.Local.OnPort(endpointA.Port));
 
@@ -38,9 +38,9 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket128(AnyAddress.OnAnyPort, false);
+        using var socketA = new UdpSocket128(AnyAddress.OnAnyPort(), false);
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort, false);
+        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort(), false);
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Address128.Local.OnPort(endpointA.Port));
 
@@ -60,11 +60,11 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort);
+        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort());
         var endpointA = socketA.GetEndpoint();
         var destinationA = Address32.Local.MapToV6().OnPort(endpointA.Port);
 
-        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort, true);
+        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort(), true);
         var endpointB = socketB.GetEndpoint();
         var destinationB = Address32.Local.OnPort(endpointB.Port);
 
@@ -93,11 +93,11 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort);
+        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort());
         var endpointA = socketA.GetEndpoint();
         var destinationA = Address32.Local.MapToV6().OnPort(endpointA.Port);
 
-        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort, false);
+        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort(), false);
         var endpointB = socketB.GetEndpoint();
         var destinationB = Address32.Local.OnPort(endpointB.Port);
 
@@ -110,7 +110,7 @@ public class NetworkTest
     [Fact]
     public void CannotBindSamePort()
     {
-        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort);
+        using var socketA = new UdpSocket32(AnyAddress.OnAnyPort());
         var endpointA = socketA.GetEndpoint();
 
         Assert.Throws<SocketException>(() =>

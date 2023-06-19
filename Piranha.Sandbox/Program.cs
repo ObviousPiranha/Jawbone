@@ -11,6 +11,16 @@ namespace Piranha.Sandbox;
 
 class Program
 {
+    static void GenericAddressTest<TAddress>(AddressSelector<TAddress> address) where TAddress : unmanaged, IAddress<TAddress>
+    {
+
+    }
+
+    static void GenericAnyTest<TAddress>() where TAddress : unmanaged, IAddress<TAddress>
+    {
+        GenericAddressTest<TAddress>(Address.Any);
+    }
+
     static Span<byte> GenericTest<T>(T address) where T : unmanaged, IAddress<T>
     {
         var span = T.GetBytes(ref address);
@@ -62,10 +72,10 @@ class Program
 
         Console.WriteLine("yo yo yo");
 
-        using (var socket = new UdpSocket32(AnyAddress.OnAnyPort))
+        using (var socket = new UdpSocket32(AnyAddress.OnAnyPort()))
             Console.WriteLine(socket.GetEndpoint().ToString());
 
-        using (var socket = new UdpSocket128(AnyAddress.OnAnyPort, false))
+        using (var socket = new UdpSocket128(AnyAddress.OnAnyPort(), false))
             Console.WriteLine(socket.GetEndpoint().ToString());
     }
 
@@ -75,13 +85,13 @@ class Program
         var receiveBuffer = new byte[sendBuffer.Length];
 
         RandomNumberGenerator.Fill(sendBuffer);
-        using (var socketV6 = new UdpSocket128(AnyAddress.OnAnyPort, allowV4))
+        using (var socketV6 = new UdpSocket128(AnyAddress.OnAnyPort(), allowV4))
         {
             var endpointV6 = socketV6.GetEndpoint();
             var word = allowV4 ? "enabled" : "disabled";
             Console.WriteLine($"Bound on {endpointV6} with V4 {word}.");
             var destination = Endpoint.Create(Address32.Local, endpointV6.Port);
-            using (var socketV4 = new UdpSocket32(AnyAddress.OnAnyPort))
+            using (var socketV4 = new UdpSocket32(AnyAddress.OnAnyPort()))
             {
                 var endpointV4 = socketV4.GetEndpoint();
                 socketV4.Send(sendBuffer, destination);
@@ -104,7 +114,7 @@ class Program
     {
         try
         {
-            using var socketA = new UdpSocket32(AnyAddress.OnAnyPort);
+            using var socketA = new UdpSocket32(AnyAddress.OnAnyPort());
             var endpoint = socketA.GetEndpoint();
             Console.WriteLine($"Bound socket on {endpoint}.");
 
@@ -133,7 +143,7 @@ class Program
                 var info = AddressInfo.Get(args[0], args[1]);
                 var endpoint = info.V4[0];
 
-                using var client = new UdpSocket32(AnyAddress.OnAnyPort);
+                using var client = new UdpSocket32(AnyAddress.OnAnyPort());
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
                 client.Send(message, endpoint);
@@ -196,7 +206,7 @@ class Program
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
 
-        using var myClient = new UdpSocket128(AnyAddress.OnAnyPort, false);
+        using var myClient = new UdpSocket128(AnyAddress.OnAnyPort(), false);
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
 
