@@ -61,6 +61,24 @@ public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>>
         return builder.ToString();
     }
 
+    public static implicit operator Endpoint<TAddress>(AnyEndpoint anyEndpoint)
+    {
+        return new()
+        {
+            Address = TAddress.Any,
+            NetworkOrderPort = anyEndpoint.NetworkOrderPort
+        };
+    }
+
+    public static implicit operator Endpoint<TAddress>(LocalEndpoint localEndpoint)
+    {
+        return new()
+        {
+            Address = TAddress.Local,
+            NetworkOrderPort = localEndpoint.NetworkOrderPort
+        };
+    }
+
     public static bool operator ==(Endpoint<TAddress> a, Endpoint<TAddress> b) => a.Equals(b);
     public static bool operator !=(Endpoint<TAddress> a, Endpoint<TAddress> b) => !a.Equals(b);
 }

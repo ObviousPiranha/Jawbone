@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace Piranha.Jawbone.Net;
 
 public readonly struct LocalAddress

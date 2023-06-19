@@ -1,8 +1,5 @@
-using System.ComponentModel;
-
 namespace Piranha.Jawbone.Net;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
 public readonly struct AnyAddress
 {
     public static AnyEndpoint OnAnyPort => default;

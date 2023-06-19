@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Piranha.Jawbone.Net;
@@ -23,21 +22,6 @@ public readonly struct AnyEndpoint : IEquatable<AnyEndpoint>
     public override int GetHashCode() => NetworkOrderPort.GetHashCode();
     public override string? ToString() => Port.ToString();
 
-    public static implicit operator Endpoint<Address32>(AnyEndpoint anyEndpoint)
-    {
-        return new()
-        {
-            Address = Address32.Any,
-            NetworkOrderPort = anyEndpoint.NetworkOrderPort
-        };
-    }
-
-    public static implicit operator Endpoint<Address128>(AnyEndpoint anyEndpoint)
-    {
-        return new()
-        {
-            Address = Address128.Any,
-            NetworkOrderPort = anyEndpoint.NetworkOrderPort
-        };
-    }
+    public static bool operator ==(AnyEndpoint a, AnyEndpoint b) => a.Equals(b);
+    public static bool operator !=(AnyEndpoint a, AnyEndpoint b) => !a.Equals(b);
 }
