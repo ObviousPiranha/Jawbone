@@ -108,14 +108,26 @@ public class NetworkTest
     }
 
     [Fact]
-    public void CannotBindSamePort()
+    public void CannotBindSamePort32()
     {
         using var socketA = new UdpSocket32(AnyAddress.OnAnyPort());
-        var endpointA = socketA.GetEndpoint();
+        var endpoint = socketA.GetEndpoint();
 
         Assert.Throws<SocketException>(() =>
         {
-            using var socketB = new UdpSocket32(AnyAddress.OnPort(endpointA.Port));
+            using var socketB = new UdpSocket32(AnyAddress.OnPort(endpoint.Port));
+        });
+    }
+
+    [Fact]
+    public void CannotBindSamePort128()
+    {
+        using var socketA = new UdpSocket128(AnyAddress.OnAnyPort(), false);
+        var endpoint = socketA.GetEndpoint();
+
+        Assert.Throws<SocketException>(() =>
+        {
+            using var socketB = new UdpSocket128(AnyAddress.OnPort(endpoint.Port), false);
         });
     }
 }
