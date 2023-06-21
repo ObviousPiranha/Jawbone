@@ -98,7 +98,7 @@ class Program
                 Console.WriteLine($"Sent message from {endpointV4}.");
             }
 
-            var length = socketV6.Receive(receiveBuffer, out var origin, TimeSpan.Zero);
+            var length = socketV6.Receive(receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
             if (length == sendBuffer.Length && sendBuffer.AsSpan().SequenceEqual(receiveBuffer))
             {
                 Console.WriteLine($"Received correct message from {origin}.");
@@ -131,10 +131,10 @@ class Program
     {
         try
         {
-            AllowV4(true);
-            AllowV4(false);
-            // ErrorOnPurpose();
-            AddressShenanigans();
+            //AllowV4(true);
+            //AllowV4(false);
+            ErrorOnPurpose();
+            // AddressShenanigans();
             return;
             TryOutV6();
 

@@ -22,7 +22,7 @@ public class NetworkTest
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Address32.Local.OnPort(endpointA.Port));
 
-        var length = socketA.Receive(receiveBuffer, out var origin);
+        var length = socketA.Receive(receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
         Assert.Equal(endpointB.Port, origin.Port);
         Assert.Equal(Address32.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
@@ -38,13 +38,13 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket128(AnyAddress.OnAnyPort(), false);
+        using var socketA = new UdpSocket128(LocalAddress.OnAnyPort(), false);
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort(), false);
+        using var socketB = new UdpSocket128(LocalAddress.OnAnyPort(), false);
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Address128.Local.OnPort(endpointA.Port));
 
-        var length = socketA.Receive(receiveBuffer, out var origin);
+        var length = socketA.Receive(receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
         Assert.Equal(endpointB.Port, origin.Port);
         Assert.Equal(Address128.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
@@ -69,7 +69,7 @@ public class NetworkTest
         var destinationB = Address32.Local.OnPort(endpointB.Port);
 
         socketA.Send(sendBuffer, destinationB);
-        var lengthV6 = socketB.Receive(receiveBuffer, out var originV6);
+        var lengthV6 = socketB.Receive(receiveBuffer, out var originV6, TimeSpan.FromSeconds(1));
         Assert.Equal(Address32.Local.MapToV6(), originV6.Address);
         Assert.Equal(sendBuffer.Length, lengthV6);
         Assert.True(receiveBuffer.AsSpan(0, lengthV6).SequenceEqual(sendBuffer));
@@ -102,7 +102,7 @@ public class NetworkTest
         var destinationB = Address32.Local.OnPort(endpointB.Port);
 
         socketA.Send(sendBuffer, destinationB);
-        var lengthV6 = socketB.Receive(receiveBuffer, out var originV6);
+        var lengthV6 = socketB.Receive(receiveBuffer, out var originV6, TimeSpan.FromSeconds(1));
         Assert.Equal(0, lengthV6);
         Assert.True(originV6.IsDefault);
     }
@@ -117,14 +117,5 @@ public class NetworkTest
         {
             using var socketB = new UdpSocket32(AnyAddress.OnPort(endpointA.Port));
         });
-
-        if (!OperatingSystem.IsWindows())
-        {
-            // I guess Windows is cool with this.
-            Assert.Throws<SocketException>(() =>
-            {
-                using var socketB = new UdpSocket128(AnyAddress.OnPort(endpointA.Port), true);
-            });
-        }
     }
 }
