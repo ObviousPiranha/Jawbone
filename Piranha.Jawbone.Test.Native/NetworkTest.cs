@@ -38,9 +38,9 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket128(LocalAddress.OnAnyPort(), false);
+        using var socketA = new UdpSocket128(AnyAddress.OnAnyPort(), false);
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket128(LocalAddress.OnAnyPort(), false);
+        using var socketB = new UdpSocket128(AnyAddress.OnAnyPort(), false);
         var endpointB = socketB.GetEndpoint();
         socketB.Send(sendBuffer, Address128.Local.OnPort(endpointA.Port));
 
