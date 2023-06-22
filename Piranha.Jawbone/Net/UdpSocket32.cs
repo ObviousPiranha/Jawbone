@@ -63,7 +63,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             out buffer[0],
             buffer.Length,
             out var address,
-            out var rawPort,
+            out var networkOrderPort,
             out var errorCode,
             milliseconds);
 
@@ -72,7 +72,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         origin = new Endpoint<Address32>
         {
             Address = address,
-            NetworkOrderPort = rawPort
+            NetworkOrderPort = networkOrderPort
         };
 
         return result;
@@ -83,14 +83,14 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         var result = JawboneNetworking.GetV4SocketName(
             _handle,
             out var address,
-            out var rawPort);
+            out var networkOrderPort);
 
         SocketException.ThrowOnError(result, "Unable to get socket name.");
 
         return new Endpoint<Address32>
         {
             Address = address,
-            NetworkOrderPort = rawPort
+            NetworkOrderPort = networkOrderPort
         };
     }
 }
