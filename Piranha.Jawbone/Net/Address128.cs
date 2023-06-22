@@ -13,7 +13,7 @@ public readonly struct Address128 : IAddress<Address128>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 

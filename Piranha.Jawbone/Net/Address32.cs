@@ -11,13 +11,13 @@ public readonly struct Address32 : IAddress<Address32>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000ffff : 0xffff0000;
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x0000fea9 : 0xa9fe0000;
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LoopbackMask() => BitConverter.IsLittleEndian ? 0x000000ff : 0xff000000;
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LoopbackSubnet() => BitConverter.IsLittleEndian ? 0x0000007f : (uint)0x7f000000;
 
