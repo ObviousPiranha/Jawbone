@@ -47,6 +47,27 @@ public class AddressTest
         Assert.False(address.IsLinkLocal);
     }
 
+    [Theory]
+    [MemberData(nameof(RoundTripParse32))]
+    public void Address32_RoundTripParse(Address32 expected)
+    {
+        var asString = expected.ToString() ?? "";
+        var actual = Address32.Parse(asString, null);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("asdf")]
+    [InlineData("127.0.0.")]
+    [InlineData("1,1,1,1")]
+    public void Address32_FailsParsing(string s)
+    {
+        Assert.False(Address32.TryParse(s, null, out var result));
+        Assert.True(result.IsDefault);
+        Assert.Throws<FormatException>(() => Address32.Parse(s, null));
+    }
+
     public static TheoryData<Address32> LinkLocal32 => new()
     {
         new(169, 254, 0, 0),
@@ -72,6 +93,15 @@ public class AddressTest
     {
         Address128.Any,
         Address128.Local
+    };
+
+    public static TheoryData<Address32> RoundTripParse32 => new()
+    {
+        Address32.Any,
+        Address32.Local,
+        Address32.Broadcast,
+        new(192, 168, 0, 1),
+        new(0, 1, 2, 3)
     };
 
     private static void MakeLinkLocal(Span<byte> bytes)

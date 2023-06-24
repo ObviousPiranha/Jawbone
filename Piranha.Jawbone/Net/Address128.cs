@@ -138,6 +138,26 @@ public readonly struct Address128 : IAddress<Address128>
     public static Span<byte> GetBytes(ref Address128 address) => Address.GetSpanU8(ref address);
     public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address128 address) => Address.GetReadOnlySpanU8(address);
 
+    public static Address128 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address128 result)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static Address128 Parse(string s, IFormatProvider? provider)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address128 result)
+    {
+        throw new NotImplementedException();
+    }
+
     public static bool operator ==(Address128 a, Address128 b) => a.Equals(b);
     public static bool operator !=(Address128 a, Address128 b) => !a.Equals(b);
     public static Address128 operator &(Address128 a, Address128 b) => new(a._a & b._a, a._b & b._b, a._c & b._c, a._d & b._d);

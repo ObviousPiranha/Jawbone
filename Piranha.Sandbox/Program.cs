@@ -11,25 +11,23 @@ namespace Piranha.Sandbox;
 
 class Program
 {
-    static void GenericAddressTest<TAddress>(AddressSelector<TAddress> address) where TAddress : unmanaged, IAddress<TAddress>
-    {
-
-    }
-
-    static void GenericAnyTest<TAddress>() where TAddress : unmanaged, IAddress<TAddress>
-    {
-        GenericAddressTest<TAddress>(Address.Any);
-    }
-
     static Span<byte> GenericTest<T>(T address) where T : unmanaged, IAddress<T>
     {
         var span = T.GetBytes(ref address);
         return default;
     }
+
+    static void GetAndDump(string? node, string? service)
+    {
+        var addressInfo = AddressInfo.Get(node, service);
+        Console.WriteLine($"({node}) ({service})");
+        Dump(addressInfo);
+    }
+
     static void Dump(AddressInfo addressInfo)
     {
-        Console.WriteLine("v4: " + string.Join(", ", addressInfo.V4));
-        Console.WriteLine("v6: " + string.Join(", ", addressInfo.V6));
+        Console.WriteLine("  v4: " + string.Join(", ", addressInfo.V4));
+        Console.WriteLine("  v6: " + string.Join(", ", addressInfo.V6));
     }
 
     static void ShowSize<T>()
@@ -110,6 +108,30 @@ class Program
         }
     }
 
+    static void FancyBinding()
+    {
+        var endpointA = new Address32(192, 168, 50, 181).OnPort(7777);
+        using var socketA = new UdpSocket32(endpointA);
+        Console.WriteLine($"Socket A on {endpointA}.");
+
+        using var socketB = new UdpSocket32(AnyAddress.OnAnyPort());
+        var endpointB = socketB.GetEndpoint();
+        Console.WriteLine($"Socket B on {endpointB}.");
+
+        socketB.Send("Let's do this"u8, endpointA);
+
+        var buffer = new byte[2048];
+        var length = socketA.Receive(buffer, out var origin, TimeSpan.FromSeconds(1));
+
+        if (origin.IsDefault)
+        {
+            Console.WriteLine("Received nothing. :(");
+            return;
+        }
+
+        Console.WriteLine($"Received {length} bytes from {origin}.");
+    }
+
     static void ErrorOnPurpose()
     {
         try
@@ -127,14 +149,24 @@ class Program
         }
     }
 
+    static void GetSomeAddresses()
+    {
+        GetAndDump(null, null);
+        GetAndDump("localhost", null);
+        GetAndDump("localhost", "25");
+        GetAndDump("thebuzzsaw.duckdns.org", null);
+    }
+
     static void Main(string[] args)
     {
         try
         {
+            //FancyBinding();
             //AllowV4(true);
             //AllowV4(false);
-            ErrorOnPurpose();
+            // ErrorOnPurpose();
             // AddressShenanigans();
+            GetSomeAddresses();
             return;
             TryOutV6();
 
