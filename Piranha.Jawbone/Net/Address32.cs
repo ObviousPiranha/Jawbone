@@ -54,7 +54,7 @@ public readonly struct Address32 : IAddress<Address32>
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is Address32 other && Equals(other);
     public override readonly int GetHashCode() => _rawAddress.GetHashCode();
-    public override readonly string? ToString()
+    public override readonly string ToString()
     {
         var builder = new StringBuilder(15);
         AppendTo(builder);

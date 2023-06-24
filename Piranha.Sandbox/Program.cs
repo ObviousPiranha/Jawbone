@@ -157,6 +157,11 @@ class Program
         GetAndDump("thebuzzsaw.duckdns.org", null);
     }
 
+    static void ParseSomeAddresses()
+    {
+        var parsed = Address128.Parse(Address128.Any.ToString(), null);
+    }
+
     static void Main(string[] args)
     {
         try
@@ -166,7 +171,8 @@ class Program
             //AllowV4(false);
             // ErrorOnPurpose();
             // AddressShenanigans();
-            GetSomeAddresses();
+            // GetSomeAddresses();
+            ParseSomeAddresses();
             return;
             TryOutV6();
 

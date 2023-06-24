@@ -16,6 +16,13 @@ public static class Address
         return new(address, port);
     }
 
+    internal static void Swap<T>(ref T a, ref T b) where T : unmanaged
+    {
+        var c = a;
+        a = b;
+        b = c;
+    }
+
     internal static Span<byte> GetSpanU8<T>(ref T item) where T : unmanaged
     {
         unsafe

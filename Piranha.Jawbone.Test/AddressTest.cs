@@ -17,6 +17,9 @@ public class AddressTest
         Assert.False(Address128.Any.IsLoopback);
         Assert.True(Address32.Local.IsLoopback);
         Assert.True(Address128.Local.IsLoopback);
+
+        Assert.Throws<ArgumentNullException>(() => Address32.Parse(null!, null));
+        Assert.Throws<ArgumentNullException>(() => Address128.Parse(null!, null));
     }
 
     [Theory]
@@ -49,10 +52,37 @@ public class AddressTest
 
     [Theory]
     [MemberData(nameof(RoundTripParse32))]
-    public void Address32_RoundTripParse(Address32 expected)
+    public void Address32_RoundTripParseString(Address32 expected)
     {
-        var asString = expected.ToString() ?? "";
+        var asString = expected.ToString();
         var actual = Address32.Parse(asString, null);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundTripParse32))]
+    public void Address32_RoundTripParseSpan(Address32 expected)
+    {
+        var asString = expected.ToString();
+        var actual = Address32.Parse(asString.AsSpan(), null);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundTripParse32))]
+    public void Address32_RoundTripTryParseString(Address32 expected)
+    {
+        var asString = expected.ToString();
+        Assert.True(Address32.TryParse(asString, null, out var actual));
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundTripParse32))]
+    public void Address32_RoundTripTryParseSpan(Address32 expected)
+    {
+        var asString = expected.ToString();
+        Assert.True(Address32.TryParse(asString.AsSpan(), null, out var actual));
         Assert.Equal(expected, actual);
     }
 
@@ -66,7 +96,10 @@ public class AddressTest
     {
         Assert.False(Address32.TryParse(s, null, out var result));
         Assert.True(result.IsDefault);
+        Assert.False(Address32.TryParse(s.AsSpan(), null, out result));
+        Assert.True(result.IsDefault);
         Assert.Throws<FormatException>(() => Address32.Parse(s, null));
+        Assert.Throws<FormatException>(() => Address32.Parse(s.AsSpan(), null));
     }
 
     public static TheoryData<Address32> LinkLocal32 => new()
@@ -93,7 +126,8 @@ public class AddressTest
     public static TheoryData<Address128> NotLinkLocal128 => new()
     {
         Address128.Any,
-        Address128.Local
+        Address128.Local,
+        Address128.Create(static span => span.Fill(0xab))
     };
 
     public static TheoryData<Address32> RoundTripParse32 => new()

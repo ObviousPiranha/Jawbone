@@ -40,6 +40,22 @@ public readonly struct Address128 : IAddress<Address128>
         return result;
     }
 
+    public static Address128 FromHostOrdering(ReadOnlySpan<ushort> u16)
+    {
+        var bytes = MemoryMarshal.AsBytes(u16);
+        Span<byte> addressBytes = stackalloc byte[16];
+        var length = Math.Min(bytes.Length, addressBytes.Length);
+        bytes.Slice(0, length).CopyTo(addressBytes);
+
+        if (BitConverter.IsLittleEndian)
+        {
+            for (int i = 1; i < addressBytes.Length; i += 2)
+                Address.Swap(ref addressBytes[i - 1], ref addressBytes[i]);
+        }
+
+        return new Address128(addressBytes);
+    }
+
     private readonly uint _a;
     private readonly uint _b;
     private readonly uint _c;
@@ -76,7 +92,7 @@ public readonly struct Address128 : IAddress<Address128>
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is Address128 other && Equals(other);
     public override readonly int GetHashCode() => HashCode.Combine(_a, _b, _c, _d);
-    public override readonly string? ToString()
+    public override readonly string ToString()
     {
         var builder = new StringBuilder(48);
         AppendTo(builder);
@@ -138,24 +154,119 @@ public readonly struct Address128 : IAddress<Address128>
     public static Span<byte> GetBytes(ref Address128 address) => Address.GetSpanU8(ref address);
     public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address128 address) => Address.GetReadOnlySpanU8(address);
 
+    private static string? DoTheParse(ReadOnlySpan<char> originalInput, out Address128 result)
+    {
+        if (originalInput.IsEmpty)
+        {
+            result = default;
+            return "Input string is empty.";
+        }
+
+        var s = originalInput;
+
+        {
+            var hasOpeningBracket = s[0] == '[';
+            var hasClosingBracket = s[^1] == ']';
+
+            if (hasOpeningBracket != hasClosingBracket)
+            {
+                result = default;
+                return hasOpeningBracket ? "Missing closing bracket." : "Missing opening bracket.";
+            }
+
+            if (hasOpeningBracket)
+                s = s[1..^1];
+        }
+
+        if (s.Length < 2)
+        {
+            result = default;
+            return "Input string too short.";
+        }
+
+        // TODO: Finish. Add tests.
+        throw new NotImplementedException();
+
+        static bool TryParseHex(ReadOnlySpan<char> s, out ushort u16)
+        {
+            if (s.IsEmpty)
+            {
+                u16 = default;
+                return false;
+            }
+
+            int result = HexDigit(s[0]);
+
+            if (result == -1)
+            {
+                u16 = default;
+                return false;
+            }
+
+            int digitCount = 1;
+
+            while (digitCount < s.Length)
+            {
+                var nextDigit = HexDigit(s[digitCount]);
+
+                if (nextDigit == -1)
+                    break;
+
+                if (4 < ++digitCount)
+                {
+                    u16 = default;
+                    return false;
+                }
+
+                result = (result << 4) | nextDigit;
+            }
+
+            u16 = (ushort)result;
+            return true;
+        }
+
+        static int HexDigit(int c)
+        {
+            if ('0' <= c && c <= '9')
+                return c - '0';
+            if ('a' <= c && c <= 'f')
+                return c - 'a' + 10;
+            if ('A' <= c && c <= 'F')
+                return c - 'A' + 10;
+
+            return -1;
+        }
+
+        static int HexLength(int n) => 0xfff < n ? 4 : 0xff < n ? 3 : 0xf < n ? 2 : 1;
+    }
+
     public static Address128 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
     {
-        throw new NotImplementedException();
+        var exceptionMessage = DoTheParse(s, out var result);
+        if (exceptionMessage is not null)
+            throw new FormatException(exceptionMessage);
+        return result;
     }
 
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address128 result)
     {
-        throw new NotImplementedException();
+        var exceptionMessage = DoTheParse(s, out result);
+        return exceptionMessage is null;
     }
 
     public static Address128 Parse(string s, IFormatProvider? provider)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(s);
+        var exceptionMessage = DoTheParse(s, out var result);
+        if (exceptionMessage is not null)
+            throw new FormatException(exceptionMessage);
+        return result;
     }
 
     public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address128 result)
     {
-        throw new NotImplementedException();
+        var exceptionMessage = DoTheParse(s, out result);
+        return exceptionMessage is null;
     }
 
     public static bool operator ==(Address128 a, Address128 b) => a.Equals(b);
