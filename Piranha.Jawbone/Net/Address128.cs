@@ -184,10 +184,73 @@ public readonly struct Address128 : IAddress<Address128>
             return "Input string too short.";
         }
 
-        // TODO: Finish. Add tests.
-        throw new NotImplementedException();
+        Span<ushort> blocks = stackalloc ushort[8];
+        var division = s.IndexOf("::");
 
-        static bool TryParseHex(ReadOnlySpan<char> s, out ushort u16)
+        if (0 <= division)
+        {
+            if (!TryParseHexBlocks(s[..division], blocks, out var leftBlocksWritten))
+            {
+                result = default;
+                return "Bad hex block.";
+            }
+
+            if (!TryParseHexBlocks(s[(division + 2)..], blocks[leftBlocksWritten..], out var rightBlocksWritten))
+            {
+                result = default;
+                return "Bad hex block.";
+            }
+
+            if (leftBlocksWritten + rightBlocksWritten == blocks.Length)
+            {
+                result = default;
+                return "Malformed representation.";
+            }
+
+            blocks.Slice(leftBlocksWritten, rightBlocksWritten).CopyTo(blocks[^rightBlocksWritten..]);
+            blocks[leftBlocksWritten..^rightBlocksWritten].Clear();
+        }
+        else if (!TryParseHexBlocks(s, blocks, out var blocksWritten) || blocksWritten < blocks.Length)
+        {
+            result = default;
+            return "Bad hex block.";
+        }
+
+        result = Address128.FromHostOrdering(blocks);
+        return null;
+
+        // TODO: Finish. Add tests.
+
+        static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)
+        {
+            blocksWritten = 0;
+
+            if (s.IsEmpty)
+                return true;
+
+            if (!TryParseHexBlock(s, out var block))
+                return false;
+
+            blocks[0] = block;
+            blocksWritten = 1;
+            var index = HexLength(block);
+
+            while (blocksWritten < blocks.Length)
+            {
+                if (index == s.Length)
+                    return true;
+
+                if (s[index] != ':' || !TryParseHexBlock(s[++index..], out block))
+                    return false;
+
+                blocks[blocksWritten++] = block;
+                index += HexLength(block);
+            }
+
+            return index == s.Length;
+        }
+
+        static bool TryParseHexBlock(ReadOnlySpan<char> s, out ushort u16)
         {
             if (s.IsEmpty)
             {
