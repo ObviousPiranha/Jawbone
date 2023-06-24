@@ -102,6 +102,57 @@ public class AddressTest
         Assert.Throws<FormatException>(() => Address32.Parse(s.AsSpan(), null));
     }
 
+    [Theory]
+    [MemberData(nameof(RoundTripParse128))]
+    public void Address128_RoundTripParseString(Address128 expected)
+    {
+        var asString = expected.ToString();
+        var actual = Address128.Parse(asString, null);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundTripParse128))]
+    public void Address128_RoundTripParseSpan(Address128 expected)
+    {
+        var asString = expected.ToString();
+        var actual = Address128.Parse(asString.AsSpan(), null);
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundTripParse128))]
+    public void Address128_RoundTripTryParseString(Address128 expected)
+    {
+        var asString = expected.ToString();
+        Assert.True(Address128.TryParse(asString, null, out var actual));
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [MemberData(nameof(RoundTripParse128))]
+    public void Address128_RoundTripTryParseSpan(Address128 expected)
+    {
+        var asString = expected.ToString();
+        Assert.True(Address128.TryParse(asString.AsSpan(), null, out var actual));
+        Assert.Equal(expected, actual);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(":::")]
+    [InlineData("c3ee:abce:12345::2")]
+    [InlineData("cf:0::71ef:91e::6")]
+    public void Address128_FailsParsing(string s)
+    {
+        Assert.False(Address128.TryParse(s, null, out var result));
+        Assert.True(result.IsDefault);
+        Assert.False(Address128.TryParse(s.AsSpan(), null, out result));
+        Assert.True(result.IsDefault);
+        Assert.Throws<FormatException>(() => Address128.Parse(s, null));
+        Assert.Throws<FormatException>(() => Address128.Parse(s.AsSpan(), null));
+    }
+
     public static TheoryData<Address32> LinkLocal32 => new()
     {
         new(169, 254, 0, 0),
@@ -137,6 +188,18 @@ public class AddressTest
         Address32.Broadcast,
         new(192, 168, 0, 1),
         new(0, 1, 2, 3)
+    };
+
+    public static TheoryData<Address128> RoundTripParse128 => new()
+    {
+        Address128.Any,
+        Address128.Local,
+        Address128.Create(static span => span.Fill(0xab)),
+        Address128.Create(static span =>
+        {
+            span[3] = 0xb;
+            span[11] = 0xce;
+        })
     };
 
     private static void MakeLinkLocal(Span<byte> bytes)
