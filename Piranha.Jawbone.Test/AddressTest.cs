@@ -61,6 +61,7 @@ public class AddressTest
     [InlineData("asdf")]
     [InlineData("127.0.0.")]
     [InlineData("1,1,1,1")]
+    [InlineData("253.254.255.256")]
     public void Address32_FailsParsing(string s)
     {
         Assert.False(Address32.TryParse(s, null, out var result));
