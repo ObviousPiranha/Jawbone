@@ -19,10 +19,10 @@ public readonly struct Axial32 : IEquatable<Axial32>
         R = r;
     }
 
-    public bool Equals(Axial32 other) => Q == other.Q && R == other.R;
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Axial32 other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(Q, R);
-    public override string? ToString() => $"{Q}, {R}, {S}";
+    public readonly bool Equals(Axial32 other) => Q == other.Q && R == other.R;
+    public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is Axial32 other && Equals(other);
+    public override readonly int GetHashCode() => HashCode.Combine(Q, R);
+    public override readonly string ToString() => $"{Q}, {R}, {S}";
 
     public static bool operator ==(Axial32 a, Axial32 b) => a.Equals(b);
     public static bool operator !=(Axial32 a, Axial32 b) => !a.Equals(b);

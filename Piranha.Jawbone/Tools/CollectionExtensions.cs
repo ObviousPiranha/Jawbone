@@ -53,7 +53,8 @@ public static class CollectionExtensions
     public static TValue GetOrAdd<TKey, TValue>(
         this IDictionary<TKey, TValue> dictionary,
         TKey key,
-        Func<TKey, TValue> factory)
+        Func<TKey, TValue> factory
+        ) where TKey : notnull
     {
         if (!dictionary.TryGetValue(key, out var value))
         {
@@ -67,7 +68,8 @@ public static class CollectionExtensions
     public static TValue GetOrAdd<TKey, TValue>(
         this IDictionary<TKey, TValue> dictionary,
         TKey key,
-        TValue defaultValue)
+        TValue defaultValue
+        ) where TKey : notnull
     {
         if (!dictionary.TryGetValue(key, out var value))
         {

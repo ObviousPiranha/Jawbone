@@ -56,7 +56,7 @@ public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>>
     public bool Equals(Endpoint<TAddress> other) => Address.Equals(other.Address) && NetworkOrderPort == other.NetworkOrderPort;
     public override bool Equals(object? obj) => obj is Endpoint<TAddress> other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(Address, NetworkOrderPort);
-    public override string? ToString()
+    public override string ToString()
     {
         var builder = new StringBuilder();
         builder.AppendEndpoint(this);

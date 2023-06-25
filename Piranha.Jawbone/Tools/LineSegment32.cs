@@ -16,5 +16,5 @@ public readonly struct LineSegment32 : IEquatable<LineSegment32>
     public bool Equals(LineSegment32 other) => A.Equals(other.A) && B.Equals(other.B);
     public override bool Equals(object? obj) => obj is LineSegment32 other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(A, B);
-    public override string? ToString() => $"{A} to {B}";
+    public override string ToString() => $"{A} to {B}";
 }

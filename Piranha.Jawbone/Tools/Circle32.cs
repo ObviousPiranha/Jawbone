@@ -15,9 +15,9 @@ public readonly struct Circle32 : IEquatable<Circle32>
         Radius = radius;
     }
 
-    public bool Equals(Circle32 other) => Center.Equals(other.Center) && Radius == other.Radius;
-    public override bool Equals(object? obj) => obj is Circle32 other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(Center, Radius);
-    public override string? ToString() => $"center {Center} radius {Radius}";
+    public readonly bool Equals(Circle32 other) => Center.Equals(other.Center) && Radius == other.Radius;
+    public override readonly bool Equals(object? obj) => obj is Circle32 other && Equals(other);
+    public override readonly int GetHashCode() => HashCode.Combine(Center, Radius);
+    public override readonly string ToString() => $"center {Center} radius {Radius}";
 }
 

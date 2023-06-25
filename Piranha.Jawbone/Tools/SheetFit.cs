@@ -24,16 +24,16 @@ readonly struct SheetFit : IEquatable<SheetFit>, IComparable<SheetFit>
         SecondaryFit = secondaryFit;
     }
 
-    public bool Equals(SheetFit other)
+    public readonly bool Equals(SheetFit other)
         => PrimaryFit == other.PrimaryFit && SecondaryFit == other.SecondaryFit;
-    public override bool Equals([NotNullWhen(true)] object? obj)
+    public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is SheetFit other && Equals(other);
-    public override int GetHashCode()
+    public override readonly int GetHashCode()
         => HashCode.Combine(PrimaryFit, SecondaryFit);
-    public override string? ToString()
+    public override readonly string ToString()
         => $"{PrimaryFit}, {SecondaryFit}";
 
-    public int CompareTo(SheetFit other)
+    public readonly int CompareTo(SheetFit other)
     {
         var result = PrimaryFit.CompareTo(other.PrimaryFit);
 

@@ -16,10 +16,10 @@ public struct Vector2<T> : IEquatable<Vector2<T>> where T : unmanaged, IEquatabl
         Y = y;
     }
 
-    public bool Equals(Vector2<T> other) => X.Equals(other.X) && Y.Equals(other.Y);
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Vector2<T> other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(X, Y);
-    public override string? ToString() => $"{X}, ${Y}";
+    public readonly bool Equals(Vector2<T> other) => X.Equals(other.X) && Y.Equals(other.Y);
+    public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is Vector2<T> other && Equals(other);
+    public override readonly int GetHashCode() => HashCode.Combine(X, Y);
+    public override readonly string ToString() => $"{X}, ${Y}";
 
     public static bool operator ==(Vector2<T> a, Vector2<T> b) => a.Equals(b);
     public static bool operator !=(Vector2<T> a, Vector2<T> b) => !a.Equals(b);

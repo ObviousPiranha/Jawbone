@@ -26,8 +26,8 @@ public readonly struct PackedUnsignedVector4 : IEquatable<PackedUnsignedVector4>
             (x & Mask10);
     }
 
-    public bool Equals(PackedUnsignedVector4 other) => _data == other._data;
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is PackedUnsignedVector4 other && Equals(other);
-    public override int GetHashCode() => _data.GetHashCode();
-    public override string? ToString() => $"{X}, ${Y}, ${Z}, ${W}";
+    public readonly bool Equals(PackedUnsignedVector4 other) => _data == other._data;
+    public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is PackedUnsignedVector4 other && Equals(other);
+    public override readonly int GetHashCode() => _data.GetHashCode();
+    public override readonly string ToString() => $"{X}, ${Y}, ${Z}, ${W}";
 }
