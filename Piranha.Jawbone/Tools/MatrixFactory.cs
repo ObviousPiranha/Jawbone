@@ -14,12 +14,30 @@ public static class MatrixFactory
             0f, 0f, 0f, 1f);
     }
 
-    public static Matrix4x4 CreateScaleW(float scale)
+    public static Matrix4x4 CreateScale(
+        float x = 1f,
+        float y = 1f,
+        float z = 1f,
+        float w = 1f)
     {
         return new Matrix4x4(
-            1f, 0f, 0f, 0f,
-            0f, 1f, 0f, 0f,
-            0f, 0f, 1f, 0f,
-            0f, 0f, 0f, scale);
+            x, 0f, 0f, 0f,
+            0f, y, 0f, 0f,
+            0f, 0f, z, 0f,
+            0f, 0f, 0f, w);
+    }
+
+    public static Matrix4x4 CreateGrayscale()
+    {
+        const float A = 0.299f;
+        const float B = 0.587f;
+        const float C = 0.114f;
+
+        // https://stackoverflow.com/a/2757025/264712
+        return new Matrix4x4(
+            A, A, A, 0f,
+            B, B, B, 0f,
+            C, C, C, 0f,
+            0f, 0f, 0f, 1f);
     }
 }

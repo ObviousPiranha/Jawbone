@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -10,8 +11,11 @@ namespace Piranha.Jawbone.Net;
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct Address128 : IAddress<Address128>
 {
-    private static readonly uint LinkLocalMask = BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
-    private static readonly uint LinkLocalSubnet = BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 
     public static Address128 Any => default;
     public static Address128 Local { get; } = Create(static span => span[15] = 1);
@@ -36,13 +40,30 @@ public readonly struct Address128 : IAddress<Address128>
         return result;
     }
 
+    public static Address128 FromHostOrdering(ReadOnlySpan<ushort> u16)
+    {
+        var bytes = MemoryMarshal.AsBytes(u16);
+        Span<byte> addressBytes = stackalloc byte[16];
+        var length = Math.Min(bytes.Length, addressBytes.Length);
+        bytes.Slice(0, length).CopyTo(addressBytes);
+
+        if (BitConverter.IsLittleEndian)
+        {
+            for (int i = 1; i < addressBytes.Length; i += 2)
+                Address.Swap(ref addressBytes[i - 1], ref addressBytes[i]);
+        }
+
+        return new Address128(addressBytes);
+    }
+
     private readonly uint _a;
     private readonly uint _b;
     private readonly uint _c;
     private readonly uint _d;
 
     public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
-    public readonly bool IsLinkLocal => (_a & LinkLocalMask) == LinkLocalSubnet;
+    public readonly bool IsLinkLocal => (_a & LinkLocalMask()) == LinkLocalSubnet();
+    public readonly bool IsLoopback => Equals(Local);
     public readonly bool IsIpV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
     public Address128(ReadOnlySpan<byte> values) : this()
@@ -71,7 +92,7 @@ public readonly struct Address128 : IAddress<Address128>
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is Address128 other && Equals(other);
     public override readonly int GetHashCode() => HashCode.Combine(_a, _b, _c, _d);
-    public override readonly string? ToString()
+    public override readonly string ToString()
     {
         var builder = new StringBuilder(48);
         AppendTo(builder);
@@ -133,9 +154,199 @@ public readonly struct Address128 : IAddress<Address128>
     public static Span<byte> GetBytes(ref Address128 address) => Address.GetSpanU8(ref address);
     public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address128 address) => Address.GetReadOnlySpanU8(address);
 
+    private static string? DoTheParse(ReadOnlySpan<char> originalInput, out Address128 result)
+    {
+        if (originalInput.IsEmpty)
+        {
+            result = default;
+            return "Input string is empty.";
+        }
+
+        var s = originalInput;
+
+        {
+            var hasOpeningBracket = s[0] == '[';
+            var hasClosingBracket = s[^1] == ']';
+
+            if (hasOpeningBracket != hasClosingBracket)
+            {
+                result = default;
+                return hasOpeningBracket ? "Missing closing bracket." : "Missing opening bracket.";
+            }
+
+            if (hasOpeningBracket)
+                s = s[1..^1];
+        }
+
+        if (s.Length < 2)
+        {
+            result = default;
+            return "Input string too short.";
+        }
+
+        // TODO: Make this properly flexible.
+        // This would still miss plenty of other valid representations
+        // for IPv4-mapped addresses, but for now, it is consistent
+        // with how Address128 converts such addresses to strings.
+        const string IntroV4 = "::ffff:";
+        if (s.StartsWith(IntroV4) && Address32.TryParse(s[IntroV4.Length..], null, out var a32))
+        {
+            result = a32.MapToV6();
+            return null;
+        }
+
+        Span<ushort> blocks = stackalloc ushort[8];
+        var division = s.IndexOf("::");
+
+        if (0 <= division)
+        {
+            if (!TryParseHexBlocks(s[..division], blocks, out var leftBlocksWritten))
+            {
+                result = default;
+                return "Bad hex block.";
+            }
+
+            if (!TryParseHexBlocks(s[(division + 2)..], blocks[leftBlocksWritten..], out var rightBlocksWritten))
+            {
+                result = default;
+                return "Bad hex block.";
+            }
+
+            if (leftBlocksWritten + rightBlocksWritten == blocks.Length)
+            {
+                result = default;
+                return "Malformed representation.";
+            }
+
+            blocks.Slice(leftBlocksWritten, rightBlocksWritten).CopyTo(blocks[^rightBlocksWritten..]);
+            blocks[leftBlocksWritten..^rightBlocksWritten].Clear();
+        }
+        else if (!TryParseHexBlocks(s, blocks, out var blocksWritten) || blocksWritten < blocks.Length)
+        {
+            result = default;
+            return "Bad hex block.";
+        }
+
+        result = Address128.FromHostOrdering(blocks);
+        return null;
+
+        static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)
+        {
+            blocksWritten = 0;
+
+            if (s.IsEmpty)
+                return true;
+
+            if (!TryParseHexBlock(s, out var block))
+                return false;
+
+            blocks[0] = block;
+            blocksWritten = 1;
+            var index = HexLength(block);
+
+            while (blocksWritten < blocks.Length)
+            {
+                if (index == s.Length)
+                    return true;
+
+                if (s[index] != ':' || !TryParseHexBlock(s[++index..], out block))
+                    return false;
+
+                blocks[blocksWritten++] = block;
+                index += HexLength(block);
+            }
+
+            return index == s.Length;
+        }
+
+        static bool TryParseHexBlock(ReadOnlySpan<char> s, out ushort u16)
+        {
+            if (s.IsEmpty)
+            {
+                u16 = default;
+                return false;
+            }
+
+            int result = HexDigit(s[0]);
+
+            if (result == -1)
+            {
+                u16 = default;
+                return false;
+            }
+
+            int digitCount = 1;
+
+            while (digitCount < s.Length)
+            {
+                var nextDigit = HexDigit(s[digitCount]);
+
+                if (nextDigit == -1)
+                    break;
+
+                if (4 < ++digitCount)
+                {
+                    u16 = default;
+                    return false;
+                }
+
+                result = (result << 4) | nextDigit;
+            }
+
+            u16 = (ushort)result;
+            return true;
+        }
+
+        static int HexDigit(int c)
+        {
+            if ('0' <= c && c <= '9')
+                return c - '0';
+            if ('a' <= c && c <= 'f')
+                return c - 'a' + 10;
+            if ('A' <= c && c <= 'F')
+                return c - 'A' + 10;
+
+            return -1;
+        }
+
+        static int HexLength(int n) => 0xfff < n ? 4 : 0xff < n ? 3 : 0xf < n ? 2 : 1;
+    }
+
+    public static Address128 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+    {
+        var exceptionMessage = DoTheParse(s, out var result);
+        if (exceptionMessage is not null)
+            throw new FormatException(exceptionMessage);
+        return result;
+    }
+
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address128 result)
+    {
+        var exceptionMessage = DoTheParse(s, out result);
+        return exceptionMessage is null;
+    }
+
+    public static Address128 Parse(string s, IFormatProvider? provider)
+    {
+        ArgumentNullException.ThrowIfNull(s);
+        var exceptionMessage = DoTheParse(s, out var result);
+        if (exceptionMessage is not null)
+            throw new FormatException(exceptionMessage);
+        return result;
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address128 result)
+    {
+        var exceptionMessage = DoTheParse(s, out result);
+        return exceptionMessage is null;
+    }
+
     public static bool operator ==(Address128 a, Address128 b) => a.Equals(b);
     public static bool operator !=(Address128 a, Address128 b) => !a.Equals(b);
     public static Address128 operator &(Address128 a, Address128 b) => new(a._a & b._a, a._b & b._b, a._c & b._c, a._d & b._d);
     public static Address128 operator |(Address128 a, Address128 b) => new(a._a | b._a, a._b | b._b, a._c | b._c, a._d | b._d);
     public static Address128 operator ^(Address128 a, Address128 b) => new(a._a ^ b._a, a._b ^ b._b, a._c ^ b._c, a._d ^ b._d);
+
+    public static implicit operator Address128(AnyAddress anyAddress) => Any;
+    public static implicit operator Address128(LocalAddress localAddress) => Local;
 }
