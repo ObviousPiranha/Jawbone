@@ -183,5 +183,8 @@ public readonly struct Address32 : IAddress<Address32>
     public static Address32 operator &(Address32 a, Address32 b) => new(a._rawAddress & b._rawAddress);
     public static Address32 operator |(Address32 a, Address32 b) => new(a._rawAddress | b._rawAddress);
     public static Address32 operator ^(Address32 a, Address32 b) => new(a._rawAddress ^ b._rawAddress);
+
+    public static implicit operator Address32(AnyAddress anyAddress) => Any;
+    public static implicit operator Address32(LocalAddress localAddress) => Local;
 }
 

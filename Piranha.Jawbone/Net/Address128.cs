@@ -346,4 +346,7 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 operator &(Address128 a, Address128 b) => new(a._a & b._a, a._b & b._b, a._c & b._c, a._d & b._d);
     public static Address128 operator |(Address128 a, Address128 b) => new(a._a | b._a, a._b | b._b, a._c | b._c, a._d | b._d);
     public static Address128 operator ^(Address128 a, Address128 b) => new(a._a ^ b._a, a._b ^ b._b, a._c ^ b._c, a._d ^ b._d);
+
+    public static implicit operator Address128(AnyAddress anyAddress) => Any;
+    public static implicit operator Address128(LocalAddress localAddress) => Local;
 }

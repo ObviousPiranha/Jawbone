@@ -165,16 +165,28 @@ class Program
         Console.WriteLine("Parsed:   " + parsed.ToString());
     }
 
+    static void CleverAssignment<TAddress>(TAddress address) where TAddress : unmanaged, IAddress<TAddress>
+    {
+    }
+
+    static void CleverForwarding<TAddress>() where TAddress : unmanaged, IAddress<TAddress>
+    {
+        CleverAssignment<TAddress>(Address.Any);
+    }
+
     static void Main(string[] args)
     {
         try
         {
+            Address128 a128 = Address.Any;
             //FancyBinding();
             //AllowV4(true);
             //AllowV4(false);
             // ErrorOnPurpose();
             // AddressShenanigans();
             // GetSomeAddresses();
+            CleverAssignment<Address32>(Address.Any);
+            CleverAssignment<Address128>(Address.Any);
             ParseSomeAddresses(Address128.Local);
             ParseSomeAddresses(Address128.Create(static span => span.Fill(0xab)));
             ParseSomeAddresses(Address128.Any);

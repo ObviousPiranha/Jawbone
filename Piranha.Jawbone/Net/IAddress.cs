@@ -16,6 +16,6 @@ public interface IAddress<TAddress> : IEquatable<TAddress>, ISpanParsable<TAddre
     static abstract TAddress Local { get; }
     static abstract Span<byte> GetBytes(ref TAddress address);
     static abstract ReadOnlySpan<byte> GetReadOnlyBytes(in TAddress address);
-    static virtual implicit operator TAddress(AnyAddress anyAddress) => TAddress.Any;
-    static virtual implicit operator TAddress(LocalAddress localAddress) => TAddress.Local;
+    static abstract implicit operator TAddress(AnyAddress anyAddress);
+    static abstract implicit operator TAddress(LocalAddress localAddress);
 }
