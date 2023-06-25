@@ -4,42 +4,41 @@ using System.Linq;
 
 namespace Piranha.Jawbone.OpenGl;
 
-public class OpenGlLoader : IPlatformLoader<NativeLibraryInterface<IOpenGl>>
+public class OpenGlLoader
 {
-    public static NativeLibraryInterface<IOpenGl> Load() => new OpenGlLoader().CurrentPlatform();
-
-    private OpenGlLoader()
+    public static NativeLibraryInterface<IOpenGl> Load()
     {
-    }
-
-    public NativeLibraryInterface<IOpenGl> Linux()
-    {
-        var lib = "/usr/lib/libGL.so";
-        if (Directory.Exists(Platform.PiLibFolder))
+        if (OperatingSystem.IsWindows())
         {
-            lib = Directory.EnumerateFiles(
-                Platform.PiLibFolder,
-                "libGLESv2.so*").First();
+            return WindowsOpenGlLoader.Load();
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            var lib = "/usr/lib/libGL.so";
+            if (Directory.Exists(Platform.PiLibFolder))
+            {
+                lib = Directory.EnumerateFiles(
+                    Platform.PiLibFolder,
+                    "libGLESv2.so*").First();
+            }
+            else
+            {
+                lib = Platform.FindLib("libGL.so*") ?? throw new NullReferenceException();
+            }
+
+            return NativeLibraryInterface.FromFile<IOpenGl>(
+                lib,
+                name => "gl" + name);
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            return NativeLibraryInterface.FromFile<IOpenGl>(
+                "/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib",
+                name => "gl" + name);
         }
         else
         {
-            lib = Platform.FindLib("libGL.so*") ?? throw new NullReferenceException();
+            throw new PlatformNotSupportedException();
         }
-
-        return NativeLibraryInterface.FromFile<IOpenGl>(
-            lib,
-            name => "gl" + name);
-    }
-
-    public NativeLibraryInterface<IOpenGl> macOS()
-    {
-        return NativeLibraryInterface.FromFile<IOpenGl>(
-            "/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib",
-            name => "gl" + name);
-    }
-
-    public NativeLibraryInterface<IOpenGl> Windows()
-    {
-        return WindowsOpenGlLoader.Load();
     }
 }
