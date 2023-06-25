@@ -184,6 +184,17 @@ public readonly struct Address128 : IAddress<Address128>
             return "Input string too short.";
         }
 
+        // TODO: Make this properly flexible.
+        // This would still miss plenty of other valid representations
+        // for IPv4-mapped addresses, but for now, it is consistent
+        // with how Address128 converts such addresses to strings.
+        const string IntroV4 = "::ffff:";
+        if (s.StartsWith(IntroV4) && Address32.TryParse(s[IntroV4.Length..], null, out var a32))
+        {
+            result = a32.MapToV6();
+            return null;
+        }
+
         Span<ushort> blocks = stackalloc ushort[8];
         var division = s.IndexOf("::");
 
@@ -218,8 +229,6 @@ public readonly struct Address128 : IAddress<Address128>
 
         result = Address128.FromHostOrdering(blocks);
         return null;
-
-        // TODO: Finish. Add tests.
 
         static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)
         {

@@ -199,7 +199,9 @@ public class AddressTest
         {
             span[3] = 0xb;
             span[11] = 0xce;
-        })
+        }),
+        Address32.Local.MapToV6(),
+        Address32.Broadcast.MapToV6()
     };
 
     private static void MakeLinkLocal(Span<byte> bytes)
