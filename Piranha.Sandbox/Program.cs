@@ -70,10 +70,10 @@ class Program
 
         Console.WriteLine("yo yo yo");
 
-        using (var socket = new UdpSocket32(AnyAddress.OnAnyPort()))
+        using (var socket = new UdpSocket32(Endpoint.Any))
             Console.WriteLine(socket.GetEndpoint().ToString());
 
-        using (var socket = new UdpSocket128(AnyAddress.OnAnyPort(), false))
+        using (var socket = new UdpSocket128(Endpoint.Any, false))
             Console.WriteLine(socket.GetEndpoint().ToString());
     }
 
@@ -83,13 +83,13 @@ class Program
         var receiveBuffer = new byte[sendBuffer.Length];
 
         RandomNumberGenerator.Fill(sendBuffer);
-        using (var socketV6 = new UdpSocket128(AnyAddress.OnAnyPort(), allowV4))
+        using (var socketV6 = new UdpSocket128(Endpoint.Any, allowV4))
         {
             var endpointV6 = socketV6.GetEndpoint();
             var word = allowV4 ? "enabled" : "disabled";
             Console.WriteLine($"Bound on {endpointV6} with V4 {word}.");
             var destination = Endpoint.Create(Address32.Local, endpointV6.Port);
-            using (var socketV4 = new UdpSocket32(AnyAddress.OnAnyPort()))
+            using (var socketV4 = new UdpSocket32(Endpoint.Any))
             {
                 var endpointV4 = socketV4.GetEndpoint();
                 socketV4.Send(sendBuffer, destination);
@@ -114,7 +114,7 @@ class Program
         using var socketA = new UdpSocket32(endpointA);
         Console.WriteLine($"Socket A on {endpointA}.");
 
-        using var socketB = new UdpSocket32(AnyAddress.OnAnyPort());
+        using var socketB = new UdpSocket32(Endpoint.Any);
         var endpointB = socketB.GetEndpoint();
         Console.WriteLine($"Socket B on {endpointB}.");
 
@@ -136,7 +136,7 @@ class Program
     {
         try
         {
-            using var socketA = new UdpSocket32(AnyAddress.OnAnyPort());
+            using var socketA = new UdpSocket32(Endpoint.Any);
             var endpoint = socketA.GetEndpoint();
             Console.WriteLine($"Bound socket on {endpoint}.");
 
@@ -203,7 +203,7 @@ class Program
                 var info = AddressInfo.Get(args[0], args[1]);
                 var endpoint = info.V4[0];
 
-                using var client = new UdpSocket32(AnyAddress.OnAnyPort());
+                using var client = new UdpSocket32(Endpoint.Any);
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
                 client.Send(message, endpoint);
@@ -266,7 +266,7 @@ class Program
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
 
-        using var myClient = new UdpSocket128(AnyAddress.OnAnyPort(), false);
+        using var myClient = new UdpSocket128(Endpoint.Any, false);
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
 
