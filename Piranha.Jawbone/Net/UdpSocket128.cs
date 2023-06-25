@@ -54,13 +54,6 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 
     public int Receive(
         Span<byte> buffer,
-        out Endpoint<Address128> origin)
-    {
-        return Receive(buffer, out origin, TimeSpan.Zero);
-    }
-
-    public int Receive(
-        Span<byte> buffer,
         out Endpoint<Address128> origin,
         TimeSpan timeout)
     {
