@@ -174,6 +174,15 @@ class Program
         CleverAssignment<TAddress>(Address.Any);
     }
 
+    static void BindToLinkLocal()
+    {
+        GetAndDump("fe80::ccb6:72b9:6d63:6863", "7777");
+        var address = Address128.Parse("fe80::ccb6:72b9:6d63:6863", null);
+        Console.WriteLine("Address: " + address);
+        using var socket = new UdpSocket128(address.OnPort(7777), false);
+        Console.WriteLine("Bound to " + socket.GetEndpoint().ToString());
+    }
+
     static void Main(string[] args)
     {
         try
@@ -185,6 +194,7 @@ class Program
             // ErrorOnPurpose();
             // AddressShenanigans();
             // GetSomeAddresses();
+            BindToLinkLocal();
             CleverAssignment<Address32>(Address.Any);
             CleverAssignment<Address128>(Address.Any);
             ParseSomeAddresses(Address128.Local);
