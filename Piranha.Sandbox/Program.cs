@@ -89,10 +89,10 @@ class Program
             var word = allowV4 ? "enabled" : "disabled";
             Console.WriteLine($"Bound on {endpointV6} with V4 {word}.");
             var destination = Endpoint.Create(Address32.Local, endpointV6.Port);
-            using (var socketV4 = new UdpSocket32(Endpoint.Any))
+            using (var socketV4 = new UdpSocket32())
             {
-                var endpointV4 = socketV4.GetEndpoint();
                 socketV4.Send(sendBuffer, destination);
+                var endpointV4 = socketV4.GetEndpoint();
                 Console.WriteLine($"Sent message from {endpointV4}.");
             }
 
@@ -189,22 +189,22 @@ class Program
         {
             Address128 a128 = Address.Any;
             //FancyBinding();
-            //AllowV4(true);
-            //AllowV4(false);
+            AllowV4(true);
+            AllowV4(false);
             // ErrorOnPurpose();
             // AddressShenanigans();
             // GetSomeAddresses();
-            BindToLinkLocal();
-            CleverAssignment<Address32>(Address.Any);
-            CleverAssignment<Address128>(Address.Any);
-            ParseSomeAddresses(Address128.Local);
-            ParseSomeAddresses(Address128.Create(static span => span.Fill(0xab)));
-            ParseSomeAddresses(Address128.Any);
-            ParseSomeAddresses(Address128.Create(static span =>
-            {
-                span[0] = 0xc;
-                span[11] = 0xb;
-            }));
+            // BindToLinkLocal();
+            // CleverAssignment<Address32>(Address.Any);
+            // CleverAssignment<Address128>(Address.Any);
+            // ParseSomeAddresses(Address128.Local);
+            // ParseSomeAddresses(Address128.Create(static span => span.Fill(0xab)));
+            // ParseSomeAddresses(Address128.Any);
+            // ParseSomeAddresses(Address128.Create(static span =>
+            // {
+            //     span[0] = 0xc;
+            //     span[11] = 0xb;
+            // }));
             return;
             TryOutV6();
 

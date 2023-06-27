@@ -10,10 +10,30 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 
     public UdpSocket128(Endpoint<Address128> endpoint, bool allowV4)
     {
+        var flags = UdpSocket.Bind | (allowV4 ? 0 : UdpSocket.IPv6Only);
         JawboneNetworking.CreateAndBindUdpV6Socket(
             endpoint.Address,
             endpoint.NetworkOrderPort,
-            Convert.ToInt32(allowV4),
+            flags,
+            out _handle,
+            out var socketError,
+            out var setSocketOptionError,
+            out var bindError);
+
+        SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
+        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+
+        AllowV4 = allowV4;
+    }
+
+    public UdpSocket128(bool allowV4)
+    {
+        var flags = allowV4 ? 0 : UdpSocket.IPv6Only;
+        JawboneNetworking.CreateAndBindUdpV6Socket(
+            default,
+            default,
+            flags,
             out _handle,
             out var socketError,
             out var setSocketOptionError,

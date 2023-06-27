@@ -1,3 +1,4 @@
+using Piranha.Jawbone.Extensions;
 using System;
 
 namespace Piranha.Jawbone;

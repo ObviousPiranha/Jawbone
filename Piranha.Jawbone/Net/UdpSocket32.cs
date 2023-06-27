@@ -11,6 +11,22 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         JawboneNetworking.CreateAndBindUdpV4Socket(
             endpoint.Address,
             endpoint.NetworkOrderPort,
+            UdpSocket.Bind,
+            out _handle,
+            out var socketError,
+            out var bindError);
+
+        SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+    }
+
+    public UdpSocket32()
+    {
+        // https://stackoverflow.com/a/17922652
+        JawboneNetworking.CreateAndBindUdpV4Socket(
+            default,
+            default,
+            0,
             out _handle,
             out var socketError,
             out var bindError);

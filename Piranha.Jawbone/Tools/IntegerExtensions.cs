@@ -1,4 +1,4 @@
-namespace Piranha.Jawbone;
+namespace Piranha.Jawbone.Extensions;
 
 public static class IntegerExtensions
 {
