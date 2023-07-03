@@ -53,4 +53,19 @@ public static class Quadrilateral
             c,
             new Vector2(c.X, a.Y));
     }
+
+    public static Quadrilateral<TResult> Change<T, TArg, TResult>(
+        this Quadrilateral<T> q,
+        TArg arg,
+        Func<T, TArg, TResult> f
+        ) where T : IEquatable<T> where TResult : IEquatable<TResult>
+    {
+        var result = new Quadrilateral<TResult>(
+            f.Invoke(q.A, arg),
+            f.Invoke(q.B, arg),
+            f.Invoke(q.C, arg),
+            f.Invoke(q.D, arg));
+
+        return result;
+    }
 }

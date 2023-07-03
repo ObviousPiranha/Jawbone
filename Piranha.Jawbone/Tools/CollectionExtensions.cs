@@ -159,4 +159,24 @@ public static class CollectionExtensions
             result[i] = conversion.Invoke(span[i]);
         return result;
     }
+
+    public static bool StartsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value, out ReadOnlySpan<T> after) where T : IEquatable<T>
+    {
+        if (span.StartsWith(value))
+        {
+            after = span[value.Length..];
+            return true;
+        }
+        else
+        {
+            after = default;
+            return false;
+        }
+    }
+
+    public static bool StartsWith(this string text, ReadOnlySpan<char> value, out ReadOnlySpan<char> after)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return text.AsSpan().StartsWith(value, out after);
+    }
 }
