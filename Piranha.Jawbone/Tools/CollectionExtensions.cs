@@ -160,7 +160,20 @@ public static class CollectionExtensions
         return result;
     }
 
-    public static bool StartsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value, out ReadOnlySpan<T> after) where T : IEquatable<T>
+    public static ReadOnlySpan<T> After<T>(
+        this ReadOnlySpan<T> span,
+        ReadOnlySpan<T> value
+        ) where T : IEquatable<T>
+    {
+        var result = span.StartsWith(value) ? span[value.Length..] : span;
+        return result;
+    }
+
+    public static bool StartsWith<T>(
+        this ReadOnlySpan<T> span,
+        ReadOnlySpan<T> value,
+        out ReadOnlySpan<T> after
+        ) where T : IEquatable<T>
     {
         if (span.StartsWith(value))
         {
