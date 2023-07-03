@@ -19,7 +19,7 @@ public static class WindowsOpenGlLoader
             procAddress = NativeLibrary.GetExport(glModulePtr, functionName);
 
         if (procAddress.IsInvalid())
-            throw new Exception("Unable to load " + functionName);
+            throw new OpenGlException("Unable to load " + functionName);
 
         return procAddress;
     }
@@ -29,14 +29,14 @@ public static class WindowsOpenGlLoader
         var libraryHandle = NativeLibrary.Load("opengl32");
 
         if (libraryHandle.IsInvalid())
-            throw new Exception("Unable to load opengl32.");
+            throw new OpenGlException("Unable to load opengl32.");
 
         try
         {
             var wglGetProcAddressPtr = NativeLibrary.GetExport(libraryHandle, "wglGetProcAddress");
 
             if (wglGetProcAddressPtr.IsInvalid())
-                throw new Exception("You are not loading OpenGL today.");
+                throw new OpenGlException("You are not loading OpenGL today.");
 
             var wglGetProcAddress = Marshal.GetDelegateForFunctionPointer<ModuleLoader>(wglGetProcAddressPtr);
 
