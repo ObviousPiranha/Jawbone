@@ -61,4 +61,25 @@ public class UnmanagedQueueTest
         while (queue.TryDequeue() && queue.TryDequeue())
             Assert.True(queue.TryEnqueue(TimeSpan.MinValue));
     }
+
+    [Fact]
+    public void QueueResizeWorks()
+    {
+        const int N = unchecked((int)0xdeadbeef);
+        var queue = new UnmanagedQueue();
+        queue.Register<int>(static v => Assert.Equal(N, v));
+        queue.Register<Matrix4x4>(static v => Matrix4x4.Identity.Equals(v));
+
+        Assert.True(queue.TryEnqueue(N));
+
+        while (0 < queue.AvailableBytes)
+            Assert.True(queue.TryEnqueue(N));
+
+        Assert.True(queue.TryDequeue());
+        Assert.True(queue.TryDequeue());
+        Assert.True(queue.TryEnqueue(N));
+        Assert.True(queue.TryEnqueue(Matrix4x4.Identity));
+        Assert.True(queue.TryEnqueue(Matrix4x4.Identity));
+        queue.DequeueAll();
+    }
 }

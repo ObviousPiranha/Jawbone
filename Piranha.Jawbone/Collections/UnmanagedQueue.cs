@@ -39,6 +39,8 @@ public sealed class UnmanagedQueue
     private int _begin = 0;
     private int _length = 0;
 
+    public int AvailableBytes => _bytes.Length - _length;
+
     public void Register<T>(Action<T> action) where T : unmanaged
     {
         var blobHandler = new BlobHandler<T>(action);
@@ -79,9 +81,9 @@ public sealed class UnmanagedQueue
                 return false;
 
             ReadOnlySpan<byte> bytes = _bytes.AsSpan(_begin);
-            var blob = bytes.Read(out int index);
+            var afterIndex = bytes.Read(out int index);
             var handler = _blobHandlers[index];
-            handler.Handle(blob[..handler.Size]);
+            handler.Handle(afterIndex[..handler.Size]);
             var sizeOfBlobWithHeader = Unsafe.SizeOf<int>() + handler.Size;
             _length -= sizeOfBlobWithHeader;
             _begin = _length == 0 ? 0 : (_begin + sizeOfBlobWithHeader) % _bytes.Length;
@@ -98,7 +100,7 @@ public sealed class UnmanagedQueue
     private Span<byte> Allocate(int size)
     {
         var available = _bytes.Length - _length;
-        var end = _bytes.Length == 0 ? 0 : (_begin + _length) % _bytes.Length;
+        var end = _length == 0 ? 0 : (_begin + _length) % _bytes.Length;
 
         if (available < size)
         {
