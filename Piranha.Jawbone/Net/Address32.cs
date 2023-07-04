@@ -33,13 +33,13 @@ public readonly struct Address32 : IAddress<Address32>
 
     public Address32(ReadOnlySpan<byte> values) : this()
     {
-        var span = GetBytes(ref this);
+        var span = AsBytes(ref this);
         values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
     }
 
     public Address32(byte a, byte b, byte c, byte d) : this()
     {
-        var bytes = GetBytes(ref this);
+        var bytes = AsBytes(ref this);
         bytes[3] = d;
         bytes[2] = c;
         bytes[1] = b;
@@ -63,7 +63,7 @@ public readonly struct Address32 : IAddress<Address32>
 
     public readonly void AppendTo(StringBuilder builder)
     {
-        var span = GetReadOnlyBytes(this);
+        var span = AsReadOnlyBytes(this);
         builder
             .Append(span[0])
             .Append('.')
@@ -74,8 +74,8 @@ public readonly struct Address32 : IAddress<Address32>
             .Append(span[3]);
     }
 
-    public static Span<byte> GetBytes(ref Address32 address) => Address.GetSpanU8(ref address);
-    public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address32 address) => Address.GetReadOnlySpanU8(address);
+    public static Span<byte> AsBytes(ref Address32 address) => MemoryMarshal.AsBytes(new Span<Address32>(ref address));
+    public static ReadOnlySpan<byte> AsReadOnlyBytes(in Address32 address) => MemoryMarshal.AsBytes(new ReadOnlySpan<Address32>(address));
 
     private static string? DoTheParse(ReadOnlySpan<char> s, out Address32 result)
     {

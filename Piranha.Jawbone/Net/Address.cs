@@ -29,31 +29,4 @@ public static class Address
         a = b;
         b = c;
     }
-
-    internal static Span<byte> GetSpanU8<T>(ref T item) where T : unmanaged
-    {
-        unsafe
-        {
-            fixed (void* a = &item)
-                return new Span<byte>(a, sizeof(T));
-        }
-    }
-
-    internal static ReadOnlySpan<byte> GetReadOnlySpanU8<T>(in T item) where T : unmanaged
-    {
-        unsafe
-        {
-            fixed (void* a = &item)
-                return new ReadOnlySpan<byte>(a, sizeof(T));
-        }
-    }
-
-    internal static ReadOnlySpan<ushort> GetReadOnlySpanU16<T>(in T item) where T : unmanaged
-    {
-        unsafe
-        {
-            fixed (void* a = &item)
-                return new ReadOnlySpan<ushort>(a, sizeof(T) / sizeof(ushort));
-        }
-    }
 }

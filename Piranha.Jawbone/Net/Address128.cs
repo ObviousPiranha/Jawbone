@@ -27,7 +27,7 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create(SpanAction<byte> action)
     {
         var result = default(Address128);
-        var span = GetBytes(ref result);
+        var span = AsBytes(ref result);
         action.Invoke(span);
         return result;
     }
@@ -35,7 +35,7 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create<TState>(TState state, SpanAction<byte, TState> action)
     {
         var result = default(Address128);
-        var span = GetBytes(ref result);
+        var span = AsBytes(ref result);
         action.Invoke(span, state);
         return result;
     }
@@ -68,7 +68,7 @@ public readonly struct Address128 : IAddress<Address128>
 
     public Address128(ReadOnlySpan<byte> values) : this()
     {
-        var span = GetBytes(ref this);
+        var span = AsBytes(ref this);
         values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
     }
 
@@ -112,7 +112,8 @@ public readonly struct Address128 : IAddress<Address128>
         int zeroIndex = 0;
         int zeroLength = 0;
 
-        var span16 = Address.GetReadOnlySpanU16(this);
+        var span16 = MemoryMarshal.Cast<Address128, ushort>(
+            new ReadOnlySpan<Address128>(this));
         for (int i = 0; i < span16.Length; ++i)
         {
             if (span16[i] == 0)
@@ -133,7 +134,7 @@ public readonly struct Address128 : IAddress<Address128>
             }
         }
 
-        var span = GetReadOnlyBytes(this);
+        var span = AsReadOnlyBytes(this);
         builder.Append('[');
 
         if (1 < zeroLength)
@@ -151,8 +152,8 @@ public readonly struct Address128 : IAddress<Address128>
         builder.Append(']');
     }
 
-    public static Span<byte> GetBytes(ref Address128 address) => Address.GetSpanU8(ref address);
-    public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address128 address) => Address.GetReadOnlySpanU8(address);
+    public static Span<byte> AsBytes(ref Address128 address) => MemoryMarshal.AsBytes(new Span<Address128>(ref address));
+    public static ReadOnlySpan<byte> AsReadOnlyBytes(in Address128 address) => MemoryMarshal.AsBytes(new ReadOnlySpan<Address128>(address));
 
     private static string? DoTheParse(ReadOnlySpan<char> originalInput, out Address128 result)
     {

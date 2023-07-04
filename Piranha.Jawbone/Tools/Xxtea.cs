@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone;
 
@@ -96,13 +97,7 @@ public static class Xxtea
         input.CopyTo(output);
         output.Slice(input.Length, expectedOutputLength - input.Length).Clear();
 
-        Span<uint> v;
-
-        unsafe
-        {
-            fixed (void* p = output)
-                v = new Span<uint>(p, expectedOutputLength / 4);
-        }
+        var v = MemoryMarshal.Cast<byte, uint>(output).Slice(0, expectedOutputLength / 4);
 
         Encrypt(v, key);
 
