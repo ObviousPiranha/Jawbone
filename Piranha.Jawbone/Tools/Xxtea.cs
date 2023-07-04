@@ -117,13 +117,7 @@ public static class Xxtea
 
         input.CopyTo(output);
 
-        Span<uint> v;
-
-        unsafe
-        {
-            fixed (void* p = output)
-                v = new Span<uint>(p, input.Length / 4);
-        }
+        var v = MemoryMarshal.Cast<byte, uint>(output);
 
         Decrypt(v, key);
 
