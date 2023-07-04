@@ -101,7 +101,7 @@ public static class CollectionExtensions
         }
     }
 
-    public static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length)
+    public static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length) where T : unmanaged
     {
         unsafe
         {
