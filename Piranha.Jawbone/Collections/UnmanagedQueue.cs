@@ -23,7 +23,7 @@ file static class UnmanagedQueueExtensions
         ) where T : unmanaged
     {
         Unsafe.SkipInit(out destination);
-        source.CopyTo(
+        source[..Unsafe.SizeOf<T>()].CopyTo(
             MemoryMarshal.AsBytes(
                 new Span<T>(ref destination)));
         return source[Unsafe.SizeOf<T>()..];
@@ -39,8 +39,6 @@ public sealed class UnmanagedQueue
     private byte[] _bytes = Array.Empty<byte>();
     private int _begin = 0;
     private int _length = 0;
-
-    private int GetEnd() => (_begin + _length) % _bytes.Length;
 
     public void Register<T>(Action<T> action) where T : unmanaged
     {
@@ -70,7 +68,6 @@ public sealed class UnmanagedQueue
 
             var bytes = Allocate(Unsafe.SizeOf<int>() + Unsafe.SizeOf<T>());
             bytes.Write(index).Write(item);
-            _length += bytes.Length;
             return true;
         }
     }
@@ -85,7 +82,7 @@ public sealed class UnmanagedQueue
             ReadOnlySpan<byte> bytes = _bytes.AsSpan(_begin);
             var blob = bytes.Read(out int index);
             var handler = _blobHandlers[index];
-            handler.Handle(blob);
+            handler.Handle(blob[..handler.Size]);
             var sizeOfBlobWithHeader = Unsafe.SizeOf<int>() + handler.Size;
             _begin = (_begin + sizeOfBlobWithHeader) % _bytes.Length;
             _length -= sizeOfBlobWithHeader;
@@ -102,38 +99,51 @@ public sealed class UnmanagedQueue
     private Span<byte> Allocate(int size)
     {
         var available = _bytes.Length - _length;
-        var end = GetEnd();
+        var end = 0 < _bytes.Length ? (_begin + _length) % _bytes.Length : 0;
 
         if (available < size)
         {
             var bytes = new byte[Math.Max((_length + size) * 4, size * 16)];
 
-            if (_begin < end)
+            if (0 < _length)
             {
-                _bytes.AsSpan(_begin, _length).CopyTo(bytes);
-            }
-            else
-            {
-                _bytes.AsSpan(_begin).CopyTo(bytes);
-                _bytes.AsSpan(0, end).CopyTo(bytes.AsSpan(_bytes.Length - _begin));
+                if (_begin < end)
+                {
+                    _bytes.AsSpan(_begin, _length).CopyTo(bytes);
+                }
+                else
+                {
+                    _bytes.AsSpan(_begin).CopyTo(bytes);
+                    _bytes.AsSpan(0, end).CopyTo(bytes.AsSpan(_bytes.Length - _begin));
+                }
             }
 
             _bytes = bytes;
             _begin = 0;
             end = _length;
         }
-        else if (_begin < end && (_bytes.Length - end) < size)
+        else if (_begin < end)
         {
-            int offset = _bytes.Length - _begin;
-            var span = _bytes.AsSpan();
+            var availableBytesAtEnd = _bytes.Length - end;
 
-            // Simple and really fast on bytes.
-            span.Reverse();
-            span[..offset].Reverse();
-            span[offset..].Reverse();
-
-            _begin = 0;
-            end = _length;
+            if (availableBytesAtEnd < size)
+            {
+                // Move to the far end of the array to minimize
+                // the amount of memory overlap.
+                if (_begin < availableBytesAtEnd)
+                {
+                    var begin = _bytes.Length - _length;
+                    _bytes.AsSpan(_begin, _length).CopyTo(_bytes.AsSpan(begin));
+                    _begin = begin;
+                    end = 0;
+                }
+                else
+                {
+                    _bytes.AsSpan(_begin, _length).CopyTo(_bytes);
+                    _begin = 0;
+                    end = _length;
+                }
+            }
         }
 
         var result = _bytes.AsSpan(end, size);
