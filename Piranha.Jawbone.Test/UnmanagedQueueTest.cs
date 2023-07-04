@@ -44,4 +44,21 @@ public class UnmanagedQueueTest
         Assert.True(matrixMessageWasHandled);
         Assert.True(dateTimeMessageWasHandled);
     }
+
+    [Fact]
+    public void QueueWorks()
+    {
+        var queue = new UnmanagedQueue();
+        queue.Register<TimeSpan>(static _ => {});
+        queue.Register<byte>(static _ => {});
+
+        for (int i = 0; i < 12; ++i)
+            Assert.True(queue.TryEnqueue(TimeSpan.MaxValue));
+
+        // Toss in a weird shape to prevent even fit.
+        Assert.True(queue.TryEnqueue(byte.MaxValue));
+
+        while (queue.TryDequeue() && queue.TryDequeue())
+            Assert.True(queue.TryEnqueue(TimeSpan.MinValue));
+    }
 }

@@ -30,7 +30,6 @@ file static class UnmanagedQueueExtensions
     }
 }
 
-// Assumes single producer and single consumer.
 public sealed class UnmanagedQueue
 {
     private readonly object _lock = new();
@@ -84,8 +83,8 @@ public sealed class UnmanagedQueue
             var handler = _blobHandlers[index];
             handler.Handle(blob[..handler.Size]);
             var sizeOfBlobWithHeader = Unsafe.SizeOf<int>() + handler.Size;
-            _begin = (_begin + sizeOfBlobWithHeader) % _bytes.Length;
             _length -= sizeOfBlobWithHeader;
+            _begin = _length == 0 ? 0 : (_begin + sizeOfBlobWithHeader) % _bytes.Length;
             return true;
         }
     }
@@ -99,7 +98,7 @@ public sealed class UnmanagedQueue
     private Span<byte> Allocate(int size)
     {
         var available = _bytes.Length - _length;
-        var end = 0 < _bytes.Length ? (_begin + _length) % _bytes.Length : 0;
+        var end = _bytes.Length == 0 ? 0 : (_begin + _length) % _bytes.Length;
 
         if (available < size)
         {
