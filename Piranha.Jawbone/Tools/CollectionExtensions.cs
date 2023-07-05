@@ -101,13 +101,10 @@ public static class CollectionExtensions
         }
     }
 
-    public static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length) where T : unmanaged
+    public unsafe static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length) where T : unmanaged
     {
-        unsafe
-        {
-            var result = new ReadOnlySpan<T>(ptr.ToPointer(), length);
-            return result;
-        }
+        var result = new ReadOnlySpan<T>(ptr.ToPointer(), length);
+        return result;
     }
 
     public static ReadOnlySpan<byte> NullTerminated(this ReadOnlySpan<byte> span)

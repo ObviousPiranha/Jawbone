@@ -9,11 +9,10 @@ file static class UnmanagedQueueExtensions
 {
     public static Span<byte> Write<T>(
         this Span<byte> destination,
-        in T source
+        T source
         ) where T : unmanaged
     {
-        MemoryMarshal.AsBytes(
-            new ReadOnlySpan<T>(source)).CopyTo(destination);
+        MemoryMarshal.Write(destination, ref source);
         return destination[Unsafe.SizeOf<T>()..];
     }
 
@@ -22,10 +21,7 @@ file static class UnmanagedQueueExtensions
         out T destination
         ) where T : unmanaged
     {
-        Unsafe.SkipInit(out destination);
-        source[..Unsafe.SizeOf<T>()].CopyTo(
-            MemoryMarshal.AsBytes(
-                new Span<T>(ref destination)));
+        destination = MemoryMarshal.Read<T>(source);
         return source[Unsafe.SizeOf<T>()..];
     }
 }
