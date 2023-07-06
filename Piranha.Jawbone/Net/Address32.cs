@@ -180,6 +180,7 @@ public readonly struct Address32 : IAddress<Address32>
 
     public static bool operator ==(Address32 a, Address32 b) => a.Equals(b);
     public static bool operator !=(Address32 a, Address32 b) => !a.Equals(b);
+    public static Address32 operator ~(Address32 a) => new(~a._rawAddress);
     public static Address32 operator &(Address32 a, Address32 b) => new(a._rawAddress & b._rawAddress);
     public static Address32 operator |(Address32 a, Address32 b) => new(a._rawAddress | b._rawAddress);
     public static Address32 operator ^(Address32 a, Address32 b) => new(a._rawAddress ^ b._rawAddress);
