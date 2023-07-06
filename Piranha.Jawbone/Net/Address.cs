@@ -23,10 +23,8 @@ public static class Address
         return new LinkLocalAddress128(address, scopeId);
     }
 
-    internal static void Swap<T>(ref T a, ref T b) where T : unmanaged
+    internal static void SwapU16(ref ushort n)
     {
-        var c = a;
-        a = b;
-        b = c;
+        n = unchecked((ushort)(((n & 0xff) << 8) | (n >> 8)));
     }
 }

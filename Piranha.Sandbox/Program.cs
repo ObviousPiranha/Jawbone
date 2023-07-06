@@ -13,7 +13,7 @@ class Program
 {
     static Span<byte> GenericTest<T>(T address) where T : unmanaged, IAddress<T>
     {
-        var span = T.GetBytes(ref address);
+        var span = T.AsBytes(ref address);
         return default;
     }
 

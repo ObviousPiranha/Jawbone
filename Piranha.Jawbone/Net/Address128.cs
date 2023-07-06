@@ -18,7 +18,7 @@ public readonly struct Address128 : IAddress<Address128>
     private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 
     public static Address128 Any => default;
-    public static Address128 Local { get; } = Create(static span => span[15] = 1);
+    public static Address128 Local { get; } = Create(static span => span[^1] = 1);
 
     internal static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
@@ -40,20 +40,20 @@ public readonly struct Address128 : IAddress<Address128>
         return result;
     }
 
-    public static Address128 FromHostOrdering(ReadOnlySpan<ushort> u16)
+    public static Address128 FromHostOrdering(ReadOnlySpan<ushort> groups)
     {
-        var bytes = MemoryMarshal.AsBytes(u16);
-        Span<byte> addressBytes = stackalloc byte[16];
-        var length = Math.Min(bytes.Length, addressBytes.Length);
-        bytes.Slice(0, length).CopyTo(addressBytes);
+        var result = default(Address128);
+        var outGroups = MemoryMarshal.Cast<Address128, ushort>(
+            new Span<Address128>(ref result));
+        groups[..outGroups.Length].CopyTo(outGroups);
 
         if (BitConverter.IsLittleEndian)
         {
-            for (int i = 1; i < addressBytes.Length; i += 2)
-                Address.Swap(ref addressBytes[i - 1], ref addressBytes[i]);
+            foreach (ref var block in outGroups)
+                Address.SwapU16(ref block);
         }
 
-        return new Address128(addressBytes);
+        return result;
     }
 
     private readonly uint _a;
