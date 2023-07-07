@@ -5,7 +5,7 @@ namespace Piranha.Jawbone;
 
 public static class Platform
 {
-    public const string PiLibFolder = "/usr/lib/arm-linux-gnueabihf";
+    public const string PiLibFolder = "/usr/lib/aarch64-linux-gnu";
 
     public static readonly bool IsRaspberryPi = System.IO.Directory.Exists(PiLibFolder);
     public static readonly string ShaderPath = IsRaspberryPi ? "es300" : "gl150";
