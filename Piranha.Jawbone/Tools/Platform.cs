@@ -13,7 +13,7 @@ public static class Platform
     private static readonly string[] LibFolders = new string[]
     {
         "/usr/lib/x86_64-linux-gnu",
-        "/usr/lib/aarch64-linux0gnu",
+        "/usr/lib/aarch64-linux-gnu",
         "/usr/lib/arm-linux-gnueabihf",
         "/usr/lib"
     };
