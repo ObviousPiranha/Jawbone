@@ -30,11 +30,11 @@ public struct PackedChar
         yOff2 = BitConverter.ToSingle(bytes.Slice(24));
     }
 
-    public Quadrilateral<Vector2> GetCoordinates(Point32 sheetSize)
+    public Quad<Vector2> GetCoordinates(Point32 sheetSize)
     {
         var width = (float)sheetSize.X;
         var height = (float)sheetSize.Y;
-        return Quadrilateral.Create(
+        return Quad.Create(
             new Vector2(x0 / width, y0 / height),
             new Vector2(x1 / width, y1 / height));
     }

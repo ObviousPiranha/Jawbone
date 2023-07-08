@@ -8,12 +8,12 @@ public static class RectangleExtensions
     public static Rectangle32 Padded(this Rectangle32 r, Point32 padding) => new(r.Position + padding, r.Size - padding * 2);
     public static Rectangle32 Padded(this Rectangle32 r, int padding) => r.Padded(new Point32(padding, padding));
 
-    public static Quadrilateral<Vector2> ToTextureCoordinates(this Rectangle32 r, Point32 textureSize)
+    public static Quad<Vector2> ToTextureCoordinates(this Rectangle32 r, Point32 textureSize)
     {
         var w = (float)textureSize.X;
         var h = (float)textureSize.Y;
 
-        return Quadrilateral.Create(
+        return Quad.Create(
             new Vector2(r.Position.X / w, r.Position.Y / h),
             new Vector2((r.Position.X + r.Size.X) / w, (r.Position.Y + r.Size.Y) / h));
     }

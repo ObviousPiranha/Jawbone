@@ -125,7 +125,7 @@ class SampleHandler : IWindowEventHandler
         gl.TexParameteri(Target, Gl.TextureMagFilter, Gl.Linear);
         gl.TexParameteri(Target, Gl.TextureMinFilter, Gl.Linear);
 
-        var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
+        var positions = Quad.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
         var textureCoordinates = PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
         _bufferData.Clear();
         _bufferData.Add(positions, textureCoordinates);
