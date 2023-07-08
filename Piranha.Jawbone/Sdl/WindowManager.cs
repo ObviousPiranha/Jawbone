@@ -28,7 +28,14 @@ sealed class WindowManager : IWindowManager, IDisposable
 
         logger.LogDebug($"Detected display of {mode.w}x{mode.h}.");
 
-        if (fullscreen)
+        if (Platform.IsRaspberryPi)
+        {
+            flags |= SdlWindow.FullScreen;
+            pos = SdlWindowPos.Undefined;
+            width = 1920;
+            height = 1080;
+        }
+        else if (fullscreen)
         {
             pos = 0;
             width = mode.w;
