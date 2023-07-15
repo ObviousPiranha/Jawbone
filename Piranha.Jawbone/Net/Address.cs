@@ -22,9 +22,4 @@ public static class Address
     {
         return new LinkLocalAddress128(address, scopeId);
     }
-
-    internal static void SwapU16(ref ushort n)
-    {
-        n = unchecked((ushort)(((n & 0xff) << 8) | (n >> 8)));
-    }
 }

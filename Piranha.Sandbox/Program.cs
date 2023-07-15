@@ -187,6 +187,8 @@ class Program
     {
         try
         {
+            var hmmm = new ReadOnlySpan<Address128>(new Address128());
+            var uhoh = Address128.AsReadOnlyBytes(new Address128());
             Address128 a128 = Address.Any;
             //FancyBinding();
             AllowV4(true);

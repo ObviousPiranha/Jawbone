@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -50,7 +51,7 @@ public readonly struct Address128 : IAddress<Address128>
         if (BitConverter.IsLittleEndian)
         {
             foreach (ref var block in outGroups)
-                Address.SwapU16(ref block);
+                block = BinaryPrimitives.ReverseEndianness(block);
         }
 
         return result;
@@ -228,7 +229,7 @@ public readonly struct Address128 : IAddress<Address128>
             return "Bad hex block.";
         }
 
-        result = Address128.FromHostOrdering(blocks);
+        result = FromHostOrdering(blocks);
         return null;
 
         static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)
