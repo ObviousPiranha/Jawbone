@@ -28,7 +28,7 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create(SpanAction<byte> action)
     {
         var result = default(Address128);
-        var span = AsBytes(ref result);
+        var span = Address.AsBytes(ref result);
         action.Invoke(span);
         return result;
     }
@@ -36,7 +36,7 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create<TState>(TState state, SpanAction<byte, TState> action)
     {
         var result = default(Address128);
-        var span = AsBytes(ref result);
+        var span = Address.AsBytes(ref result);
         action.Invoke(span, state);
         return result;
     }
@@ -69,8 +69,8 @@ public readonly struct Address128 : IAddress<Address128>
 
     public Address128(ReadOnlySpan<byte> values) : this()
     {
-        var span = AsBytes(ref this);
-        values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
+        var span = Address.AsBytes(ref this);
+        values.Slice(0, span.Length).CopyTo(span);
     }
 
     internal Address128(uint a, uint b, uint c, uint d)
@@ -135,7 +135,7 @@ public readonly struct Address128 : IAddress<Address128>
             }
         }
 
-        var span = AsReadOnlyBytes(this);
+        var span = Address.AsReadOnlyBytes(this);
         builder.Append('[');
 
         if (1 < zeroLength)
@@ -152,9 +152,6 @@ public readonly struct Address128 : IAddress<Address128>
 
         builder.Append(']');
     }
-
-    public static Span<byte> AsBytes(ref Address128 address) => MemoryMarshal.AsBytes(new Span<Address128>(ref address));
-    public static ReadOnlySpan<byte> AsReadOnlyBytes(in Address128 address) => MemoryMarshal.AsBytes(new ReadOnlySpan<Address128>(address));
 
     private static string? DoTheParse(ReadOnlySpan<char> originalInput, out Address128 result)
     {

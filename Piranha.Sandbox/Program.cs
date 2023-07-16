@@ -13,7 +13,7 @@ class Program
 {
     static Span<byte> GenericTest<T>(T address) where T : unmanaged, IAddress<T>
     {
-        var span = T.AsBytes(ref address);
+        var span = Address.AsBytes(ref address);
         return default;
     }
 
@@ -44,7 +44,7 @@ class Program
 
         var byteBuffer = new ByteBuffer();
         var endpoints = new Endpoint<Address128>[16];
-        var randomAddress = Address128.Create(span => RandomNumberGenerator.Fill(span));
+        var randomAddress = Address128.Create(static span => RandomNumberGenerator.Fill(span));
         endpoints.AsSpan().Fill(Endpoint.Create(randomAddress, 200));
         byteBuffer.AddAllAsBytes(endpoints);
 
@@ -187,8 +187,6 @@ class Program
     {
         try
         {
-            var hmmm = new ReadOnlySpan<Address128>(new Address128());
-            var uhoh = Address128.AsReadOnlyBytes(new Address128());
             Address128 a128 = Address.Any;
             //FancyBinding();
             AllowV4(true);

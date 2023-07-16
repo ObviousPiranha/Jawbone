@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Net;
 
@@ -21,5 +22,19 @@ public static class Address
         uint scopeId)
     {
         return new LinkLocalAddress128(address, scopeId);
+    }
+
+    public static Span<byte> AsBytes<TAddress>(
+        ref TAddress address
+        ) where TAddress : unmanaged, IAddress<TAddress>
+    {
+        return MemoryMarshal.AsBytes(new Span<TAddress>(ref address));
+    }
+
+    public static ReadOnlySpan<byte> AsReadOnlyBytes<TAddress>(
+        in TAddress address
+        ) where TAddress : unmanaged, IAddress<TAddress>
+    {
+        return MemoryMarshal.AsBytes(new ReadOnlySpan<TAddress>(address));
     }
 }
