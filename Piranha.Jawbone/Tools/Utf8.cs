@@ -35,45 +35,46 @@ public static class Utf8
             bytes[0] = (byte)value;
             return 1;
         }
-
-        int first;
-        int length;
-
-        if (value < 0x800)
+        else if (value < 0x800)
         {
-            first = 0xc0;
-            length = 2;
+            bytes[1] = (byte)(value & SixBits | LeadBit);
+            bytes[0] = (byte)(value >> 6 | 0xc0);
+            return 2;
         }
         else if (value < 0x10000)
         {
-            first = 0xe0;
-            length = 3;
+            bytes[2] = (byte)(value & SixBits | LeadBit);
+            bytes[1] = (byte)(value >> 6 & SixBits | LeadBit);
+            bytes[0] = (byte)(value >> 12 | 0xe0);
+            return 3;
         }
         else if (value < 0x200000)
         {
-            first = 0xf0;
-            length = 4;
+            bytes[3] = (byte)(value & SixBits | LeadBit);
+            bytes[2] = (byte)(value >> 6 & SixBits | LeadBit);
+            bytes[1] = (byte)(value >> 12 & SixBits | LeadBit);
+            bytes[0] = (byte)(value >> 18 | 0xf0);
+            return 4;
         }
         else if (value < 0x4000000)
         {
-            first = 0xf8;
-            length = 5;
+            bytes[4] = (byte)(value & SixBits | LeadBit);
+            bytes[3] = (byte)(value >> 6 & SixBits | LeadBit);
+            bytes[2] = (byte)(value >> 12 & SixBits | LeadBit);
+            bytes[1] = (byte)(value >> 18 & SixBits | LeadBit);
+            bytes[0] = (byte)(value >> 24 | 0xf8);
+            return 5;
         }
         else
         {
-            first = 0xfc;
-            length = 6;
+            bytes[5] = (byte)(value & SixBits | LeadBit);
+            bytes[4] = (byte)(value >> 6 & SixBits | LeadBit);
+            bytes[3] = (byte)(value >> 12 & SixBits | LeadBit);
+            bytes[2] = (byte)(value >> 18 & SixBits | LeadBit);
+            bytes[1] = (byte)(value >> 24 & SixBits | LeadBit);
+            bytes[0] = (byte)(value >> 30 | 0xfc);
+            return 6;
         }
-
-        bytes[0] = (byte)(first | (value >> (6 * (length - 1))));
-
-        for (int i = 1; i < length; ++i)
-        {
-            int v = value >> (6 * (length - 1 - i));
-            bytes[i] = (byte)(LeadBit | (v & SixBits));
-        }
-
-        return length;
     }
 
     public static (int codePoint, int length) ReadCodePoint(ReadOnlySpan<byte> utf8)
@@ -91,7 +92,7 @@ public static class Utf8
 
         var codePoint = ~(int.MinValue >> (24 + sigBitCount)) & utf8[0];
 
-        for (int i = 1; i <= sigBitCount; ++i)
+        for (int i = 1; i < sigBitCount; ++i)
         {
             if ((utf8[i] & LeadMask) != LeadBit)
                 throw new FormatException("Missing continuation byte");
