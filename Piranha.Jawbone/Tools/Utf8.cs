@@ -5,8 +5,8 @@ namespace Piranha.Jawbone;
 
 public static class Utf8
 {
-    private const int LeadMask = (1 << 7) | (1 << 6);
-    private const int LeadBit = 1 << 7;
+    private const int LeadMask = 0xc0;
+    private const int LeadBit = 0x80;
     private const int SixBits = 0x3f;
 
     private static int CountSigBits(int b)
@@ -24,57 +24,59 @@ public static class Utf8
         return result;
     }
 
-    public static int Encode(Span<byte> bytes, int value)
+    public static int Encode(Span<byte> bytes, int utf32)
     {
-        if (value < 0)
+        if (utf32 < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(value));
+            throw new ArgumentOutOfRangeException(nameof(utf32));
         }
-        else if (value < 0x80)
+        else if (utf32 < 0x80)
         {
-            bytes[0] = (byte)value;
+            bytes[0] = (byte)utf32;
             return 1;
         }
-        else if (value < 0x800)
+        else if (utf32 < 0x800)
         {
-            bytes[1] = (byte)(value & SixBits | LeadBit);
-            bytes[0] = (byte)(value >> 6 | 0xc0);
+            bytes[1] = GetByte(utf32);
+            bytes[0] = (byte)(utf32 >> 6 | 0xc0);
             return 2;
         }
-        else if (value < 0x10000)
+        else if (utf32 < 0x10000)
         {
-            bytes[2] = (byte)(value & SixBits | LeadBit);
-            bytes[1] = (byte)(value >> 6 & SixBits | LeadBit);
-            bytes[0] = (byte)(value >> 12 | 0xe0);
+            bytes[2] = GetByte(utf32);
+            bytes[1] = GetByte(utf32 >> 6);
+            bytes[0] = (byte)(utf32 >> 12 | 0xe0);
             return 3;
         }
-        else if (value < 0x200000)
+        else if (utf32 < 0x200000)
         {
-            bytes[3] = (byte)(value & SixBits | LeadBit);
-            bytes[2] = (byte)(value >> 6 & SixBits | LeadBit);
-            bytes[1] = (byte)(value >> 12 & SixBits | LeadBit);
-            bytes[0] = (byte)(value >> 18 | 0xf0);
+            bytes[3] = GetByte(utf32);
+            bytes[2] = GetByte(utf32 >> 6);
+            bytes[1] = GetByte(utf32 >> 12);
+            bytes[0] = (byte)(utf32 >> 18 | 0xf0);
             return 4;
         }
-        else if (value < 0x4000000)
+        else if (utf32 < 0x4000000)
         {
-            bytes[4] = (byte)(value & SixBits | LeadBit);
-            bytes[3] = (byte)(value >> 6 & SixBits | LeadBit);
-            bytes[2] = (byte)(value >> 12 & SixBits | LeadBit);
-            bytes[1] = (byte)(value >> 18 & SixBits | LeadBit);
-            bytes[0] = (byte)(value >> 24 | 0xf8);
+            bytes[4] = GetByte(utf32);
+            bytes[3] = GetByte(utf32 >> 6);
+            bytes[2] = GetByte(utf32 >> 12);
+            bytes[1] = GetByte(utf32 >> 18);
+            bytes[0] = (byte)(utf32 >> 24 | 0xf8);
             return 5;
         }
         else
         {
-            bytes[5] = (byte)(value & SixBits | LeadBit);
-            bytes[4] = (byte)(value >> 6 & SixBits | LeadBit);
-            bytes[3] = (byte)(value >> 12 & SixBits | LeadBit);
-            bytes[2] = (byte)(value >> 18 & SixBits | LeadBit);
-            bytes[1] = (byte)(value >> 24 & SixBits | LeadBit);
-            bytes[0] = (byte)(value >> 30 | 0xfc);
+            bytes[5] = GetByte(utf32);
+            bytes[4] = GetByte(utf32 >> 6);
+            bytes[3] = GetByte(utf32 >> 12);
+            bytes[2] = GetByte(utf32 >> 18);
+            bytes[1] = GetByte(utf32 >> 24);
+            bytes[0] = (byte)(utf32 >> 30 | 0xfc);
             return 6;
         }
+
+        static byte GetByte(int n) => (byte)(n & SixBits | LeadBit);
     }
 
     public static (int codePoint, int length) ReadCodePoint(ReadOnlySpan<byte> utf8)
