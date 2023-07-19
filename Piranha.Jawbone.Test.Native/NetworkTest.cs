@@ -122,6 +122,8 @@ public class NetworkTest
         using var socketA = new UdpSocket32(Endpoint.Any);
         var endpoint = socketA.GetEndpoint();
 
+        Assert.NotEqual(0, endpoint.Port);
+
         Assert.Throws<SocketException>(() =>
         {
             using var socketB = new UdpSocket32(AnyAddress.OnPort(endpoint.Port));
