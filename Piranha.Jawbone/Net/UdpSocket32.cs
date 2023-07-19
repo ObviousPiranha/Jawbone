@@ -96,9 +96,14 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
 
         SocketException.ThrowOnError(result, "Unable to get socket name.");
 
+        // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-sendto
+        // If the socket is not connected, the getsockname function can be used to
+        // determine the local port number associated with the socket but the IP address
+        // returned is set to the wildcard address for the given protocol (for example,
+        // INADDR_ANY or "0.0.0.0" for IPv4 and IN6ADDR_ANY_INIT or "::" for IPv6).
         return new Endpoint<Address32>
         {
-            Address = address,
+            Address = address.IsDefault && networkOrderPort != 0 ? Address32.Local : address,
             NetworkOrderPort = networkOrderPort
         };
     }

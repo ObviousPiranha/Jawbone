@@ -109,7 +109,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 
         return new Endpoint<Address128>
         {
-            Address = address,
+            Address = address.IsDefault && networkOrderPort != 0 ? Address128.Local : address,
             NetworkOrderPort = networkOrderPort
         };
     }
