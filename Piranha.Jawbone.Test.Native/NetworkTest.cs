@@ -120,13 +120,15 @@ public class NetworkTest
     public void CannotBindSamePort32()
     {
         using var socketA = new UdpSocket32(Endpoint.Any);
-        var endpoint = socketA.GetEndpoint();
+        var endpointA = socketA.GetEndpoint();
 
-        Assert.NotEqual(0, endpoint.Port);
+        Assert.NotEqual(0, endpointA.Port);
 
         Assert.Throws<SocketException>(() =>
         {
-            using var socketB = new UdpSocket32(AnyAddress.OnPort(endpoint.Port));
+            using var socketB = new UdpSocket32(AnyAddress.OnPort(endpointA.Port));
+            var endpointB = socketB.GetEndpoint();
+            Assert.Equal(endpointA.Port, endpointB.Port);
         });
     }
 
