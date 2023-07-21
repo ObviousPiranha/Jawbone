@@ -13,7 +13,7 @@ class Program
 {
     static Span<byte> GenericTest<T>(T address) where T : unmanaged, IAddress<T>
     {
-        var span = T.GetBytes(ref address);
+        var span = Address.AsBytes(ref address);
         return default;
     }
 
@@ -44,7 +44,7 @@ class Program
 
         var byteBuffer = new ByteBuffer();
         var endpoints = new Endpoint<Address128>[16];
-        var randomAddress = Address128.Create(span => RandomNumberGenerator.Fill(span));
+        var randomAddress = Address128.Create(static span => RandomNumberGenerator.Fill(span));
         endpoints.AsSpan().Fill(Endpoint.Create(randomAddress, 200));
         byteBuffer.AddAllAsBytes(endpoints);
 
@@ -89,10 +89,10 @@ class Program
             var word = allowV4 ? "enabled" : "disabled";
             Console.WriteLine($"Bound on {endpointV6} with V4 {word}.");
             var destination = Endpoint.Create(Address32.Local, endpointV6.Port);
-            using (var socketV4 = new UdpSocket32(Endpoint.Any))
+            using (var socketV4 = new UdpSocket32())
             {
-                var endpointV4 = socketV4.GetEndpoint();
                 socketV4.Send(sendBuffer, destination);
+                var endpointV4 = socketV4.GetEndpoint();
                 Console.WriteLine($"Sent message from {endpointV4}.");
             }
 
@@ -174,27 +174,37 @@ class Program
         CleverAssignment<TAddress>(Address.Any);
     }
 
+    static void BindToLinkLocal()
+    {
+        GetAndDump("fe80::ccb6:72b9:6d63:6863", "7777");
+        var address = Address128.Parse("fe80::ccb6:72b9:6d63:6863", null);
+        Console.WriteLine("Address: " + address);
+        using var socket = new UdpSocket128(address.OnPort(7777), false);
+        Console.WriteLine("Bound to " + socket.GetEndpoint().ToString());
+    }
+
     static void Main(string[] args)
     {
         try
         {
             Address128 a128 = Address.Any;
             //FancyBinding();
-            //AllowV4(true);
-            //AllowV4(false);
+            AllowV4(true);
+            AllowV4(false);
             // ErrorOnPurpose();
             // AddressShenanigans();
             // GetSomeAddresses();
-            CleverAssignment<Address32>(Address.Any);
-            CleverAssignment<Address128>(Address.Any);
-            ParseSomeAddresses(Address128.Local);
-            ParseSomeAddresses(Address128.Create(static span => span.Fill(0xab)));
-            ParseSomeAddresses(Address128.Any);
-            ParseSomeAddresses(Address128.Create(static span =>
-            {
-                span[0] = 0xc;
-                span[11] = 0xb;
-            }));
+            // BindToLinkLocal();
+            // CleverAssignment<Address32>(Address.Any);
+            // CleverAssignment<Address128>(Address.Any);
+            // ParseSomeAddresses(Address128.Local);
+            // ParseSomeAddresses(Address128.Create(static span => span.Fill(0xab)));
+            // ParseSomeAddresses(Address128.Any);
+            // ParseSomeAddresses(Address128.Create(static span =>
+            // {
+            //     span[0] = 0xc;
+            //     span[11] = 0xb;
+            // }));
             return;
             TryOutV6();
 

@@ -33,13 +33,13 @@ public readonly struct Address32 : IAddress<Address32>
 
     public Address32(ReadOnlySpan<byte> values) : this()
     {
-        var span = GetBytes(ref this);
-        values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
+        var span = Address.AsBytes(ref this);
+        values.Slice(0, span.Length).CopyTo(span);
     }
 
     public Address32(byte a, byte b, byte c, byte d) : this()
     {
-        var bytes = GetBytes(ref this);
+        var bytes = Address.AsBytes(ref this);
         bytes[3] = d;
         bytes[2] = c;
         bytes[1] = b;
@@ -63,7 +63,7 @@ public readonly struct Address32 : IAddress<Address32>
 
     public readonly void AppendTo(StringBuilder builder)
     {
-        var span = GetReadOnlyBytes(this);
+        var span = Address.AsReadOnlyBytes(this);
         builder
             .Append(span[0])
             .Append('.')
@@ -73,9 +73,6 @@ public readonly struct Address32 : IAddress<Address32>
             .Append('.')
             .Append(span[3]);
     }
-
-    public static Span<byte> GetBytes(ref Address32 address) => Address.GetSpanU8(ref address);
-    public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address32 address) => Address.GetReadOnlySpanU8(address);
 
     private static string? DoTheParse(ReadOnlySpan<char> s, out Address32 result)
     {
@@ -180,6 +177,7 @@ public readonly struct Address32 : IAddress<Address32>
 
     public static bool operator ==(Address32 a, Address32 b) => a.Equals(b);
     public static bool operator !=(Address32 a, Address32 b) => !a.Equals(b);
+    public static Address32 operator ~(Address32 a) => new(~a._rawAddress);
     public static Address32 operator &(Address32 a, Address32 b) => new(a._rawAddress & b._rawAddress);
     public static Address32 operator |(Address32 a, Address32 b) => new(a._rawAddress | b._rawAddress);
     public static Address32 operator ^(Address32 a, Address32 b) => new(a._rawAddress ^ b._rawAddress);

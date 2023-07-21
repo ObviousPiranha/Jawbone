@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -18,7 +19,7 @@ public readonly struct Address128 : IAddress<Address128>
     private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 
     public static Address128 Any => default;
-    public static Address128 Local { get; } = Create(static span => span[15] = 1);
+    public static Address128 Local { get; } = Create(static span => span[^1] = 1);
 
     internal static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
@@ -27,7 +28,7 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create(SpanAction<byte> action)
     {
         var result = default(Address128);
-        var span = GetBytes(ref result);
+        var span = Address.AsBytes(ref result);
         action.Invoke(span);
         return result;
     }
@@ -35,25 +36,25 @@ public readonly struct Address128 : IAddress<Address128>
     public static Address128 Create<TState>(TState state, SpanAction<byte, TState> action)
     {
         var result = default(Address128);
-        var span = GetBytes(ref result);
+        var span = Address.AsBytes(ref result);
         action.Invoke(span, state);
         return result;
     }
 
-    public static Address128 FromHostOrdering(ReadOnlySpan<ushort> u16)
+    public static Address128 FromHostOrdering(ReadOnlySpan<ushort> groups)
     {
-        var bytes = MemoryMarshal.AsBytes(u16);
-        Span<byte> addressBytes = stackalloc byte[16];
-        var length = Math.Min(bytes.Length, addressBytes.Length);
-        bytes.Slice(0, length).CopyTo(addressBytes);
+        var result = default(Address128);
+        var outGroups = MemoryMarshal.Cast<Address128, ushort>(
+            new Span<Address128>(ref result));
+        groups[..outGroups.Length].CopyTo(outGroups);
 
         if (BitConverter.IsLittleEndian)
         {
-            for (int i = 1; i < addressBytes.Length; i += 2)
-                Address.Swap(ref addressBytes[i - 1], ref addressBytes[i]);
+            foreach (ref var block in outGroups)
+                block = BinaryPrimitives.ReverseEndianness(block);
         }
 
-        return new Address128(addressBytes);
+        return result;
     }
 
     private readonly uint _a;
@@ -68,8 +69,8 @@ public readonly struct Address128 : IAddress<Address128>
 
     public Address128(ReadOnlySpan<byte> values) : this()
     {
-        var span = GetBytes(ref this);
-        values.Slice(0, Math.Min(values.Length, span.Length)).CopyTo(span);
+        var span = Address.AsBytes(ref this);
+        values.Slice(0, span.Length).CopyTo(span);
     }
 
     internal Address128(uint a, uint b, uint c, uint d)
@@ -112,7 +113,8 @@ public readonly struct Address128 : IAddress<Address128>
         int zeroIndex = 0;
         int zeroLength = 0;
 
-        var span16 = Address.GetReadOnlySpanU16(this);
+        var span16 = MemoryMarshal.Cast<Address128, ushort>(
+            new ReadOnlySpan<Address128>(this));
         for (int i = 0; i < span16.Length; ++i)
         {
             if (span16[i] == 0)
@@ -133,7 +135,7 @@ public readonly struct Address128 : IAddress<Address128>
             }
         }
 
-        var span = GetReadOnlyBytes(this);
+        var span = Address.AsReadOnlyBytes(this);
         builder.Append('[');
 
         if (1 < zeroLength)
@@ -150,9 +152,6 @@ public readonly struct Address128 : IAddress<Address128>
 
         builder.Append(']');
     }
-
-    public static Span<byte> GetBytes(ref Address128 address) => Address.GetSpanU8(ref address);
-    public static ReadOnlySpan<byte> GetReadOnlyBytes(in Address128 address) => Address.GetReadOnlySpanU8(address);
 
     private static string? DoTheParse(ReadOnlySpan<char> originalInput, out Address128 result)
     {
@@ -227,7 +226,7 @@ public readonly struct Address128 : IAddress<Address128>
             return "Bad hex block.";
         }
 
-        result = Address128.FromHostOrdering(blocks);
+        result = FromHostOrdering(blocks);
         return null;
 
         static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)
@@ -343,6 +342,7 @@ public readonly struct Address128 : IAddress<Address128>
 
     public static bool operator ==(Address128 a, Address128 b) => a.Equals(b);
     public static bool operator !=(Address128 a, Address128 b) => !a.Equals(b);
+    public static Address128 operator ~(Address128 a) => new(~a._a, ~a._b, ~a._c, ~a._d);
     public static Address128 operator &(Address128 a, Address128 b) => new(a._a & b._a, a._b & b._b, a._c & b._c, a._d & b._d);
     public static Address128 operator |(Address128 a, Address128 b) => new(a._a | b._a, a._b | b._b, a._c | b._c, a._d | b._d);
     public static Address128 operator ^(Address128 a, Address128 b) => new(a._a ^ b._a, a._b ^ b._b, a._c ^ b._c, a._d ^ b._d);

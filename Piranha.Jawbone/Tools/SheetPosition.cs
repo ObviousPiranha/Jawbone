@@ -13,10 +13,10 @@ public readonly struct SheetPosition : IEquatable<SheetPosition>
         Rectangle = rectangle;
     }
 
-    public bool Equals(SheetPosition other) => SheetIndex == other.SheetIndex && Rectangle == other.Rectangle;
-    public override bool Equals(object? obj) => obj is SheetPosition other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(SheetIndex, Rectangle);
-    public override string? ToString() => $"index {SheetIndex} {Rectangle}";
+    public readonly bool Equals(SheetPosition other) => SheetIndex == other.SheetIndex && Rectangle == other.Rectangle;
+    public override readonly bool Equals(object? obj) => obj is SheetPosition other && Equals(other);
+    public override readonly int GetHashCode() => HashCode.Combine(SheetIndex, Rectangle);
+    public override readonly string ToString() => $"index {SheetIndex} {Rectangle}";
 
     public static bool operator ==(SheetPosition left, SheetPosition right) => left.Equals(right);
     public static bool operator !=(SheetPosition left, SheetPosition right) => !left.Equals(right);

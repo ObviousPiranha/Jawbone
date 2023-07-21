@@ -84,7 +84,7 @@ public static class NativeLibraryInterface
         where T : class
     {
         if (!typeof(T).IsInterface)
-            throw new Exception($"Type T must be an interface. Type {typeof(T)} is not an interface.");
+            throw new ArgumentException($"Type T must be an interface. Type {typeof(T)} is not an interface.");
 
         var assemblyName = new AssemblyName
         {
@@ -133,7 +133,7 @@ public static class NativeLibraryInterface
             var procAddress = procAddressLoader(libraryHandle, functionName);
 
             if (procAddress.IsInvalid())
-                throw new Exception("Unable to load function " + functionName);
+                throw new InvalidOperationException("Unable to load function " + functionName);
 
             var returnsString = interfaceMethod.ReturnType == typeof(string);
             var returnType = returnsString ? typeof(IntPtr) : interfaceMethod.ReturnType;

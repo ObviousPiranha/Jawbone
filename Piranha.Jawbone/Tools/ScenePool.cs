@@ -1,11 +1,12 @@
+using System.Collections.Concurrent;
 using System.Threading;
 
 namespace Piranha.Jawbone;
 
 public sealed class ScenePool<T> where T : class, new()
 {
+    private readonly ConcurrentQueue<T> _pool = new();
     private T? _latest = null;
-    private T? _pool = null;
     private int _roamCount = 0;
 
     public bool Closed { get; set; }
@@ -34,14 +35,13 @@ public sealed class ScenePool<T> where T : class, new()
 
     public void ReturnScene(T scene)
     {
-        Interlocked.Exchange(ref _pool, scene);
+        _pool.Enqueue(scene);
         Interlocked.Decrement(ref _roamCount);
     }
 
     public T AcquireScene()
     {
-        var scene = Interlocked.Exchange(ref _pool, null);
-        if (scene is null)
+        if (!_pool.TryDequeue(out var scene))
         {
             scene = new();
             ++CreateCount;
@@ -62,7 +62,7 @@ public sealed class ScenePool<T> where T : class, new()
         }
         else
         {
-            Interlocked.Exchange(ref _pool, staleScene);
+            _pool.Enqueue(staleScene);
             Interlocked.Decrement(ref _roamCount);
             ++StaleCount;
             return false;

@@ -61,13 +61,10 @@ public readonly ref struct SurfaceView
         Address = address;
     }
 
-    public readonly Span<byte> GetPixelData()
+    public unsafe readonly Span<byte> GetPixelData()
     {
-        unsafe
-        {
-            return new Span<byte>(
-                Pixels.ToPointer(),
-                Height * Pitch);
-        }
+        return new Span<byte>(
+            Pixels.ToPointer(),
+            Height * Pitch);
     }
 }

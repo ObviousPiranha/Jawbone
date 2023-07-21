@@ -15,8 +15,8 @@ public readonly struct Range32 : IEquatable<Range32>
         Length = length;
     }
 
-    public bool Equals(Range32 other) => Start == other.Start && Length == other.Length;
-    public override bool Equals(object? obj) => obj is Range32 other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(Start, Length);
-    public override string? ToString() => $"start {Start} length {Length}";
+    public readonly bool Equals(Range32 other) => Start == other.Start && Length == other.Length;
+    public override readonly bool Equals(object? obj) => obj is Range32 other && Equals(other);
+    public override readonly int GetHashCode() => HashCode.Combine(Start, Length);
+    public override readonly string ToString() => $"start {Start} length {Length}";
 }

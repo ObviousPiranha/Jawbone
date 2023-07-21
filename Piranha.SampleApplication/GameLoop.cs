@@ -52,7 +52,7 @@ class GameLoop : IGameLoop
 
         var radians = t * 2f * (float)Math.PI;
         var matrix = Matrix4x4.CreateRotationZ(radians);
-        var positions = Quadrilateral.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F)).Transformed(matrix);
+        var positions = Quad.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F)).Transformed(matrix);
         var textureCoordinates = SampleHandler.PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
         scene.VertexData.Clear();
         scene.VertexData.Add(positions, textureCoordinates);

@@ -35,10 +35,10 @@ public readonly struct Few<T> : IEquatable<Few<T>>
     public readonly ImmutableArray<T> Items => _items.IsDefault ? ImmutableArray<T>.Empty : _items;
 
     public Few(ImmutableArray<T> items) => _items = items;
-    public bool Equals(Few<T> other) => Items.SequenceEqual(other.Items);
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Few<T> other && Equals(other);
+    public readonly bool Equals(Few<T> other) => Items.SequenceEqual(other.Items);
+    public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is Few<T> other && Equals(other);
 
-    public override int GetHashCode()
+    public override readonly int GetHashCode()
     {
         if (_items.IsDefaultOrEmpty)
             return 0;
@@ -52,7 +52,7 @@ public readonly struct Few<T> : IEquatable<Few<T>>
         return result;
     }
 
-    public override string? ToString()
+    public override readonly string ToString()
     {
         if (_items.IsDefaultOrEmpty)
             return "[]";

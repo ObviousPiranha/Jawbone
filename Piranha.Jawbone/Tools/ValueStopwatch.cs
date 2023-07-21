@@ -11,10 +11,10 @@ public readonly struct ValueStopwatch : IEquatable<ValueStopwatch>
     public readonly bool Started => 0 < _timestamp;
 
     private ValueStopwatch(long timestamp) => _timestamp = timestamp;
-    public bool Equals(ValueStopwatch other) => _timestamp == other._timestamp;
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is ValueStopwatch other && Equals(other);
-    public override int GetHashCode() => _timestamp.GetHashCode();
-    public override string? ToString() => _timestamp.ToString();
+    public readonly bool Equals(ValueStopwatch other) => _timestamp == other._timestamp;
+    public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is ValueStopwatch other && Equals(other);
+    public override readonly int GetHashCode() => _timestamp.GetHashCode();
+    public override readonly string ToString() => _timestamp.ToString();
 
     public double GetElapsedMilliseconds() => GetElapsed().TotalMilliseconds;
     public TimeSpan GetElapsed() => Stopwatch.GetElapsedTime(_timestamp);

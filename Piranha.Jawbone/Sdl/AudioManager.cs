@@ -280,20 +280,17 @@ public sealed class AudioManager : IAudioManager, IDisposable
         }
     }
 
-    private static void Callback(IntPtr userdata, IntPtr data, int size)
+    private unsafe static void Callback(IntPtr userdata, IntPtr data, int size)
     {
         var handle = (GCHandle)userdata;
         var audioManager = handle.Target as AudioManager;
 
         if (audioManager is not null)
         {
-            unsafe
-            {
-                var span = new Span<float>(
-                    data.ToPointer(),
-                    size / Unsafe.SizeOf<float>());
-                audioManager.AcquireData(span);
-            }
+            var span = new Span<float>(
+                data.ToPointer(),
+                size / Unsafe.SizeOf<float>());
+            audioManager.AcquireData(span);
         }
     }
 

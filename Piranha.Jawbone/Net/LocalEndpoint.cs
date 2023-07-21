@@ -16,10 +16,10 @@ public readonly struct LocalEndpoint : IEquatable<LocalEndpoint>
         }
     }
 
-    public bool Equals(LocalEndpoint other) => NetworkOrderPort == other.NetworkOrderPort;
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is LocalEndpoint other && Equals(other);
-    public override int GetHashCode() => NetworkOrderPort.GetHashCode();
-    public override string? ToString() => Port.ToString();
+    public readonly bool Equals(LocalEndpoint other) => NetworkOrderPort == other.NetworkOrderPort;
+    public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is LocalEndpoint other && Equals(other);
+    public override readonly int GetHashCode() => NetworkOrderPort.GetHashCode();
+    public override readonly string ToString() => Port.ToString();
 
     public static bool operator ==(LocalEndpoint a, LocalEndpoint b) => a.Equals(b);
     public static bool operator !=(LocalEndpoint a, LocalEndpoint b) => !a.Equals(b);

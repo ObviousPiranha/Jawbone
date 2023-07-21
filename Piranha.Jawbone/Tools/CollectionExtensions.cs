@@ -53,7 +53,8 @@ public static class CollectionExtensions
     public static TValue GetOrAdd<TKey, TValue>(
         this IDictionary<TKey, TValue> dictionary,
         TKey key,
-        Func<TKey, TValue> factory)
+        Func<TKey, TValue> factory
+        ) where TKey : notnull
     {
         if (!dictionary.TryGetValue(key, out var value))
         {
@@ -67,7 +68,8 @@ public static class CollectionExtensions
     public static TValue GetOrAdd<TKey, TValue>(
         this IDictionary<TKey, TValue> dictionary,
         TKey key,
-        TValue defaultValue)
+        TValue defaultValue
+        ) where TKey : notnull
     {
         if (!dictionary.TryGetValue(key, out var value))
         {
@@ -99,13 +101,10 @@ public static class CollectionExtensions
         }
     }
 
-    public static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length)
+    public unsafe static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length) where T : unmanaged
     {
-        unsafe
-        {
-            var result = new ReadOnlySpan<T>(ptr.ToPointer(), length);
-            return result;
-        }
+        var result = new ReadOnlySpan<T>(ptr.ToPointer(), length);
+        return result;
     }
 
     public static ReadOnlySpan<byte> NullTerminated(this ReadOnlySpan<byte> span)
@@ -156,5 +155,38 @@ public static class CollectionExtensions
         for (int i = 0; i < span.Length; ++i)
             result[i] = conversion.Invoke(span[i]);
         return result;
+    }
+
+    public static ReadOnlySpan<T> After<T>(
+        this ReadOnlySpan<T> span,
+        ReadOnlySpan<T> value
+        ) where T : IEquatable<T>
+    {
+        var result = span.StartsWith(value) ? span[value.Length..] : span;
+        return result;
+    }
+
+    public static bool StartsWith<T>(
+        this ReadOnlySpan<T> span,
+        ReadOnlySpan<T> value,
+        out ReadOnlySpan<T> after
+        ) where T : IEquatable<T>
+    {
+        if (span.StartsWith(value))
+        {
+            after = span[value.Length..];
+            return true;
+        }
+        else
+        {
+            after = default;
+            return false;
+        }
+    }
+
+    public static bool StartsWith(this string text, ReadOnlySpan<char> value, out ReadOnlySpan<char> after)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return text.AsSpan().StartsWith(value, out after);
     }
 }

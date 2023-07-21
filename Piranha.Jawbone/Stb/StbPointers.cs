@@ -20,13 +20,10 @@ public sealed class StbPointers
             throw new ArgumentException("Bad function name or library handle");
     }
 
-    public string? GetString()
+    public unsafe string? GetString()
     {
-        unsafe
-        {
-            var functionPointer = (delegate*<nint>)_pointerPiranhaGetString.ToPointer();
-            var result = functionPointer();
-            return Marshal.PtrToStringUTF8(result);
-        }
+        var functionPointer = (delegate*<nint>)_pointerPiranhaGetString.ToPointer();
+        var result = functionPointer();
+        return Marshal.PtrToStringUTF8(result);
     }
 }

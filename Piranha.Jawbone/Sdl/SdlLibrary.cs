@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Piranha.Jawbone.Sdl;
 
-public sealed class SdlLibrary : IPlatformLoader<string?>, IDisposable
+public sealed class SdlLibrary : IDisposable
 {
     private static readonly string[] MacPaths = new string[]
     {
@@ -26,7 +26,7 @@ public sealed class SdlLibrary : IPlatformLoader<string?>, IDisposable
 
     public SdlLibrary(uint flags)
     {
-        var path = this.CurrentPlatform() ?? throw new NullReferenceException("Failed to load SDL path.");
+        var path = GetSdlPath();
         _nativeLibraryInterface = NativeLibraryInterface.FromFile<ISdl2>(path, ResolveName);
 
         try
@@ -43,14 +43,25 @@ public sealed class SdlLibrary : IPlatformLoader<string?>, IDisposable
         }
     }
 
-    public string? Linux()
+    private static string GetSdlPath()
     {
-        return Platform.FindLibs("libSDL2-2.0.so*", "libSDL2.so*");
+        if (OperatingSystem.IsWindows())
+        {
+            return "SDL2.dll";
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            return Platform.FindLibs("libSDL2-2.0.so*", "libSDL2.so*") ?? throw new NullReferenceException();
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            return MacPaths.First(File.Exists);
+        }
+        else
+        {
+            throw new PlatformNotSupportedException();
+        }
     }
-
-    public string? macOS() => MacPaths.First(File.Exists);
-
-    public string? Windows() => "SDL2.dll";
 
     public void Dispose()
     {

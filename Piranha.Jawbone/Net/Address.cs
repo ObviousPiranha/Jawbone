@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Net;
 
@@ -16,37 +17,24 @@ public static class Address
         return new(address, port);
     }
 
-    internal static void Swap<T>(ref T a, ref T b) where T : unmanaged
+    public static LinkLocalAddress128 WithScopeId(
+        this Address128 address,
+        uint scopeId)
     {
-        var c = a;
-        a = b;
-        b = c;
+        return new LinkLocalAddress128(address, scopeId);
     }
 
-    internal static Span<byte> GetSpanU8<T>(ref T item) where T : unmanaged
+    public static Span<byte> AsBytes<TAddress>(
+        ref TAddress address
+        ) where TAddress : unmanaged, IAddress<TAddress>
     {
-        unsafe
-        {
-            fixed (void* a = &item)
-                return new Span<byte>(a, sizeof(T));
-        }
+        return MemoryMarshal.AsBytes(new Span<TAddress>(ref address));
     }
 
-    internal static ReadOnlySpan<byte> GetReadOnlySpanU8<T>(in T item) where T : unmanaged
+    public static ReadOnlySpan<byte> AsReadOnlyBytes<TAddress>(
+        in TAddress address
+        ) where TAddress : unmanaged, IAddress<TAddress>
     {
-        unsafe
-        {
-            fixed (void* a = &item)
-                return new ReadOnlySpan<byte>(a, sizeof(T));
-        }
-    }
-
-    internal static ReadOnlySpan<ushort> GetReadOnlySpanU16<T>(in T item) where T : unmanaged
-    {
-        unsafe
-        {
-            fixed (void* a = &item)
-                return new ReadOnlySpan<ushort>(a, sizeof(T) / sizeof(ushort));
-        }
+        return MemoryMarshal.AsBytes(new ReadOnlySpan<TAddress>(address));
     }
 }
