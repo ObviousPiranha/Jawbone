@@ -127,8 +127,7 @@ public class NetworkTest
         Assert.Throws<SocketException>(() =>
         {
             using var socketB = new UdpSocket32(AnyAddress.OnPort(endpointA.Port));
-            var endpointB = socketB.GetEndpoint();
-            Assert.Equal(endpointA.Port, endpointB.Port);
+            _ = socketB.GetEndpoint();
         });
     }
 
@@ -141,6 +140,7 @@ public class NetworkTest
         Assert.Throws<SocketException>(() =>
         {
             using var socketB = new UdpSocket128(AnyAddress.OnPort(endpoint.Port), false);
+            _ = socketB.GetEndpoint();
         });
     }
 }
