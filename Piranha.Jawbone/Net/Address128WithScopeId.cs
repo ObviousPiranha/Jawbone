@@ -39,7 +39,7 @@ public readonly struct Address128WithScopeId : IAddress<Address128WithScopeId>
     public void AppendTo(StringBuilder builder)
     {
         Address.AppendTo(builder);
-        // if (ScopeId != 0)
+        if (ScopeId != 0)
         {
             --builder.Length;
             builder.Append('%').Append(ScopeId).Append(']');
