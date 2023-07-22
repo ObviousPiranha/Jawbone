@@ -14,9 +14,11 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             UdpSocket.Bind,
             out _handle,
             out var socketError,
+            out var setSocketOptionError,
             out var bindError);
 
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
     }
 
@@ -29,9 +31,11 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
             0,
             out _handle,
             out var socketError,
+            out var setSocketOptionError,
             out var bindError);
 
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
     }
 

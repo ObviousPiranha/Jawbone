@@ -12,6 +12,7 @@ public class AddressTest
     {
         Assert.Equal(4, Unsafe.SizeOf<Address32>());
         Assert.Equal(16, Unsafe.SizeOf<Address128>());
+        Assert.Equal(20, Unsafe.SizeOf<Address128WithScopeId>());
 
         Assert.False(Address32.Any.IsLoopback);
         Assert.False(Address128.Any.IsLoopback);
