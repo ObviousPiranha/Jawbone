@@ -53,7 +53,6 @@ class Program
         Console.WriteLine(Address128.Local);
         Console.WriteLine(Address128.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
         Console.WriteLine(Address128.Create(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
-        Console.WriteLine(Address128.Create(0,0,0,0,1,1));
         Console.WriteLine(Address128.Create(0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0));
 
         var v4 = new Address32(192, 168, 0, 1);
@@ -179,7 +178,7 @@ class Program
         GetAndDump("fe80::ccb6:72b9:6d63:6863", "7777");
         var address = Address128.Parse("fe80::ccb6:72b9:6d63:6863", null);
         Console.WriteLine("Address: " + address);
-        using var socket = new UdpSocket128(address.OnPort(7777), false);
+        using var socket = new UdpSocket128(address.WithScopeId(2).OnPort(7777), false);
         Console.WriteLine("Bound to " + socket.GetEndpoint().ToString());
     }
 
@@ -194,7 +193,7 @@ class Program
             // ErrorOnPurpose();
             // AddressShenanigans();
             // GetSomeAddresses();
-            // BindToLinkLocal();
+            BindToLinkLocal();
             // CleverAssignment<Address32>(Address.Any);
             // CleverAssignment<Address128>(Address.Any);
             // ParseSomeAddresses(Address128.Local);

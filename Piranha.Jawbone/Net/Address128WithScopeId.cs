@@ -32,15 +32,18 @@ public readonly struct Address128WithScopeId : IAddress<Address128WithScopeId>
     public override readonly string ToString()
     {
         var builder = new StringBuilder();
-        Address.AppendTo(builder);
-        --builder.Length;
-        builder.Append('%').Append(ScopeId).Append(']');
+        AppendTo(builder);
         return builder.ToString();
     }
 
     public void AppendTo(StringBuilder builder)
     {
-        throw new NotImplementedException();
+        Address.AppendTo(builder);
+        // if (ScopeId != 0)
+        {
+            --builder.Length;
+            builder.Append('%').Append(ScopeId).Append(']');
+        }
     }
 
     public static Address128WithScopeId Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
