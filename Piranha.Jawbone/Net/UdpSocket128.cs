@@ -2,13 +2,13 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public sealed class UdpSocket128 : IUdpSocket<Address128>
+public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
 {
     private readonly long _handle;
 
     public bool AllowV4 { get; }
 
-    public UdpSocket128(Endpoint<Address128> endpoint, bool allowV4)
+    public UdpSocket128(Endpoint<Address128WithScopeId> endpoint, bool allowV4)
     {
         var flags = UdpSocket.Bind | (allowV4 ? 0 : UdpSocket.IPv6Only);
         JawboneNetworking.CreateAndBindUdpV6Socket(
@@ -57,7 +57,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
         JawboneNetworking.CloseSocket(_handle);
     }
 
-    public int Send(ReadOnlySpan<byte> message, Endpoint<Address128> destination)
+    public int Send(ReadOnlySpan<byte> message, Endpoint<Address128WithScopeId> destination)
     {
         var result = JawboneNetworking.SendToV6(
             _handle,
@@ -74,7 +74,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 
     public int Receive(
         Span<byte> buffer,
-        out Endpoint<Address128> origin,
+        out Endpoint<Address128WithScopeId> origin,
         TimeSpan timeout)
     {
         var milliseconds = (int)(timeout.Ticks / TimeSpan.TicksPerMillisecond);
@@ -89,7 +89,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 
         SocketException.ThrowOnError(errorCode, "Error on receive.");
 
-        origin = new Endpoint<Address128>
+        origin = new Endpoint<Address128WithScopeId>
         {
             Address = address,
             NetworkOrderPort = networkOrderPort
@@ -98,7 +98,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
         return result;
     }
 
-    public Endpoint<Address128> GetEndpoint()
+    public Endpoint<Address128WithScopeId> GetEndpoint()
     {
         var result = JawboneNetworking.GetV6SocketName(
             _handle,
@@ -107,7 +107,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128>
 
         SocketException.ThrowOnError(result, "Unable to get socket name.");
 
-        return new Endpoint<Address128>
+        return new Endpoint<Address128WithScopeId>
         {
             Address = address.IsDefault && networkOrderPort != 0 ? Address128.Local : address,
             NetworkOrderPort = networkOrderPort

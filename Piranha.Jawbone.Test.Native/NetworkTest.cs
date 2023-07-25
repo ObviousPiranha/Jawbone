@@ -47,7 +47,7 @@ public class NetworkTest
         using var socketA = new UdpSocket128(Endpoint.Any, false);
         var endpointA = socketA.GetEndpoint();
         using var socketB = new UdpSocket128(false);
-        socketB.Send(sendBuffer, Address128.Local.OnPort(endpointA.Port));
+        socketB.Send(sendBuffer, Address128WithScopeId.Local.OnPort(endpointA.Port));
         var endpointB = socketB.GetEndpoint();
 
         var length = socketA.Receive(receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
@@ -80,7 +80,7 @@ public class NetworkTest
 
         socketA.Send(sendBuffer, destinationB);
         var endpointA = socketA.GetEndpoint();
-        var destinationA = Address32.Local.MapToV6().OnPort(endpointA.Port);
+        var destinationA = Address32.Local.MapToV6().WithScopeId().OnPort(endpointA.Port);
         var lengthV6 = socketB.Receive(receiveBuffer, out var originV6, TimeSpan.FromSeconds(1));
         Assert.Equal(Address32.Local.MapToV6(), originV6.Address);
         Assert.Equal(sendBuffer.Length, lengthV6);

@@ -17,11 +17,11 @@ public static class Address
         return new(address, port);
     }
 
-    public static LinkLocalAddress128 WithScopeId(
+    public static Address128WithScopeId WithScopeId(
         this Address128 address,
-        uint scopeId)
+        uint scopeId = 0)
     {
-        return new LinkLocalAddress128(address, scopeId);
+        return new Address128WithScopeId(address, scopeId);
     }
 
     public static Span<byte> AsBytes<TAddress>(

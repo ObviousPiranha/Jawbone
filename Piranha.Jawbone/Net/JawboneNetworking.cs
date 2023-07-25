@@ -4,7 +4,7 @@ namespace Piranha.Jawbone.Net;
 
 public static partial class JawboneNetworking
 {
-    private const int ExpectedVersion = 2;
+    private const int ExpectedVersion = 3;
     private const string Library = "PiranhaNative.dll";
 
     static JawboneNetworking()
@@ -28,10 +28,11 @@ public static partial class JawboneNetworking
         int flags,
         out long outSocket,
         out int outSocketError,
+        out int outSetSocketOptionError,
         out int outBindError);
     [LibraryImport(Library, EntryPoint = "jawboneCreateAndBindUdpV6Socket")]
     public static partial void CreateAndBindUdpV6Socket(
-        in Address128 address,
+        in Address128WithScopeId address,
         ushort port,
         int flags,
         out long outSocket,
@@ -46,7 +47,7 @@ public static partial class JawboneNetworking
     [LibraryImport(Library, EntryPoint = "jawboneGetV6SocketName")]
     public static partial int GetV6SocketName(
         in long inSocket,
-        out Address128 outAddress,
+        out Address128WithScopeId outAddress,
         out ushort outPort);
     [LibraryImport(Library, EntryPoint = "jawboneSendToV4")]
     public static partial int SendToV4(
@@ -61,7 +62,7 @@ public static partial class JawboneNetworking
         in long inSocket,
         in byte inBuffer,
         int bufferLength,
-        in Address128 address,
+        in Address128WithScopeId address,
         ushort port,
         out int errorCode);
     [LibraryImport(Library, EntryPoint = "jawboneReceiveFromV4")]
@@ -78,7 +79,7 @@ public static partial class JawboneNetworking
         in long inSocket,
         out byte outBuffer,
         int bufferLength,
-        out Address128 outAddress,
+        out Address128WithScopeId outAddress,
         out ushort outPort,
         out int errorCode,
         int milliseconds);
@@ -94,7 +95,7 @@ public static partial class JawboneNetworking
         int sizeV4,
         int capacityV4,
         out int countV4,
-        out Endpoint<Address128> resultsV6,
+        out Endpoint<Address128WithScopeId> resultsV6,
         int sizeV6,
         int capacityV6,
         out int countV6);

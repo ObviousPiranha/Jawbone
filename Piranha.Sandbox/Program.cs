@@ -53,7 +53,6 @@ class Program
         Console.WriteLine(Address128.Local);
         Console.WriteLine(Address128.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
         Console.WriteLine(Address128.Create(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
-        Console.WriteLine(Address128.Create(0,0,0,0,1,1));
         Console.WriteLine(Address128.Create(0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0));
 
         var v4 = new Address32(192, 168, 0, 1);
@@ -176,11 +175,33 @@ class Program
 
     static void BindToLinkLocal()
     {
-        GetAndDump("fe80::ccb6:72b9:6d63:6863", "7777");
+        GetAndDump("fe80::ccb6:72b9:6d63:6863%wlp2s0", "7777");
         var address = Address128.Parse("fe80::ccb6:72b9:6d63:6863", null);
         Console.WriteLine("Address: " + address);
-        using var socket = new UdpSocket128(address.OnPort(7777), false);
-        Console.WriteLine("Bound to " + socket.GetEndpoint().ToString());
+        using var socketA = new UdpSocket128(address.WithScopeId(2).OnPort(7777), false);
+        var endpointA = socketA.GetEndpoint();
+        Console.WriteLine("Bound to " + endpointA.ToString());
+
+        using var socketB = new UdpSocket128(address.WithScopeId(2).OnPort(9999), false);
+        var endpointB = socketB.GetEndpoint();
+        Console.WriteLine("Bound to " + endpointB.ToString());
+        var message = "HOORAH"u8;
+
+        var destination = address.WithScopeId(2).OnPort(7777);
+        Console.WriteLine("Sending message to " + destination);
+        socketB.Send(message, destination);
+
+        var buffer = new byte[256];
+        int length = socketB.Receive(buffer, out var origin, TimeSpan.FromSeconds(1));
+        if (origin.IsDefault)
+        {
+            Console.WriteLine("Received nothing...");
+        }
+        else
+        {
+            var received = Encoding.UTF8.GetString(buffer.AsSpan(0, length));
+            Console.WriteLine($"Received from {origin}: {received}");
+        }
     }
 
     static void Main(string[] args)
@@ -189,12 +210,12 @@ class Program
         {
             Address128 a128 = Address.Any;
             //FancyBinding();
-            AllowV4(true);
-            AllowV4(false);
+            // AllowV4(true);
+            // AllowV4(false);
             // ErrorOnPurpose();
             // AddressShenanigans();
             // GetSomeAddresses();
-            // BindToLinkLocal();
+            BindToLinkLocal();
             // CleverAssignment<Address32>(Address.Any);
             // CleverAssignment<Address128>(Address.Any);
             // ParseSomeAddresses(Address128.Local);
