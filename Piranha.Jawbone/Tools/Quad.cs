@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Piranha.Jawbone;
 
-public readonly struct Quad<T> : IEquatable<Quad<T>> where T : IEquatable<T>
+public readonly struct Quad<T>
 {
     public readonly T A;
     public readonly T B;
@@ -26,21 +26,7 @@ public readonly struct Quad<T> : IEquatable<Quad<T>> where T : IEquatable<T>
         D = d;
     }
 
-    public bool Equals(Quad<T> other)
-    {
-        return
-            A.Equals(other.A) &&
-            B.Equals(other.B) &&
-            C.Equals(other.C) &&
-            D.Equals(other.D);
-    }
-
-    public override bool Equals(object? obj) => obj is Quad<T> other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(A, B, C, D);
-    public override string ToString() => $"{A} {B} {C} {D}";
-
-    public static bool operator ==(Quad<T> a, Quad<T> b) => a.Equals(b);
-    public static bool operator !=(Quad<T> a, Quad<T> b) => !a.Equals(b);
+    public override readonly string ToString() => $"{A} {B} {C} {D}";
 }
 
 public static class Quad
