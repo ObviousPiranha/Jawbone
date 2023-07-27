@@ -6,6 +6,13 @@ namespace Piranha.Jawbone.OpenGl;
 public sealed class ShaderInputAttribute : Attribute
 {
     public string Name { get; }
+    public ShaderInputSettings Settings { get; }
 
-    public ShaderInputAttribute(string name) => Name = name;
+    public ShaderInputAttribute(
+        string name,
+        ShaderInputSettings settings = ShaderInputSettings.None)
+    {
+        Name = name;
+        Settings = settings;
+    }
 }

@@ -71,11 +71,13 @@ public readonly struct ShaderInputMapper
             if (attribute is null)
                 continue;
 
+            var normalized = (attribute.Settings & ShaderInputSettings.Normalized) == ShaderInputSettings.Normalized;
+
             var info = new VertexInfo
             {
                 Common = CommonVertexInfoByType[fieldInfo.FieldType],
                 Index = gl.GetAttribLocation(program, attribute.Name),
-                Normalized = Gl.False,
+                Normalized = normalized ? Gl.True : Gl.False,
                 Offset = Marshal.OffsetOf<T>(fieldInfo.Name).ToInt32()
             };
 
