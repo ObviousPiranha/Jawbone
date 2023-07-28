@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.OpenGl;
 
-public static class GlExtensions
+public static class OpenGlExtensions
 {
     public static void LogProgress(
         this IOpenGl gl,
@@ -13,6 +13,52 @@ public static class GlExtensions
     {
         if (!gl.DumpErrors(file, caller, lineNumber))
             Console.WriteLine($"{file} - {caller} : {lineNumber} - No errors");
+    }
+
+    public static string? GetErrorName(uint err)
+    {
+        string? errorName = err switch
+        {
+            Gl.InvalidEnum => "GL_INVALID_ENUM",
+            Gl.InvalidValue => "GL_INVALID_VALUE",
+            Gl.InvalidOperation => "GL_INVALID_OPERATION",
+            Gl.StackOverflow => "GL_STACK_OVERFLOW",
+            Gl.OutOfMemory => "GL_OUT_OF_MEMORY",
+            Gl.InvalidFramebufferOperation => "GL_INVALID_FRAMEBUFFER_OPERATION",
+            Gl.ContextLost => "GL_CONTEXT_LOST",
+            _ => null
+        };
+
+        return errorName;
+    }
+
+    public static bool DumpErrors<T>(
+        this IOpenGl gl,
+        T arg,
+        Action<T, string> action,
+        [CallerFilePath] string? file = null,
+        [CallerMemberName] string? caller = null,
+        [CallerLineNumber] int lineNumber = 0)
+    {
+        bool result = false;
+
+        while (true)
+        {
+            var err = gl.GetError();
+
+            if (err == Gl.NoError)
+                break;
+
+            result = true;
+            var errorName = GetErrorName(err);
+            if (errorName is not null)
+            {
+                var message = $"[{file}] {caller}({lineNumber}): {errorName}";
+                action.Invoke(arg, message);
+            }
+        }
+
+        return result;
     }
 
     public static bool DumpErrors(

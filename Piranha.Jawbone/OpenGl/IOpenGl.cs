@@ -54,7 +54,7 @@ public interface IOpenGl
         int border,
         uint format,
         uint type,
-        IntPtr data);
+        in byte data);
     void TexImage3D(
         uint target,
         int level,
