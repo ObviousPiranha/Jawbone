@@ -106,6 +106,7 @@ class SampleHandler : IWindowEventHandler
             out var h,
             out _,
             4);
+        var span = pixelBytes.ToReadOnlySpan<byte>(w * h * 4);
 
         gl.TexImage2D(
             Target,
@@ -116,7 +117,7 @@ class SampleHandler : IWindowEventHandler
             0,
             Gl.Rgba,
             Gl.UnsignedByte,
-            pixelBytes);
+            span[0]);
 
         _stb.StbiImageFree(pixelBytes);
 

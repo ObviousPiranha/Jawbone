@@ -18,16 +18,16 @@ public static class OpenGlExtensions
     public static string? GetErrorName(uint err)
     {
         string? errorName = err switch
-            {
-                Gl.InvalidEnum => "GL_INVALID_ENUM",
-                Gl.InvalidValue => "GL_INVALID_VALUE",
-                Gl.InvalidOperation => "GL_INVALID_OPERATION",
-                Gl.StackOverflow => "GL_STACK_OVERFLOW",
-                Gl.OutOfMemory => "GL_OUT_OF_MEMORY",
-                Gl.InvalidFramebufferOperation => "GL_INVALID_FRAMEBUFFER_OPERATION",
-                Gl.ContextLost => "GL_CONTEXT_LOST",
-                _ => null
-            };
+        {
+            Gl.InvalidEnum => "GL_INVALID_ENUM",
+            Gl.InvalidValue => "GL_INVALID_VALUE",
+            Gl.InvalidOperation => "GL_INVALID_OPERATION",
+            Gl.StackOverflow => "GL_STACK_OVERFLOW",
+            Gl.OutOfMemory => "GL_OUT_OF_MEMORY",
+            Gl.InvalidFramebufferOperation => "GL_INVALID_FRAMEBUFFER_OPERATION",
+            Gl.ContextLost => "GL_CONTEXT_LOST",
+            _ => null
+        };
 
         return errorName;
     }
