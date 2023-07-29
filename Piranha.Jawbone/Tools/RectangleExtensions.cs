@@ -33,4 +33,5 @@ public static class RectangleExtensions
     public static Point32 High(this Rectangle32 r) => r.Position + r.Size;
     public static int HighX(this Rectangle32 r) => r.Position.X + r.Size.X;
     public static int HighY(this Rectangle32 r) => r.Position.Y + r.Size.Y;
+    public static Point32 Middle(this Rectangle32 r) => r.Position + r.Size / 2;
 }
