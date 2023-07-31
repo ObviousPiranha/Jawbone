@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 namespace Piranha.Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Point64 : IEquatable<Point64>
+public struct Point64 : IEquatable<Point64>
 {
-    public readonly long X;
-    public readonly long Y;
+    public long X;
+    public long Y;
 
     public Point64(long x, long y)
     {

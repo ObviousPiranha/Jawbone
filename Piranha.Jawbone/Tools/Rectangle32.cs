@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 namespace Piranha.Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Rectangle32 : IEquatable<Rectangle32>
+public struct Rectangle32 : IEquatable<Rectangle32>
 {
-    public readonly Point32 Position;
-    public readonly Point32 Size;
+    public Point32 Position;
+    public Point32 Size;
 
     public Rectangle32(Point32 position, Point32 size)
     {
