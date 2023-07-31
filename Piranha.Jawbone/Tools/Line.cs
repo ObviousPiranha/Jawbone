@@ -2,6 +2,7 @@ namespace Piranha.Jawbone;
 
 public static class Line
 {
+    private static bool CanSafelyCast(long n) => int.MinValue <= n && n <= int.MaxValue;
     public static bool Intersects(
         int x1,
         int y1,
@@ -13,6 +14,34 @@ public static class Line
         int y4,
         out int x,
         out int y)
+    {
+        if (Intersects64(x1, y1, x2, y2, x3, y3, x4, y4, out var xx, out var yy) &&
+            CanSafelyCast(xx) &&
+            CanSafelyCast(yy))
+        {
+            x = (int)xx;
+            y = (int)yy;
+            return true;
+        }
+        else
+        {
+            x = 0;
+            y = 0;
+            return false;
+        }
+    }
+
+    public static bool Intersects64(
+        long x1,
+        long y1,
+        long x2,
+        long y2,
+        long x3,
+        long y3,
+        long x4,
+        long y4,
+        out long x,
+        out long y)
     {
         // This method finds the intersection regardless of whether it falls on the provided line segments.
         // They are both treated as infinite lines.
@@ -46,6 +75,26 @@ public static class Line
         int x,
         out int y)
     {
+        if (IntersectsAtX64(x1, y1, x2, y2, x, out var yy) && CanSafelyCast(yy))
+        {
+            y = (int)yy;
+            return true;
+        }
+        else
+        {
+            y = 0;
+            return false;
+        }
+    }
+
+    public static bool IntersectsAtX64(
+        long x1,
+        long y1,
+        long x2,
+        long y2,
+        long x,
+        out long y)
+    {
         // x3 = x
         // y3 = 0
         // x4 = x
@@ -72,6 +121,26 @@ public static class Line
         int y2,
         int y,
         out int x)
+    {
+        if (IntersectsAtY64(x1, y1, x2, y2, y, out var xx) && CanSafelyCast(xx))
+        {
+            x = (int)xx;
+            return true;
+        }
+        else
+        {
+            x = 0;
+            return false;
+        }
+    }
+
+    public static bool IntersectsAtY64(
+        long x1,
+        long y1,
+        long x2,
+        long y2,
+        long y,
+        out long x)
     {
         // x3 = 0
         // y3 = y
