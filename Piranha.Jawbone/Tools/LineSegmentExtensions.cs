@@ -22,6 +22,6 @@ public static class LineSegmentExtensions
         Ascend(ls.A.Y, ls.B.Y, out var lowY, out var highY);
         return new Rectangle32(
             new Point32(lowX, lowY),
-            new Point32(highX - lowX + 1, highY - lowY + 1));
+            new Point32(highX - lowX, highY - lowY));
     }
 }

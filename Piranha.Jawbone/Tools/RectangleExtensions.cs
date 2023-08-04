@@ -18,19 +18,35 @@ public static class RectangleExtensions
             new Vector2((r.Position.X + r.Size.X) / w, (r.Position.Y + r.Size.Y) / h));
     }
 
-    public static int FarX(this Rectangle32 r) => r.Position.X + r.Size.X;
-    public static int FarY(this Rectangle32 r) => r.Position.Y + r.Size.Y;
+    public static Quad<Point32> ToQuad(this Rectangle32 r)
+    {
+        return new Quad<Point32>(
+            r.Position,
+            r.Position + new Point32(0, r.Size.Y),
+            r.High(),
+            r.Position + new Point32(r.Size.X, 0));
+    }
 
     public static bool Overlaps(this Rectangle32 r, Rectangle32 other)
     {
         return !(
-            r.FarX() <= other.Position.X ||
-            other.FarX() <= r.Position.X ||
-            r.FarY() <= other.Position.Y ||
-            other.FarY() <= r.Position.Y);
+            r.HighX() <= other.Position.X ||
+            other.HighX() <= r.Position.X ||
+            r.HighY() <= other.Position.Y ||
+            other.HighY() <= r.Position.Y);
     }
 
     public static Point32 High(this Rectangle32 r) => r.Position + r.Size;
+    public static Point32 Last(this Rectangle32 r) => r.Position + r.Size - 1;
+    public static Point32 LowXLowY(this Rectangle32 r) => r.Position;
+    public static Point32 LowXHighY(this Rectangle32 r) => r.Position + new Point32(0, r.Size.Y);
+    public static Point32 HighXLowY(this Rectangle32 r) => r.Position + new Point32(r.Size.X, 0);
+    public static Point32 HighXHighY(this Rectangle32 r) => r.Position + r.Size;
     public static int HighX(this Rectangle32 r) => r.Position.X + r.Size.X;
     public static int HighY(this Rectangle32 r) => r.Position.Y + r.Size.Y;
+    public static int LastX(this Rectangle32 r) => r.Position.X + r.Size.X - 1;
+    public static int LastY(this Rectangle32 r) => r.Position.Y + r.Size.Y - 1;
+    public static int LowX(this Rectangle32 r) => r.Position.X;
+    public static int LowY(this Rectangle32 r) => r.Position.Y;
+    public static Point32 Middle(this Rectangle32 r) => r.Position + r.Size / 2;
 }
