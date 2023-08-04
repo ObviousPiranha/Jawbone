@@ -24,6 +24,8 @@ public struct Point32 : IEquatable<Point32>
     public static Point32 operator -(Point32 p) => new(-p.X, -p.Y);
     public static Point32 operator +(Point32 a, Point32 b) => new(a.X + b.X, a.Y + b.Y);
     public static Point32 operator -(Point32 a, Point32 b) => new(a.X - b.X, a.Y - b.Y);
+    public static Point32 operator +(Point32 a, int b) => new(a.X + b, a.Y + b);
+    public static Point32 operator -(Point32 a, int b) => new(a.X - b, a.Y - b);
     public static Point32 operator *(Point32 a, int b) => new(a.X * b, a.Y * b);
     public static Point32 operator /(Point32 a, int b) => new(a.X / b, a.Y / b);
     public static Vector2 operator *(Point32 a, float b) => new(a.X * b, a.Y * b);

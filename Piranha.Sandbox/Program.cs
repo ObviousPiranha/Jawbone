@@ -204,18 +204,34 @@ class Program
         }
     }
 
+    static void ProjectSomeLines()
+    {
+        var ls = new LineSegment32(
+            new Point32(0, 0),
+            new Point32(7, 1));
+
+        var x = 30;
+        Line.IntersectsAtX(ls, x, out var y);
+        Console.WriteLine($"Intersects at {x}, {y}");
+
+        y = 200;
+        Line.IntersectsAtY(ls, y, out x);
+        Console.WriteLine($"Intersects at {x}, {y}");
+    }
+
     static void Main(string[] args)
     {
         try
         {
             Address128 a128 = Address.Any;
+            ProjectSomeLines();
             //FancyBinding();
             // AllowV4(true);
             // AllowV4(false);
             // ErrorOnPurpose();
             // AddressShenanigans();
             // GetSomeAddresses();
-            BindToLinkLocal();
+            // BindToLinkLocal();
             // CleverAssignment<Address32>(Address.Any);
             // CleverAssignment<Address128>(Address.Any);
             // ParseSomeAddresses(Address128.Local);
