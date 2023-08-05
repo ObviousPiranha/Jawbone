@@ -30,10 +30,3 @@ public static class SdlGl
     public const int ContextResetNotification = 25;
     public const int ContextNoError = 26;
 }
-
-public static class SdlGlContextProfile
-{
-    public const int Core = 1;
-    public const int Compatibility = 2;
-    public const int Es = 4;
-}
