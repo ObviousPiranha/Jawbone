@@ -32,4 +32,7 @@ public struct SdlWindowEvent
     public byte Padding3;
     public int Data1;
     public int Data2;
+
+    public int X => Data1;
+    public int Y => Data2;
 }
