@@ -1,6 +1,5 @@
-using System;
-
 namespace Piranha.Jawbone.Sdl;
+
 public interface IWindowEventHandler
 {
     void OnWindowCreated(Window window) { }

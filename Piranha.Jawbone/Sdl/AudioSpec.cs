@@ -8,12 +8,12 @@ namespace Piranha.Jawbone.Sdl;
 [StructLayout(LayoutKind.Sequential)]
 public struct AudioSpec
 {
-    public int freq;
-    public ushort format;
-    public byte channels;
-    public byte silence;
-    public ushort samples;
-    public uint size;
-    public IntPtr callback;
-    public IntPtr userdata;
+    public int Freq;
+    public ushort Format;
+    public byte Channels;
+    public byte Silence;
+    public ushort Samples;
+    public uint Size;
+    public IntPtr Callback;
+    public IntPtr Userdata;
 }
