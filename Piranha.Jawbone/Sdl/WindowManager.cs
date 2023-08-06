@@ -26,7 +26,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         if (result < 0)
             throw new SdlException("Unable to get desktop display mode: " + sdl.GetError());
 
-        logger.LogDebug($"Detected display of {mode.w}x{mode.h}.");
+        logger.LogDebug($"Detected display of {mode.W}x{mode.H}.");
 
         if (Platform.IsRaspberryPi)
         {
@@ -38,8 +38,8 @@ sealed class WindowManager : IWindowManager, IDisposable
         else if (fullscreen)
         {
             pos = 0;
-            width = mode.w;
-            height = mode.h;
+            width = mode.W;
+            height = mode.H;
         }
         else
         {
@@ -60,7 +60,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         return windowPtr;
     }
 
-    private readonly byte[] _eventData = new byte[56];
+    private readonly byte[] _eventData = new byte[64];
     private readonly ISdl2 _sdl;
     private readonly ILogger<WindowManager> _logger;
     private NativeLibraryInterface<IOpenGl>? _gl = default;
@@ -223,7 +223,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         while (_activeWindows.Count > 0)
         {
             var doSleep = true;
-            while (_sdl.PollEvent(_eventData) == 1)
+            while (_sdl.PollEvent(out _eventData[0]) == 1)
             {
                 HandleEvent();
                 doSleep = false;
@@ -255,7 +255,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         }
 
         // Flush the queue before exiting.
-        while (_sdl.PollEvent(_eventData) == 1)
+        while (_sdl.PollEvent(out _eventData[0]) == 1)
         {
             HandleEvent();
         }

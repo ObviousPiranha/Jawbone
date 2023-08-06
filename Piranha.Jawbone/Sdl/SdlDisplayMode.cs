@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl;
@@ -9,9 +8,9 @@ namespace Piranha.Jawbone.Sdl;
 [StructLayout(LayoutKind.Sequential)]
 public struct SdlDisplayMode
 {
-    public uint format;
-    public int w;
-    public int h;
-    public int refreshRate;
-    public IntPtr driverData;
+    public uint Format;
+    public int W;
+    public int H;
+    public int RefreshRate;
+    public nint DriverData;
 }

@@ -5,7 +5,6 @@ public interface ISdl2
     int Init(uint flags);
     void Quit();
     string GetError();
-
     nint CreateRGBSurface(
         uint flags,
         int width,
@@ -15,7 +14,6 @@ public interface ISdl2
         uint gmask,
         uint bmask,
         uint amask);
-
     nint CreateRGBSurfaceFrom(
         nint pixels,
         int width,
@@ -51,21 +49,31 @@ public interface ISdl2
     int UpdateWindowSurface(nint window);
     ulong GetPerformanceFrequency();
     ulong GetPerformanceCounter();
-    int PollEvent(byte[] eventData);
+    int PollEvent(out byte eventData);
     int UpperBlit(
         nint source,
         in SdlRect sourceRectangle,
         nint destination,
         ref SdlRect destinationRectangle);
-    int WaitEvent(byte[] eventData);
+    int WaitEvent(out byte eventData);
     uint RegisterEvents(int numEvents);
-    int PushEvent(byte[] eventData);
-    uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, out AudioSpec obtained, int allowedChanges);
-    uint OpenAudioDevice(string? device, int isCapture, in AudioSpec desired, nint obtained, int allowedChanges);
+    int PushEvent(in byte eventData);
+    uint OpenAudioDevice(
+        string? device,
+        int isCapture,
+        in AudioSpec desired,
+        out AudioSpec obtained,
+        int allowedChanges);
     void CloseAudioDevice(uint dev);
     void PauseAudioDevice(uint dev, int pauseOn);
     int QueueAudio(uint dev, in byte data, uint len);
-    nint NewAudioStream(ushort sourceFormat, byte sourceChannels, int sourceRate, ushort destinationFormat, byte destinationChannels, int destinationRate);
+    nint NewAudioStream(
+        ushort sourceFormat,
+        byte sourceChannels,
+        int sourceRate,
+        ushort destinationFormat,
+        byte destinationChannels,
+        int destinationRate);
     void FreeAudioStream(nint stream);
     int AudioStreamPut(nint stream, in byte buffer, int length);
     int AudioStreamPut(nint stream, in short buffer, int length);
