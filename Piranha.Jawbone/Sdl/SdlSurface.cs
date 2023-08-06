@@ -1,9 +1,11 @@
 using Piranha.Jawbone.Extensions;
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl;
 
+[StructLayout(LayoutKind.Sequential)]
 public struct SdlSurface
 {
     public uint Flags;

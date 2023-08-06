@@ -166,10 +166,7 @@ public sealed class UnmanagedQueue
 
         public override void Handle(ReadOnlySpan<byte> blob)
         {
-            var item = default(T);
-            var span = new Span<T>(ref item);
-            var asBytes = MemoryMarshal.AsBytes(span);
-            blob.CopyTo(asBytes);
+            var item = MemoryMarshal.Read<T>(blob);
             _action.Invoke(item);
         }
     }

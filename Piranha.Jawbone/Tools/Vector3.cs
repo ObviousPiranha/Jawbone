@@ -23,6 +23,8 @@ public struct Vector3<T> : IEquatable<Vector3<T>> where T : unmanaged, IEquatabl
     public override readonly int GetHashCode() => HashCode.Combine(X, Y, Z);
     public override readonly string ToString() => $"{X}, ${Y}, ${Z}";
 
+    public static explicit operator Vector3<T>(Vector4<T> v4) => new(v4.X, v4.Y, v4.Z);
+
     public static bool operator ==(Vector3<T> a, Vector3<T> b) => a.Equals(b);
     public static bool operator !=(Vector3<T> a, Vector3<T> b) => !a.Equals(b);
 }

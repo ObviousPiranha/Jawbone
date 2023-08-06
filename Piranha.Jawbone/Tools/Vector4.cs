@@ -20,6 +20,11 @@ public struct Vector4<T> : IEquatable<Vector4<T>> where T : unmanaged, IEquatabl
         W = w;
     }
 
+    public Vector4(Vector3<T> vector, T w)
+        : this(vector.X, vector.Y, vector.Z, w)
+    {
+    }
+
     public readonly bool Equals(Vector4<T> other) => X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z) && W.Equals(other.W);
     public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is Vector4<T> other && Equals(other);
     public override readonly int GetHashCode() => HashCode.Combine(X, Y, Z, W);
