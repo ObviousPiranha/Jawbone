@@ -281,7 +281,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         {
             case SdlEvent.TextInput:
             {
-                var sdlEvent = MemoryMarshal.Read<SdlTextInputEvent>(_eventData);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlTextInputEvent>(_eventData);
                 var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
@@ -295,7 +295,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEvent.KeyDown:
             {
-                var sdlEvent = MemoryMarshal.Read<SdlKeyboardEvent>(_eventData);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlKeyboardEvent>(_eventData);
                 var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
@@ -304,7 +304,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEvent.KeyUp:
             {
-                var sdlEvent = MemoryMarshal.Read<SdlKeyboardEvent>(_eventData);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlKeyboardEvent>(_eventData);
                 var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
@@ -313,7 +313,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEvent.MouseMotion:
             {
-                var sdlEvent = MemoryMarshal.Read<SdlMouseMotionEvent>(_eventData);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseMotionEvent>(_eventData);
                 var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
@@ -322,7 +322,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEvent.MouseWheel:
             {
-                var sdlEvent = MemoryMarshal.Read<SdlMouseWheelEvent>(_eventData);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseWheelEvent>(_eventData);
                 var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
@@ -331,7 +331,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEvent.MouseButtonDown:
             {
-                var sdlEvent = MemoryMarshal.Read<SdlMouseButtonEvent>(_eventData);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseButtonEvent>(_eventData);
                 var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
@@ -340,7 +340,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEvent.MouseButtonUp:
             {
-                var sdlEvent = MemoryMarshal.Read<SdlMouseButtonEvent>(_eventData);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseButtonEvent>(_eventData);
                 var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
@@ -364,7 +364,7 @@ sealed class WindowManager : IWindowManager, IDisposable
 
     private void HandleWindowEvent()
     {
-        var sdlEvent = MemoryMarshal.Read<SdlWindowEvent>(_eventData);
+        ref var sdlEvent = ref MemoryMarshal.AsRef<SdlWindowEvent>(_eventData);
         var window = GetWindow(sdlEvent.WindowId);
 
         if (window is not null)
