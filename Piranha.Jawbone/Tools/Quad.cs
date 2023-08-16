@@ -3,12 +3,12 @@ using System.Numerics;
 
 namespace Piranha.Jawbone;
 
-public readonly struct Quad<T>
+public struct Quad<T>
 {
-    public readonly T A;
-    public readonly T B;
-    public readonly T C;
-    public readonly T D;
+    public T A;
+    public T B;
+    public T C;
+    public T D;
 
     public Quad(T abcd)
     {
@@ -40,11 +40,35 @@ public static class Quad
             new Vector2(c.X, a.Y));
     }
 
-    public static Quad<TResult> Change<T, TArg, TResult>(
+    public static T Min<T>(this Quad<T> quad) where T : INumber<T>
+    {
+        var result = T.Min(quad.A, T.Min(quad.B, T.Min(quad.C, quad.D)));
+        return result;
+    }
+
+    public static T Max<T>(this Quad<T> quad) where T : INumber<T>
+    {
+        var result = T.Max(quad.A, T.Max(quad.B, T.Max(quad.C, quad.D)));
+        return result;
+    }
+
+    public static Quad<TResult> Select<T, TResult>(
+        this Quad<T> q,
+        Func<T, TResult> f)
+    {
+        var result = new Quad<TResult>(
+            f.Invoke(q.A),
+            f.Invoke(q.B),
+            f.Invoke(q.C),
+            f.Invoke(q.D));
+
+        return result;
+    }
+
+    public static Quad<TResult> Select<T, TArg, TResult>(
         this Quad<T> q,
         TArg arg,
-        Func<T, TArg, TResult> f
-        ) where T : IEquatable<T> where TResult : IEquatable<TResult>
+        Func<T, TArg, TResult> f)
     {
         var result = new Quad<TResult>(
             f.Invoke(q.A, arg),

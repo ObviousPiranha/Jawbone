@@ -231,13 +231,13 @@ class SampleHandler : IWindowEventHandler
         graphicsProvider.Present();
     }
 
-    public void OnKeyUp(Window window, KeyboardEventView eventData)
+    public void OnKeyUp(Window window, SdlKeyboardEvent eventData)
     {
-        if (eventData.PhysicalKeyCode == SdlScancode.Escape)
+        if (eventData.Keysym.Scancode == SdlScancode.Escape)
             window.Close();
     }
 
-    public void OnMouseButtonDown(Window window, MouseButtonEventView eventData)
+    public void OnMouseButtonDown(Window window, SdlMouseButtonEvent eventData)
     {
         _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         // _audioManager.ScheduleAudio(0, default);
@@ -245,12 +245,12 @@ class SampleHandler : IWindowEventHandler
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));
     }
 
-    public void OnSizeChanged(Window window, WindowEventView eventData)
+    public void OnSizeChanged(Window window, SdlWindowEvent eventData)
     {
         var graphicsProvider = window.GetGraphics();
         var gl = graphicsProvider.Graphics;
-        gl.Viewport(0, 0, eventData.X, eventData.Y);
-        var aspectRatio = eventData.X / (float)eventData.Y;
+        gl.Viewport(0, 0, eventData.Data1, eventData.Data2);
+        var aspectRatio = eventData.Data1 / (float)eventData.Data2;
         _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
     }
 }

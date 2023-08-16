@@ -26,7 +26,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         if (result < 0)
             throw new SdlException("Unable to get desktop display mode: " + sdl.GetError());
 
-        logger.LogDebug($"Detected display of {mode.w}x{mode.h}.");
+        logger.LogDebug($"Detected display of {mode.W}x{mode.H}.");
 
         if (Platform.IsRaspberryPi)
         {
@@ -38,8 +38,8 @@ sealed class WindowManager : IWindowManager, IDisposable
         else if (fullscreen)
         {
             pos = 0;
-            width = mode.w;
-            height = mode.h;
+            width = mode.W;
+            height = mode.H;
         }
         else
         {
@@ -60,7 +60,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         return windowPtr;
     }
 
-    private readonly byte[] _eventData = new byte[56];
+    private readonly byte[] _eventData = new byte[64];
     private readonly ISdl2 _sdl;
     private readonly ILogger<WindowManager> _logger;
     private NativeLibraryInterface<IOpenGl>? _gl = default;
@@ -223,7 +223,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         while (_activeWindows.Count > 0)
         {
             var doSleep = true;
-            while (_sdl.PollEvent(_eventData) == 1)
+            while (_sdl.PollEvent(out _eventData[0]) == 1)
             {
                 HandleEvent();
                 doSleep = false;
@@ -255,7 +255,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         }
 
         // Flush the queue before exiting.
-        while (_sdl.PollEvent(_eventData) == 1)
+        while (_sdl.PollEvent(out _eventData[0]) == 1)
         {
             HandleEvent();
         }
@@ -281,11 +281,11 @@ sealed class WindowManager : IWindowManager, IDisposable
         {
             case SdlEvent.TextInput:
             {
-                var view = new TextInputEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlTextInputEvent>(_eventData);
+                var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnTextInput(window, view);
+                    window.WindowEventHandler.OnTextInput(window, sdlEvent);
                 break;
             }
             case SdlEvent.WindowEvent:
@@ -295,56 +295,56 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEvent.KeyDown:
             {
-                var view = new KeyboardEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlKeyboardEvent>(_eventData);
+                var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnKeyDown(window, view);
+                    window.WindowEventHandler.OnKeyDown(window, sdlEvent);
                 break;
             }
             case SdlEvent.KeyUp:
             {
-                var view = new KeyboardEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlKeyboardEvent>(_eventData);
+                var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnKeyUp(window, view);
+                    window.WindowEventHandler.OnKeyUp(window, sdlEvent);
                 break;
             }
             case SdlEvent.MouseMotion:
             {
-                var view = new MouseMotionEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseMotionEvent>(_eventData);
+                var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseMove(window, view);
+                    window.WindowEventHandler.OnMouseMove(window, sdlEvent);
                 break;
             }
             case SdlEvent.MouseWheel:
             {
-                var view = new MouseWheelEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseWheelEvent>(_eventData);
+                var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseWheel(window, view);
+                    window.WindowEventHandler.OnMouseWheel(window, sdlEvent);
                 break;
             }
             case SdlEvent.MouseButtonDown:
             {
-                var view = new MouseButtonEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseButtonEvent>(_eventData);
+                var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonDown(window, view);
+                    window.WindowEventHandler.OnMouseButtonDown(window, sdlEvent);
                 break;
             }
             case SdlEvent.MouseButtonUp:
             {
-                var view = new MouseButtonEventView(_eventData);
-                var window = GetWindow(view.WindowId);
+                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseButtonEvent>(_eventData);
+                var window = GetWindow(sdlEvent.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonUp(window, view);
+                    window.WindowEventHandler.OnMouseButtonUp(window, sdlEvent);
                 break;
             }
             case SdlEvent.Quit:
@@ -364,13 +364,13 @@ sealed class WindowManager : IWindowManager, IDisposable
 
     private void HandleWindowEvent()
     {
-        var view = new WindowEventView(_eventData);
-        var window = GetWindow(view.WindowId);
+        ref var sdlEvent = ref MemoryMarshal.AsRef<SdlWindowEvent>(_eventData);
+        var window = GetWindow(sdlEvent.WindowId);
 
         if (window is not null)
         {
             var handler = window.WindowEventHandler;
-            switch (view.Event)
+            switch (sdlEvent.Event)
             {
                 case SdlWindowEvent.Shown:
                     handler.OnShown(window);
@@ -382,13 +382,13 @@ sealed class WindowManager : IWindowManager, IDisposable
                     handler.OnExpose(window);
                     break;
                 case SdlWindowEvent.Moved:
-                    handler.OnMove(window, view);
+                    handler.OnMove(window, sdlEvent);
                     break;
                 case SdlWindowEvent.Resized:
-                    handler.OnResize(window, view);
+                    handler.OnResize(window, sdlEvent);
                     break;
                 case SdlWindowEvent.SizeChanged:
-                    handler.OnSizeChanged(window, view);
+                    handler.OnSizeChanged(window, sdlEvent);
                     break;
                 case SdlWindowEvent.Minimized:
                     handler.OnMinimize(window);

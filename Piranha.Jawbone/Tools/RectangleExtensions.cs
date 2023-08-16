@@ -42,6 +42,9 @@ public static class RectangleExtensions
     public static Point32 LowXHighY(this Rectangle32 r) => r.Position + new Point32(0, r.Size.Y);
     public static Point32 HighXLowY(this Rectangle32 r) => r.Position + new Point32(r.Size.X, 0);
     public static Point32 HighXHighY(this Rectangle32 r) => r.Position + r.Size;
+    public static Point32 LowXLastY(this Rectangle32 r) => r.Position + new Point32(0, r.Size.Y - 1);
+    public static Point32 LastXLowY(this Rectangle32 r) => r.Position + new Point32(r.Size.X - 1, 0);
+    public static Point32 LastXLastY(this Rectangle32 r) => r.Position + r.Size - 1;
     public static int HighX(this Rectangle32 r) => r.Position.X + r.Size.X;
     public static int HighY(this Rectangle32 r) => r.Position.Y + r.Size.Y;
     public static int LastX(this Rectangle32 r) => r.Position.X + r.Size.X - 1;

@@ -21,6 +21,9 @@ public struct Vector2<T> : IEquatable<Vector2<T>> where T : unmanaged, IEquatabl
     public override readonly int GetHashCode() => HashCode.Combine(X, Y);
     public override readonly string ToString() => $"{X}, ${Y}";
 
+    public static explicit operator Vector2<T>(Vector3<T> v3) => new(v3.X, v3.Y);
+    public static explicit operator Vector2<T>(Vector4<T> v4) => new(v4.X, v4.Y);
+
     public static bool operator ==(Vector2<T> a, Vector2<T> b) => a.Equals(b);
     public static bool operator !=(Vector2<T> a, Vector2<T> b) => !a.Equals(b);
 }

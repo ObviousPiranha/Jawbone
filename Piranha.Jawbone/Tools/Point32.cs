@@ -32,6 +32,9 @@ public struct Point32 : IEquatable<Point32>
     public static Vector2 operator /(Point32 a, float b) => new(a.X / b, a.Y / b);
     public static Point32 operator <<(Point32 a, int b) => new(a.X << b, a.Y << b);
     public static Point32 operator >>(Point32 a, int b) => new(a.X >> b, a.Y >> b);
+    public static Point32 operator &(Point32 a, int b) => new(a.X & b, a.Y & b);
+    public static Point32 operator |(Point32 a, int b) => new(a.X | b, a.Y | b);
+    public static Point32 operator ^(Point32 a, int b) => new(a.X ^ b, a.Y ^ b);
     public static bool operator ==(Point32 a, Point32 b) => a.X == b.X && a.Y == b.Y;
     public static bool operator !=(Point32 a, Point32 b) => a.X != b.X || a.Y != b.Y;
     public static implicit operator Point64(Point32 p) => new(p.X, p.Y);

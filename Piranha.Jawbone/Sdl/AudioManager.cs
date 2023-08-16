@@ -46,15 +46,20 @@ public sealed class AudioManager : IAudioManager, IDisposable
 
             var audioSpec = new AudioSpec
             {
-                freq = Frequency,
-                format = (ushort)Format,
-                channels = Channels,
-                samples = 4096,
-                callback = callback,
-                userdata = (IntPtr)_handle
+                Freq = Frequency,
+                Format = (ushort)Format,
+                Channels = Channels,
+                Samples = 4096,
+                Callback = callback,
+                Userdata = (IntPtr)_handle
             };
 
-            _device = _sdl.OpenAudioDevice(null, 0, audioSpec, IntPtr.Zero, 0);
+            _device = _sdl.OpenAudioDevice(
+                null,
+                0,
+                audioSpec,
+                out Unsafe.NullRef<AudioSpec>(),
+                0);
 
             if (_device == 0)
                 _sdl.ThrowException();

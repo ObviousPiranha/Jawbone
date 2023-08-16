@@ -68,6 +68,21 @@ public static class Line
     }
 
     public static bool IntersectsAtX(
+        Point32 p1,
+        Point32 p2,
+        int x,
+        out int y)
+    {
+        return IntersectsAtX(
+            p1.X,
+            p1.Y,
+            p2.X,
+            p2.Y,
+            x,
+            out y);
+    }
+
+    public static bool IntersectsAtX(
         int x1,
         int y1,
         int x2,
@@ -112,6 +127,21 @@ public static class Line
         var yn = (y1 * x2 - x1 * y2) - (y1 - y2) * x;
         y = yn / d;
         return true;
+    }
+
+    public static bool IntersectsAtY(
+        Point32 p1,
+        Point32 p2,
+        int y,
+        out int x)
+    {
+        return IntersectsAtY(
+            p1.X,
+            p1.Y,
+            p2.X,
+            p2.Y,
+            y,
+            out x);
     }
 
     public static bool IntersectsAtY(

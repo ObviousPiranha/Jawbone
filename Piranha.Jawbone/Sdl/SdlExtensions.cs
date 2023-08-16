@@ -59,6 +59,20 @@ public static class SdlExtensions
         throw new SdlException(message);
     }
 
+    public static int BlitSurface(
+        this ISdl2 sdl,
+        nint source,
+        in SdlRect sourceRectangle,
+        nint destination,
+        ref SdlRect destinationRectangle)
+    {
+        return sdl.UpperBlit(
+            source,
+            sourceRectangle,
+            destination,
+            ref destinationRectangle);
+    }
+
     public static short[] ConvertAudioToInt16(
         this ISdl2 sdl,
         ReadOnlySpan<short> pcm,

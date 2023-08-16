@@ -1,6 +1,5 @@
-using System;
-
 namespace Piranha.Jawbone.Sdl;
+
 public interface IWindowEventHandler
 {
     void OnWindowCreated(Window window) { }
@@ -15,17 +14,17 @@ public interface IWindowEventHandler
     void OnHidden(Window window) { }
     void OnExpose(Window window) { }
     void OnLoop(Window window) { }
-    void OnMove(Window window, WindowEventView eventData) { }
-    void OnResize(Window window, WindowEventView eventData) { }
-    void OnSizeChanged(Window window, WindowEventView eventData) { }
-    void OnKeyDown(Window window, KeyboardEventView eventData) { }
-    void OnKeyUp(Window window, KeyboardEventView eventData) { }
-    void OnTextInput(Window window, TextInputEventView eventData) { }
-    void OnMouseMove(Window window, MouseMotionEventView eventData) { }
-    void OnMouseWheel(Window window, MouseWheelEventView eventData) { }
-    void OnMouseButtonDown(Window window, MouseButtonEventView eventData) { }
-    void OnMouseButtonUp(Window window, MouseButtonEventView eventData) { }
-    void OnUser(Window window, UserEventView eventdata) { }
+    void OnMove(Window window, SdlWindowEvent eventData) { }
+    void OnResize(Window window, SdlWindowEvent eventData) { }
+    void OnSizeChanged(Window window, SdlWindowEvent eventData) { }
+    void OnKeyDown(Window window, SdlKeyboardEvent eventData) { }
+    void OnKeyUp(Window window, SdlKeyboardEvent eventData) { }
+    void OnTextInput(Window window, SdlTextInputEvent eventData) { }
+    void OnMouseMove(Window window, SdlMouseMotionEvent eventData) { }
+    void OnMouseWheel(Window window, SdlMouseWheelEvent eventData) { }
+    void OnMouseButtonDown(Window window, SdlMouseButtonEvent eventData) { }
+    void OnMouseButtonUp(Window window, SdlMouseButtonEvent eventData) { }
+    void OnUser(Window window, SdlUserEvent eventdata) { }
     void OnClose(Window window) { }
     void OnQuit(Window window) { }
     void OnSecond(Window window) { }
