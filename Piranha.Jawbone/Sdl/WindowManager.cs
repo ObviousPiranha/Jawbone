@@ -63,7 +63,7 @@ sealed class WindowManager : IWindowManager, IDisposable
     private readonly byte[] _eventData = new byte[64];
     private readonly ISdl2 _sdl;
     private readonly ILogger<WindowManager> _logger;
-    private NativeLibraryInterface<IOpenGl>? _gl = default;
+    private IOpenGl? _gl = default;
     private IntPtr _contextPtr = default;
     private readonly List<Window> _activeWindows = new();
 
@@ -84,7 +84,11 @@ sealed class WindowManager : IWindowManager, IDisposable
         if (_contextPtr.IsValid())
             _sdl.GlDeleteContext(_contextPtr);
 
-        _gl?.Dispose();
+        if (_gl is not null)
+        {
+            _gl = null;
+            _sdl.GlUnloadLibrary();
+        }
     }
 
     private uint GetWindowId(IntPtr windowPtr)
@@ -142,8 +146,16 @@ sealed class WindowManager : IWindowManager, IDisposable
 
                 try
                 {
-                    _gl = OpenGlLoader.Load();
-                    var gl = _gl.Library;
+                    if (_sdl.GlLoadLibrary() != 0)
+                    {
+                        throw new SdlException(
+                            "Unable to load GL library: " + _sdl.GetError());
+                    }
+                    _gl = NativeLibraryInterface.CreateInterface<IOpenGl>(
+                        "SdlOpenGl",
+                        static methodName => "gl" + methodName,
+                        _sdl.GlGetProcAddress);
+                    var gl = _gl;
 
                     gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
 
@@ -184,7 +196,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
 
             var id = GetWindowId(windowPtr);
-            var window = new Window(_sdl, _gl.Library, handler, windowPtr, _contextPtr, id);
+            var window = new Window(_sdl, _gl, handler, windowPtr, _contextPtr, id);
             _activeWindows.Add(window);
             handler.OnWindowCreated(window);
         }
