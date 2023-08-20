@@ -112,7 +112,7 @@ public static class NativeLibraryInterface
             var parameters = interfaceMethod.GetParameters();
 
             var returnParameter = interfaceMethod.ReturnParameter;
-            var parameterTypes = Array.ConvertAll(parameters, p => p.ParameterType);
+            var parameterTypes = Array.ConvertAll(parameters, static p => p.ParameterType);
             var methodBuilder = typeBuilder.DefineMethod(
                 interfaceMethod.Name,
                 MyMethodAttributes,
@@ -121,8 +121,8 @@ public static class NativeLibraryInterface
                 returnParameter.GetRequiredCustomModifiers(),
                 returnParameter.GetOptionalCustomModifiers(),
                 parameterTypes,
-                Array.ConvertAll(parameters, p => p.GetRequiredCustomModifiers()),
-                Array.ConvertAll(parameters, p => p.GetOptionalCustomModifiers()));
+                Array.ConvertAll(parameters, static p => p.GetRequiredCustomModifiers()),
+                Array.ConvertAll(parameters, static p => p.GetOptionalCustomModifiers()));
 
             typeBuilder.DefineMethodOverride(methodBuilder, interfaceMethod);
 
