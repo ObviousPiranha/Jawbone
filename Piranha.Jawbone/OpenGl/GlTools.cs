@@ -60,40 +60,44 @@ public static class GlTools
         }
     }
 
-    public static uint LoadShader(
+    public static unsafe uint LoadShader(
         IOpenGl gl,
         ReadOnlySpan<byte> source,
         uint shaderType)
     {
-        unsafe
+        fixed (byte* pointer = source)
         {
-            fixed (byte* pointer = source)
+            var shader = gl.CreateShader(shaderType);
+
+            try
             {
-                var shader = gl.CreateShader(shaderType);
-
-                try
+                var ptr = new IntPtr(pointer);
+                gl.ShaderSource(shader, 1, ptr, source.Length);
+                gl.CompileShader(shader);
+                gl.GetShaderiv(shader, Gl.CompileStatus, out var result);
+                if (result == Gl.False)
                 {
-                    var ptr = new IntPtr(pointer);
-                    gl.ShaderSource(shader, 1, ptr, source.Length);
-                    gl.CompileShader(shader);
-                    gl.GetShaderiv(shader, Gl.CompileStatus, out var result);
-                    if (result == Gl.False)
+                    gl.GetShaderiv(shader, Gl.InfoLogLength, out var logLength);
+                    var buffer = new byte[logLength];
+                    gl.GetShaderInfoLog(shader, buffer.Length, out var actualLength, out buffer[0]);
+                    // We can disregard the actual length because we queried the actual length up above.
+                    var errors = Encoding.UTF8.GetString(buffer);
+                    var shaderTypeName = shaderType switch
                     {
-                        gl.GetShaderiv(shader, Gl.InfoLogLength, out var logLength);
-                        var buffer = new byte[logLength];
-                        gl.GetShaderInfoLog(shader, buffer.Length, out var actualLength, out buffer[0]);
-                        // We can disregard the actual length because we queried the actual length up above.
-                        var errors = Encoding.UTF8.GetString(buffer);
-                        throw new OpenGlException("Error compiling shader: " + errors);
-                    }
+                        Gl.VertexShader => "vertex",
+                        Gl.FragmentShader => "fragment",
+                        _ => "unknown"
+                    };
 
-                    return shader;
+                    throw new OpenGlException($"Failed to compile {shaderTypeName} shader.\n{errors}");
                 }
-                catch
-                {
-                    gl.DeleteShader(shader);
-                    throw;
-                }
+
+                return shader;
+            }
+            catch
+            {
+                gl.DeleteShader(shader);
+                throw;
             }
         }
     }
