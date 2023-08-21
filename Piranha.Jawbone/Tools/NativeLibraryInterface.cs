@@ -76,12 +76,11 @@ public static class NativeLibraryInterface
         }
     }
 
-    public static NativeLibraryInterface<T> Create<T>(
+    public static T CreateInterface<T>(
         string libraryName,
-        IntPtr libraryHandle,
         Func<string, string> methodNameToFunctionName,
-        Func<IntPtr, string, IntPtr> procAddressLoader)
-        where T : class
+        Func<string, IntPtr> procAddressLoader
+        ) where T : class
     {
         if (!typeof(T).IsInterface)
             throw new ArgumentException($"Type T must be an interface. Type {typeof(T)} is not an interface.");
@@ -113,7 +112,7 @@ public static class NativeLibraryInterface
             var parameters = interfaceMethod.GetParameters();
 
             var returnParameter = interfaceMethod.ReturnParameter;
-            var parameterTypes = Array.ConvertAll(parameters, p => p.ParameterType);
+            var parameterTypes = Array.ConvertAll(parameters, static p => p.ParameterType);
             var methodBuilder = typeBuilder.DefineMethod(
                 interfaceMethod.Name,
                 MyMethodAttributes,
@@ -122,15 +121,15 @@ public static class NativeLibraryInterface
                 returnParameter.GetRequiredCustomModifiers(),
                 returnParameter.GetOptionalCustomModifiers(),
                 parameterTypes,
-                Array.ConvertAll(parameters, p => p.GetRequiredCustomModifiers()),
-                Array.ConvertAll(parameters, p => p.GetOptionalCustomModifiers()));
+                Array.ConvertAll(parameters, static p => p.GetRequiredCustomModifiers()),
+                Array.ConvertAll(parameters, static p => p.GetOptionalCustomModifiers()));
 
             typeBuilder.DefineMethodOverride(methodBuilder, interfaceMethod);
 
             var functionName =
                 interfaceMethod.GetCustomAttribute<FunctionNameAttribute>()?.FunctionName ??
                 methodNameToFunctionName.Invoke(interfaceMethod.Name);
-            var procAddress = procAddressLoader(libraryHandle, functionName);
+            var procAddress = procAddressLoader.Invoke(functionName);
 
             if (procAddress.IsInvalid())
                 throw new InvalidOperationException("Unable to load function " + functionName);
@@ -161,6 +160,21 @@ public static class NativeLibraryInterface
 
         var type = typeBuilder.CreateType() ?? throw new NullReferenceException();
         var libraryInterface = (T)(Activator.CreateInstance(type) ?? throw new NullReferenceException());
+        return libraryInterface;
+    }
+
+    public static NativeLibraryInterface<T> Create<T>(
+        string libraryName,
+        IntPtr libraryHandle,
+        Func<string, string> methodNameToFunctionName,
+        Func<IntPtr, string, IntPtr> procAddressLoader)
+        where T : class
+    {
+        //var libraryInterface = (T)(Activator.CreateInstance(type) ?? throw new NullReferenceException());
+        var libraryInterface = CreateInterface<T>(
+            libraryName,
+            methodNameToFunctionName,
+            functionName => procAddressLoader.Invoke(libraryHandle, functionName));
         return new NativeLibraryInterface<T>(libraryInterface, libraryHandle);
     }
 

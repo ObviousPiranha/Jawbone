@@ -82,6 +82,9 @@ public interface ISdl2
     int AudioStreamGet(nint stream, out byte buffer, int length);
     int AudioStreamGet(nint stream, out short buffer, int length);
     int AudioStreamGet(nint stream, out float buffer, int length);
+    int GlLoadLibrary(string? path = null);
+    void GlUnloadLibrary();
+    nint GlGetProcAddress(string proc);
     nint GlCreateContext(nint window);
     void GlDeleteContext(nint context);
     int GlMakeCurrent(nint window, nint context);
