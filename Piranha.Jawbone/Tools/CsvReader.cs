@@ -6,22 +6,32 @@ public delegate int ByteReader(Span<byte> buffer);
 
 public sealed class CsvReader
 {
-    private readonly ByteReader _byteReader;
+    private static ByteReader DefaultByteReader => static _ => 0;
+
+    private ByteReader _byteReader = DefaultByteReader;
     private byte[] _data = new byte[256];
     private int[] _dividerIndices = new int[16];
-    private int _dividerCount = 1;
     private int _activeByteCount = 0;
     private int _currentRowBegin = 0;
     private int _currentRowLength = 0;
     private int _nextRowBegin = 0;
 
     public ReadOnlySpan<byte> CurrentRow => _data.AsSpan(_currentRowBegin, _currentRowLength);
-    public int FieldCount => _dividerCount - 1;
+    public int FieldCount { get; private set; }
 
-    public CsvReader(ByteReader byteReader)
+    public CsvReader()
+    {
+        _dividerIndices[0] = -1;
+    }
+
+    public void Start(ByteReader byteReader)
     {
         _byteReader = byteReader;
-        _dividerIndices[0] = -1;
+        FieldCount = 0;
+        _activeByteCount = 0;
+        _currentRowBegin = 0;
+        _currentRowLength = 0;
+        _nextRowBegin = 0;
     }
 
     private void PrepareRow()
@@ -30,23 +40,23 @@ public sealed class CsvReader
             --_currentRowLength;
 
         var row = CurrentRow;
-        _dividerCount = 1;
+        FieldCount = 0;
         int offset = 0;
         while (true)
         {
-            if (_dividerCount == _dividerIndices.Length)
+            if (++FieldCount == _dividerIndices.Length)
                 Array.Resize(ref _dividerIndices, _dividerIndices.Length * 2);
 
             var commaIndex = row[offset..].IndexOf((byte)',');
 
             if (0 <= commaIndex)
             {
-                _dividerIndices[_dividerCount++] = commaIndex + offset;
+                _dividerIndices[FieldCount] = commaIndex + offset;
                 offset += commaIndex + 1;
             }
             else
             {
-                _dividerIndices[_dividerCount++] = row.Length;
+                _dividerIndices[FieldCount] = row.Length;
                 break;
             }
         }
@@ -81,7 +91,7 @@ public sealed class CsvReader
                 {
                     _currentRowBegin = 0;
                     _currentRowLength = 0;
-                    _dividerCount = 1;
+                    FieldCount = 0;
                     return false;
                 }
             }
@@ -123,7 +133,7 @@ public sealed class CsvReader
             }
             else
             {
-                _dividerCount = 1;
+                FieldCount = 0;
                 return false;
             }
         }

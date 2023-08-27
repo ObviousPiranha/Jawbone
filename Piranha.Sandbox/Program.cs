@@ -225,7 +225,8 @@ class Program
         var csv = "aaaaaa\nbbb\ncccc,ccc,,ccccccc\r\nddddd";
         var utf8 = Encoding.UTF8.GetBytes(csv);
         using var stream = new MemoryStream(utf8);
-        var reader = new CsvReader(stream.Read);
+        var reader = new CsvReader();
+        reader.Start(stream.Read);
         while (reader.TryReadRow())
         {
             var word = reader.FieldCount == 1 ? "field" : "fields";
