@@ -7,11 +7,11 @@ public delegate int ByteReader(Span<byte> buffer);
 public sealed class CsvReader
 {
     private readonly ByteReader _byteReader;
-    private byte[] _row = new byte[256];
-    private int _used = 0;
+    private byte[] _data = new byte[256];
+    private int _activeByteCount = 0;
     private int _currentRowBegin = 0;
     private int _currentRowLength = 0;
-    private int _nextRowIndex = 0;
+    private int _nextRowBegin = 0;
 
     public CsvReader(ByteReader byteReader)
     {
@@ -20,35 +20,46 @@ public sealed class CsvReader
 
     private void RemoveCarriageReturn()
     {
-        if (0 < _currentRowLength && _row[_currentRowBegin + _currentRowLength - 1] == '\r')
+        if (0 < _currentRowLength && _data[_currentRowBegin + _currentRowLength - 1] == '\r')
             --_currentRowLength;
     }
 
     public bool TryReadRow()
     {
-        // First see if the next entire row is in the buffer already.
-        if (_nextRowIndex < _used)
+        if (0 < _nextRowBegin)
         {
-            var nextRow = _row.AsSpan(_nextRowIndex.._used);
-            var indexOfNewline = nextRow.IndexOf((byte)'\n');
+            var nextRowData = _data.AsSpan(_nextRowBegin.._activeByteCount);
+            var newLineIndex = nextRowData.IndexOf((byte)'\n');
 
-            if (0 <= indexOfNewline)
+            if (0 <= newLineIndex)
             {
-                _currentRowBegin = _nextRowIndex;
-                _currentRowLength = indexOfNewline;
+                _currentRowBegin = _nextRowBegin;
+                _currentRowLength = newLineIndex;
+                _nextRowBegin += _currentRowLength + 1;
                 RemoveCarriageReturn();
-                _nextRowIndex += indexOfNewline + 1;
-
                 return true;
             }
-
-            // Slide data left in preparation for more data.
-            nextRow.CopyTo(_row);
-            _used -= _nextRowIndex;
-        }
-        else
-        {
-            _used = 0;
+            else if (_activeByteCount < _data.Length)
+            {
+                if (_nextRowBegin < _activeByteCount)
+                {
+                    _currentRowBegin = _nextRowBegin;
+                    _currentRowLength = _activeByteCount - _currentRowBegin;
+                    _nextRowBegin = _activeByteCount;
+                    RemoveCarriageReturn();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                nextRowData.CopyTo(_data);
+                _activeByteCount -= _nextRowBegin;
+                _nextRowBegin = 0;
+            }
         }
 
         _currentRowBegin = 0;
@@ -56,31 +67,31 @@ public sealed class CsvReader
 
         while (true)
         {
-            int newDataIndex = _used;
-            _used = _byteReader.Invoke(_row.AsSpan(_used));
+            var newDataIndex = _activeByteCount;
+            _activeByteCount += _byteReader.Invoke(_data.AsSpan(newDataIndex));
+            var newBytes = _data.AsSpan(newDataIndex.._activeByteCount);
+            var newLineIndex = newBytes.IndexOf((byte)'\n');
 
-            var indexOfNewline = _row.AsSpan(newDataIndex.._used).IndexOf((byte)'\n');
-            if (0 <= indexOfNewline)
+            if (0 <= newLineIndex)
             {
-                _currentRowLength = newDataIndex + indexOfNewline;
-                _nextRowIndex = _currentRowLength + 1;
+                _currentRowLength = newDataIndex + newLineIndex;
+                _nextRowBegin = _currentRowLength + 1;
                 RemoveCarriageReturn();
                 return true;
             }
-            else if (_used == _row.Length)
+            else if (_activeByteCount == _data.Length)
             {
-                Array.Resize(ref _row, _row.Length * 2);
+                Array.Resize(ref _data, _data.Length * 2);
             }
-            else if (0 < _used)
+            else if (0 < _activeByteCount)
             {
-                _nextRowIndex = _used;
-                _currentRowLength = _used;
+                _currentRowLength = _activeByteCount;
+                _nextRowBegin = _activeByteCount;
                 RemoveCarriageReturn();
                 return true;
             }
             else
             {
-                _nextRowIndex = 0;
                 return false;
             }
         }
