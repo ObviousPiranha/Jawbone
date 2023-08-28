@@ -15,9 +15,12 @@ public sealed class CsvReader
     private int _currentRowBegin = 0;
     private int _currentRowLength = 0;
     private int _nextRowBegin = 0;
+    private int _fieldCount = 0;
 
     public ReadOnlySpan<byte> CurrentRow => _data.AsSpan(_currentRowBegin, _currentRowLength);
-    public int FieldCount { get; private set; }
+    public int FieldCount => _fieldCount;
+
+    public ReadOnlySpan<byte> this[int index] => GetField(index);
 
     public CsvReader()
     {
@@ -27,7 +30,7 @@ public sealed class CsvReader
     public void Start(ByteReader byteReader)
     {
         _byteReader = byteReader;
-        FieldCount = 0;
+        _fieldCount = 0;
         _activeByteCount = 0;
         _currentRowBegin = 0;
         _currentRowLength = 0;
@@ -40,23 +43,23 @@ public sealed class CsvReader
             --_currentRowLength;
 
         var row = CurrentRow;
-        FieldCount = 0;
+        _fieldCount = 0;
         int offset = 0;
         while (true)
         {
-            if (++FieldCount == _dividerIndices.Length)
+            if (++_fieldCount == _dividerIndices.Length)
                 Array.Resize(ref _dividerIndices, _dividerIndices.Length * 2);
 
             var commaIndex = row[offset..].IndexOf((byte)',');
 
             if (0 <= commaIndex)
             {
-                _dividerIndices[FieldCount] = commaIndex + offset;
+                _dividerIndices[_fieldCount] = commaIndex + offset;
                 offset += commaIndex + 1;
             }
             else
             {
-                _dividerIndices[FieldCount] = row.Length;
+                _dividerIndices[_fieldCount] = row.Length;
                 break;
             }
         }
@@ -91,7 +94,7 @@ public sealed class CsvReader
                 {
                     _currentRowBegin = 0;
                     _currentRowLength = 0;
-                    FieldCount = 0;
+                    _fieldCount = 0;
                     return false;
                 }
             }
@@ -133,7 +136,7 @@ public sealed class CsvReader
             }
             else
             {
-                FieldCount = 0;
+                _fieldCount = 0;
                 return false;
             }
         }
@@ -141,11 +144,37 @@ public sealed class CsvReader
 
     public ReadOnlySpan<byte> GetField(int index)
     {
-        if (index < 0 || FieldCount <= index)
+        if (index < 0 || _fieldCount <= index)
             throw new ArgumentOutOfRangeException(nameof(index));
 
         var low = _dividerIndices[index] + 1;
         var high = _dividerIndices[index + 1];
+        return CurrentRow[low..high];
+    }
+
+    public ReadOnlySpan<byte> GetFields(int index, int count)
+    {
+        if (index < 0 || _fieldCount <= index)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        if (count < 0 || _fieldCount < index + count)
+            throw new ArgumentOutOfRangeException(nameof(count));
+
+        var low = _dividerIndices[index] + 1;
+        var high = _dividerIndices[index + count];
+        return CurrentRow[low..high];
+    }
+
+    public ReadOnlySpan<byte> GetFields(int startIndex)
+    {
+        if (startIndex < 0 || _fieldCount < startIndex)
+            throw new ArgumentOutOfRangeException(nameof(startIndex));
+
+        if (startIndex == _fieldCount)
+            return default;
+
+        var low = _dividerIndices[startIndex] + 1;
+        var high = _dividerIndices[_fieldCount];
         return CurrentRow[low..high];
     }
 }
