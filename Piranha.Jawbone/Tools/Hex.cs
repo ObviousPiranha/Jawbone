@@ -5,6 +5,7 @@ namespace Piranha.Jawbone;
 public static class Hex
 {
     public const int InvalidDigit = -1;
+    internal const string Lower = "0123456789abcdef";
 
     public static int MaybeParseDigit(int d)
     {
@@ -27,7 +28,7 @@ public static class Hex
 
         return result;
 
-        static int Throw() => throw new FormatException("Invalid hex digit");
+        static void Throw() => throw new FormatException("Invalid hex digit");
     }
 
     public static int MaybeParseDigits(int high, int low)

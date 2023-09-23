@@ -21,11 +21,11 @@ public static class Few
     }
 
     public static Few<T> Create<T>(params T[]? items)
-        => new Few<T>(ImmutableArray.Create<T>(items));
+        => new(ImmutableArray.Create(items));
     public static Few<T> Create<T>(int count, SpanAction<T> action)
-        => new Few<T>(CreateImmutableArray(count, action));
+        => new(CreateImmutableArray(count, action));
     public static Few<T> CreateRange<T>(IEnumerable<T> items)
-        => new Few<T>(ImmutableArray.CreateRange(items));
+        => new(ImmutableArray.CreateRange(items));
 }
 
 public readonly struct Few<T> : IEquatable<Few<T>>

@@ -114,13 +114,20 @@ public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>
         var b = Hex.MaybeParseDigits(s[offset + 4], s[offset + 5]);
         var a = Hex.MaybeParseDigits(s[offset + 6], s[offset + 7]);
 
-        if (r == Hex.InvalidDigit || g == Hex.InvalidDigit || b == Hex.InvalidDigit || a == Hex.InvalidDigit)
+        if (r == Hex.InvalidDigit ||
+            g == Hex.InvalidDigit ||
+            b == Hex.InvalidDigit ||
+            a == Hex.InvalidDigit)
         {
             result = default;
             return false;
         }
 
-        result = new ColorRgba32((byte)r, (byte)g, (byte)b, (byte)a);
+        result = new ColorRgba32(
+            (byte)r,
+            (byte)g,
+            (byte)b,
+            (byte)a);
         return true;
     }
 

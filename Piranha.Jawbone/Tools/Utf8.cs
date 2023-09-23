@@ -9,8 +9,6 @@ public static class Utf8
     private const int LeadBit = 0x80;
     private const int SixBits = 0x3f;
 
-    private static ReadOnlySpan<byte> LowerHex => "0123456789abcdef"u8;
-
     private static int CountSigBits(int b)
     {
         int result = 0;
@@ -109,6 +107,6 @@ public static class Utf8
 
     internal static int GetContinuationByte(int codePoint, int shift) => LeadBit | ((codePoint >> (6 * shift)) & SixBits);
 
-    public static byte GetHighHexDigit(byte b) => LowerHex[b >> 4];
-    public static byte GetLowHexDigit(byte b) => LowerHex[b & 0xf];
+    public static byte GetHighHexDigit(byte b) => (byte)Hex.Lower[b >> 4];
+    public static byte GetLowHexDigit(byte b) => (byte)Hex.Lower[b & 0xf];
 }
