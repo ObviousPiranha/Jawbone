@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -13,27 +12,19 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
     private T[] _items = Array.Empty<T>();
     private int _nextCapacity;
-    private int _count;
+    private readonly bool _pinned;
 
-    public bool IsEmpty => _count == 0;
+    public bool IsEmpty => Count == 0;
     public int Capacity => _items.Length;
-    public int Count => _count;
+    public int Count { get; private set; }
     public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
 
-    public ref T this[int index]
-    {
-        get
-        {
-            if (_count <= index)
-                throw new ArgumentOutOfRangeException(nameof(index));
+    public ref T this[int index] => ref AsSpan()[index];
 
-            return ref _items[index];
-        }
-    }
-
-    public UnmanagedList()
+    public UnmanagedList(bool pinned = false)
     {
         _nextCapacity = 64;
+        _pinned = pinned;
     }
 
     public UnmanagedList(int firstCapacity)
@@ -45,7 +36,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void Clear()
     {
-        _count = 0;
+        Count = 0;
     }
 
     public Span<T> Acquire(int count)
@@ -63,50 +54,50 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         if (count == 0)
             return default;
 
-        EnsureCapacity(_count + count);
-        var result = _items.AsSpan(_count, count);
-        _count += count;
+        EnsureCapacity(Count + count);
+        var result = _items.AsSpan(Count, count);
+        Count += count;
         return result;
     }
 
     public void Add(T item)
     {
-        if (_count == Capacity)
+        if (Count == Capacity)
             Grow();
 
-        _items[_count++] = item;
+        _items[Count++] = item;
     }
 
     public void Add(T item0, T item1)
     {
-        EnsureCapacity(_count + 2);
-        _items[_count++] = item0;
-        _items[_count++] = item1;
+        EnsureCapacity(Count + 2);
+        _items[Count++] = item0;
+        _items[Count++] = item1;
     }
 
     public void Add(T item0, T item1, T item2)
     {
-        EnsureCapacity(_count + 3);
-        _items[_count++] = item0;
-        _items[_count++] = item1;
-        _items[_count++] = item2;
+        EnsureCapacity(Count + 3);
+        _items[Count++] = item0;
+        _items[Count++] = item1;
+        _items[Count++] = item2;
     }
 
     public void Add(T item0, T item1, T item2, T item3)
     {
-        EnsureCapacity(_count + 4);
-        _items[_count++] = item0;
-        _items[_count++] = item1;
-        _items[_count++] = item2;
-        _items[_count++] = item3;
+        EnsureCapacity(Count + 4);
+        _items[Count++] = item0;
+        _items[Count++] = item1;
+        _items[Count++] = item2;
+        _items[Count++] = item3;
     }
 
     public void AddAll(ReadOnlySpan<T> items)
     {
-        var minCapacity = _count + items.Length;
+        var minCapacity = Count + items.Length;
         EnsureCapacity(minCapacity);
-        items.CopyTo(_items.AsSpan(_count));
-        _count = minCapacity;
+        items.CopyTo(_items.AsSpan(Count));
+        Count = minCapacity;
     }
 
     public void AddRange(IEnumerable<T> items)
@@ -149,24 +140,24 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void Insert(int index, T item)
     {
-        EnsureCapacity(_count + 1);
+        EnsureCapacity(Count + 1);
         AsSpan(index).CopyTo(_items.AsSpan(index + 1));
         _items[index] = item;
-        ++_count;
+        ++Count;
     }
 
     public void InsertAll(int index, ReadOnlySpan<T> items)
     {
-        EnsureCapacity(_count + items.Length);
+        EnsureCapacity(Count + items.Length);
         AsSpan(index).CopyTo(_items.AsSpan(index + items.Length));
         items.CopyTo(_items.AsSpan(index));
-        _count += items.Length;
+        Count += items.Length;
     }
 
     public void RemoveAt(int index)
     {
         AsSpan(index + 1).CopyTo(_items.AsSpan(index));
-        --_count;
+        --Count;
     }
 
     public void RemoveAt(int index, int count)
@@ -174,33 +165,33 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         if (count < 0)
             throw new ArgumentOutOfRangeException(nameof(count));
         AsSpan(index + count).CopyTo(_items.AsSpan(index));
-        _count -= count;
+        Count -= count;
     }
 
     public T Pop()
     {
-        var item = _items[_count - 1]; // Ensure throw happens without altering count.
-        --_count;
+        var item = _items[Count - 1]; // Ensure throw happens without altering count.
+        --Count;
         return item;
     }
 
-    public Span<T> AsSpan() => _items.AsSpan(0, _count);
-    public Span<T> AsSpan(int start) => _items.AsSpan(start, _count - start);
+    public Span<T> AsSpan() => _items.AsSpan(0, Count);
+    public Span<T> AsSpan(int start) => _items.AsSpan(start, Count - start);
     public Span<T> AsSpan(int start, int length) => AsSpan().Slice(start, length);
 
     private void AddEnumerable(IEnumerable<T> enumerable, int count)
     {
-        var minCapacity = _count + count;
+        var minCapacity = Count + count;
         EnsureCapacity(minCapacity);
 
         // This is a defensive maneuver against a badly implemented collection
         // where the reported count fails to match the actual number of items
         // in the collection.
         using var enumerator = enumerable.GetEnumerator();
-        while (_count < minCapacity && enumerator.MoveNext())
+        while (Count < minCapacity && enumerator.MoveNext())
         {
             var current = enumerator.Current;
-            _items[_count++] = current;
+            _items[Count++] = current;
         }
     }
 
@@ -220,25 +211,9 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     private void Grow()
     {
-        var items = new T[_nextCapacity];
+        var items = GC.AllocateUninitializedArray<T>(_nextCapacity, _pinned);
         _nextCapacity *= 2;
         AsSpan().CopyTo(items);
         _items = items;
-    }
-
-    public static T[] CreateArray(int length, SpanAction<byte> action)
-    {
-        var result = new T[length];
-        var span = MemoryMarshal.AsBytes(result.AsSpan());
-        action.Invoke(span);
-        return result;
-    }
-
-    public static T[] CreateArray<TState>(int length, TState state, SpanAction<byte, TState> action)
-    {
-        var result = new T[length];
-        var span = MemoryMarshal.AsBytes(result.AsSpan());
-        action.Invoke(span, state);
-        return result;
     }
 }
