@@ -4,19 +4,21 @@ namespace Piranha.Jawbone;
 
 public static class Alignment
 {
-    private struct Helper<T> where T : unmanaged
-    {
-        public byte padding;
-        public T target;
-    }
-
     private static class AlignmentInfo<T> where T : unmanaged
     {
+        #pragma warning disable CS0649
+        private struct Helper
+        {
+            public byte padding;
+            public T target;
+        }
+        #pragma warning restore CS0649
+
         public static readonly int Value = GetAlignment();
 
         private static int GetAlignment()
         {
-            return (int)Marshal.OffsetOf<Helper<T>>(nameof(Helper<T>.target));
+            return (int)Marshal.OffsetOf<Helper>(nameof(Helper.target));
         }
     }
 
