@@ -17,8 +17,4 @@ public class OpenGlException : Exception
     public OpenGlException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
-
-    protected OpenGlException(SerializationInfo info, StreamingContext context) : base(info, context)
-    {
-    }
 }

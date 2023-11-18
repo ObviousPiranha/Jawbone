@@ -19,17 +19,7 @@
 			"path": "Piranha.Sandbox"
 		},
 		{
-			"path": "Piranha.Jawbone.SourceGenerator"
-		},
-		{
 			"path": "Piranha.Jawbone.Test.Native"
 		}
-	],
-	"settings": {
-		"files.associations": {
-			"stdio.h": "c",
-			"sdl.h": "c"
-		},
-		"dotnet.defaultSolution": "/home/kelly/Documents/Code/ObviousPiranha/Echofall/Jawbone/Piranha.Jawbone/Piranha.Jawbone.sln"
-	}
+	]
 }

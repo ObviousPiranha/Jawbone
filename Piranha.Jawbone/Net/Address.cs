@@ -35,6 +35,6 @@ public static class Address
         in TAddress address
         ) where TAddress : unmanaged, IAddress<TAddress>
     {
-        return MemoryMarshal.AsBytes(new ReadOnlySpan<TAddress>(address));
+        return MemoryMarshal.AsBytes(new ReadOnlySpan<TAddress>(in address));
     }
 }
