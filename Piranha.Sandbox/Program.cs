@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -219,12 +220,33 @@ class Program
         Console.WriteLine($"Intersects at {x}, {y}");
     }
 
+    static void ReadSomeCsv()
+    {
+        var csv = "aaaaaa\nbbb\ncccc,ccc,,ccccccc\r\nddddd";
+        var utf8 = Encoding.UTF8.GetBytes(csv);
+        using var stream = new MemoryStream(utf8);
+        var reader = new CsvReader();
+        reader.Start(stream.Read);
+        while (reader.TryReadRow())
+        {
+            var word = reader.FieldCount == 1 ? "field" : "fields";
+            Console.WriteLine($"{reader.FieldCount} {word}:");
+
+            for (int i = 0; i < reader.FieldCount; ++i)
+            {
+                var text = Encoding.UTF8.GetString(reader.GetField(i));
+                Console.WriteLine("  - " + text);
+            }
+        }
+    }
+
     static void Main(string[] args)
     {
         try
         {
             Address128 a128 = Address.Any;
-            ProjectSomeLines();
+            ReadSomeCsv();
+            //ProjectSomeLines();
             //FancyBinding();
             // AllowV4(true);
             // AllowV4(false);

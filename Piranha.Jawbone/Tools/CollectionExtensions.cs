@@ -15,14 +15,14 @@ public struct ArrayWithIndexEnumerator<T>
     }
 
     public bool MoveNext() => ++_index < _array.Length;
-    public KeyValuePair<int, T> Current => KeyValuePair.Create(_index, _array[_index]);
+    public readonly KeyValuePair<int, T> Current => new(_index, _array[_index]);
 }
 
 public readonly struct ArrayWithIndexEnumerable<T>
 {
     private readonly T[] _array;
     public ArrayWithIndexEnumerable(T[] array) => _array = array;
-    public ArrayWithIndexEnumerator<T> GetEnumerator() => new ArrayWithIndexEnumerator<T>(_array);
+    public ArrayWithIndexEnumerator<T> GetEnumerator() => new(_array);
 }
 
 public static class CollectionExtensions
@@ -184,7 +184,10 @@ public static class CollectionExtensions
         }
     }
 
-    public static bool StartsWith(this string text, ReadOnlySpan<char> value, out ReadOnlySpan<char> after)
+    public static bool StartsWith(
+        this string text,
+        ReadOnlySpan<char> value,
+        out ReadOnlySpan<char> after)
     {
         ArgumentNullException.ThrowIfNull(text);
         return text.AsSpan().StartsWith(value, out after);

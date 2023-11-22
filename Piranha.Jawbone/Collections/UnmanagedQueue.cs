@@ -12,7 +12,7 @@ file static class UnmanagedQueueExtensions
         T source
         ) where T : unmanaged
     {
-        MemoryMarshal.Write(destination, ref source);
+        MemoryMarshal.Write(destination, source);
         return destination[Unsafe.SizeOf<T>()..];
     }
 

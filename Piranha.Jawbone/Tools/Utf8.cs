@@ -106,4 +106,7 @@ public static class Utf8
     }
 
     internal static int GetContinuationByte(int codePoint, int shift) => LeadBit | ((codePoint >> (6 * shift)) & SixBits);
+
+    public static byte GetHighHexDigit(byte b) => (byte)Hex.Lower[b >> 4];
+    public static byte GetLowHexDigit(byte b) => (byte)Hex.Lower[b & 0xf];
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Piranha.Jawbone.Test;
@@ -26,7 +27,8 @@ public class XxteaTest
     [Fact]
     public void RoundTrip()
     {
-        var expected = UnmanagedList<uint>.CreateArray(64, static span => Random.Shared.NextBytes(span));
+        var expected = new uint[64];
+        Random.Shared.NextBytes(MemoryMarshal.AsBytes(expected.AsSpan()));
         var actual = expected.AsSpan().ToArray();
         Xxtea.Encrypt(actual, Key);
         Assert.False(expected.AsSpan().SequenceEqual(actual));
@@ -56,7 +58,8 @@ public class XxteaTest
     public void ExtraLongRoundTrip()
     {
         const int TripCount = 8;
-        var expected = UnmanagedList<uint>.CreateArray(64, static span => Random.Shared.NextBytes(span));
+        var expected = new uint[64];
+        Random.Shared.NextBytes(MemoryMarshal.AsBytes(expected.AsSpan()));
         var actual = expected.AsSpan().ToArray();
         for (int i = 0; i < TripCount; ++i)
             Xxtea.Encrypt(actual, Key);

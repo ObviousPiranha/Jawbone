@@ -114,7 +114,7 @@ public readonly struct Address128 : IAddress<Address128>
         int zeroLength = 0;
 
         var span16 = MemoryMarshal.Cast<Address128, ushort>(
-            new ReadOnlySpan<Address128>(this));
+            new ReadOnlySpan<Address128>(in this));
         for (int i = 0; i < span16.Length; ++i)
         {
             if (span16[i] == 0)

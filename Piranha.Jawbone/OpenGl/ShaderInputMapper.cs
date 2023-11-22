@@ -58,6 +58,8 @@ public readonly struct ShaderInputMapper
             Pair(typeof(Vector2<uint>), 2, Gl.UnsignedInt),
             Pair(typeof(Vector3<uint>), 3, Gl.UnsignedInt),
             Pair(typeof(Vector4<uint>), 4, Gl.UnsignedInt),
+            Pair(typeof(ColorRgb24), 3, Gl.UnsignedByte),
+            Pair(typeof(ColorRgba32), 4, Gl.UnsignedByte),
             Pair(typeof(PackedUnsignedVector4), (int)Gl.Bgra, Gl.UnsignedInt2101010Rev)
         }.ToImmutableDictionary();
 
