@@ -6,11 +6,11 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
 {
     private readonly long _handle;
 
-    public UdpSocketV4(Endpoint<AddressV4> endpoint)
+    private UdpSocketV4(Endpoint<AddressV4> endpoint)
     {
         JawboneNetworking.CreateAndBindUdpV4Socket(
             endpoint.Address,
-            endpoint.NetworkOrderPort,
+            endpoint.Port.NetworkValue,
             UdpSocket.Bind,
             out _handle,
             out var socketError,
@@ -57,7 +57,7 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
             message[0],
             message.Length,
             destination.Address,
-            destination.NetworkOrderPort,
+            destination.Port.NetworkValue,
             out var errorCode);
 
         SocketException.ThrowOnError(errorCode, "Unable to send data.");
@@ -85,7 +85,7 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
         origin = new Endpoint<AddressV4>
         {
             Address = address,
-            NetworkOrderPort = networkOrderPort
+            Port = new NetworkPort { NetworkValue = networkOrderPort }
         };
 
         return result;
@@ -108,7 +108,17 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
         return new Endpoint<AddressV4>
         {
             Address = address.IsDefault && networkOrderPort != 0 ? AddressV4.Local : address,
-            NetworkOrderPort = networkOrderPort
+            Port = new NetworkPort { NetworkValue = networkOrderPort }
         };
+    }
+
+    public static UdpSocketV4 CreateAndBindAny(NetworkPort port)
+    {
+
+    }
+
+    public static UdpSocketV4 CreateAndBind(Endpoint<AddressV4> endpoint)
+    {
+        return new(endpoint);
     }
 }

@@ -6,9 +6,6 @@ namespace Piranha.Jawbone.Net;
 
 public static class Address
 {
-    public static AnyAddress Any => default;
-    public static LocalAddress Local => default;
-
     public static Endpoint<TAddress> OnPort<TAddress>(
         this TAddress address,
         int port

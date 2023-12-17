@@ -18,7 +18,6 @@ public readonly struct AddressV6 : IAddress<AddressV6>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 
-    public static AddressV6 Any => default;
     public static AddressV6 Local { get; } = Create(static span => span[^1] = 1);
 
     internal static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
@@ -361,7 +360,4 @@ public readonly struct AddressV6 : IAddress<AddressV6>
     public static AddressV6 operator &(AddressV6 a, AddressV6 b) => new(a._a & b._a, a._b & b._b, a._c & b._c, a._d & b._d);
     public static AddressV6 operator |(AddressV6 a, AddressV6 b) => new(a._a | b._a, a._b | b._b, a._c | b._c, a._d | b._d);
     public static AddressV6 operator ^(AddressV6 a, AddressV6 b) => new(a._a ^ b._a, a._b ^ b._b, a._c ^ b._c, a._d ^ b._d);
-
-    public static implicit operator AddressV6(AnyAddress anyAddress) => Any;
-    public static implicit operator AddressV6(LocalAddress localAddress) => Local;
 }

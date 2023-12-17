@@ -13,8 +13,6 @@ public class AddressTest
         Assert.Equal(4, Unsafe.SizeOf<AddressV4>());
         Assert.Equal(20, Unsafe.SizeOf<AddressV6>());
 
-        Assert.False(AddressV4.Any.IsLoopback);
-        Assert.False(AddressV6.Any.IsLoopback);
         Assert.True(AddressV4.Local.IsLoopback);
         Assert.True(AddressV6.Local.IsLoopback);
 
@@ -176,7 +174,6 @@ public class AddressTest
 
     public static TheoryData<AddressV6> NotLinkLocal128 => new()
     {
-        AddressV6.Any,
         AddressV6.Local,
         AddressV6.Create(static span => span.Fill(0xab))
     };
@@ -192,7 +189,6 @@ public class AddressTest
 
     public static TheoryData<AddressV6> RoundTripParse128 => new()
     {
-        AddressV6.Any,
         AddressV6.Local,
         AddressV6.Create(static span => span.Fill(0xab)),
         AddressV6.Create(static span =>

@@ -21,7 +21,6 @@ public readonly struct AddressV4 : IAddress<AddressV4>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LoopbackSubnet() => BitConverter.IsLittleEndian ? 0x0000007f : (uint)0x7f000000;
 
-    public static AddressV4 Any => default;
     public static AddressV4 Local { get; } = new(127, 0, 0, 1);
     public static AddressV4 Broadcast { get; } = new(255, 255, 255, 255);
 
@@ -193,8 +192,5 @@ public readonly struct AddressV4 : IAddress<AddressV4>
     public static AddressV4 operator &(AddressV4 a, AddressV4 b) => new(a._rawAddress & b._rawAddress);
     public static AddressV4 operator |(AddressV4 a, AddressV4 b) => new(a._rawAddress | b._rawAddress);
     public static AddressV4 operator ^(AddressV4 a, AddressV4 b) => new(a._rawAddress ^ b._rawAddress);
-
-    public static implicit operator AddressV4(AnyAddress anyAddress) => Any;
-    public static implicit operator AddressV4(LocalAddress localAddress) => Local;
 }
 
