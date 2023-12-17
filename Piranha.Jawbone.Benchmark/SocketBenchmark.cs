@@ -12,21 +12,21 @@ public class SocketBenchmark
 {
     private const int Port = 11111;
 
-    private static readonly Endpoint<Address32> JawboneDestination = new(Address32.Local, Port);
+    private static readonly Endpoint<AddressV4> JawboneDestination = new(AddressV4.Local, Port);
     private static readonly IPEndPoint DotNetDestination = new(IPAddress.Loopback, Port);
 
     private readonly byte[] _sendBuffer = new byte[713];
     private readonly byte[] _receiveBuffer = new byte[2048];
 
-    private UdpSocket32 _serverSocket = null!;
-    private UdpSocket32 _jawboneClientSocket = null!;
+    private UdpSocketV4 _serverSocket = null!;
+    private UdpSocketV4 _jawboneClientSocket = null!;
     private Socket _dotNetClientSocket = null!;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _serverSocket = new UdpSocket32(Endpoint.Create(Address32.Local, Port));
-        _jawboneClientSocket = new UdpSocket32(default);
+        _serverSocket = new UdpSocketV4(Endpoint.Create(AddressV4.Local, Port));
+        _jawboneClientSocket = new UdpSocketV4(default);
         _dotNetClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         _dotNetClientSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
         RandomNumberGenerator.Fill(_sendBuffer);
@@ -46,7 +46,7 @@ public class SocketBenchmark
         int n = _serverSocket.Receive(_receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
         if (n != _sendBuffer.Length)
             throw new Exception($"Hey, I didn't get the right number of bytes. Expected {_sendBuffer.Length} Actual {n}");
-        
+
         if (!_receiveBuffer.AsSpan(0, n).SequenceEqual(_sendBuffer))
             throw new Exception("They didn't match.");
     }
@@ -57,7 +57,7 @@ public class SocketBenchmark
         int n = _dotNetClientSocket.SendTo(_sendBuffer, DotNetDestination);
         if (n != _sendBuffer.Length)
             throw new Exception("You lied to me.");
-        
+
         IterationCleanup();
     }
 
@@ -67,7 +67,7 @@ public class SocketBenchmark
         int n = _jawboneClientSocket.Send(_sendBuffer, JawboneDestination);
         if (n != _sendBuffer.Length)
             throw new Exception("You lied to me.");
-        
+
         IterationCleanup();
     }
 }

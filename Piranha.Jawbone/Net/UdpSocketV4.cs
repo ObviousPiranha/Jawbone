@@ -2,19 +2,16 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
+public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
 {
     private readonly long _handle;
 
-    public bool AllowV4 { get; }
-
-    public UdpSocket128(Endpoint<Address128WithScopeId> endpoint, bool allowV4)
+    public UdpSocketV4(Endpoint<AddressV4> endpoint)
     {
-        var flags = UdpSocket.Bind | (allowV4 ? 0 : UdpSocket.IPv6Only);
-        JawboneNetworking.CreateAndBindUdpV6Socket(
+        JawboneNetworking.CreateAndBindUdpV4Socket(
             endpoint.Address,
             endpoint.NetworkOrderPort,
-            flags,
+            UdpSocket.Bind,
             out _handle,
             out var socketError,
             out var setSocketOptionError,
@@ -23,17 +20,15 @@ public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
         SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
-
-        AllowV4 = allowV4;
     }
 
-    public UdpSocket128(bool allowV4)
+    public UdpSocketV4()
     {
-        var flags = allowV4 ? 0 : UdpSocket.IPv6Only;
-        JawboneNetworking.CreateAndBindUdpV6Socket(
+        // https://stackoverflow.com/a/17922652
+        JawboneNetworking.CreateAndBindUdpV4Socket(
             default,
             default,
-            flags,
+            0,
             out _handle,
             out var socketError,
             out var setSocketOptionError,
@@ -42,8 +37,6 @@ public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
         SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
-
-        AllowV4 = allowV4;
     }
 
     public void Shutdown()
@@ -57,9 +50,9 @@ public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
         JawboneNetworking.CloseSocket(_handle);
     }
 
-    public int Send(ReadOnlySpan<byte> message, Endpoint<Address128WithScopeId> destination)
+    public int Send(ReadOnlySpan<byte> message, Endpoint<AddressV4> destination)
     {
-        var result = JawboneNetworking.SendToV6(
+        var result = JawboneNetworking.SendToV4(
             _handle,
             message[0],
             message.Length,
@@ -74,11 +67,11 @@ public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
 
     public int Receive(
         Span<byte> buffer,
-        out Endpoint<Address128WithScopeId> origin,
+        out Endpoint<AddressV4> origin,
         TimeSpan timeout)
     {
         var milliseconds = (int)(timeout.Ticks / TimeSpan.TicksPerMillisecond);
-        var result = JawboneNetworking.ReceiveFromV6(
+        var result = JawboneNetworking.ReceiveFromV4(
             _handle,
             out buffer[0],
             buffer.Length,
@@ -89,7 +82,7 @@ public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
 
         SocketException.ThrowOnError(errorCode, "Error on receive.");
 
-        origin = new Endpoint<Address128WithScopeId>
+        origin = new Endpoint<AddressV4>
         {
             Address = address,
             NetworkOrderPort = networkOrderPort
@@ -98,18 +91,23 @@ public sealed class UdpSocket128 : IUdpSocket<Address128WithScopeId>
         return result;
     }
 
-    public Endpoint<Address128WithScopeId> GetEndpoint()
+    public Endpoint<AddressV4> GetEndpoint()
     {
-        var result = JawboneNetworking.GetV6SocketName(
+        var result = JawboneNetworking.GetV4SocketName(
             _handle,
             out var address,
             out var networkOrderPort);
 
         SocketException.ThrowOnError(result, "Unable to get socket name.");
 
-        return new Endpoint<Address128WithScopeId>
+        // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-sendto
+        // If the socket is not connected, the getsockname function can be used to
+        // determine the local port number associated with the socket but the IP address
+        // returned is set to the wildcard address for the given protocol (for example,
+        // INADDR_ANY or "0.0.0.0" for IPv4 and IN6ADDR_ANY_INIT or "::" for IPv6).
+        return new Endpoint<AddressV4>
         {
-            Address = address.IsDefault && networkOrderPort != 0 ? Address128.Local : address,
+            Address = address.IsDefault && networkOrderPort != 0 ? AddressV4.Local : address,
             NetworkOrderPort = networkOrderPort
         };
     }

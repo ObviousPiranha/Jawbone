@@ -16,25 +16,4 @@ public static class Address
     {
         return new(address, port);
     }
-
-    public static Address128WithScopeId WithScopeId(
-        this Address128 address,
-        uint scopeId = 0)
-    {
-        return new Address128WithScopeId(address, scopeId);
-    }
-
-    public static Span<byte> AsBytes<TAddress>(
-        ref TAddress address
-        ) where TAddress : unmanaged, IAddress<TAddress>
-    {
-        return MemoryMarshal.AsBytes(new Span<TAddress>(ref address));
-    }
-
-    public static ReadOnlySpan<byte> AsReadOnlyBytes<TAddress>(
-        in TAddress address
-        ) where TAddress : unmanaged, IAddress<TAddress>
-    {
-        return MemoryMarshal.AsBytes(new ReadOnlySpan<TAddress>(in address));
-    }
 }

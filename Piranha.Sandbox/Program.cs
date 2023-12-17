@@ -40,27 +40,27 @@ class Program
     {
         var bytes = new byte[16];
         Random.Shared.NextBytes(bytes);
-        var v6 = new Address128(bytes);
+        var v6 = new AddressV6(bytes);
         Console.WriteLine(v6);
 
         var byteBuffer = new ByteBuffer();
-        var endpoints = new Endpoint<Address128>[16];
-        var randomAddress = Address128.Create(static span => RandomNumberGenerator.Fill(span));
+        var endpoints = new Endpoint<AddressV6>[16];
+        var randomAddress = AddressV6.Create(static span => RandomNumberGenerator.Fill(span));
         endpoints.AsSpan().Fill(Endpoint.Create(randomAddress, 200));
         byteBuffer.AddAllAsBytes(endpoints);
 
-        Console.WriteLine(Address32.Local.MapToV6());
-        Console.WriteLine(new Address128());
-        Console.WriteLine(Address128.Local);
-        Console.WriteLine(Address128.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
-        Console.WriteLine(Address128.Create(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
-        Console.WriteLine(Address128.Create(0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0));
+        Console.WriteLine(AddressV4.Local.MapToV6());
+        Console.WriteLine(new AddressV6());
+        Console.WriteLine(AddressV6.Local);
+        Console.WriteLine(AddressV6.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
+        Console.WriteLine(AddressV6.Create(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
+        Console.WriteLine(AddressV6.Create(0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0));
 
-        var v4 = new Address32(192, 168, 0, 1);
+        var v4 = new AddressV4(192, 168, 0, 1);
         Console.WriteLine(v4);
 
-        ShowSize<Endpoint<Address32>>();
-        ShowSize<Endpoint<Address128>>();
+        ShowSize<Endpoint<AddressV4>>();
+        ShowSize<Endpoint<AddressV6>>();
         var info1 = AddressInfo.Get("google.com", "443");
         Dump(info1);
         var info2 = AddressInfo.Get("thebuzzsaw.duckdns.org", null);
@@ -70,10 +70,10 @@ class Program
 
         Console.WriteLine("yo yo yo");
 
-        using (var socket = new UdpSocket32(Endpoint.Any))
+        using (var socket = new UdpSocketV4(Endpoint.Any))
             Console.WriteLine(socket.GetEndpoint().ToString());
 
-        using (var socket = new UdpSocket128(Endpoint.Any, false))
+        using (var socket = new UdpSocketV6(Endpoint.Any, false))
             Console.WriteLine(socket.GetEndpoint().ToString());
     }
 
@@ -83,13 +83,13 @@ class Program
         var receiveBuffer = new byte[sendBuffer.Length];
 
         RandomNumberGenerator.Fill(sendBuffer);
-        using (var socketV6 = new UdpSocket128(Endpoint.Any, allowV4))
+        using (var socketV6 = new UdpSocketV6(Endpoint.Any, allowV4))
         {
             var endpointV6 = socketV6.GetEndpoint();
             var word = allowV4 ? "enabled" : "disabled";
             Console.WriteLine($"Bound on {endpointV6} with V4 {word}.");
-            var destination = Endpoint.Create(Address32.Local, endpointV6.Port);
-            using (var socketV4 = new UdpSocket32())
+            var destination = Endpoint.Create(AddressV4.Local, endpointV6.Port);
+            using (var socketV4 = new UdpSocketV4())
             {
                 socketV4.Send(sendBuffer, destination);
                 var endpointV4 = socketV4.GetEndpoint();
@@ -110,11 +110,11 @@ class Program
 
     static void FancyBinding()
     {
-        var endpointA = new Address32(192, 168, 50, 181).OnPort(7777);
-        using var socketA = new UdpSocket32(endpointA);
+        var endpointA = new AddressV4(192, 168, 50, 181).OnPort(7777);
+        using var socketA = new UdpSocketV4(endpointA);
         Console.WriteLine($"Socket A on {endpointA}.");
 
-        using var socketB = new UdpSocket32(Endpoint.Any);
+        using var socketB = new UdpSocketV4(Endpoint.Any);
         var endpointB = socketB.GetEndpoint();
         Console.WriteLine($"Socket B on {endpointB}.");
 
@@ -136,11 +136,11 @@ class Program
     {
         try
         {
-            using var socketA = new UdpSocket32(Endpoint.Any);
+            using var socketA = new UdpSocketV4(Endpoint.Any);
             var endpoint = socketA.GetEndpoint();
             Console.WriteLine($"Bound socket on {endpoint}.");
 
-            using var socketB = new UdpSocket32(AnyAddress.OnPort(endpoint.Port));
+            using var socketB = new UdpSocketV4(AnyAddress.OnPort(endpoint.Port));
             Console.WriteLine("Hm. This shouldn't be possible.");
         }
         catch (Exception ex)
@@ -157,11 +157,11 @@ class Program
         GetAndDump("thebuzzsaw.duckdns.org", null);
     }
 
-    static void ParseSomeAddresses(Address128 address)
+    static void ParseSomeAddresses(AddressV6 address)
     {
         var asString = address.ToString();
         Console.WriteLine("Original: " + asString);
-        var parsed = Address128.Parse(asString, null);
+        var parsed = AddressV6.Parse(asString, null);
         Console.WriteLine("Parsed:   " + parsed.ToString());
     }
 
@@ -177,13 +177,13 @@ class Program
     static void BindToLinkLocal()
     {
         GetAndDump("fe80::ccb6:72b9:6d63:6863%wlp2s0", "7777");
-        var address = Address128.Parse("fe80::ccb6:72b9:6d63:6863", null);
+        var address = AddressV6.Parse("fe80::ccb6:72b9:6d63:6863", null);
         Console.WriteLine("Address: " + address);
-        using var socketA = new UdpSocket128(address.WithScopeId(2).OnPort(7777), false);
+        using var socketA = new UdpSocketV6(address.WithScopeId(2).OnPort(7777), false);
         var endpointA = socketA.GetEndpoint();
         Console.WriteLine("Bound to " + endpointA.ToString());
 
-        using var socketB = new UdpSocket128(address.WithScopeId(2).OnPort(9999), false);
+        using var socketB = new UdpSocketV6(address.WithScopeId(2).OnPort(9999), false);
         var endpointB = socketB.GetEndpoint();
         Console.WriteLine("Bound to " + endpointB.ToString());
         var message = "HOORAH"u8;
@@ -244,7 +244,7 @@ class Program
     {
         try
         {
-            Address128 a128 = Address.Any;
+            AddressV6 a128 = Address.Any;
             ReadSomeCsv();
             //ProjectSomeLines();
             //FancyBinding();
@@ -254,12 +254,12 @@ class Program
             // AddressShenanigans();
             // GetSomeAddresses();
             // BindToLinkLocal();
-            // CleverAssignment<Address32>(Address.Any);
-            // CleverAssignment<Address128>(Address.Any);
-            // ParseSomeAddresses(Address128.Local);
-            // ParseSomeAddresses(Address128.Create(static span => span.Fill(0xab)));
-            // ParseSomeAddresses(Address128.Any);
-            // ParseSomeAddresses(Address128.Create(static span =>
+            // CleverAssignment<AddressV4>(Address.Any);
+            // CleverAssignment<AddressV6>(Address.Any);
+            // ParseSomeAddresses(AddressV6.Local);
+            // ParseSomeAddresses(AddressV6.Create(static span => span.Fill(0xab)));
+            // ParseSomeAddresses(AddressV6.Any);
+            // ParseSomeAddresses(AddressV6.Create(static span =>
             // {
             //     span[0] = 0xc;
             //     span[11] = 0xb;
@@ -272,7 +272,7 @@ class Program
                 var info = AddressInfo.Get(args[0], args[1]);
                 var endpoint = info.V4[0];
 
-                using var client = new UdpSocket32(Endpoint.Any);
+                using var client = new UdpSocketV4(Endpoint.Any);
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
                 client.Send(message, endpoint);
@@ -281,8 +281,8 @@ class Program
             else if (args.Length == 1)
             {
                 var port = int.Parse(args[0]);
-                var endpoint = Address32.Any.OnPort(port);
-                using var server = new UdpSocket32(endpoint);
+                var endpoint = AddressV4.Any.OnPort(port);
+                using var server = new UdpSocketV4(endpoint);
                 Console.WriteLine("Listening on " + endpoint.ToString());
                 var buffer = new byte[4096];
 
@@ -329,13 +329,13 @@ class Program
         var serverInfo = AddressInfo.Get(null, "12345");
         Dump(serverInfo);
 
-        using var myServer = new UdpSocket128(serverInfo.V6[0], false);
-        // using var myServer = socketProvider.CreateAndBindUdpSocket128(new Endpoint<Address128>(Address128.Create(span => span.Fill((byte)0xff)), 1));
+        using var myServer = new UdpSocketV6(serverInfo.V6[0], false);
+        // using var myServer = socketProvider.CreateAndBindUdpSocketV6(new Endpoint<AddressV6>(AddressV6.Create(span => span.Fill((byte)0xff)), 1));
         Console.WriteLine("Server bound!");
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
 
-        using var myClient = new UdpSocket128(Endpoint.Any, false);
+        using var myClient = new UdpSocketV6(Endpoint.Any, false);
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
 

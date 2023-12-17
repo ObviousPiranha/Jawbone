@@ -23,7 +23,7 @@ public static partial class JawboneNetworking
     public static partial void StopNetworking();
     [LibraryImport(Library, EntryPoint = "jawboneCreateAndBindUdpV4Socket")]
     public static partial void CreateAndBindUdpV4Socket(
-        Address32 address,
+        AddressV4 address,
         ushort port,
         int flags,
         out long outSocket,
@@ -32,7 +32,7 @@ public static partial class JawboneNetworking
         out int outBindError);
     [LibraryImport(Library, EntryPoint = "jawboneCreateAndBindUdpV6Socket")]
     public static partial void CreateAndBindUdpV6Socket(
-        in Address128WithScopeId address,
+        in AddressV6 address,
         ushort port,
         int flags,
         out long outSocket,
@@ -42,19 +42,19 @@ public static partial class JawboneNetworking
     [LibraryImport(Library, EntryPoint = "jawboneGetV4SocketName")]
     public static partial int GetV4SocketName(
         in long inSocket,
-        out Address32 outAddress,
+        out AddressV4 outAddress,
         out ushort outPort);
     [LibraryImport(Library, EntryPoint = "jawboneGetV6SocketName")]
     public static partial int GetV6SocketName(
         in long inSocket,
-        out Address128WithScopeId outAddress,
+        out AddressV6 outAddress,
         out ushort outPort);
     [LibraryImport(Library, EntryPoint = "jawboneSendToV4")]
     public static partial int SendToV4(
         in long inSocket,
         in byte inBuffer,
         int bufferLength,
-        Address32 address,
+        AddressV4 address,
         ushort port,
         out int errorCode);
     [LibraryImport(Library, EntryPoint = "jawboneSendToV6")]
@@ -62,7 +62,7 @@ public static partial class JawboneNetworking
         in long inSocket,
         in byte inBuffer,
         int bufferLength,
-        in Address128WithScopeId address,
+        in AddressV6 address,
         ushort port,
         out int errorCode);
     [LibraryImport(Library, EntryPoint = "jawboneReceiveFromV4")]
@@ -70,7 +70,7 @@ public static partial class JawboneNetworking
         in long inSocket,
         out byte outBuffer,
         int bufferLength,
-        out Address32 outAddress,
+        out AddressV4 outAddress,
         out ushort outPort,
         out int errorCode,
         int milliseconds);
@@ -79,7 +79,7 @@ public static partial class JawboneNetworking
         in long inSocket,
         out byte outBuffer,
         int bufferLength,
-        out Address128WithScopeId outAddress,
+        out AddressV6 outAddress,
         out ushort outPort,
         out int errorCode,
         int milliseconds);
@@ -91,11 +91,11 @@ public static partial class JawboneNetworking
     public static partial int GetAddressInfo(
         string? node,
         string? service,
-        out Endpoint<Address32> resultsV4,
+        out Endpoint<AddressV4> resultsV4,
         int sizeV4,
         int capacityV4,
         out int countV4,
-        out Endpoint<Address128WithScopeId> resultsV6,
+        out Endpoint<AddressV6> resultsV6,
         int sizeV6,
         int capacityV6,
         out int countV6);

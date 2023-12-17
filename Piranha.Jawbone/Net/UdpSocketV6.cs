@@ -2,16 +2,19 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public sealed class UdpSocket32 : IUdpSocket<Address32>
+public sealed class UdpSocketV6 : IUdpSocket<AddressV6>
 {
     private readonly long _handle;
 
-    public UdpSocket32(Endpoint<Address32> endpoint)
+    public bool AllowV4 { get; }
+
+    public UdpSocketV6(Endpoint<AddressV6> endpoint, bool allowV4)
     {
-        JawboneNetworking.CreateAndBindUdpV4Socket(
+        var flags = UdpSocket.Bind | (allowV4 ? 0 : UdpSocket.IPv6Only);
+        JawboneNetworking.CreateAndBindUdpV6Socket(
             endpoint.Address,
             endpoint.NetworkOrderPort,
-            UdpSocket.Bind,
+            flags,
             out _handle,
             out var socketError,
             out var setSocketOptionError,
@@ -20,15 +23,17 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
         SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+
+        AllowV4 = allowV4;
     }
 
-    public UdpSocket32()
+    public UdpSocketV6(bool allowV4)
     {
-        // https://stackoverflow.com/a/17922652
-        JawboneNetworking.CreateAndBindUdpV4Socket(
+        var flags = allowV4 ? 0 : UdpSocket.IPv6Only;
+        JawboneNetworking.CreateAndBindUdpV6Socket(
             default,
             default,
-            0,
+            flags,
             out _handle,
             out var socketError,
             out var setSocketOptionError,
@@ -37,6 +42,8 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         SocketException.ThrowOnError(socketError, "Unable to create socket.");
         SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
         SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+
+        AllowV4 = allowV4;
     }
 
     public void Shutdown()
@@ -50,9 +57,9 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         JawboneNetworking.CloseSocket(_handle);
     }
 
-    public int Send(ReadOnlySpan<byte> message, Endpoint<Address32> destination)
+    public int Send(ReadOnlySpan<byte> message, Endpoint<AddressV6> destination)
     {
-        var result = JawboneNetworking.SendToV4(
+        var result = JawboneNetworking.SendToV6(
             _handle,
             message[0],
             message.Length,
@@ -67,11 +74,11 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
 
     public int Receive(
         Span<byte> buffer,
-        out Endpoint<Address32> origin,
+        out Endpoint<AddressV6> origin,
         TimeSpan timeout)
     {
         var milliseconds = (int)(timeout.Ticks / TimeSpan.TicksPerMillisecond);
-        var result = JawboneNetworking.ReceiveFromV4(
+        var result = JawboneNetworking.ReceiveFromV6(
             _handle,
             out buffer[0],
             buffer.Length,
@@ -82,7 +89,7 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
 
         SocketException.ThrowOnError(errorCode, "Error on receive.");
 
-        origin = new Endpoint<Address32>
+        origin = new Endpoint<AddressV6>
         {
             Address = address,
             NetworkOrderPort = networkOrderPort
@@ -91,23 +98,18 @@ public sealed class UdpSocket32 : IUdpSocket<Address32>
         return result;
     }
 
-    public Endpoint<Address32> GetEndpoint()
+    public Endpoint<AddressV6> GetEndpoint()
     {
-        var result = JawboneNetworking.GetV4SocketName(
+        var result = JawboneNetworking.GetV6SocketName(
             _handle,
             out var address,
             out var networkOrderPort);
 
         SocketException.ThrowOnError(result, "Unable to get socket name.");
 
-        // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-sendto
-        // If the socket is not connected, the getsockname function can be used to
-        // determine the local port number associated with the socket but the IP address
-        // returned is set to the wildcard address for the given protocol (for example,
-        // INADDR_ANY or "0.0.0.0" for IPv4 and IN6ADDR_ANY_INIT or "::" for IPv6).
-        return new Endpoint<Address32>
+        return new Endpoint<AddressV6>
         {
-            Address = address.IsDefault && networkOrderPort != 0 ? Address32.Local : address,
+            Address = address.IsDefault && networkOrderPort != 0 ? AddressV6.Local : address,
             NetworkOrderPort = networkOrderPort
         };
     }

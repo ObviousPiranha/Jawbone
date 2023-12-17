@@ -7,7 +7,7 @@ using System.Text;
 namespace Piranha.Jawbone.Net;
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Address32 : IAddress<Address32>
+public readonly struct AddressV4 : IAddress<AddressV4>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000ffff : 0xffff0000;
@@ -21,9 +21,9 @@ public readonly struct Address32 : IAddress<Address32>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LoopbackSubnet() => BitConverter.IsLittleEndian ? 0x0000007f : (uint)0x7f000000;
 
-    public static Address32 Any => default;
-    public static Address32 Local { get; } = new(127, 0, 0, 1);
-    public static Address32 Broadcast { get; } = new(255, 255, 255, 255);
+    public static AddressV4 Any => default;
+    public static AddressV4 Local { get; } = new(127, 0, 0, 1);
+    public static AddressV4 Broadcast { get; } = new(255, 255, 255, 255);
 
     private readonly uint _rawAddress;
 
@@ -31,28 +31,28 @@ public readonly struct Address32 : IAddress<Address32>
     public readonly bool IsLinkLocal => (_rawAddress & LinkLocalMask()) == LinkLocalSubnet();
     public readonly bool IsLoopback => (_rawAddress & LoopbackMask()) == LoopbackSubnet();
 
-    public Address32(ReadOnlySpan<byte> values) : this()
+    public AddressV4(ReadOnlySpan<byte> values) : this()
     {
-        var span = Address.AsBytes(ref this);
+        var span = AsBytes(ref this);
         values.Slice(0, span.Length).CopyTo(span);
     }
 
-    public Address32(byte a, byte b, byte c, byte d) : this()
+    public AddressV4(byte a, byte b, byte c, byte d) : this()
     {
-        var bytes = Address.AsBytes(ref this);
+        var bytes = AsBytes(ref this);
         bytes[3] = d;
         bytes[2] = c;
         bytes[1] = b;
         bytes[0] = a;
     }
 
-    internal Address32(uint rawAddress) => _rawAddress = rawAddress;
+    internal AddressV4(uint rawAddress) => _rawAddress = rawAddress;
 
-    public readonly Address128 MapToV6() => new(0, 0, Address128.PrefixV4, _rawAddress);
+    public readonly AddressV6 MapToV6() => new(0, 0, AddressV6.PrefixV4, _rawAddress);
 
-    public readonly bool Equals(Address32 other) => _rawAddress == other._rawAddress;
+    public readonly bool Equals(AddressV4 other) => _rawAddress == other._rawAddress;
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
-        => obj is Address32 other && Equals(other);
+        => obj is AddressV4 other && Equals(other);
     public override readonly int GetHashCode() => _rawAddress.GetHashCode();
     public override readonly string ToString()
     {
@@ -63,7 +63,7 @@ public readonly struct Address32 : IAddress<Address32>
 
     public readonly void AppendTo(StringBuilder builder)
     {
-        var span = Address.AsReadOnlyBytes(this);
+        var span = AsReadOnlyBytes(in this);
         builder
             .Append(span[0])
             .Append('.')
@@ -74,7 +74,7 @@ public readonly struct Address32 : IAddress<Address32>
             .Append(span[3]);
     }
 
-    private static string? DoTheParse(ReadOnlySpan<char> s, out Address32 result)
+    private static string? DoTheParse(ReadOnlySpan<char> s, out AddressV4 result)
     {
         // TODO: Support atypical formats.
         // https://en.wikipedia.org/wiki/Internet_Protocol_version_4#Address_representations
@@ -112,7 +112,7 @@ public readonly struct Address32 : IAddress<Address32>
             bytes[next++] = b;
         }
 
-        result = new Address32(bytes);
+        result = new AddressV4(bytes);
         return null;
 
         static int Length(int b) => 100 <= b ? 3 : 10 <= b ? 2 : 1;
@@ -150,7 +150,7 @@ public readonly struct Address32 : IAddress<Address32>
         }
     }
 
-    public static Address32 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static AddressV4 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
     {
         var exceptionMessage = DoTheParse(s, out var result);
         if (exceptionMessage is not null)
@@ -158,31 +158,43 @@ public readonly struct Address32 : IAddress<Address32>
         return result;
     }
 
-    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address32 result)
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out AddressV4 result)
     {
         var exceptionMessage = DoTheParse(s, out result);
         return exceptionMessage is null;
     }
 
-    public static Address32 Parse(string s, IFormatProvider? provider)
+    public static AddressV4 Parse(string s, IFormatProvider? provider)
     {
         ArgumentNullException.ThrowIfNull(s);
         return Parse(s.AsSpan(), provider);
     }
 
-    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Address32 result)
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out AddressV4 result)
     {
         return TryParse(s.AsSpan(), provider, out result);
     }
 
-    public static bool operator ==(Address32 a, Address32 b) => a.Equals(b);
-    public static bool operator !=(Address32 a, Address32 b) => !a.Equals(b);
-    public static Address32 operator ~(Address32 a) => new(~a._rawAddress);
-    public static Address32 operator &(Address32 a, Address32 b) => new(a._rawAddress & b._rawAddress);
-    public static Address32 operator |(Address32 a, Address32 b) => new(a._rawAddress | b._rawAddress);
-    public static Address32 operator ^(Address32 a, Address32 b) => new(a._rawAddress ^ b._rawAddress);
+    public static Span<byte> AsBytes(ref AddressV4 address)
+    {
+        return MemoryMarshal.AsBytes(
+            new Span<AddressV4>(ref address));
+    }
 
-    public static implicit operator Address32(AnyAddress anyAddress) => Any;
-    public static implicit operator Address32(LocalAddress localAddress) => Local;
+    public static ReadOnlySpan<byte> AsReadOnlyBytes(ref readonly AddressV4 address)
+    {
+        return MemoryMarshal.AsBytes(
+            new ReadOnlySpan<AddressV4>(in address));
+    }
+
+    public static bool operator ==(AddressV4 a, AddressV4 b) => a.Equals(b);
+    public static bool operator !=(AddressV4 a, AddressV4 b) => !a.Equals(b);
+    public static AddressV4 operator ~(AddressV4 a) => new(~a._rawAddress);
+    public static AddressV4 operator &(AddressV4 a, AddressV4 b) => new(a._rawAddress & b._rawAddress);
+    public static AddressV4 operator |(AddressV4 a, AddressV4 b) => new(a._rawAddress | b._rawAddress);
+    public static AddressV4 operator ^(AddressV4 a, AddressV4 b) => new(a._rawAddress ^ b._rawAddress);
+
+    public static implicit operator AddressV4(AnyAddress anyAddress) => Any;
+    public static implicit operator AddressV4(LocalAddress localAddress) => Local;
 }
 
