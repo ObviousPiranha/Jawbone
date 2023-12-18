@@ -13,4 +13,12 @@ public static class Address
     {
         return new(address, new(port));
     }
+
+    public static Endpoint<TAddress> OnPort<TAddress>(
+        this TAddress address,
+        NetworkPort port
+        ) where TAddress : unmanaged, IAddress<TAddress>
+    {
+        return new(address, port);
+    }
 }

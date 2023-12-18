@@ -63,8 +63,6 @@ class Program
         ShowSize<Endpoint<AddressV6>>();
         var info1 = AddressInfo.Get("google.com", "443");
         Dump(info1);
-        var info2 = AddressInfo.Get("thebuzzsaw.duckdns.org", null);
-        Dump(info2);
         var info3 = AddressInfo.Get("192.168.50.1", "8080");
         Dump(info3);
 
@@ -244,7 +242,7 @@ class Program
     {
         try
         {
-            var info2 = AddressInfo.Get("fe80::1%5");
+            var info2 = AddressInfo.Get("fe80::1%5", "555");
             var info3 = AddressInfo.Get("fe80::1%eno1");
             // var port2 = new NetworkPort(-55);
             //ReadSomeCsv();

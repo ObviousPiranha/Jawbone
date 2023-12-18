@@ -6,37 +6,9 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
 {
     private readonly long _handle;
 
-    public UdpSocketV4(Endpoint<AddressV4> endpoint)
+    private UdpSocketV4(long handle)
     {
-        JawboneNetworking.CreateAndBindUdpV4Socket(
-            endpoint.Address,
-            endpoint.Port.NetworkValue,
-            UdpSocket.Bind,
-            out _handle,
-            out var socketError,
-            out var setSocketOptionError,
-            out var bindError);
-
-        SocketException.ThrowOnError(socketError, "Unable to create socket.");
-        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
-        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
-    }
-
-    public UdpSocketV4()
-    {
-        // https://stackoverflow.com/a/17922652
-        JawboneNetworking.CreateAndBindUdpV4Socket(
-            default,
-            default,
-            0,
-            out _handle,
-            out var socketError,
-            out var setSocketOptionError,
-            out var bindError);
-
-        SocketException.ThrowOnError(socketError, "Unable to create socket.");
-        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
-        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+        _handle = handle;
     }
 
     public void Shutdown()
@@ -112,13 +84,46 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
         };
     }
 
-    public static UdpSocketV4 CreateAndBindAny()
+    public static UdpSocketV4 BindAnyIp(int port) => BindAnyIp((NetworkPort)port);
+    public static UdpSocketV4 BindAnyIp(NetworkPort port) => Bind(new(default, port));
+    public static UdpSocketV4 BindAnyIp() => Bind(default);
+    public static UdpSocketV4 BindLocalIp(int port) => Bind(new(AddressV4.Local, (NetworkPort)port));
+    public static UdpSocketV4 BindLocalIp(NetworkPort port) => Bind(new(AddressV4.Local, port));
+    public static UdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default));
+    public static UdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
     {
-        throw new NotImplementedException();
+        JawboneNetworking.CreateAndBindUdpV4Socket(
+            endpoint.Address,
+            endpoint.Port.NetworkValue,
+            UdpSocket.Bind,
+            out var handle,
+            out var socketError,
+            out var setSocketOptionError,
+            out var bindError);
+
+        SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
+        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+
+        return new(handle);
     }
 
-    public static UdpSocketV4 CreateAndBind(Endpoint<AddressV4> endpoint)
+    public static UdpSocketV4 CreateWithoutBinding()
     {
-        return new(endpoint);
+        // https://stackoverflow.com/a/17922652
+        JawboneNetworking.CreateAndBindUdpV4Socket(
+            default,
+            default,
+            0,
+            out var handle,
+            out var socketError,
+            out var setSocketOptionError,
+            out var bindError);
+
+        SocketException.ThrowOnError(socketError, "Unable to create socket.");
+        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
+        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
+
+        return new(handle);
     }
 }
