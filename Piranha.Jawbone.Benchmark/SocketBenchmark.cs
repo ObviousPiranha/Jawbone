@@ -41,9 +41,9 @@ public class SocketBenchmark
             clientUdp.Send(_sendBuffer, destination);
         }
 
-        EndPoint ep = serverEndpoint;
-        var n = serverUdp.Client.ReceiveFrom(_receiveBuffer, ref ep);
-        Validate(n);
+        var ep = default(IPEndPoint);
+        var received = serverUdp.Receive(ref ep);
+        Validate(received.Length);
     }
 
     [Benchmark]
