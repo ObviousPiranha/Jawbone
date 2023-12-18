@@ -199,6 +199,21 @@ public readonly struct AddressV6 : IAddress<AddressV6>
             return null;
         }
 
+        var scopeId = default(uint);
+        {
+            var scopeIndex = s.LastIndexOf('%');
+            if (0 <= scopeIndex)
+            {
+                if (!uint.TryParse(s.Slice(scopeIndex + 1), out scopeId))
+                {
+                    result = default;
+                    return "Invalid scope ID.";
+                }
+
+                s = s[..scopeIndex];
+            }
+        }
+
         Span<ushort> blocks = stackalloc ushort[8];
         var division = s.IndexOf("::");
 
@@ -231,7 +246,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
             return "Bad hex block.";
         }
 
-        result = FromHostOrdering(blocks);
+        result = FromHostOrdering(blocks).WithScopeId(scopeId);
         return null;
 
         static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)

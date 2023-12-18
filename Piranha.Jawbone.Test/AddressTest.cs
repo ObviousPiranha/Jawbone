@@ -10,6 +10,7 @@ public class AddressTest
     [Fact]
     public void AddressInvariants()
     {
+        Assert.Equal(2, Unsafe.SizeOf<NetworkPort>());
         Assert.Equal(4, Unsafe.SizeOf<AddressV4>());
         Assert.Equal(20, Unsafe.SizeOf<AddressV6>());
 
@@ -195,7 +196,9 @@ public class AddressTest
             span[11] = 0xce;
         }),
         (AddressV6)AddressV4.Local,
-        (AddressV6)AddressV4.Broadcast
+        (AddressV6)AddressV4.Broadcast,
+        AddressV6.Create(static span => span.Fill(0xab)).WithScopeId(55),
+        AddressV6.Local.WithScopeId(127)
     };
 
     private static void MakeLinkLocal(Span<byte> bytes)

@@ -68,10 +68,10 @@ class Program
 
         Console.WriteLine("yo yo yo");
 
-        using (var socket = UdpSocketV4.CreateAndBindAny())
+        using (var socket = UdpSocketV4.CreateWithoutBinding())
             Console.WriteLine(socket.GetEndpoint().ToString());
 
-        using (var socket = UdpSocketV4.CreateAndBindAny())
+        using (var socket = UdpSocketV4.CreateWithoutBinding())
             Console.WriteLine(socket.GetEndpoint().ToString());
     }
 
@@ -81,13 +81,13 @@ class Program
         var receiveBuffer = new byte[sendBuffer.Length];
 
         RandomNumberGenerator.Fill(sendBuffer);
-        using (var socketV6 = UdpSocketV4.CreateAndBindAny())
+        using (var socketV6 = UdpSocketV4.CreateWithoutBinding())
         {
             var endpointV6 = socketV6.GetEndpoint();
             var word = allowV4 ? "enabled" : "disabled";
             Console.WriteLine($"Bound on {endpointV6} with V4 {word}.");
             var destination = Endpoint.Create(AddressV4.Local, endpointV6.Port);
-            using (var socketV4 = new UdpSocketV4())
+            using (var socketV4 = UdpSocketV4.CreateWithoutBinding())
             {
                 socketV4.Send(sendBuffer, destination);
                 var endpointV4 = socketV4.GetEndpoint();
@@ -109,10 +109,10 @@ class Program
     static void FancyBinding()
     {
         var endpointA = new AddressV4(192, 168, 50, 181).OnPort(7777);
-        using var socketA = new UdpSocketV4(endpointA);
+        using var socketA = UdpSocketV4.Bind(endpointA);
         Console.WriteLine($"Socket A on {endpointA}.");
 
-        using var socketB = UdpSocketV4.CreateAndBindAny();
+        using var socketB = UdpSocketV4.CreateWithoutBinding();
         var endpointB = socketB.GetEndpoint();
         Console.WriteLine($"Socket B on {endpointB}.");
 
@@ -134,7 +134,7 @@ class Program
     {
         try
         {
-            using var socketA = UdpSocketV4.CreateAndBindAny();
+            using var socketA = UdpSocketV4.CreateWithoutBinding();
             var endpoint = socketA.GetEndpoint();
             Console.WriteLine($"Bound socket on {endpoint}.");
 
@@ -177,11 +177,11 @@ class Program
         GetAndDump("fe80::ccb6:72b9:6d63:6863%wlp2s0", "7777");
         var address = AddressV6.Parse("fe80::ccb6:72b9:6d63:6863", null);
         Console.WriteLine("Address: " + address);
-        using var socketA = new UdpSocketV6(address.WithScopeId(2).OnPort(7777), false);
+        using var socketA = UdpSocketV6.Bind(address.WithScopeId(2).OnPort(7777));
         var endpointA = socketA.GetEndpoint();
         Console.WriteLine("Bound to " + endpointA.ToString());
 
-        using var socketB = new UdpSocketV6(address.WithScopeId(2).OnPort(9999), false);
+        using var socketB = UdpSocketV6.Bind(address.WithScopeId(2).OnPort(9999));
         var endpointB = socketB.GetEndpoint();
         Console.WriteLine("Bound to " + endpointB.ToString());
         var message = "HOORAH"u8;
@@ -244,6 +244,10 @@ class Program
         {
             var info2 = AddressInfo.Get("fe80::1%5", "555");
             var info3 = AddressInfo.Get("fe80::1%eno1");
+
+            using var testSocket = UdpSocketV6.Bind(new(AddressV6.Local, 0));
+            var testEndpoint = testSocket.GetEndpoint();
+            Console.WriteLine(testEndpoint.ToString());
             // var port2 = new NetworkPort(-55);
             //ReadSomeCsv();
             //ProjectSomeLines();
@@ -272,7 +276,7 @@ class Program
                 var info = AddressInfo.Get(args[0], args[1]);
                 var endpoint = info.V4[0];
 
-                using var client = UdpSocketV4.CreateAndBindAny();
+                using var client = UdpSocketV4.CreateWithoutBinding();
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
                 client.Send(message, endpoint);
@@ -281,7 +285,7 @@ class Program
             else if (args.Length == 1)
             {
                 var port = int.Parse(args[0]);
-                using var server = UdpSocketV4.CreateAndBindAny();
+                using var server = UdpSocketV4.CreateWithoutBinding();
                 var endpoint = server.GetEndpoint();
                 Console.WriteLine("Listening on " + endpoint.ToString());
                 var buffer = new byte[4096];
@@ -329,13 +333,13 @@ class Program
         var serverInfo = AddressInfo.Get(null, "12345");
         Dump(serverInfo);
 
-        using var myServer = new UdpSocketV6(serverInfo.V6[0], false);
+        using var myServer = UdpSocketV6.Bind(serverInfo.V6[0]);
         // using var myServer = socketProvider.CreateAndBindUdpSocketV6(new Endpoint<AddressV6>(AddressV6.Create(span => span.Fill((byte)0xff)), 1));
         Console.WriteLine("Server bound!");
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
 
-        using var myClient = new UdpSocketV6(default, false);
+        using var myClient = UdpSocketV6.CreateWithoutBinding();
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
 
