@@ -11,7 +11,7 @@ public static class Address
         int port
         ) where TAddress : unmanaged, IAddress<TAddress>
     {
-        return new(address, new(port));
+        return new(address, port);
     }
 
     public static Endpoint<TAddress> OnPort<TAddress>(

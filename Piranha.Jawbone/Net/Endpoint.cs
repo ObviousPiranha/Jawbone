@@ -10,7 +10,7 @@ public static class Endpoint
     public static Endpoint<TAddress> Create<TAddress>(TAddress address, int port)
         where TAddress : unmanaged, IAddress<TAddress>
     {
-        return new(address, new(port));
+        return new(address, port);
     }
 
     public static Endpoint<TAddress> Create<TAddress>(TAddress address, NetworkPort port)
@@ -28,10 +28,14 @@ public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>>
     public readonly NetworkPort Port { get; init; }
     public readonly bool IsDefault => Address.IsDefault && Port.NetworkValue == 0;
 
-    public Endpoint(TAddress address, NetworkPort port) : this()
+    public Endpoint(TAddress address, NetworkPort port)
     {
         Address = address;
         Port = port;
+    }
+
+    public Endpoint(TAddress address, int port) : this(address, (NetworkPort)port)
+    {
     }
 
     public bool Equals(Endpoint<TAddress> other) => Address.Equals(other.Address) && Port.Equals(other.Port);

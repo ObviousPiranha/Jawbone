@@ -106,7 +106,7 @@ public sealed class UdpSocketV6 : IUdpSocket<AddressV6>
     public static UdpSocketV6 BindAnyIp(bool allowV4 = false) => Bind(default, allowV4);
     public static UdpSocketV6 BindLocalIp(int port, bool allowV4 = false) => Bind(new(AddressV6.Local, (NetworkPort)port), allowV4);
     public static UdpSocketV6 BindLocalIp(NetworkPort port, bool allowV4 = false) => Bind(new(AddressV6.Local, port), allowV4);
-    public static UdpSocketV6 BindLocalIp(bool allowV4 = false) => Bind(new(AddressV6.Local, default), allowV4);
+    public static UdpSocketV6 BindLocalIp(bool allowV4 = false) => Bind(new(AddressV6.Local, default(NetworkPort)), allowV4);
     public static UdpSocketV6 Bind(Endpoint<AddressV6> endpoint, bool allowV4 = false)
     {
         var flags = UdpSocket.Bind | (allowV4 ? 0 : UdpSocket.IPv6Only);

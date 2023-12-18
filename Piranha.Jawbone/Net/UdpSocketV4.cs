@@ -89,7 +89,7 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
     public static UdpSocketV4 BindAnyIp() => Bind(default);
     public static UdpSocketV4 BindLocalIp(int port) => Bind(new(AddressV4.Local, (NetworkPort)port));
     public static UdpSocketV4 BindLocalIp(NetworkPort port) => Bind(new(AddressV4.Local, port));
-    public static UdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default));
+    public static UdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default(NetworkPort)));
     public static UdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
     {
         JawboneNetworking.CreateAndBindUdpV4Socket(
