@@ -8,28 +8,9 @@ public sealed class UdpSocketV6 : IUdpSocket<AddressV6>
 
     public bool AllowV4 { get; }
 
-    public UdpSocketV6(long handle, bool allowV4)
+    private UdpSocketV6(long handle, bool allowV4)
     {
         _handle = handle;
-        AllowV4 = allowV4;
-    }
-
-    public UdpSocketV6(bool allowV4)
-    {
-        var flags = allowV4 ? 0 : UdpSocket.IPv6Only;
-        JawboneNetworking.CreateAndBindUdpV6Socket(
-            default,
-            default,
-            flags,
-            out _handle,
-            out var socketError,
-            out var setSocketOptionError,
-            out var bindError);
-
-        SocketException.ThrowOnError(socketError, "Unable to create socket.");
-        SocketException.ThrowOnError(setSocketOptionError, "Unable to change socket option.");
-        SocketException.ThrowOnError(bindError, "Unable to bind socket.");
-
         AllowV4 = allowV4;
     }
 

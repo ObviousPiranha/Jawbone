@@ -46,7 +46,7 @@ public class NetworkTest
 
         using var socketA = UdpSocketV6.BindAnyIp();
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocketV6(false);
+        using var socketB = UdpSocketV6.CreateWithoutBinding();
         socketB.Send(sendBuffer, AddressV6.Local.OnPort(endpointA.Port));
         var endpointB = socketB.GetEndpoint();
 
@@ -136,6 +136,8 @@ public class NetworkTest
     {
         using var socketA = UdpSocketV6.BindAnyIp();
         var endpoint = socketA.GetEndpoint();
+
+        Assert.NotEqual(0, endpoint.Port.HostValue);
 
         Assert.Throws<SocketException>(() =>
         {
