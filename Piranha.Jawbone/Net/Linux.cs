@@ -4,7 +4,8 @@ namespace Piranha.Jawbone.Net;
 
 public static class Linux
 {
-    public static readonly ImmutableArray<ErrorCode> ErrorCodes = ImmutableArray.Create(
+    public static readonly ImmutableArray<ErrorCode> ErrorCodes =
+    [
         ErrorCode.None,
         new(1, "EPERM", "Operation not permitted"),
         new(2, "ENOENT", "No such file or directory"),
@@ -46,7 +47,7 @@ public static class Linux
         new(38, "ENOSYS", "Invalid system call number"),
         new(39, "ENOTEMPTY", "Directory not empty"),
         new(40, "ELOOP", "Too many symbolic links encountered"),
-        new(41, "EWOULDBLOCK", "Operation would block"), // Mapped to EAGAIN
+        new(41, "EWOULDBLOCK", "Operation would block"),
         new(42, "ENOMSG", "No message of desired type"),
         new(43, "EIDRM", "Identifier removed"),
         new(44, "ECHRNG", "Channel number out of range"),
@@ -63,7 +64,7 @@ public static class Linux
         new(55, "ENOANO", "No anode"),
         new(56, "EBADRQC", "Invalid request code"),
         new(57, "EBADSLT", "Invalid slot"),
-        new(58, "EDEADLOCK", "Resource deadlock would occur"), // Mapped to DEADLK(35)
+        new(58, "EDEADLOCK", "Resource deadlock would occur"),
         new(59, "EBFONT", "Bad font file format"),
         new(60, "ENOSTR", "Device not a stream"),
         new(61, "ENODATA", "No data available"),
@@ -137,5 +138,5 @@ public static class Linux
         new(129, "EKEYREJECTED", "Key was rejected by service"),
         new(130, "EOWNERDEAD", "Owner died"),
         new(131, "ENOTRECOVERABLE", "State not recoverable")
-    );
+    ];
 }

@@ -6,7 +6,7 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
 {
     private readonly long _handle;
 
-    private UdpSocketV4(Endpoint<AddressV4> endpoint)
+    public UdpSocketV4(Endpoint<AddressV4> endpoint)
     {
         JawboneNetworking.CreateAndBindUdpV4Socket(
             endpoint.Address,
@@ -112,9 +112,9 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
         };
     }
 
-    public static UdpSocketV4 CreateAndBindAny(NetworkPort port)
+    public static UdpSocketV4 CreateAndBindAny()
     {
-
+        throw new NotImplementedException();
     }
 
     public static UdpSocketV4 CreateAndBind(Endpoint<AddressV4> endpoint)

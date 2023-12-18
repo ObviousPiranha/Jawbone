@@ -14,7 +14,7 @@ class Program
 {
     static Span<byte> GenericTest<T>(T address) where T : unmanaged, IAddress<T>
     {
-        var span = Address.AsBytes(ref address);
+        var span = T.AsBytes(ref address);
         return default;
     }
 
@@ -49,7 +49,7 @@ class Program
         endpoints.AsSpan().Fill(Endpoint.Create(randomAddress, 200));
         byteBuffer.AddAllAsBytes(endpoints);
 
-        Console.WriteLine(AddressV4.Local.MapToV6());
+        Console.WriteLine((AddressV6)AddressV4.Local);
         Console.WriteLine(new AddressV6());
         Console.WriteLine(AddressV6.Local);
         Console.WriteLine(AddressV6.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
@@ -70,10 +70,10 @@ class Program
 
         Console.WriteLine("yo yo yo");
 
-        using (var socket = new UdpSocketV4(Endpoint.Any))
+        using (var socket = UdpSocketV4.CreateAndBindAny())
             Console.WriteLine(socket.GetEndpoint().ToString());
 
-        using (var socket = new UdpSocketV6(Endpoint.Any, false))
+        using (var socket = UdpSocketV4.CreateAndBindAny())
             Console.WriteLine(socket.GetEndpoint().ToString());
     }
 
@@ -83,7 +83,7 @@ class Program
         var receiveBuffer = new byte[sendBuffer.Length];
 
         RandomNumberGenerator.Fill(sendBuffer);
-        using (var socketV6 = new UdpSocketV6(Endpoint.Any, allowV4))
+        using (var socketV6 = UdpSocketV4.CreateAndBindAny())
         {
             var endpointV6 = socketV6.GetEndpoint();
             var word = allowV4 ? "enabled" : "disabled";
@@ -114,7 +114,7 @@ class Program
         using var socketA = new UdpSocketV4(endpointA);
         Console.WriteLine($"Socket A on {endpointA}.");
 
-        using var socketB = new UdpSocketV4(Endpoint.Any);
+        using var socketB = UdpSocketV4.CreateAndBindAny();
         var endpointB = socketB.GetEndpoint();
         Console.WriteLine($"Socket B on {endpointB}.");
 
@@ -136,11 +136,11 @@ class Program
     {
         try
         {
-            using var socketA = new UdpSocketV4(Endpoint.Any);
+            using var socketA = UdpSocketV4.CreateAndBindAny();
             var endpoint = socketA.GetEndpoint();
             Console.WriteLine($"Bound socket on {endpoint}.");
 
-            using var socketB = new UdpSocketV4(AnyAddress.OnPort(endpoint.Port));
+            // using var socketB = new UdpSocketV4(AnyAddress.OnPort(endpoint.Port));
             Console.WriteLine("Hm. This shouldn't be possible.");
         }
         catch (Exception ex)
@@ -171,7 +171,7 @@ class Program
 
     static void CleverForwarding<TAddress>() where TAddress : unmanaged, IAddress<TAddress>
     {
-        CleverAssignment<TAddress>(Address.Any);
+        CleverAssignment(TAddress.Local);
     }
 
     static void BindToLinkLocal()
@@ -244,8 +244,10 @@ class Program
     {
         try
         {
-            AddressV6 a128 = Address.Any;
-            ReadSomeCsv();
+            var info2 = AddressInfo.Get("fe80::1%5");
+            var info3 = AddressInfo.Get("fe80::1%eno1");
+            // var port2 = new NetworkPort(-55);
+            //ReadSomeCsv();
             //ProjectSomeLines();
             //FancyBinding();
             // AllowV4(true);
@@ -272,7 +274,7 @@ class Program
                 var info = AddressInfo.Get(args[0], args[1]);
                 var endpoint = info.V4[0];
 
-                using var client = new UdpSocketV4(Endpoint.Any);
+                using var client = UdpSocketV4.CreateAndBindAny();
                 Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
                 var message = Encoding.UTF8.GetBytes("Greetings!");
                 client.Send(message, endpoint);
@@ -281,8 +283,8 @@ class Program
             else if (args.Length == 1)
             {
                 var port = int.Parse(args[0]);
-                var endpoint = AddressV4.Any.OnPort(port);
-                using var server = new UdpSocketV4(endpoint);
+                using var server = UdpSocketV4.CreateAndBindAny();
+                var endpoint = server.GetEndpoint();
                 Console.WriteLine("Listening on " + endpoint.ToString());
                 var buffer = new byte[4096];
 
@@ -335,7 +337,7 @@ class Program
         var serverEndpoint = myServer.GetEndpoint();
         Console.WriteLine(serverEndpoint);
 
-        using var myClient = new UdpSocketV6(Endpoint.Any, false);
+        using var myClient = new UdpSocketV6(default, false);
         Console.Write("Client bound!");
         Console.WriteLine(myClient.GetEndpoint());
 

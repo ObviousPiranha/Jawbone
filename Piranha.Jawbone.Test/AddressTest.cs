@@ -160,7 +160,6 @@ public class AddressTest
 
     public static TheoryData<AddressV4> NotLinkLocal32 => new()
     {
-        AddressV4.Any,
         AddressV4.Local,
         AddressV4.Broadcast,
         new(169, 200, 0, 0),
@@ -180,7 +179,6 @@ public class AddressTest
 
     public static TheoryData<AddressV4> RoundTripParse32 => new()
     {
-        AddressV4.Any,
         AddressV4.Local,
         AddressV4.Broadcast,
         new(192, 168, 0, 1),
@@ -196,8 +194,8 @@ public class AddressTest
             span[3] = 0xb;
             span[11] = 0xce;
         }),
-        AddressV4.Local.MapToV6(),
-        AddressV4.Broadcast.MapToV6()
+        (AddressV6)AddressV4.Local,
+        (AddressV6)AddressV4.Broadcast
     };
 
     private static void MakeLinkLocal(Span<byte> bytes)

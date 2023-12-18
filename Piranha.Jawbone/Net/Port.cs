@@ -10,7 +10,7 @@ public readonly struct NetworkPort : IEquatable<NetworkPort>
 {
     public readonly ushort NetworkValue { get; init; }
 
-    public readonly int HostValue
+    public readonly ushort HostValue
     {
         get
         {
@@ -21,13 +21,13 @@ public readonly struct NetworkPort : IEquatable<NetworkPort>
 
         init
         {
-            var port = checked((ushort)value);
             NetworkValue = BitConverter.IsLittleEndian ?
-                BinaryPrimitives.ReverseEndianness(port) :
-                port;
+                BinaryPrimitives.ReverseEndianness(value) :
+                value;
         }
     }
 
+    public NetworkPort(int port) => HostValue = checked((ushort)port);
     public readonly bool Equals(NetworkPort other) => NetworkValue == other.NetworkValue;
     public readonly override bool Equals([NotNullWhen(true)] object? obj) => obj is NetworkPort other && Equals(other);
     public readonly override int GetHashCode() => NetworkValue.GetHashCode();

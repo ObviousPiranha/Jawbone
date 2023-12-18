@@ -9,7 +9,7 @@ public readonly struct AddressInfo
     public readonly ImmutableArray<Endpoint<AddressV4>> V4 { get; init; }
     public readonly ImmutableArray<Endpoint<AddressV6>> V6 { get; init; }
 
-    public static AddressInfo Get(string? node, string? service)
+    public static AddressInfo Get(string? node, string? service = null)
     {
         var v4 = ArrayPool<Endpoint<AddressV4>>.Shared.Rent(64);
         var v6 = ArrayPool<Endpoint<AddressV6>>.Shared.Rent(64);

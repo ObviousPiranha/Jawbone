@@ -11,6 +11,6 @@ public static class Address
         int port
         ) where TAddress : unmanaged, IAddress<TAddress>
     {
-        return new(address, port);
+        return new(address, new(port));
     }
 }

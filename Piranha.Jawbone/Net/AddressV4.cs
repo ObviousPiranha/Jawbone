@@ -24,7 +24,7 @@ public readonly struct AddressV4 : IAddress<AddressV4>
     public static AddressV4 Local { get; } = new(127, 0, 0, 1);
     public static AddressV4 Broadcast { get; } = new(255, 255, 255, 255);
 
-    private readonly uint _rawAddress;
+    internal readonly uint _rawAddress;
 
     public readonly bool IsDefault => _rawAddress == 0;
     public readonly bool IsLinkLocal => (_rawAddress & LinkLocalMask()) == LinkLocalSubnet();
@@ -46,8 +46,6 @@ public readonly struct AddressV4 : IAddress<AddressV4>
     }
 
     internal AddressV4(uint rawAddress) => _rawAddress = rawAddress;
-
-    public readonly AddressV6 MapToV6() => new(0, 0, AddressV6.PrefixV4, _rawAddress);
 
     public readonly bool Equals(AddressV4 other) => _rawAddress == other._rawAddress;
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
@@ -188,9 +186,5 @@ public readonly struct AddressV4 : IAddress<AddressV4>
 
     public static bool operator ==(AddressV4 a, AddressV4 b) => a.Equals(b);
     public static bool operator !=(AddressV4 a, AddressV4 b) => !a.Equals(b);
-    public static AddressV4 operator ~(AddressV4 a) => new(~a._rawAddress);
-    public static AddressV4 operator &(AddressV4 a, AddressV4 b) => new(a._rawAddress & b._rawAddress);
-    public static AddressV4 operator |(AddressV4 a, AddressV4 b) => new(a._rawAddress | b._rawAddress);
-    public static AddressV4 operator ^(AddressV4 a, AddressV4 b) => new(a._rawAddress ^ b._rawAddress);
 }
 

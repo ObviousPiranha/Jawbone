@@ -13,7 +13,7 @@ public sealed class UdpSocketV6 : IUdpSocket<AddressV6>
         var flags = UdpSocket.Bind | (allowV4 ? 0 : UdpSocket.IPv6Only);
         JawboneNetworking.CreateAndBindUdpV6Socket(
             endpoint.Address,
-            endpoint.NetworkOrderPort,
+            endpoint.Port.NetworkValue,
             flags,
             out _handle,
             out var socketError,
@@ -64,7 +64,7 @@ public sealed class UdpSocketV6 : IUdpSocket<AddressV6>
             message[0],
             message.Length,
             destination.Address,
-            destination.NetworkOrderPort,
+            destination.Port.NetworkValue,
             out var errorCode);
 
         SocketException.ThrowOnError(errorCode, "Unable to send data.");
@@ -92,7 +92,7 @@ public sealed class UdpSocketV6 : IUdpSocket<AddressV6>
         origin = new Endpoint<AddressV6>
         {
             Address = address,
-            NetworkOrderPort = networkOrderPort
+            Port = new NetworkPort { NetworkValue = networkOrderPort }
         };
 
         return result;
@@ -110,7 +110,7 @@ public sealed class UdpSocketV6 : IUdpSocket<AddressV6>
         return new Endpoint<AddressV6>
         {
             Address = address.IsDefault && networkOrderPort != 0 ? AddressV6.Local : address,
-            NetworkOrderPort = networkOrderPort
+            Port = new NetworkPort { NetworkValue = networkOrderPort }
         };
     }
 }

@@ -20,7 +20,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public static AddressV6 Local { get; } = Create(static span => span[^1] = 1);
 
-    internal static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
+    private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
     public static AddressV6 Create(params byte[] values) => new(values);
 
@@ -62,18 +62,20 @@ public readonly struct AddressV6 : IAddress<AddressV6>
     private readonly uint _d;
     private readonly uint _scopeId;
 
+    public readonly uint ScopeId => _scopeId;
     public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
     public readonly bool IsLinkLocal => (_a & LinkLocalMask()) == LinkLocalSubnet();
     public readonly bool IsLoopback => Equals(Local);
     public readonly bool IsIpV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
-    public AddressV6(ReadOnlySpan<byte> values) : this()
+    public AddressV6(ReadOnlySpan<byte> values, uint scopeId = 0) : this()
     {
         var span = AsBytes(ref this);
         values.Slice(0, span.Length).CopyTo(span);
+        _scopeId = scopeId;
     }
 
-    internal AddressV6(uint a, uint b, uint c, uint d, uint scopeId = 0)
+    private AddressV6(uint a, uint b, uint c, uint d, uint scopeId = 0)
     {
         _a = a;
         _b = b;
@@ -81,6 +83,8 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         _d = d;
         _scopeId = scopeId;
     }
+
+    public readonly AddressV6 WithScopeId(uint scopeId) => new(_a, _b, _c, _d, scopeId);
 
     public readonly bool Equals(AddressV6 other)
     {
@@ -106,9 +110,8 @@ public readonly struct AddressV6 : IAddress<AddressV6>
     {
         if (IsIpV4Mapped)
         {
-            builder.Append("[::ffff:");
+            builder.Append("::ffff:");
             new AddressV4(_d).AppendTo(builder);
-            builder.Append(']');
             return;
         }
 
@@ -138,7 +141,6 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         }
 
         var span = AsReadOnlyBytes(in this);
-        builder.Append('[');
 
         if (1 < zeroLength)
         {
@@ -152,7 +154,8 @@ public readonly struct AddressV6 : IAddress<AddressV6>
             builder.AppendV6Block(span);
         }
 
-        builder.Append(']');
+        if (_scopeId != 0)
+            builder.Append('%').Append(_scopeId);
     }
 
     private static string? DoTheParse(ReadOnlySpan<char> originalInput, out AddressV6 result)
@@ -192,7 +195,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         const string IntroV4 = "::ffff:";
         if (s.StartsWith(IntroV4) && AddressV4.TryParse(s[IntroV4.Length..], null, out var a32))
         {
-            result = a32.MapToV6();
+            result = (AddressV6)a32;
             return null;
         }
 
@@ -356,8 +359,5 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public static bool operator ==(AddressV6 a, AddressV6 b) => a.Equals(b);
     public static bool operator !=(AddressV6 a, AddressV6 b) => !a.Equals(b);
-    public static AddressV6 operator ~(AddressV6 a) => new(~a._a, ~a._b, ~a._c, ~a._d);
-    public static AddressV6 operator &(AddressV6 a, AddressV6 b) => new(a._a & b._a, a._b & b._b, a._c & b._c, a._d & b._d);
-    public static AddressV6 operator |(AddressV6 a, AddressV6 b) => new(a._a | b._a, a._b | b._b, a._c | b._c, a._d | b._d);
-    public static AddressV6 operator ^(AddressV6 a, AddressV6 b) => new(a._a ^ b._a, a._b ^ b._b, a._c ^ b._c, a._d ^ b._d);
+    public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, address._rawAddress);
 }
