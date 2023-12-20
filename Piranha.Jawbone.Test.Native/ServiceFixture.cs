@@ -1,6 +1,6 @@
-using System;
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Sqlite;
+using System;
 
 namespace Piranha.Jawbone.Test.Native;
 

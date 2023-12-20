@@ -1,10 +1,10 @@
+using BenchmarkDotNet.Attributes;
+using Piranha.Jawbone.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using BenchmarkDotNet.Attributes;
-using Piranha.Jawbone.Net;
 
 namespace Piranha.Jawbone.Benchmark;
 

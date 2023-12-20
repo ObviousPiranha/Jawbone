@@ -1,9 +1,9 @@
+using BenchmarkDotNet.Attributes;
+using Piranha.Jawbone.Net;
 using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
-using BenchmarkDotNet.Attributes;
-using Piranha.Jawbone.Net;
 
 namespace Piranha.Jawbone.Benchmark;
 

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Piranha.Jawbone;
+using Piranha.Jawbone.Net;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Piranha.Jawbone;
-using Piranha.Jawbone.Net;
 
 namespace Piranha.Sandbox;
 
@@ -52,9 +52,9 @@ class Program
         Console.WriteLine((AddressV6)AddressV4.Local);
         Console.WriteLine(new AddressV6());
         Console.WriteLine(AddressV6.Local);
-        Console.WriteLine(AddressV6.Create(0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14));
-        Console.WriteLine(AddressV6.Create(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15));
-        Console.WriteLine(AddressV6.Create(0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0));
+        Console.WriteLine(AddressV6.Create(0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14));
+        Console.WriteLine(AddressV6.Create(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
+        Console.WriteLine(AddressV6.Create(0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0));
 
         var v4 = new AddressV4(192, 168, 0, 1);
         Console.WriteLine(v4);
@@ -243,9 +243,11 @@ class Program
         try
         {
             var info2 = AddressInfo.Get("fe80::1%5", "555");
+            Dump(info2);
             var info3 = AddressInfo.Get("fe80::1%eno1");
+            Dump(info3);
 
-            using var testSocket = UdpSocketV6.Bind(new(AddressV6.Local, 0));
+            using var testSocket = UdpSocketV6.Bind(AddressV6.Local.OnAnyPort());
             var testEndpoint = testSocket.GetEndpoint();
             Console.WriteLine(testEndpoint.ToString());
             // var port2 = new NetworkPort(-55);

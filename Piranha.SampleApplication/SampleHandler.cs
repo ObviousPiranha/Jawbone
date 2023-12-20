@@ -1,14 +1,14 @@
-using System;
-using System.IO;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
 using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
+using System;
+using System.IO;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Piranha.SampleApplication;
 

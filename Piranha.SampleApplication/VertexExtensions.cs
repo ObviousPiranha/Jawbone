@@ -1,5 +1,5 @@
-using System.Numerics;
 using Piranha.Jawbone;
+using System.Numerics;
 
 namespace Piranha.SampleApplication;
 

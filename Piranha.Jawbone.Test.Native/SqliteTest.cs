@@ -1,8 +1,8 @@
+using Microsoft.Extensions.DependencyInjection;
+using Piranha.Jawbone.Sqlite;
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Piranha.Jawbone.Sqlite;
 using Xunit;
 
 namespace Piranha.Jawbone.Test.Native;

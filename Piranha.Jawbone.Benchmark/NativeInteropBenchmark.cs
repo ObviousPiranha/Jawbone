@@ -1,6 +1,6 @@
-using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
 using Piranha.Jawbone.Stb;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Benchmark;
 

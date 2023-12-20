@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Piranha.Jawbone.SourceGenerator;
 
@@ -24,29 +24,29 @@ public class NativeInteropSourceGenerator : ISourceGenerator
                 .OfType<ClassDeclarationSyntax>()
                 .Where(classDeclarationSyntax => classDeclarationSyntax
                     .AttributeLists.Any());
-                // .Where(structDeclarationSyntax => structDeclarationSyntax
-                //     .DescendantNodes()
-                //     .OfType<AttributeSyntax>()
-                //     .Any(a => a.DescendantTokens().Any(
-                //         dt => dt.IsKind(SyntaxKind.IdentifierToken) &&
-                //         dt.Parent is not null &&
-                //         semanticModel.GetTypeInfo(dt.Parent).Type?.Name == "LibraryInterface")));
-                
-                // https://stackoverflow.com/a/33095466
-                // classNames.AddRange(classes.Select(c => semanticModel.GetDeclaredSymbol(c)?.ToDisplayString()).WhereNotNull());
-                foreach (var c in classes)
-                {
-                    var displayName = semanticModel.GetDeclaredSymbol(c)?.ToDisplayString();
+            // .Where(structDeclarationSyntax => structDeclarationSyntax
+            //     .DescendantNodes()
+            //     .OfType<AttributeSyntax>()
+            //     .Any(a => a.DescendantTokens().Any(
+            //         dt => dt.IsKind(SyntaxKind.IdentifierToken) &&
+            //         dt.Parent is not null &&
+            //         semanticModel.GetTypeInfo(dt.Parent).Type?.Name == "LibraryInterface")));
 
-                    if (displayName is null)
-                        continue;
-                    
-                    var attributes = c.AttributeLists
-                        .SelectMany(attributeList => attributeList.Attributes.Select(a => semanticModel.GetTypeInfo(a).Type?.ToDisplayString()))
-                        .WhereNotNull();
-                    
-                    classNames.Add(displayName + " - " + string.Join(", ", attributes));
-                }
+            // https://stackoverflow.com/a/33095466
+            // classNames.AddRange(classes.Select(c => semanticModel.GetDeclaredSymbol(c)?.ToDisplayString()).WhereNotNull());
+            foreach (var c in classes)
+            {
+                var displayName = semanticModel.GetDeclaredSymbol(c)?.ToDisplayString();
+
+                if (displayName is null)
+                    continue;
+
+                var attributes = c.AttributeLists
+                    .SelectMany(attributeList => attributeList.Attributes.Select(a => semanticModel.GetTypeInfo(a).Type?.ToDisplayString()))
+                    .WhereNotNull();
+
+                classNames.Add(displayName + " - " + string.Join(", ", attributes));
+            }
         }
 
         var builder = IndentedStringBuilder.Create();
