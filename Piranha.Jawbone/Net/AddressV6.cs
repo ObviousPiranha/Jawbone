@@ -65,8 +65,8 @@ public readonly struct AddressV6 : IAddress<AddressV6>
     public readonly uint ScopeId => _scopeId;
     public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
     public readonly bool IsLinkLocal => (_a & LinkLocalMask()) == LinkLocalSubnet();
-    public readonly bool IsLoopback => Equals(Local);
-    public readonly bool IsIpV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
+    public readonly bool IsLoopback => Equals(Local) || (TryMapV4(out var v4) && v4.IsLoopback);
+    public readonly bool IsV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
     public AddressV6(ReadOnlySpan<byte> values) : this(values, 0)
     {
@@ -90,7 +90,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public readonly bool TryMapV4(out AddressV4 address)
     {
-        if (IsIpV4Mapped)
+        if (IsV4Mapped)
         {
             address = new(_d);
             return true;
@@ -116,7 +116,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is AddressV6 other && Equals(other);
-    public override readonly int GetHashCode() => HashCode.Combine(_a, _b, _c, _d);
+    public override readonly int GetHashCode() => HashCode.Combine(_a, _b, _c, _d, _scopeId);
     public override readonly string ToString()
     {
         var builder = new StringBuilder(48);
@@ -126,7 +126,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public readonly void AppendTo(StringBuilder builder)
     {
-        if (IsIpV4Mapped)
+        if (IsV4Mapped)
         {
             builder.Append("::ffff:");
             new AddressV4(_d).AppendTo(builder);
@@ -395,7 +395,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
     public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, (uint)address);
     public static explicit operator AddressV4(AddressV6 address)
     {
-        if (!address.IsIpV4Mapped)
+        if (!address.IsV4Mapped)
             throw new InvalidCastException("IPv6 address is not IPv4-mapped.");
 
         return new(address._d);
