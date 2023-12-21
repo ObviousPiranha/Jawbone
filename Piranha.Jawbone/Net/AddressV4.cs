@@ -24,11 +24,11 @@ public readonly struct AddressV4 : IAddress<AddressV4>
     public static AddressV4 Local { get; } = new(127, 0, 0, 1);
     public static AddressV4 Broadcast { get; } = new(255, 255, 255, 255);
 
-    internal readonly uint _rawAddress;
+    private readonly uint _a;
 
-    public readonly bool IsDefault => _rawAddress == 0;
-    public readonly bool IsLinkLocal => (_rawAddress & LinkLocalMask()) == LinkLocalSubnet();
-    public readonly bool IsLoopback => (_rawAddress & LoopbackMask()) == LoopbackSubnet();
+    public readonly bool IsDefault => _a == 0;
+    public readonly bool IsLinkLocal => (_a & LinkLocalMask()) == LinkLocalSubnet();
+    public readonly bool IsLoopback => (_a & LoopbackMask()) == LoopbackSubnet();
 
     public AddressV4(ReadOnlySpan<byte> values) : this()
     {
@@ -45,12 +45,12 @@ public readonly struct AddressV4 : IAddress<AddressV4>
         bytes[0] = a;
     }
 
-    internal AddressV4(uint rawAddress) => _rawAddress = rawAddress;
+    internal AddressV4(uint rawAddress) => _a = rawAddress;
 
-    public readonly bool Equals(AddressV4 other) => _rawAddress == other._rawAddress;
+    public readonly bool Equals(AddressV4 other) => _a == other._a;
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is AddressV4 other && Equals(other);
-    public override readonly int GetHashCode() => _rawAddress.GetHashCode();
+    public override readonly int GetHashCode() => _a.GetHashCode();
     public override readonly string ToString()
     {
         var builder = new StringBuilder(15);
@@ -186,5 +186,6 @@ public readonly struct AddressV4 : IAddress<AddressV4>
 
     public static bool operator ==(AddressV4 a, AddressV4 b) => a.Equals(b);
     public static bool operator !=(AddressV4 a, AddressV4 b) => !a.Equals(b);
+    public static explicit operator uint(AddressV4 address) => address._a;
 }
 

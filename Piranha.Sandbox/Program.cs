@@ -242,81 +242,51 @@ class Program
     {
         try
         {
-            var info2 = AddressInfo.Get("fe80::1%5", "555");
-            Dump(info2);
-            var info3 = AddressInfo.Get("fe80::1%eno1");
-            Dump(info3);
-
-            using var testSocket = UdpSocketV6.Bind(AddressV6.Local.OnAnyPort());
-            var testEndpoint = testSocket.GetEndpoint();
-            Console.WriteLine(testEndpoint.ToString());
-            // var port2 = new NetworkPort(-55);
-            //ReadSomeCsv();
-            //ProjectSomeLines();
-            //FancyBinding();
-            // AllowV4(true);
-            // AllowV4(false);
-            // ErrorOnPurpose();
-            // AddressShenanigans();
-            // GetSomeAddresses();
-            // BindToLinkLocal();
-            // CleverAssignment<AddressV4>(Address.Any);
-            // CleverAssignment<AddressV6>(Address.Any);
-            // ParseSomeAddresses(AddressV6.Local);
-            // ParseSomeAddresses(AddressV6.Create(static span => span.Fill(0xab)));
-            // ParseSomeAddresses(AddressV6.Any);
-            // ParseSomeAddresses(AddressV6.Create(static span =>
-            // {
-            //     span[0] = 0xc;
-            //     span[11] = 0xb;
-            // }));
-            return;
-            TryOutV6();
-
+            var port = int.Parse(args[0]);
             if (1 < args.Length)
             {
-                var info = AddressInfo.Get(args[0], args[1]);
-                var endpoint = info.V4[0];
+                var targetInfo = AddressInfo.Get(args[1], args[0]);
+                var target = targetInfo.V6[0];
+                Console.WriteLine($"Targeting {target}...");
+                using var socket = UdpSocketV6.CreateWithoutBinding();
 
-                using var client = UdpSocketV4.CreateWithoutBinding();
-                Console.WriteLine("Client bound on " + client.GetEndpoint().ToString());
-                var message = Encoding.UTF8.GetBytes("Greetings!");
-                client.Send(message, endpoint);
-                Console.WriteLine("Message sent to " + endpoint.ToString());
-            }
-            else if (args.Length == 1)
-            {
-                var port = int.Parse(args[0]);
-                using var server = UdpSocketV4.CreateWithoutBinding();
-                var endpoint = server.GetEndpoint();
-                Console.WriteLine("Listening on " + endpoint.ToString());
-                var buffer = new byte[4096];
-
-                using var cancellationTokenSource = new CancellationTokenSource();
-
-                Console.CancelKeyPress += (sender, e) =>
-                    {
-                        e.Cancel = true;
-                        Console.WriteLine("Exiting...");
-                        cancellationTokenSource.Cancel();
-                    };
-
-                while (!cancellationTokenSource.IsCancellationRequested)
+                while (true)
                 {
-                    var n = server.Receive(buffer, out var origin, TimeSpan.FromSeconds(0.5));
+                    Console.WriteLine("Enter message:");
+                    var message = Console.ReadLine();
 
-                    if (!origin.IsDefault)
-                    {
-                        var message = Encoding.UTF8.GetString(buffer.AsSpan(0, n));
-                        Console.WriteLine(origin.ToString() + " >>> " + message);
-                    }
+                    if (string.IsNullOrWhiteSpace(message))
+                        break;
+
+                    var bytes = Encoding.UTF8.GetBytes(message);
+                    socket.Send(bytes, target);
                 }
-
-                Console.WriteLine("Done.");
             }
             else
             {
-                Console.WriteLine("Client provides IP and port. Server provides port.");
+                // Server
+                bool keepListening = true;
+                Console.CancelKeyPress += (e, ea) =>
+                {
+                    ea.Cancel = true;
+                    keepListening = false;
+                    Console.WriteLine("Quitting...");
+                };
+
+                using var socket = UdpSocketV6.BindAnyIp(port, true);
+                var endpoint = socket.GetEndpoint();
+                Console.WriteLine($"Listening on {endpoint}...");
+                var buffer = new byte[4096];
+                while (keepListening)
+                {
+                    var n = socket.Receive(buffer, out var origin, TimeSpan.FromSeconds(1));
+
+                    if (origin.IsDefault)
+                        continue;
+
+                    var message = Encoding.UTF8.GetString(buffer, 0, n);
+                    Console.WriteLine($"Received from {origin}: {message}");
+                }
             }
         }
         catch (Exception ex)

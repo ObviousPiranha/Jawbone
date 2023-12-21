@@ -68,7 +68,11 @@ public readonly struct AddressV6 : IAddress<AddressV6>
     public readonly bool IsLoopback => Equals(Local);
     public readonly bool IsIpV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
 
-    public AddressV6(ReadOnlySpan<byte> values, uint scopeId = 0) : this()
+    public AddressV6(ReadOnlySpan<byte> values) : this(values, 0)
+    {
+    }
+
+    public AddressV6(ReadOnlySpan<byte> values, uint scopeId) : this()
     {
         var span = AsBytes(ref this);
         values.Slice(0, span.Length).CopyTo(span);
@@ -82,6 +86,20 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         _c = c;
         _d = d;
         _scopeId = scopeId;
+    }
+
+    public readonly bool TryMapV4(out AddressV4 address)
+    {
+        if (IsIpV4Mapped)
+        {
+            address = new(_d);
+            return true;
+        }
+        else
+        {
+            address = default;
+            return false;
+        }
     }
 
     public readonly AddressV6 WithScopeId(uint scopeId) => new(_a, _b, _c, _d, scopeId);
@@ -374,5 +392,12 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public static bool operator ==(AddressV6 a, AddressV6 b) => a.Equals(b);
     public static bool operator !=(AddressV6 a, AddressV6 b) => !a.Equals(b);
-    public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, address._rawAddress);
+    public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, (uint)address);
+    public static explicit operator AddressV4(AddressV6 address)
+    {
+        if (!address.IsIpV4Mapped)
+            throw new InvalidCastException("IPv6 address is not IPv4-mapped.");
+
+        return new(address._d);
+    }
 }
