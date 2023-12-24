@@ -45,7 +45,7 @@ public readonly struct AddressV4 : IAddress<AddressV4>
         bytes[0] = a;
     }
 
-    internal AddressV4(uint rawAddress) => _a = rawAddress;
+    public AddressV4(uint address) => _a = address;
 
     public readonly bool Equals(AddressV4 other) => _a == other._a;
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
