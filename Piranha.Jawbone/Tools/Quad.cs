@@ -31,6 +31,9 @@ public struct Quad<T>
 
 public static class Quad
 {
+    public static Quad<T> Create<T>(T abcd) => new(abcd);
+    public static Quad<T> Create<T>(T a, T b, T c, T d) => new(a, b, c, d);
+
     public static Quad<Vector2> Create(Vector2 a, Vector2 c)
     {
         return new Quad<Vector2>(
@@ -38,6 +41,31 @@ public static class Quad
             new Vector2(a.X, c.Y),
             c,
             new Vector2(c.X, a.Y));
+    }
+
+    public static Quad<T3> Combine<T1, T2, T3>(
+        Quad<T1> a,
+        Quad<T2> b,
+        Func<T1, T2, T3> combiner)
+    {
+        return new Quad<T3>(
+            combiner.Invoke(a.A, b.A),
+            combiner.Invoke(a.B, b.B),
+            combiner.Invoke(a.C, b.C),
+            combiner.Invoke(a.D, b.D));
+    }
+
+    public static Quad<T3> Combine<T1, T2, T3, TState>(
+        Quad<T1> a,
+        Quad<T2> b,
+        TState state,
+        Func<T1, T2, TState, T3> combiner)
+    {
+        return new Quad<T3>(
+            combiner.Invoke(a.A, b.A, state),
+            combiner.Invoke(a.B, b.B, state),
+            combiner.Invoke(a.C, b.C, state),
+            combiner.Invoke(a.D, b.D, state));
     }
 
     public static T Min<T>(this Quad<T> quad) where T : INumber<T>
@@ -65,16 +93,16 @@ public static class Quad
         return result;
     }
 
-    public static Quad<TResult> Select<T, TArg, TResult>(
+    public static Quad<TResult> Select<T, TState, TResult>(
         this Quad<T> q,
-        TArg arg,
-        Func<T, TArg, TResult> f)
+        TState state,
+        Func<T, TState, TResult> f)
     {
         var result = new Quad<TResult>(
-            f.Invoke(q.A, arg),
-            f.Invoke(q.B, arg),
-            f.Invoke(q.C, arg),
-            f.Invoke(q.D, arg));
+            f.Invoke(q.A, state),
+            f.Invoke(q.B, state),
+            f.Invoke(q.C, state),
+            f.Invoke(q.D, state));
 
         return result;
     }
