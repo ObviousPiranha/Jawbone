@@ -175,6 +175,22 @@ public static class Quad
             q.D + offset);
     }
 
+    public static bool Contains(
+        in this Quad<Vector2> q,
+        Vector2 v)
+    {
+        return
+            Passes(q.A, q.B, v) &&
+            Passes(q.B, q.C, v) &&
+            Passes(q.C, q.D, v) &&
+            Passes(q.D, q.A, v);
+
+        static bool Passes(Vector2 origin, Vector2 p1, Vector2 p2)
+        {
+            return 0f <= Vector2.Dot(p1 - origin, p2 - origin);
+        }
+    }
+
     public static Quad<Vector2> RotatedClockwiseAboutOrigin(in this Quad<Vector2> q, int stepCount)
     {
         return (stepCount & 3) switch

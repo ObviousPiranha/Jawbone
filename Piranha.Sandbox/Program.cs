@@ -1,8 +1,10 @@
-﻿using Piranha.Jawbone;
+﻿using Microsoft.VisualBasic;
+using Piranha.Jawbone;
 using Piranha.Jawbone.Net;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -238,56 +240,94 @@ class Program
         }
     }
 
+    static void SimpleUdp(string[] args)
+    {
+        var port = int.Parse(args[0]);
+        if (1 < args.Length)
+        {
+            var targetInfo = AddressInfo.Get(args[1], args[0]);
+            var target = targetInfo.V6[0];
+            Console.WriteLine($"Targeting {target}...");
+            using var socket = UdpSocketV6.CreateWithoutBinding();
+
+            while (true)
+            {
+                Console.WriteLine("Enter message:");
+                var message = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(message))
+                    break;
+
+                var bytes = Encoding.UTF8.GetBytes(message);
+                socket.Send(bytes, target);
+            }
+        }
+        else
+        {
+            // Server
+            bool keepListening = true;
+            Console.CancelKeyPress += (e, ea) =>
+            {
+                ea.Cancel = true;
+                keepListening = false;
+                Console.WriteLine("Quitting...");
+            };
+
+            using var socket = UdpSocketV6.BindAnyIp(port, true);
+            var endpoint = socket.GetEndpoint();
+            Console.WriteLine($"Listening on {endpoint}...");
+            var buffer = new byte[4096];
+            while (keepListening)
+            {
+                var n = socket.Receive(buffer, out var origin, TimeSpan.FromSeconds(1));
+
+                if (origin.IsDefault)
+                    continue;
+
+                var message = Encoding.UTF8.GetString(buffer, 0, n);
+                Console.WriteLine($"Received from {origin}: {message}");
+            }
+        }
+    }
+
+    static void QuadContains()
+    {
+        var q = Quad.Create(
+            new Vector2(0f, 1f),
+            new Vector2(1f, 2f),
+            new Vector2(2f, 1f),
+            new Vector2(1f, 0f));
+
+        Console.WriteLine(q.ToString());
+
+        while (true)
+        {
+            Console.WriteLine("Enter test:");
+            var input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+                break;
+
+            var space = input.IndexOf(' ');
+            if (space == -1)
+                continue;
+
+            if (!float.TryParse(input.AsSpan(0, space), out var x))
+                continue;
+
+            if (!float.TryParse(input.AsSpan(space + 1), out var y))
+                continue;
+
+            var v = new Vector2(x, y);
+            Console.WriteLine(q.Contains(v));
+        }
+    }
+
     static void Main(string[] args)
     {
         try
         {
-            var port = int.Parse(args[0]);
-            if (1 < args.Length)
-            {
-                var targetInfo = AddressInfo.Get(args[1], args[0]);
-                var target = targetInfo.V6[0];
-                Console.WriteLine($"Targeting {target}...");
-                using var socket = UdpSocketV6.CreateWithoutBinding();
-
-                while (true)
-                {
-                    Console.WriteLine("Enter message:");
-                    var message = Console.ReadLine();
-
-                    if (string.IsNullOrWhiteSpace(message))
-                        break;
-
-                    var bytes = Encoding.UTF8.GetBytes(message);
-                    socket.Send(bytes, target);
-                }
-            }
-            else
-            {
-                // Server
-                bool keepListening = true;
-                Console.CancelKeyPress += (e, ea) =>
-                {
-                    ea.Cancel = true;
-                    keepListening = false;
-                    Console.WriteLine("Quitting...");
-                };
-
-                using var socket = UdpSocketV6.BindAnyIp(port, true);
-                var endpoint = socket.GetEndpoint();
-                Console.WriteLine($"Listening on {endpoint}...");
-                var buffer = new byte[4096];
-                while (keepListening)
-                {
-                    var n = socket.Receive(buffer, out var origin, TimeSpan.FromSeconds(1));
-
-                    if (origin.IsDefault)
-                        continue;
-
-                    var message = Encoding.UTF8.GetString(buffer, 0, n);
-                    Console.WriteLine($"Received from {origin}: {message}");
-                }
-            }
+            QuadContains();
+            //SimpleUdp(args);
         }
         catch (Exception ex)
         {
