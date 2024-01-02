@@ -49,7 +49,7 @@ public interface ISdl2
     int UpdateWindowSurface(nint window);
     ulong GetPerformanceFrequency();
     ulong GetPerformanceCounter();
-    int PollEvent(out byte eventData);
+    int PollEvent(out SdlEvent eventData);
     int UpperBlit(
         nint source,
         in SdlRect sourceRectangle,

@@ -5,7 +5,7 @@ namespace Piranha.Jawbone.Sdl;
 [StructLayout(LayoutKind.Sequential)]
 public struct SdlMouseMotionEvent
 {
-    public uint Type;
+    public SdlEventType Type;
     public uint Timestamp;
     public uint WindowId;
     public uint Which;

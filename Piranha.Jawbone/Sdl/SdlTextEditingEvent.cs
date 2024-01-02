@@ -5,25 +5,27 @@ using System.Runtime.InteropServices;
 namespace Piranha.Jawbone.Sdl;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct SdlTextInputEvent
+public struct SdlTextEditingEvent
 {
     public SdlEventType Type;
     public uint Timestamp;
     public uint WindowId;
     public CharArray Text;
+    public int Start;
+    public int Length;
 
     public static ReadOnlySpan<byte> GetText(
-        in SdlTextInputEvent sdlTextInputEvent)
+        in SdlTextEditingEvent sdlTextEditingEvent)
     {
         var bytes = MemoryMarshal.AsBytes(
             new ReadOnlySpan<CharArray>(
-                in sdlTextInputEvent.Text));
+                in sdlTextEditingEvent.Text));
         return bytes;
     }
 
     // -- SDL_events.h --
-    // #define SDL_TEXTINPUTEVENT_TEXT_SIZE (32)
-    // char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+    // #define SDL_TEXTEDITINGEVENT_TEXT_SIZE (32)
+    // char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
     [InlineArray(32)]
     public struct CharArray
     {

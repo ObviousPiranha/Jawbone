@@ -3,16 +3,12 @@ using System.Runtime.InteropServices;
 namespace Piranha.Jawbone.Sdl;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct SdlMouseButtonEvent
+public struct SdlTextEditingExtEvent
 {
     public SdlEventType Type;
     public uint Timestamp;
     public uint WindowId;
-    public uint Which;
-    public byte Button;
-    public byte State;
-    public byte Clicks;
-    public byte Padding1;
-    public int X;
-    public int Y;
+    public nint Text;
+    public int Start;
+    public int Length;
 }
