@@ -21,5 +21,11 @@
 		{
 			"path": "Piranha.Jawbone.Test.Native"
 		}
-	]
+	],
+	"settings": {
+		"files.exclude": {
+			"**/bin": true,
+			"**/obj": true
+		}
+	}
 }

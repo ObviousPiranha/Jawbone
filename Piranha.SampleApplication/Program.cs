@@ -27,8 +27,11 @@ class Program
             .AddSqlite3()
             .AddSdl2()
             .AddStb()
-            .AddWindowManager()
-            .AddAudioManager();
+            .AddAudioManager()
+            .AddSingleton<ScenePool<PiranhaScene>>()
+            .AddSingleton<IGameLoop, GameLoop>()
+            .AddSingleton<GameLoopManager>()
+            .AddSingleton<SampleHandler>();
     }
 
     static void RunApplication(bool fullscreen)
@@ -47,19 +50,17 @@ class Program
 
         using (var process = System.Diagnostics.Process.GetCurrentProcess())
         {
-            logger.LogInformation("Process ID - " + process.Id);
+            logger.LogInformation("Process ID - {pid}", process.Id);
         }
 
         try
         {
-            var scenePool = new ScenePool<PiranhaScene>();
-            var gameLoop = ActivatorUtilities.CreateInstance<GameLoop>(serviceProvider, scenePool);
-            var windowManager = serviceProvider.GetRequiredService<IWindowManager>();
-            var handler = ActivatorUtilities.CreateInstance<SampleHandler>(serviceProvider, scenePool);
-            windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
+            var handler = serviceProvider.GetRequiredService<SampleHandler>();
+            //windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
+            var sdl = serviceProvider.GetRequiredService<ISdl2>();
 
-            using (ActivatorUtilities.CreateInstance<GameLoopManager>(serviceProvider, gameLoop))
-                windowManager.Run();
+            using (serviceProvider.GetRequiredService<GameLoopManager>())
+                ApplicationManager.Run(sdl, handler);
         }
         catch (Exception ex)
         {

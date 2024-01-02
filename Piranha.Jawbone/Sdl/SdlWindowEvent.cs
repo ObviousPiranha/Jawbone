@@ -6,8 +6,6 @@ namespace Piranha.Jawbone.Sdl;
 [StructLayout(LayoutKind.Sequential)]
 public struct SdlWindowEvent
 {
-
-
     public SdlEventType Type;
     public uint Timestamp;
     public uint WindowId;

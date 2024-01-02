@@ -101,4 +101,7 @@ public interface ISdl2
     string GetKeyName(int scanCode);
     void StartTextInput();
     void StopTextInput();
+    string GetVideoDriver(int index);
+    int GetNumVideoDrivers();
+    string GetCurrentVideoDriver();
 }

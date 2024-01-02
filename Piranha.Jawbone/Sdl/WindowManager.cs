@@ -4,6 +4,7 @@ using Piranha.Jawbone.OpenGl;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -165,6 +166,9 @@ sealed class WindowManager : IWindowManager, IDisposable
                         "SDL version: ",
                         string.Join('.', version),
                         Environment.NewLine,
+                        "SDL video driver: ",
+                        _sdl.GetCurrentVideoDriver(),
+                        Environment.NewLine,
                         "OpenGL version: ",
                         gl.GetString(Gl.Version),
                         Environment.NewLine,
@@ -180,7 +184,11 @@ sealed class WindowManager : IWindowManager, IDisposable
                         "OpenGL max texture size: ",
                         maxTextureSize);
 
-                    _logger.LogDebug(log);
+                    _logger.LogInformation("{versionInfo}", log);
+
+                    var driverCount = _sdl.GetNumVideoDrivers();
+                    var drivers = Enumerable.Range(0, driverCount).Select(n => _sdl.GetVideoDriver(n));
+                    _logger.LogDebug("Drivers: {drivers}", string.Join(", ", drivers));
                 }
                 catch
                 {
@@ -290,11 +298,10 @@ sealed class WindowManager : IWindowManager, IDisposable
         {
             case SdlEventType.TextInput:
             {
-                ref var sdlEvent = ref _eventData.Text;
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Text.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnTextInput(window, sdlEvent);
+                    window.WindowEventHandler.OnTextInput(window, _eventData.Text);
                 break;
             }
             case SdlEventType.WindowEvent:
@@ -304,56 +311,50 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             case SdlEventType.KeyDown:
             {
-                ref var sdlEvent = ref _eventData.Key;
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Key.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnKeyDown(window, sdlEvent);
+                    window.WindowEventHandler.OnKeyDown(window, _eventData.Key);
                 break;
             }
             case SdlEventType.KeyUp:
             {
-                ref var sdlEvent = ref _eventData.Key;
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Key.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnKeyUp(window, sdlEvent);
+                    window.WindowEventHandler.OnKeyUp(window, _eventData.Key);
                 break;
             }
             case SdlEventType.MouseMotion:
             {
-                ref var sdlEvent = ref _eventData.Motion;
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Motion.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseMove(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseMove(window, _eventData.Motion);
                 break;
             }
             case SdlEventType.MouseWheel:
             {
-                ref var sdlEvent = ref _eventData.Wheel;
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Wheel.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseWheel(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseWheel(window, _eventData.Wheel);
                 break;
             }
             case SdlEventType.MouseButtonDown:
             {
-                ref var sdlEvent = ref _eventData.Button;
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Button.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonDown(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseButtonDown(window, _eventData.Button);
                 break;
             }
             case SdlEventType.MouseButtonUp:
             {
-                ref var sdlEvent = ref _eventData.Button;
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Button.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonUp(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseButtonUp(window, _eventData.Button);
                 break;
             }
             case SdlEventType.Quit:
