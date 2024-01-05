@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl;
 
-public sealed class AudioManager : IAudioManager, IDisposable
+sealed class AudioManager : IAudioManager, IDisposable
 {
     private const int Frequency = 48000;
     private const SdlAudio Format = SdlAudio.F32;
@@ -85,6 +85,24 @@ public sealed class AudioManager : IAudioManager, IDisposable
             _sdl.CloseAudioDevice(_device);
             _handle.Free();
         }
+    }
+
+    public int PrepareAudio(
+        int frequency,
+        int channels,
+        ReadOnlySpan<short> data)
+    {
+        var bytes = MemoryMarshal.AsBytes(data);
+        return PrepareAudio(SdlAudio.S16Lsb, frequency, channels, bytes);
+    }
+
+    public int PrepareAudio(
+        int frequency,
+        int channels,
+        ReadOnlySpan<float> data)
+    {
+        var bytes = MemoryMarshal.AsBytes(data);
+        return PrepareAudio(SdlAudio.F32, frequency, channels, bytes);
     }
 
     public int PrepareAudio(

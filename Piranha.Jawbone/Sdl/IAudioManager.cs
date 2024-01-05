@@ -10,6 +10,16 @@ public interface IAudioManager
     void RemoveShader(AudioShader audioShader);
 
     int PrepareAudio(
+        int frequency,
+        int channels,
+        ReadOnlySpan<short> data);
+    
+    int PrepareAudio(
+        int frequency,
+        int channels,
+        ReadOnlySpan<float> data);
+
+    int PrepareAudio(
         SdlAudio format,
         int frequency,
         int channels,

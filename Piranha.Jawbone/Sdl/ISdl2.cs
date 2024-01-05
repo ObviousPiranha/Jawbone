@@ -104,4 +104,5 @@ public interface ISdl2
     string GetVideoDriver(int index);
     int GetNumVideoDrivers();
     string GetCurrentVideoDriver();
+    int SetHint(string name, string value);
 }
