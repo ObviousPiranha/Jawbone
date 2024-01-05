@@ -13,7 +13,7 @@ public interface IAudioManager
         int frequency,
         int channels,
         ReadOnlySpan<short> data);
-    
+
     int PrepareAudio(
         int frequency,
         int channels,
