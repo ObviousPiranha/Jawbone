@@ -49,8 +49,8 @@ public class UnmanagedQueueTest
     public void QueueWorks()
     {
         var queue = new UnmanagedQueue();
-        queue.Register<TimeSpan>(static _ => {});
-        queue.Register<byte>(static _ => {});
+        queue.Register<TimeSpan>(static _ => { });
+        queue.Register<byte>(static _ => { });
 
         for (int i = 0; i < 12; ++i)
             Assert.True(queue.TryEnqueue(TimeSpan.MaxValue));

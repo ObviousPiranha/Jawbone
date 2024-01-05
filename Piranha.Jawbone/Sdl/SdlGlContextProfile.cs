@@ -1,3 +1,5 @@
+namespace Piranha.Jawbone.Sdl;
+
 public static class SdlGlContextProfile
 {
     public const int Core = 1 << 0;

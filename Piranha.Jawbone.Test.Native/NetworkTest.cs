@@ -16,22 +16,22 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32(Endpoint.Any);
+        using var socketA = UdpSocketV4.BindAnyIp();
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket32();
-        socketB.Send(sendBuffer, Address32.Local.OnPort(endpointA.Port));
+        using var socketB = UdpSocketV4.CreateWithoutBinding();
+        socketB.Send(sendBuffer, AddressV4.Local.OnPort(endpointA.Port));
         var endpointB = socketB.GetEndpoint();
 
         var length = socketA.Receive(receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
         Assert.Equal(endpointB.Port, origin.Port);
-        Assert.Equal(Address32.Local, origin.Address);
+        Assert.Equal(AddressV4.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
         Assert.True(receiveBuffer.AsSpan(0, length).SequenceEqual(sendBuffer));
 
         socketA.Send(sendBuffer, endpointB);
         length = socketB.Receive(receiveBuffer, out origin, TimeSpan.FromSeconds(1));
         Assert.Equal(endpointA.Port, origin.Port);
-        Assert.Equal(Address32.Local, origin.Address);
+        Assert.Equal(AddressV4.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
     }
 
@@ -44,22 +44,22 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket128(Endpoint.Any, false);
+        using var socketA = UdpSocketV6.BindAnyIp();
         var endpointA = socketA.GetEndpoint();
-        using var socketB = new UdpSocket128(false);
-        socketB.Send(sendBuffer, Address128WithScopeId.Local.OnPort(endpointA.Port));
+        using var socketB = UdpSocketV6.CreateWithoutBinding();
+        socketB.Send(sendBuffer, AddressV6.Local.OnPort(endpointA.Port));
         var endpointB = socketB.GetEndpoint();
 
         var length = socketA.Receive(receiveBuffer, out var origin, TimeSpan.FromSeconds(1));
         Assert.Equal(endpointB.Port, origin.Port);
-        Assert.Equal(Address128.Local, origin.Address);
+        Assert.Equal(AddressV6.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
         Assert.True(receiveBuffer.AsSpan(0, length).SequenceEqual(sendBuffer));
 
         socketA.Send(sendBuffer, endpointB);
         length = socketB.Receive(receiveBuffer, out origin, TimeSpan.FromSeconds(1));
         Assert.Equal(endpointA.Port, origin.Port);
-        Assert.Equal(Address128.Local, origin.Address);
+        Assert.Equal(AddressV6.Local, origin.Address);
         Assert.Equal(sendBuffer.Length, length);
     }
 
@@ -72,17 +72,17 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32();
+        using var socketA = UdpSocketV4.CreateWithoutBinding();
 
-        using var socketB = new UdpSocket128(Endpoint.Any, true);
+        using var socketB = UdpSocketV6.BindAnyIp(true);
         var endpointB = socketB.GetEndpoint();
-        var destinationB = Address32.Local.OnPort(endpointB.Port);
+        var destinationB = AddressV4.Local.OnPort(endpointB.Port);
 
         socketA.Send(sendBuffer, destinationB);
         var endpointA = socketA.GetEndpoint();
-        var destinationA = Address32.Local.MapToV6().WithScopeId().OnPort(endpointA.Port);
+        var destinationA = ((AddressV6)AddressV4.Local).OnPort(endpointA.Port);
         var lengthV6 = socketB.Receive(receiveBuffer, out var originV6, TimeSpan.FromSeconds(1));
-        Assert.Equal(Address32.Local.MapToV6(), originV6.Address);
+        Assert.Equal((AddressV6)AddressV4.Local, originV6.Address);
         Assert.Equal(sendBuffer.Length, lengthV6);
         Assert.True(receiveBuffer.AsSpan(0, lengthV6).SequenceEqual(sendBuffer));
 
@@ -91,7 +91,7 @@ public class NetworkTest
 
         socketB.Send(sendBuffer, destinationA);
         int lengthV4 = socketA.Receive(receiveBuffer, out var originV4);
-        Assert.Equal(Address32.Local, originV4.Address);
+        Assert.Equal(AddressV4.Local, originV4.Address);
         Assert.Equal(sendBuffer.Length, lengthV4);
         Assert.True(receiveBuffer.AsSpan(0, lengthV4).SequenceEqual(sendBuffer));
     }
@@ -105,10 +105,10 @@ public class NetworkTest
         // Ensure that the amount received doesn't match by luck.
         var receiveBuffer = new byte[sendBuffer.Length * 2];
 
-        using var socketA = new UdpSocket32();
-        using var socketB = new UdpSocket128(Endpoint.Any, false);
+        using var socketA = UdpSocketV4.CreateWithoutBinding();
+        using var socketB = UdpSocketV6.BindAnyIp();
         var endpointB = socketB.GetEndpoint();
-        var destinationB = Address32.Local.OnPort(endpointB.Port);
+        var destinationB = AddressV4.Local.OnPort(endpointB.Port);
 
         socketA.Send(sendBuffer, destinationB);
         var lengthV6 = socketB.Receive(receiveBuffer, out var originV6, TimeSpan.FromSeconds(1));
@@ -119,14 +119,14 @@ public class NetworkTest
     [Fact]
     public void CannotBindSamePort32()
     {
-        using var socketA = new UdpSocket32(Endpoint.Any);
+        using var socketA = UdpSocketV4.BindAnyIp();
         var endpointA = socketA.GetEndpoint();
 
-        Assert.NotEqual(0, endpointA.Port);
+        Assert.NotEqual(0, endpointA.Port.HostValue);
 
         Assert.Throws<SocketException>(() =>
         {
-            using var socketB = new UdpSocket32(AnyAddress.OnPort(endpointA.Port));
+            using var socketB = UdpSocketV4.BindAnyIp(endpointA.Port);
             _ = socketB.GetEndpoint();
         });
     }
@@ -134,12 +134,14 @@ public class NetworkTest
     [Fact]
     public void CannotBindSamePort128()
     {
-        using var socketA = new UdpSocket128(Endpoint.Any, false);
+        using var socketA = UdpSocketV6.BindAnyIp();
         var endpoint = socketA.GetEndpoint();
+
+        Assert.NotEqual(0, endpoint.Port.HostValue);
 
         Assert.Throws<SocketException>(() =>
         {
-            using var socketB = new UdpSocket128(AnyAddress.OnPort(endpoint.Port), false);
+            using var socketB = UdpSocketV6.BindAnyIp(endpoint.Port);
             _ = socketB.GetEndpoint();
         });
     }

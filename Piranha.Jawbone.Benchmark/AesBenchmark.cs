@@ -1,7 +1,7 @@
+using BenchmarkDotNet.Attributes;
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using BenchmarkDotNet.Attributes;
 
 namespace Piranha.Jawbone.Benchmark;
 
@@ -46,7 +46,7 @@ public class AesBenchmark
         {
             using var inputStream = new MemoryStream(_originalMessage);
             using var outputStream = new MemoryStream(_buffer);
-            
+
             using (var encryptionStream = new CryptoStream(inputStream, _aes.CreateEncryptor(_key, _iv), CryptoStreamMode.Read))
                 encryptionStream.CopyTo(outputStream);
 

@@ -59,12 +59,12 @@ class IndentedStringBuilder
     {
         if (before is not null)
             AppendLine(before);
-        
+
         AppendBlock(action);
-        
+
         if (after is not null)
             AppendLine(after);
-        
+
         return this;
     }
 

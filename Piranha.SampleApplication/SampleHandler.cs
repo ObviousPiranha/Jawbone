@@ -1,18 +1,19 @@
-using System;
-using System.IO;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
 using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.OpenGl;
 using Piranha.Jawbone.Sdl;
 using Piranha.Jawbone.Stb;
+using System;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Piranha.SampleApplication;
 
-class SampleHandler : IWindowEventHandler
+class SampleHandler : ISdlEventHandler
 {
     private const uint Target = Gl.Texture2d;
     public static readonly Rectangle32 PiranhaSprite = new(
@@ -33,39 +34,139 @@ class SampleHandler : IWindowEventHandler
     private uint _vertexArray = default;
     private int _matrixUniform = default;
     private int _textureUniform = default;
+    private nint _windowPtr;
+    private ISdl2 _sdl;
+    private IOpenGl _gl;
+
+    public bool Running { get; private set; } = true;
 
     public SampleHandler(
         ILogger<SampleHandler> logger,
         IAudioManager audioManager,
         IStb stb,
+        ISdl2 sdl,
         ScenePool<PiranhaScene> scenePool)
     {
         _stb = stb;
+        _sdl = sdl;
         _logger = logger;
         _audioManager = audioManager;
         _scenePool = scenePool;
+
+        _windowPtr = sdl.CreateWindow(
+            "Sample Application",
+            SdlWindowPos.Centered,
+            SdlWindowPos.Centered,
+            1024,
+            768,
+            SdlWindow.OpenGl | SdlWindow.Resizable | SdlWindow.Shown);
+
+        if (_windowPtr.IsInvalid())
+            throw new SdlException(sdl.GetError());
+
+        sdl.GlSetAttribute(SdlGl.RedSize, 8);
+        sdl.GlSetAttribute(SdlGl.GreenSize, 8);
+        sdl.GlSetAttribute(SdlGl.BlueSize, 8);
+        sdl.GlSetAttribute(SdlGl.AlphaSize, 8);
+        // _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
+        sdl.GlSetAttribute(SdlGl.DoubleBuffer, 1);
+
+        if (Platform.IsRaspberryPi)
+        {
+            _logger.LogDebug("configuring OpenGL ES 3.0");
+            sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
+            sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
+            sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Es);
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            _logger.LogDebug("configuring OpenGL 3.2");
+            sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
+            sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
+            sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
+        }
+
+        var contextPtr = sdl.GlCreateContext(_windowPtr);
+
+        if (contextPtr.IsInvalid())
+        {
+            throw new SdlException(
+                "Unable to create GL context: " + sdl.GetError());
+        }
+
+        try
+        {
+            if (sdl.GlLoadLibrary() != 0)
+            {
+                throw new SdlException(
+                    "Unable to load GL library: " + sdl.GetError());
+            }
+            _gl = NativeLibraryInterface.CreateInterface<IOpenGl>(
+                "SdlOpenGl",
+                static methodName => "gl" + methodName,
+                sdl.GlGetProcAddress);
+
+            _gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
+
+            var version = new byte[4];
+            sdl.GetVersion(out version[0]);
+
+            var log = string.Concat(
+                "SDL version: ",
+                string.Join('.', version),
+                Environment.NewLine,
+                "SDL video driver: ",
+                sdl.GetCurrentVideoDriver(),
+                Environment.NewLine,
+                "OpenGL version: ",
+                _gl.GetString(Gl.Version),
+                Environment.NewLine,
+                "OpenGL shading language version: ",
+                _gl.GetString(Gl.ShadingLanguageVersion),
+                Environment.NewLine,
+                "OpenGL vendor: ",
+                _gl.GetString(Gl.Vendor),
+                Environment.NewLine,
+                "OpenGL renderer: ",
+                _gl.GetString(Gl.Renderer),
+                Environment.NewLine,
+                "OpenGL max texture size: ",
+                maxTextureSize);
+
+            _logger.LogInformation("{versionInfo}", log);
+
+            var driverCount = sdl.GetNumVideoDrivers();
+            var drivers = Enumerable.Range(0, driverCount).Select(n => sdl.GetVideoDriver(n));
+            _logger.LogDebug("Drivers: {drivers}", string.Join(", ", drivers));
+        }
+        catch
+        {
+            sdl.GlDeleteContext(contextPtr);
+            contextPtr = default;
+            throw;
+        }
+
+        OnWindowCreated();
     }
 
-    public void OnWindowCreated(Window window)
+    public void OnWindowCreated()
     {
-        var graphicsProvider = window.GetGraphics();
-        var gl = graphicsProvider.Graphics;
-        _ = GlTools.TryLogErrors(gl, _logger);
+        _ = GlTools.TryLogErrors(_gl, _logger);
 
-        _program = gl.CreateProgram();
+        _program = _gl.CreateProgram();
         var vertexSource = File.ReadAllBytes("vertex.shader");
         var fragmentSource = File.ReadAllBytes("fragment.shader");
-        var vertexShader = GlTools.LoadShader(gl, vertexSource, Gl.VertexShader);
-        var fragmentShader = GlTools.LoadShader(gl, fragmentSource, Gl.FragmentShader);
-        gl.AttachShader(_program, vertexShader);
-        gl.AttachShader(_program, fragmentShader);
-        gl.LinkProgram(_program);
-        gl.GetProgramiv(_program, Gl.LinkStatus, out var result);
+        var vertexShader = GlTools.LoadShader(_gl, vertexSource, Gl.VertexShader);
+        var fragmentShader = GlTools.LoadShader(_gl, fragmentSource, Gl.FragmentShader);
+        _gl.AttachShader(_program, vertexShader);
+        _gl.AttachShader(_program, fragmentShader);
+        _gl.LinkProgram(_program);
+        _gl.GetProgramiv(_program, Gl.LinkStatus, out var result);
         if (result == Gl.False)
         {
-            gl.GetProgramiv(_program, Gl.InfoLogLength, out var logLength);
+            _gl.GetProgramiv(_program, Gl.InfoLogLength, out var logLength);
             var buffer = new byte[logLength];
-            gl.GetProgramInfoLog(_program, buffer.Length, out var actualLength, out buffer[0]);
+            _gl.GetProgramInfoLog(_program, buffer.Length, out var actualLength, out buffer[0]);
             var errors = Encoding.UTF8.GetString(buffer);
             throw new OpenGlException("Error linking program: " + errors);
         }
@@ -74,26 +175,26 @@ class SampleHandler : IWindowEventHandler
             _logger.LogDebug("Linked shader program!");
         }
 
-        gl.DeleteShader(fragmentShader);
-        gl.DeleteShader(vertexShader);
+        _gl.DeleteShader(fragmentShader);
+        _gl.DeleteShader(vertexShader);
 
-        _ = GlTools.TryLogErrors(gl, _logger);
+        _ = GlTools.TryLogErrors(_gl, _logger);
 
-        _matrixUniform = gl.GetUniformLocation(_program, "theMatrix");
-        _textureUniform = gl.GetUniformLocation(_program, "theTexture");
-        _shaderInputMapper = ShaderInputMapper.Create<Vertex>(gl, _program);
+        _matrixUniform = _gl.GetUniformLocation(_program, "theMatrix");
+        _textureUniform = _gl.GetUniformLocation(_program, "theTexture");
+        _shaderInputMapper = ShaderInputMapper.Create<Vertex>(_gl, _program);
 
-        _ = GlTools.TryLogErrors(gl, _logger);
+        _ = GlTools.TryLogErrors(_gl, _logger);
 
-        _vertexArray = gl.GenVertexArray();
-        gl.BindVertexArray(_vertexArray);
+        _vertexArray = _gl.GenVertexArray();
+        _gl.BindVertexArray(_vertexArray);
 
-        _ = GlTools.TryLogErrors(gl, _logger);
+        _ = GlTools.TryLogErrors(_gl, _logger);
 
-        _texture = gl.GenTexture();
-        gl.BindTexture(Target, _texture);
+        _texture = _gl.GenTexture();
+        _gl.BindTexture(Target, _texture);
 
-        _ = GlTools.TryLogErrors(gl, _logger);
+        _ = GlTools.TryLogErrors(_gl, _logger);
 
         // Public domain piranha:
         // https://publicdomainvectors.org/en/free-clipart/Piranha-fish-vector/3815.html
@@ -108,7 +209,7 @@ class SampleHandler : IWindowEventHandler
             4);
         var span = pixelBytes.ToReadOnlySpan<byte>(w * h * 4);
 
-        gl.TexImage2D(
+        _gl.TexImage2D(
             Target,
             0,
             Gl.Rgba8,
@@ -121,27 +222,28 @@ class SampleHandler : IWindowEventHandler
 
         _stb.StbiImageFree(pixelBytes);
 
-        gl.TexParameteri(Target, Gl.TextureWrapS, Gl.ClampToEdge);
-        gl.TexParameteri(Target, Gl.TextureWrapT, Gl.ClampToEdge);
-        gl.TexParameteri(Target, Gl.TextureMagFilter, Gl.Linear);
-        gl.TexParameteri(Target, Gl.TextureMinFilter, Gl.Linear);
+        _gl.TexParameteri(Target, Gl.TextureWrapS, Gl.ClampToEdge);
+        _gl.TexParameteri(Target, Gl.TextureWrapT, Gl.ClampToEdge);
+        _gl.TexParameteri(Target, Gl.TextureMagFilter, Gl.Linear);
+        _gl.TexParameteri(Target, Gl.TextureMinFilter, Gl.Linear);
 
         var positions = Quad.Create(new Vector2(-1F, 0.5F), new Vector2(1F, -0.5F));
         var textureCoordinates = PiranhaSprite.ToTextureCoordinates(new Point32(512, 512));
         _bufferData.Clear();
         _bufferData.Add(positions, textureCoordinates);
 
-        var size = window.Size;
-        gl.Viewport(0, 0, size.X, size.Y);
+        Point32 size;
+        _sdl.GetWindowSize(_windowPtr, out size.X, out size.Y);
+        _gl.Viewport(0, 0, size.X, size.Y);
         var aspectRatio = size.X / (float)size.Y;
         _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
 
-        _buffer = gl.GenBuffer();
+        _buffer = _gl.GenBuffer();
         var bytes = _bufferData.Bytes;
-        gl.BindBuffer(Gl.ArrayBuffer, _buffer);
-        gl.BufferData(Gl.ArrayBuffer, new IntPtr(bytes.Length), bytes[0], Gl.StreamDraw);
+        _gl.BindBuffer(Gl.ArrayBuffer, _buffer);
+        _gl.BufferData(Gl.ArrayBuffer, new IntPtr(bytes.Length), bytes[0], Gl.StreamDraw);
 
-        _ = GlTools.TryLogErrors(gl, _logger);
+        _ = GlTools.TryLogErrors(_gl, _logger);
 
         // neck_snap-Vladimir-719669812.wav
         // Public domain audio: http://soundbible.com/1953-Neck-Snap.html
@@ -170,39 +272,38 @@ class SampleHandler : IWindowEventHandler
         }
     }
 
-    public void OnClose(Window window)
+    public void OnClose()
     {
         _logger.LogDebug("OnClose");
-        window.Close();
+        Running = false;
         _scenePool.Closed = true;
     }
 
-    public void OnQuit(Window window)
+    public void OnQuit()
     {
         _logger.LogDebug("OnQuit");
-        window.Close();
+        Running = false;
     }
 
-    public void OnLoop(Window window)
+    public void OnLoop()
     {
-        OnExpose(window);
+        if (_scenePool.HasNewScene)
+            OnExpose();
     }
 
-    public void OnExpose(Window window)
+    public void OnExpose()
     {
-        var graphicsProvider = window.GetGraphics();
-        var gl = graphicsProvider.Graphics;
-        gl.ClearColor(
+        _gl.ClearColor(
             _currentScene.Color.X,
             _currentScene.Color.Y,
             _currentScene.Color.Z,
             _currentScene.Color.W);
-        gl.Clear(Gl.ColorBufferBit);
+        _gl.Clear(Gl.ColorBufferBit);
 
-        gl.UseProgram(_program);
-        gl.Enable(Gl.Blend);
-        gl.BlendFunc(Gl.SrcAlpha, Gl.OneMinusSrcAlpha);
-        gl.BindVertexArray(_vertexArray);
+        _gl.UseProgram(_program);
+        _gl.Enable(Gl.Blend);
+        _gl.BlendFunc(Gl.SrcAlpha, Gl.OneMinusSrcAlpha);
+        _gl.BindVertexArray(_vertexArray);
         var latestScene = _scenePool.TakeLatestScene();
 
         if (latestScene is not null)
@@ -211,33 +312,32 @@ class SampleHandler : IWindowEventHandler
             _currentScene = latestScene;
             var bytes = _currentScene.VertexData.Bytes;
 
-            gl.BufferSubData(
+            _gl.BufferSubData(
                 Gl.ArrayBuffer,
                 IntPtr.Zero,
                 new IntPtr(bytes.Length),
                 bytes[0]);
         }
-        gl.BindTexture(Gl.Texture2d, _texture);
-        _shaderInputMapper.Enable(gl);
-        _shaderInputMapper.VertexAttribPointers(gl);
-        gl.Uniform1i(_textureUniform, 0);
-        gl.UniformMatrix4fv(_matrixUniform, 1, Gl.False, _matrix);
-        gl.DrawArrays(Gl.Triangles, 0, 6);
-        _shaderInputMapper.Disable(gl);
-        gl.Disable(Gl.Blend);
-        gl.UseProgram(0);
-        _ = GlTools.TryLogErrors(gl, _logger);
-
-        graphicsProvider.Present();
+        _gl.BindTexture(Gl.Texture2d, _texture);
+        _shaderInputMapper.Enable(_gl);
+        _shaderInputMapper.VertexAttribPointers(_gl);
+        _gl.Uniform1i(_textureUniform, 0);
+        _gl.UniformMatrix4fv(_matrixUniform, 1, Gl.False, _matrix);
+        _gl.DrawArrays(Gl.Triangles, 0, 6);
+        _shaderInputMapper.Disable(_gl);
+        _gl.Disable(Gl.Blend);
+        _gl.UseProgram(0);
+        _ = GlTools.TryLogErrors(_gl, _logger);
+        _sdl.GlSwapWindow(_windowPtr);
     }
 
-    public void OnKeyUp(Window window, SdlKeyboardEvent eventData)
+    public void OnKeyUp(SdlKeyboardEvent eventData)
     {
         if (eventData.Keysym.Scancode == SdlScancode.Escape)
-            window.Close();
+            Running = false;
     }
 
-    public void OnMouseButtonDown(Window window, SdlMouseButtonEvent eventData)
+    public void OnMouseButtonDown(SdlMouseButtonEvent eventData)
     {
         _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         // _audioManager.ScheduleAudio(0, default);
@@ -245,11 +345,9 @@ class SampleHandler : IWindowEventHandler
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));
     }
 
-    public void OnSizeChanged(Window window, SdlWindowEvent eventData)
+    public void OnWindowSizeChanged(SdlWindowEvent eventData)
     {
-        var graphicsProvider = window.GetGraphics();
-        var gl = graphicsProvider.Graphics;
-        gl.Viewport(0, 0, eventData.Data1, eventData.Data2);
+        _gl.Viewport(0, 0, eventData.Data1, eventData.Data2);
         var aspectRatio = eventData.Data1 / (float)eventData.Data2;
         _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
     }

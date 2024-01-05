@@ -4,7 +4,8 @@ namespace Piranha.Jawbone.Net;
 
 public static class Windows
 {
-    public static readonly ImmutableArray<ErrorCode> ErrorCodes = ImmutableArray.Create<ErrorCode>(
+    public static readonly ImmutableArray<ErrorCode> ErrorCodes =
+    [
         new(10004, "WSAEINTR", "A blocking operation was interrupted by a call to WSACancelBlockingCall."),
         new(10009, "WSAEBADF", "The file handle supplied is not valid."),
         new(10013, "WSAEACCES", "An attempt was made to access a socket in a way forbidden by its access permissions."),
@@ -95,7 +96,8 @@ public static class Windows
         new(11030, "WSA_QOS_ESHAPERATEOBJ", "An invalid shaping rate object was found in the QOS provider-specific buffer."),
         new(11031, "WSA_QOS_RESERVED_PETYPE", "A reserved policy element was found in the QOS provider-specific buffer."),
         new(11032, "WSA_SECURE_HOST_NOT_FOUND", "No such host is known securely."),
-        new(11033, "WSA_IPSEC_NAME_POLICY_ERROR", "Name based IPSEC policy could not be added."));
+        new(11033, "WSA_IPSEC_NAME_POLICY_ERROR", "Name based IPSEC policy could not be added."),
+    ];
 
     public static readonly ImmutableDictionary<int, ErrorCode> ErrorCodeById = ErrorCodes.ToImmutableDictionary(v => v.Id);
 }

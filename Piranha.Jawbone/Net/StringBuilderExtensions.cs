@@ -78,8 +78,9 @@ public static class StringBuilderExtensions
         Endpoint<TAddress> endpoint) where TAddress : unmanaged, IAddress<TAddress>
     {
         return builder
+            .Append('[')
             .AppendAddress(endpoint.Address)
-            .Append(':')
-            .Append(endpoint.Port);
+            .Append("]:")
+            .Append(endpoint.Port.HostValue);
     }
 }

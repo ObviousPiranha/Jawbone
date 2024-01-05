@@ -1,10 +1,10 @@
+using BenchmarkDotNet.Attributes;
+using Piranha.Jawbone.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using BenchmarkDotNet.Attributes;
-using Piranha.Jawbone.Net;
 
 namespace Piranha.Jawbone.Benchmark;
 
@@ -28,7 +28,7 @@ public class AddressKeyBenchmark<TAddress> where TAddress : unmanaged, IAddress<
 
     private readonly List<Endpoint<TAddress>> _list = new();
     private readonly HashSet<Endpoint<TAddress>> _set = new();
-    private readonly Dictionary<Endpoint<TAddress>, Endpoint<Address128>> _dictionary = new();
+    private readonly Dictionary<Endpoint<TAddress>, Endpoint<AddressV6>> _dictionary = new();
     private Endpoint<TAddress> _last;
 
     [Params(4, 8, 64)]
@@ -41,12 +41,12 @@ public class AddressKeyBenchmark<TAddress> where TAddress : unmanaged, IAddress<
 
         for (int i = 0; i < Count; ++i)
             _list.Add(CreateRandom());
-        
+
         _set.Clear();
         _set.UnionWith(_list);
 
         _dictionary.Clear();
-        
+
         foreach (var item in _list)
             _dictionary[item] = default;
 
@@ -72,7 +72,7 @@ public class AddressKeyBenchmark<TAddress> where TAddress : unmanaged, IAddress<
             Throw();
     }
 
-    [Benchmark]    
+    [Benchmark]
     public void FindItemInDictionary()
     {
         if (!_dictionary.ContainsKey(_last))

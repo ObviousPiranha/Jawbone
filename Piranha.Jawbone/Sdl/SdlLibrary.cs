@@ -6,11 +6,11 @@ namespace Piranha.Jawbone.Sdl;
 
 public sealed class SdlLibrary : IDisposable
 {
-    private static readonly string[] MacPaths = new string[]
-    {
+    private static readonly string[] MacPaths =
+    [
         "/opt/homebrew/lib/libSDL2.dylib",
         "/usr/local/opt/sdl2/lib/libSDL2.dylib"
-    };
+    ];
 
     private static string ResolveName(string methodName)
     {
@@ -31,6 +31,8 @@ public sealed class SdlLibrary : IDisposable
 
         try
         {
+            if (OperatingSystem.IsLinux())
+                Library.SetHint("SDL_VIDEODRIVER", "wayland,x11");
             int result = Library.Init(flags);
 
             if (result != 0)

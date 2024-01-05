@@ -7,12 +7,13 @@ namespace Piranha.Jawbone.Sdl;
 [StructLayout(LayoutKind.Sequential)]
 public struct SdlTextInputEvent
 {
-    public uint Type;
+    public SdlEventType Type;
     public uint Timestamp;
     public uint WindowId;
     public CharArray Text;
 
-    public static ReadOnlySpan<byte> GetText(in SdlTextInputEvent sdlTextInputEvent)
+    public static ReadOnlySpan<byte> GetText(
+        in SdlTextInputEvent sdlTextInputEvent)
     {
         var bytes = MemoryMarshal.AsBytes(
             new ReadOnlySpan<CharArray>(

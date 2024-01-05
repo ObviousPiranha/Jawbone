@@ -4,6 +4,7 @@ using Piranha.Jawbone.OpenGl;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -59,12 +60,11 @@ sealed class WindowManager : IWindowManager, IDisposable
 
         return windowPtr;
     }
-
-    private readonly byte[] _eventData = new byte[64];
     private readonly ISdl2 _sdl;
     private readonly ILogger<WindowManager> _logger;
     private IOpenGl? _gl = default;
     private IntPtr _contextPtr = default;
+    private SdlEvent _eventData;
     private readonly List<Window> _activeWindows = new();
 
     public WindowManager(
@@ -166,6 +166,9 @@ sealed class WindowManager : IWindowManager, IDisposable
                         "SDL version: ",
                         string.Join('.', version),
                         Environment.NewLine,
+                        "SDL video driver: ",
+                        _sdl.GetCurrentVideoDriver(),
+                        Environment.NewLine,
                         "OpenGL version: ",
                         gl.GetString(Gl.Version),
                         Environment.NewLine,
@@ -181,7 +184,11 @@ sealed class WindowManager : IWindowManager, IDisposable
                         "OpenGL max texture size: ",
                         maxTextureSize);
 
-                    _logger.LogDebug(log);
+                    _logger.LogInformation("{versionInfo}", log);
+
+                    var driverCount = _sdl.GetNumVideoDrivers();
+                    var drivers = Enumerable.Range(0, driverCount).Select(n => _sdl.GetVideoDriver(n));
+                    _logger.LogDebug("Drivers: {drivers}", string.Join(", ", drivers));
                 }
                 catch
                 {
@@ -235,7 +242,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         while (_activeWindows.Count > 0)
         {
             var doSleep = true;
-            while (_sdl.PollEvent(out _eventData[0]) == 1)
+            while (_sdl.PollEvent(out _eventData) == 1)
             {
                 HandleEvent();
                 doSleep = false;
@@ -267,7 +274,7 @@ sealed class WindowManager : IWindowManager, IDisposable
         }
 
         // Flush the queue before exiting.
-        while (_sdl.PollEvent(out _eventData[0]) == 1)
+        while (_sdl.PollEvent(out _eventData) == 1)
         {
             HandleEvent();
         }
@@ -287,79 +294,70 @@ sealed class WindowManager : IWindowManager, IDisposable
 
     private void HandleEvent()
     {
-        var eventType = BitConverter.ToUInt32(_eventData, 0);
-
-        switch (eventType)
+        switch (_eventData.Type)
         {
-            case SdlEvent.TextInput:
+            case SdlEventType.TextInput:
             {
-                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlTextInputEvent>(_eventData);
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Text.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnTextInput(window, sdlEvent);
+                    window.WindowEventHandler.OnTextInput(window, _eventData.Text);
                 break;
             }
-            case SdlEvent.WindowEvent:
+            case SdlEventType.WindowEvent:
             {
                 HandleWindowEvent();
                 break;
             }
-            case SdlEvent.KeyDown:
+            case SdlEventType.KeyDown:
             {
-                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlKeyboardEvent>(_eventData);
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Key.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnKeyDown(window, sdlEvent);
+                    window.WindowEventHandler.OnKeyDown(window, _eventData.Key);
                 break;
             }
-            case SdlEvent.KeyUp:
+            case SdlEventType.KeyUp:
             {
-                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlKeyboardEvent>(_eventData);
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Key.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnKeyUp(window, sdlEvent);
+                    window.WindowEventHandler.OnKeyUp(window, _eventData.Key);
                 break;
             }
-            case SdlEvent.MouseMotion:
+            case SdlEventType.MouseMotion:
             {
-                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseMotionEvent>(_eventData);
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Motion.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseMove(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseMove(window, _eventData.Motion);
                 break;
             }
-            case SdlEvent.MouseWheel:
+            case SdlEventType.MouseWheel:
             {
-                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseWheelEvent>(_eventData);
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Wheel.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseWheel(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseWheel(window, _eventData.Wheel);
                 break;
             }
-            case SdlEvent.MouseButtonDown:
+            case SdlEventType.MouseButtonDown:
             {
-                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseButtonEvent>(_eventData);
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Button.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonDown(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseButtonDown(window, _eventData.Button);
                 break;
             }
-            case SdlEvent.MouseButtonUp:
+            case SdlEventType.MouseButtonUp:
             {
-                ref var sdlEvent = ref MemoryMarshal.AsRef<SdlMouseButtonEvent>(_eventData);
-                var window = GetWindow(sdlEvent.WindowId);
+                var window = GetWindow(_eventData.Button.WindowId);
 
                 if (window is not null)
-                    window.WindowEventHandler.OnMouseButtonUp(window, sdlEvent);
+                    window.WindowEventHandler.OnMouseButtonUp(window, _eventData.Button);
                 break;
             }
-            case SdlEvent.Quit:
+            case SdlEventType.Quit:
             {
                 foreach (var window in _activeWindows)
                     window.WindowEventHandler.OnQuit(window);
@@ -368,7 +366,7 @@ sealed class WindowManager : IWindowManager, IDisposable
             }
             default:
             {
-                _logger.LogTrace("event {eventType}", eventType);
+                _logger.LogTrace("event {eventType}", _eventData.Type);
                 break;
             }
         }
@@ -376,7 +374,7 @@ sealed class WindowManager : IWindowManager, IDisposable
 
     private void HandleWindowEvent()
     {
-        ref var sdlEvent = ref MemoryMarshal.AsRef<SdlWindowEvent>(_eventData);
+        ref var sdlEvent = ref _eventData.Window;
         var window = GetWindow(sdlEvent.WindowId);
 
         if (window is not null)
@@ -384,46 +382,46 @@ sealed class WindowManager : IWindowManager, IDisposable
             var handler = window.WindowEventHandler;
             switch (sdlEvent.Event)
             {
-                case SdlWindowEvent.Shown:
+                case SdlWindowEventType.Shown:
                     handler.OnShown(window);
                     break;
-                case SdlWindowEvent.Hidden:
+                case SdlWindowEventType.Hidden:
                     handler.OnHidden(window);
                     break;
-                case SdlWindowEvent.Exposed:
+                case SdlWindowEventType.Exposed:
                     handler.OnExpose(window);
                     break;
-                case SdlWindowEvent.Moved:
+                case SdlWindowEventType.Moved:
                     handler.OnMove(window, sdlEvent);
                     break;
-                case SdlWindowEvent.Resized:
+                case SdlWindowEventType.Resized:
                     handler.OnResize(window, sdlEvent);
                     break;
-                case SdlWindowEvent.SizeChanged:
+                case SdlWindowEventType.SizeChanged:
                     handler.OnSizeChanged(window, sdlEvent);
                     break;
-                case SdlWindowEvent.Minimized:
+                case SdlWindowEventType.Minimized:
                     handler.OnMinimize(window);
                     break;
-                case SdlWindowEvent.Maximized:
+                case SdlWindowEventType.Maximized:
                     handler.OnMaximize(window);
                     break;
-                case SdlWindowEvent.Restored:
+                case SdlWindowEventType.Restored:
                     handler.OnRestore(window);
                     break;
-                case SdlWindowEvent.Enter:
+                case SdlWindowEventType.Enter:
                     handler.OnMouseEnter(window);
                     break;
-                case SdlWindowEvent.Leave:
+                case SdlWindowEventType.Leave:
                     handler.OnMouseLeave(window);
                     break;
-                case SdlWindowEvent.FocusGained:
+                case SdlWindowEventType.FocusGained:
                     handler.OnInputFocus(window);
                     break;
-                case SdlWindowEvent.FocusLost:
+                case SdlWindowEventType.FocusLost:
                     handler.OnInputBlur(window);
                     break;
-                case SdlWindowEvent.Close:
+                case SdlWindowEventType.Close:
                     handler.OnClose(window);
                     break;
                 default:

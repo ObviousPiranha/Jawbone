@@ -1,7 +1,7 @@
-using System;
-using System.Numerics;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
+using System;
+using System.Numerics;
 
 namespace Piranha.SampleApplication;
 

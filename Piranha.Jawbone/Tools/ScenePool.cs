@@ -12,6 +12,7 @@ public sealed class ScenePool<T> where T : class, new()
     public bool Closed { get; set; }
     public int CreateCount { get; private set; }
     public int RoamCount => _roamCount;
+    public bool HasNewScene => _latest is not null;
     public int StaleCount { get; private set; }
 
     public T? TakeLatestScene() => Interlocked.Exchange(ref _latest, null);
