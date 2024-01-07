@@ -82,10 +82,10 @@ public static class SdlExtensions
         int destinationChannels)
     {
         var stream = sdl.NewAudioStream(
-            (ushort)SdlAudio.S16Lsb,
+            SdlAudioFormat.S16Lsb,
             (byte)sourceChannels,
             sourceFrequency,
-            (ushort)SdlAudio.S16Lsb,
+            SdlAudioFormat.S16Lsb,
             (byte)destinationChannels,
             destinationFrequency);
 
@@ -141,10 +141,10 @@ public static class SdlExtensions
         int destinationChannels)
     {
         var stream = sdl.NewAudioStream(
-            (ushort)SdlAudio.S16Lsb,
+            SdlAudioFormat.S16Lsb,
             (byte)sourceChannels,
             sourceFrequency,
-            (ushort)SdlAudio.F32,
+            SdlAudioFormat.F32,
             (byte)destinationChannels,
             destinationFrequency);
 

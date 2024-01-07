@@ -61,17 +61,17 @@ public interface ISdl2
     uint OpenAudioDevice(
         string? device,
         int isCapture,
-        in AudioSpec desired,
-        out AudioSpec obtained,
-        int allowedChanges);
+        in SdlAudioSpec desired,
+        out SdlAudioSpec obtained,
+        SdlAudioAllowChange allowedChanges);
     void CloseAudioDevice(uint dev);
     void PauseAudioDevice(uint dev, int pauseOn);
     int QueueAudio(uint dev, in byte data, uint len);
     nint NewAudioStream(
-        ushort sourceFormat,
+        SdlAudioFormat sourceFormat,
         byte sourceChannels,
         int sourceRate,
-        ushort destinationFormat,
+        SdlAudioFormat destinationFormat,
         byte destinationChannels,
         int destinationRate);
     void FreeAudioStream(nint stream);
