@@ -8,12 +8,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Piranha.SampleApplication;
 
-class SampleHandler : ISdlEventHandler
+class SampleHandler : ISdlEventHandler, IDisposable
 {
     private const uint Target = Gl.Texture2d;
     public static readonly Rectangle32 PiranhaSprite = new(
@@ -34,9 +33,10 @@ class SampleHandler : ISdlEventHandler
     private uint _vertexArray = default;
     private int _matrixUniform = default;
     private int _textureUniform = default;
-    private nint _windowPtr;
-    private ISdl2 _sdl;
-    private IOpenGl _gl;
+    private readonly ISdl2 _sdl;
+    private readonly nint _windowPtr;
+    private readonly nint _contextPtr;
+    private readonly IOpenGl _gl;
 
     public bool Running { get; private set; } = true;
 
@@ -63,88 +63,10 @@ class SampleHandler : ISdlEventHandler
 
         if (_windowPtr.IsInvalid())
             throw new SdlException(sdl.GetError());
-
-        sdl.GlSetAttribute(SdlGl.RedSize, 8);
-        sdl.GlSetAttribute(SdlGl.GreenSize, 8);
-        sdl.GlSetAttribute(SdlGl.BlueSize, 8);
-        sdl.GlSetAttribute(SdlGl.AlphaSize, 8);
-        // _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
-        sdl.GlSetAttribute(SdlGl.DoubleBuffer, 1);
-
-        if (Platform.IsRaspberryPi)
-        {
-            _logger.LogDebug("configuring OpenGL ES 3.0");
-            sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-            sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
-            sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Es);
-        }
-        else if (OperatingSystem.IsMacOS())
-        {
-            _logger.LogDebug("configuring OpenGL 3.2");
-            sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-            sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
-            sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
-        }
-
-        var contextPtr = sdl.GlCreateContext(_windowPtr);
-
-        if (contextPtr.IsInvalid())
-        {
-            throw new SdlException(
-                "Unable to create GL context: " + sdl.GetError());
-        }
-
-        try
-        {
-            if (sdl.GlLoadLibrary() != 0)
-            {
-                throw new SdlException(
-                    "Unable to load GL library: " + sdl.GetError());
-            }
-            _gl = NativeLibraryInterface.CreateInterface<IOpenGl>(
-                "SdlOpenGl",
-                static methodName => "gl" + methodName,
-                sdl.GlGetProcAddress);
-
-            _gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
-
-            var version = new byte[4];
-            sdl.GetVersion(out version[0]);
-
-            var log = string.Concat(
-                "SDL version: ",
-                string.Join('.', version),
-                Environment.NewLine,
-                "SDL video driver: ",
-                sdl.GetCurrentVideoDriver(),
-                Environment.NewLine,
-                "OpenGL version: ",
-                _gl.GetString(Gl.Version),
-                Environment.NewLine,
-                "OpenGL shading language version: ",
-                _gl.GetString(Gl.ShadingLanguageVersion),
-                Environment.NewLine,
-                "OpenGL vendor: ",
-                _gl.GetString(Gl.Vendor),
-                Environment.NewLine,
-                "OpenGL renderer: ",
-                _gl.GetString(Gl.Renderer),
-                Environment.NewLine,
-                "OpenGL max texture size: ",
-                maxTextureSize);
-
-            _logger.LogInformation("{versionInfo}", log);
-
-            var driverCount = sdl.GetNumVideoDrivers();
-            var drivers = Enumerable.Range(0, driverCount).Select(n => sdl.GetVideoDriver(n));
-            _logger.LogDebug("Drivers: {drivers}", string.Join(", ", drivers));
-        }
-        catch
-        {
-            sdl.GlDeleteContext(contextPtr);
-            contextPtr = default;
-            throw;
-        }
+        
+        var context = OpenGlContext.Create(_sdl, _windowPtr, _logger);
+        _contextPtr = context.SdlGlContext;
+        _gl = context.OpenGl;
 
         OnWindowCreated();
     }
@@ -261,10 +183,9 @@ class SampleHandler : ISdlEventHandler
         try
         {
             _audioManager.PrepareAudio(
-                SdlAudio.S16Lsb,
                 sampleRate,
                 channelCount,
-                output.ToReadOnlySpan<byte>(samples * channelCount * Unsafe.SizeOf<short>()));
+                output.ToReadOnlySpan<short>(samples * channelCount));
         }
         finally
         {
@@ -350,5 +271,11 @@ class SampleHandler : ISdlEventHandler
         _gl.Viewport(0, 0, eventData.Data1, eventData.Data2);
         var aspectRatio = eventData.Data1 / (float)eventData.Data2;
         _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
+    }
+
+    public void Dispose()
+    {
+        _sdl.GlDeleteContext(_contextPtr);
+        _sdl.DestroyWindow(_windowPtr);
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Piranha.Jawbone.Sdl;
 
-public sealed class SdlLibrary : IDisposable
+sealed class SdlLibrary : IDisposable
 {
     private static readonly string[] MacPaths =
     [
@@ -24,7 +24,7 @@ public sealed class SdlLibrary : IDisposable
 
     public ISdl2 Library => _nativeLibraryInterface.Library;
 
-    public SdlLibrary(uint flags)
+    public SdlLibrary(SdlInit flags)
     {
         var path = GetSdlPath();
         _nativeLibraryInterface = NativeLibraryInterface.FromFile<ISdl2>(path, ResolveName);

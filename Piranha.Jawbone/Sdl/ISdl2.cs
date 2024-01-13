@@ -2,7 +2,7 @@ namespace Piranha.Jawbone.Sdl;
 
 public interface ISdl2
 {
-    int Init(uint flags);
+    int Init(SdlInit flags);
     void Quit();
     string GetError();
     nint CreateRGBSurface(
