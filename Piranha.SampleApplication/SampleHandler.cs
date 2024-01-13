@@ -63,7 +63,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
 
         if (_windowPtr.IsInvalid())
             throw new SdlException(sdl.GetError());
-        
+
         var context = OpenGlContext.Create(_sdl, _windowPtr, _logger);
         _contextPtr = context.SdlGlContext;
         _gl = context.OpenGl;

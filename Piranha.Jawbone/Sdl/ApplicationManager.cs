@@ -53,6 +53,6 @@ public static class ApplicationManager
 
         var flag = sdl.GetWindowFlags(window) & SdlWindow.FullScreenDesktop;
         sdl.SetWindowFullscreen(window, flag ^ SdlWindow.FullScreenDesktop);
-    
+
     }
 }
