@@ -43,11 +43,6 @@ public static class SdlExtensions
                 serviceProvider => serviceProvider.GetRequiredService<SdlLibrary>().Library);
     }
 
-    public static IServiceCollection AddWindowManager(this IServiceCollection services)
-    {
-        return services.AddSingleton<IWindowManager, WindowManager>();
-    }
-
     public static IServiceCollection AddAudioManager(this IServiceCollection services)
     {
         return services.AddSingleton<IAudioManager, AudioManager>();
