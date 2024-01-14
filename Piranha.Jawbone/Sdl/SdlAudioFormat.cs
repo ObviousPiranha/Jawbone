@@ -1,6 +1,6 @@
 namespace Piranha.Jawbone.Sdl;
 
-public enum SdlAudio : ushort
+public enum SdlAudioFormat : ushort
 {
     S16Lsb = 0x8010,
     F32Lsb = 0x8120,

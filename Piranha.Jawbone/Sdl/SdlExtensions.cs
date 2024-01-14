@@ -19,18 +19,18 @@ public static class SdlExtensions
 
     public static IServiceCollection AddSdl2(
         this IServiceCollection services,
-        uint flags)
+        SdlInit flags)
     {
         var isVideoEnabled = (flags & SdlInit.Video) == SdlInit.Video;
         if (isVideoEnabled && RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists(BcmLibrary))
         {
-            services.AddNativeLibrary<IBcm>(
+            services.AddNativeLibrary(
                 _ => NativeLibraryInterface.FromFile<IBcm>(
                     BcmLibrary, name => name));
         }
 
         return services
-            .AddSingleton<SdlLibrary>(
+            .AddSingleton(
                 serviceProvider =>
                 {
                     var bcm = serviceProvider.GetService<IBcm>();
@@ -39,13 +39,8 @@ public static class SdlExtensions
                     var library = new SdlLibrary(flags);
                     return library;
                 })
-            .AddSingleton<ISdl2>(
+            .AddSingleton(
                 serviceProvider => serviceProvider.GetRequiredService<SdlLibrary>().Library);
-    }
-
-    public static IServiceCollection AddWindowManager(this IServiceCollection services)
-    {
-        return services.AddSingleton<IWindowManager, WindowManager>();
     }
 
     public static IServiceCollection AddAudioManager(this IServiceCollection services)
@@ -82,10 +77,10 @@ public static class SdlExtensions
         int destinationChannels)
     {
         var stream = sdl.NewAudioStream(
-            (ushort)SdlAudio.S16Lsb,
+            SdlAudioFormat.S16Lsb,
             (byte)sourceChannels,
             sourceFrequency,
-            (ushort)SdlAudio.S16Lsb,
+            SdlAudioFormat.S16Lsb,
             (byte)destinationChannels,
             destinationFrequency);
 
@@ -141,10 +136,10 @@ public static class SdlExtensions
         int destinationChannels)
     {
         var stream = sdl.NewAudioStream(
-            (ushort)SdlAudio.S16Lsb,
+            SdlAudioFormat.S16Lsb,
             (byte)sourceChannels,
             sourceFrequency,
-            (ushort)SdlAudio.F32,
+            SdlAudioFormat.F32,
             (byte)destinationChannels,
             destinationFrequency);
 

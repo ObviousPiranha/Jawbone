@@ -6,13 +6,14 @@ namespace Piranha.Jawbone.Sdl;
 // https://wiki.libsdl.org/SDL_AudioSpec
 
 [StructLayout(LayoutKind.Sequential)]
-public struct AudioSpec
+public struct SdlAudioSpec
 {
     public int Freq;
-    public ushort Format;
+    public SdlAudioFormat Format;
     public byte Channels;
     public byte Silence;
     public ushort Samples;
+    public ushort Padding;
     public uint Size;
     public IntPtr Callback;
     public IntPtr Userdata;

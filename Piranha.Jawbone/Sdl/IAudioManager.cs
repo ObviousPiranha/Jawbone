@@ -20,7 +20,7 @@ public interface IAudioManager
         ReadOnlySpan<float> data);
 
     int PrepareAudio(
-        SdlAudio format,
+        SdlAudioFormat format,
         int frequency,
         int channels,
         ReadOnlySpan<byte> data);

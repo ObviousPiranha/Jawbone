@@ -13,7 +13,7 @@ public static class AudioManagerExtensions
         ReadOnlySpan<float> f32Data)
     {
         return audioManager.PrepareAudio(
-            SdlAudio.F32,
+            SdlAudioFormat.F32,
             frequency,
             channels,
             MemoryMarshal.AsBytes(f32Data));
@@ -26,7 +26,7 @@ public static class AudioManagerExtensions
         ReadOnlySpan<short> s16Data)
     {
         return audioManager.PrepareAudio(
-            SdlAudio.S16Lsb,
+            SdlAudioFormat.S16Lsb,
             frequency,
             channels,
             MemoryMarshal.AsBytes(s16Data));

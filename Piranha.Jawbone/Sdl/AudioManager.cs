@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -9,19 +10,16 @@ namespace Piranha.Jawbone.Sdl;
 
 sealed class AudioManager : IAudioManager, IDisposable
 {
-    private const int Frequency = 48000;
-    private const SdlAudio Format = SdlAudio.F32;
-    private const int Channels = 2;
-    private const int SamplesPerSecond = Frequency * Channels;
-
-    private readonly List<AudioShader> _shaders = new();
-    private readonly List<float[]> _sounds = new();
-    private readonly List<ScheduledAudio> _scheduledAudio = new();
+    private readonly List<AudioShader> _shaders = [];
+    private readonly List<float[]> _sounds = [];
+    private readonly List<ScheduledAudio> _scheduledAudio = [];
     private readonly object _lock = new();
     private readonly GCHandle _handle;
     private readonly ISdl2 _sdl;
     private readonly ILogger<AudioManager> _logger;
     private readonly uint _device;
+    private readonly SdlAudioSpec _expectedAudioSpec;
+    private readonly SdlAudioSpec _actualAudioSpec;
 
     private long _sampleIndex = 0;
     private int _nextId = 1;
@@ -44,11 +42,11 @@ sealed class AudioManager : IAudioManager, IDisposable
                 callback = new IntPtr(fp);
             }
 
-            var audioSpec = new AudioSpec
+            _expectedAudioSpec = new SdlAudioSpec
             {
-                Freq = Frequency,
-                Format = (ushort)Format,
-                Channels = Channels,
+                Freq = 48000,
+                Format = SdlAudioFormat.F32,
+                Channels = 2,
                 Samples = 4096,
                 Callback = callback,
                 Userdata = (IntPtr)_handle
@@ -57,9 +55,9 @@ sealed class AudioManager : IAudioManager, IDisposable
             _device = _sdl.OpenAudioDevice(
                 null,
                 0,
-                audioSpec,
-                out Unsafe.NullRef<AudioSpec>(),
-                0);
+                _expectedAudioSpec,
+                out _actualAudioSpec,
+                SdlAudioAllowChange.Any & ~SdlAudioAllowChange.Format);
 
             if (_device == 0)
                 _sdl.ThrowException();
@@ -85,6 +83,8 @@ sealed class AudioManager : IAudioManager, IDisposable
             _sdl.CloseAudioDevice(_device);
             _handle.Free();
         }
+
+        _logger.LogInformation("Disposed audio manager");
     }
 
     public int PrepareAudio(
@@ -93,7 +93,7 @@ sealed class AudioManager : IAudioManager, IDisposable
         ReadOnlySpan<short> data)
     {
         var bytes = MemoryMarshal.AsBytes(data);
-        return PrepareAudio(SdlAudio.S16Lsb, frequency, channels, bytes);
+        return PrepareAudio(SdlAudioFormat.S16Lsb, frequency, channels, bytes);
     }
 
     public int PrepareAudio(
@@ -102,22 +102,22 @@ sealed class AudioManager : IAudioManager, IDisposable
         ReadOnlySpan<float> data)
     {
         var bytes = MemoryMarshal.AsBytes(data);
-        return PrepareAudio(SdlAudio.F32, frequency, channels, bytes);
+        return PrepareAudio(SdlAudioFormat.F32, frequency, channels, bytes);
     }
 
     public int PrepareAudio(
-        SdlAudio format,
+        SdlAudioFormat format,
         int frequency,
         int channels,
         ReadOnlySpan<byte> data)
     {
         var stream = _sdl.NewAudioStream(
-            (ushort)format,
-            (byte)channels,
+            format,
+            checked((byte)channels),
             frequency,
-            (ushort)Format,
-            Channels,
-            Frequency);
+            _actualAudioSpec.Format,
+            _actualAudioSpec.Channels,
+            _actualAudioSpec.Freq);
 
         if (stream.IsInvalid())
             _sdl.ThrowException();
@@ -179,8 +179,8 @@ sealed class AudioManager : IAudioManager, IDisposable
         TimeSpan delay,
         TimeSpan delayBetweenLoops)
     {
-        var delayOffset = (long)(delay.TotalSeconds * SamplesPerSecond);
-        var gapDelay = delayBetweenLoops < TimeSpan.Zero ? -1 : (int)(delayBetweenLoops.TotalSeconds * SamplesPerSecond);
+        var delayOffset = (long)(delay.TotalSeconds * _actualAudioSpec.Freq) * _actualAudioSpec.Channels;
+        var gapDelay = delayBetweenLoops < TimeSpan.Zero ? -1 : (int)(delayBetweenLoops.TotalSeconds * _actualAudioSpec.Freq) * _actualAudioSpec.Channels;
 
         lock (_lock)
         {
@@ -293,7 +293,7 @@ sealed class AudioManager : IAudioManager, IDisposable
                 }
 
                 foreach (var shader in _shaders)
-                    shader.Invoke(Frequency, Channels, samples);
+                    shader.Invoke(_actualAudioSpec.Freq, _actualAudioSpec.Channels, samples);
             }
 
             // if (_scheduledAudio.Count == 0)
