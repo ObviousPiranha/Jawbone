@@ -27,6 +27,12 @@ public interface ISdl2
     nint CreateWindow(string title, int x, int y, int w, int h, uint flags);
     void DestroyWindow(nint window);
     void FreeSurface(nint surface);
+    int NumJoysticks();
+    int IsGameController(int index);
+    nint GameControllerOpen(int index);
+    void GameControllerClose(nint gameController);
+    nint JoystickOpen(int index);
+    void JoystickClose(nint joystick);
     int GetDisplayBounds(int displayIndex, out SdlRect rect);
     int GetDisplayUsableBounds(int displayIndex, out SdlRect rect);
     uint GetWindowFlags(nint window);
