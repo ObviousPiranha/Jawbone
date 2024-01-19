@@ -8,7 +8,7 @@ public sealed partial class Sdl2
     {
         if (methodName.StartsWith("Gl"))
             return string.Concat("SDL_GL_", methodName.AsSpan(2));
-        
+
         return methodName switch
         {
             nameof(BlitSurface) => "SDL_UpperBlit",

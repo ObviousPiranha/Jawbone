@@ -1,10 +1,10 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Piranha.Jawbone.SourceGenerator;
 
@@ -14,12 +14,12 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
     private static readonly SymbolDisplayFormat _symbolDisplayFormat = new(
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
-    
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var mappableClasses = context.SyntaxProvider.CreateSyntaxProvider(
             FindMappableClasses, PrepareMethods);
-        
+
         context.RegisterSourceOutput(
             mappableClasses, GenerateSource);
     }
@@ -33,7 +33,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
         builder
             .AppendLine("// AUTO-GENERATED")
             .AppendLine();
-        
+
         if (0 < libraryClass.Namespace.Length)
         {
             builder
@@ -47,7 +47,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             .Append("sealed unsafe partial class ")
             .AppendLine(libraryClass.ClassName)
             .AppendLine("{");
-        
+
         var classIndent = new IndentState(4, 1);
         var methodIndent = classIndent.Indent();
 
@@ -60,13 +60,13 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             .AppendLine("global::System.Func<string, nint> loader)")
             .Indent(classIndent)
             .AppendLine("{");
-        
+
         var seenMethods = new HashSet<string>();
         foreach (var libraryMethod in libraryClass.Methods)
         {
             if (!seenMethods.Add(libraryMethod.MethodName))
                 continue;
-            
+
             builder
                 .Indent(methodIndent)
                 .Append(libraryMethod.FunctionPointerName)
@@ -79,20 +79,20 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             .Indent(classIndent)
             .AppendLine("}")
             .AppendLine();
-        
+
         seenMethods.Clear();
         foreach (var libraryMethod in libraryClass.Methods)
         {
             if (!seenMethods.Add(libraryMethod.MethodName))
                 continue;
-            
+
             builder
                 .Indent(classIndent)
                 .Append("private readonly nint ")
                 .Append(libraryMethod.FunctionPointerName)
                 .AppendLine(";");
         }
-        
+
         foreach (var libraryMethod in libraryClass.Methods)
         {
             var returnsVoid = libraryMethod.ReturnType == "void";
@@ -104,7 +104,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 .Append(' ')
                 .Append(libraryMethod.MethodName)
                 .Append('(');
-            
+
             var parameters = libraryMethod.Parameters;
             if (0 < parameters.Count)
             {
@@ -125,7 +125,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 .AppendLine(")")
                 .Indent(classIndent)
                 .AppendLine("{");
-            
+
             var passRefs = false;
 
             foreach (var parameter in parameters.Where(p => p.PassesByReference))
@@ -149,11 +149,11 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
 
             var bodyIndent = passRefs ? methodIndent.Indent() : methodIndent;
             var typeIndent = bodyIndent.Indent();
-            
+
             builder
                 .Indent(bodyIndent)
                 .AppendLine("var __fp = (delegate* unmanaged[Cdecl]<");
-            
+
             foreach (var libraryParameter in libraryMethod.Parameters)
             {
                 builder
@@ -171,7 +171,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 .Indent(bodyIndent)
                 .Append(returnsVoid ? "" : "var __result = ")
                 .Append("__fp(");
-            
+
             if (0 < parameters.Count)
             {
                 builder.Append(parameters[0].GetFinalName());
@@ -181,7 +181,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
 
             builder
                 .AppendLine(");");
-            
+
             if (!returnsVoid)
             {
                 builder
@@ -247,7 +247,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 MethodName = method.Identifier.ValueText,
                 ReturnType = GetTypeName(semanticModel, method.ReturnType, cancellationToken)
             };
-            
+
             foreach (var parameter in method.ParameterList.Parameters)
             {
                 var libraryParameter = new LibraryParameter
@@ -267,13 +267,13 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                         semanticModel,
                         parameter.Type,
                         cancellationToken);
-                    
+
                     if (typeName.Contains('.'))
                         typeName = "global::" + typeName;
-                    
+
                     libraryParameter.FunctionPointerType = typeName;
                 }
-                
+
                 libraryMethod.Parameters.Add(libraryParameter);
             }
 
@@ -293,7 +293,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
 
         if (typeString.Contains('.'))
             typeString = "global::" + typeString;
-        
+
         var result = typeString + " " + parameterSyntax.Identifier.ValueText;
         var modifiers = parameterSyntax.Modifiers;
         if (modifiers.Any(SyntaxKind.ReadOnlyKeyword))
