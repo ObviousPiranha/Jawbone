@@ -22,7 +22,7 @@ public sealed class StbPointers
 
     public unsafe string? GetString()
     {
-        var functionPointer = (delegate*<nint>)_pointerPiranhaGetString.ToPointer();
+        var functionPointer = (delegate*<nint>)_pointerPiranhaGetString;
         var result = functionPointer();
         return Marshal.PtrToStringUTF8(result);
     }

@@ -1,10 +1,22 @@
+using System;
+
 namespace Piranha.Jawbone.Sdl;
 
 public sealed partial class Sdl2
 {
+    public static string GetFunctionName(string methodName)
+    {
+        if (methodName == "BlitSurface")
+            return "SDL_UpperBlit";
+        if (methodName.StartsWith("Gl"))
+            return string.Concat("SDL_GL_", methodName.AsSpan(2));
+
+        return "SDL_" + methodName;
+    }
+
     public partial int Init(SdlInit flags);
     public partial void Quit();
-    public partial string GetError();
+    public partial CString GetError();
     public partial nint CreateRGBSurface(
         uint flags,
         int width,
@@ -56,7 +68,7 @@ public sealed partial class Sdl2
     public partial ulong GetPerformanceFrequency();
     public partial ulong GetPerformanceCounter();
     public partial int PollEvent(out SdlEvent eventData);
-    public partial int UpperBlit(
+    public partial int BlitSurface(
         nint source,
         in SdlRect sourceRectangle,
         nint destination,
@@ -104,11 +116,12 @@ public sealed partial class Sdl2
     public partial int ShowCursor(int toggle);
     public partial void SetWindowTitle(nint window, string title);
     public partial void GetVersion(out byte v);
-    public partial string GetKeyName(int scanCode);
+    public partial CString GetKeyName(int scanCode);
     public partial void StartTextInput();
     public partial void StopTextInput();
-    public partial string GetVideoDriver(int index);
+    public partial CString GetVideoDriver(int index);
     public partial int GetNumVideoDrivers();
-    public partial string GetCurrentVideoDriver();
+    public partial CString GetCurrentVideoDriver();
     public partial int SetHint(string name, string value);
+    public partial CString GetHint(string name);
 }

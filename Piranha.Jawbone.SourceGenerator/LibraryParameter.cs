@@ -3,7 +3,8 @@ namespace Piranha.Jawbone.SourceGenerator;
 class LibraryParameter
 {
     public string Name { get; set; } = "";
-    public string FullDefinition { get; set; } = "";
+    public string MethodDefinition { get; set; } = "";
+    public string FunctionPointerType { get; set; } = "";
     public bool PassesByReference { get; set; }
 
     public string GetFinalName()

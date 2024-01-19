@@ -72,7 +72,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 .Append(libraryMethod.FunctionPointerName)
                 .Append(" = loader.Invoke(nameof(")
                 .Append(libraryMethod.MethodName)
-                .AppendLine(")).ToPointer();");
+                .AppendLine("));");
         }
 
         builder
@@ -88,7 +88,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             
             builder
                 .Indent(classIndent)
-                .Append("private readonly void* ")
+                .Append("private readonly nint ")
                 .Append(libraryMethod.FunctionPointerName)
                 .AppendLine(";");
         }
@@ -111,13 +111,13 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 builder
                     .AppendLine()
                     .Indent(methodIndent)
-                    .Append(parameters[0].FullDefinition);
+                    .Append(parameters[0].MethodDefinition);
                 for (int i = 1; i < parameters.Count; ++i)
                 {
                     builder
                         .AppendLine(",")
                         .Indent(methodIndent)
-                        .Append(parameters[i].FullDefinition);
+                        .Append(parameters[i].MethodDefinition);
                 }
             }
 
@@ -148,12 +148,24 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             }
 
             var bodyIndent = passRefs ? methodIndent.Indent() : methodIndent;
+            var typeIndent = bodyIndent.Indent();
             
             builder
                 .Indent(bodyIndent)
-                .Append("var __fp = (")
-                .Append(libraryMethod.FunctionPointerType)
-                .Append(")")
+                .AppendLine("var __fp = (delegate* unmanaged[Cdecl]<");
+            
+            foreach (var libraryParameter in libraryMethod.Parameters)
+            {
+                builder
+                    .Indent(typeIndent)
+                    .Append(libraryParameter.FunctionPointerType)
+                    .AppendLine(",");
+            }
+            builder
+                .Indent(typeIndent)
+                .AppendLine(libraryMethod.ReturnType)
+                .Indent(typeIndent)
+                .Append(">)")
                 .Append(libraryMethod.FunctionPointerName)
                 .AppendLine(";")
                 .Indent(bodyIndent)
@@ -235,22 +247,19 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 MethodName = method.Identifier.ValueText,
                 ReturnType = GetTypeName(semanticModel, method.ReturnType, cancellationToken)
             };
-
-            var functionPointerTypeBuilder = new StringBuilder(
-                "delegate* unmanaged[Cdecl]<");
             
             foreach (var parameter in method.ParameterList.Parameters)
             {
                 var libraryParameter = new LibraryParameter
                 {
                     Name = parameter.Identifier.ValueText,
-                    FullDefinition = GetDefinition(semanticModel, parameter, cancellationToken),
+                    MethodDefinition = GetDefinition(semanticModel, parameter, cancellationToken),
                     PassesByReference = IsPassByReference(parameter)
                 };
 
                 if (libraryParameter.PassesByReference)
                 {
-                    functionPointerTypeBuilder.Append("void*");
+                    libraryParameter.FunctionPointerType = "void*";
                 }
                 else
                 {
@@ -258,19 +267,15 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                         semanticModel,
                         parameter.Type,
                         cancellationToken);
-                    functionPointerTypeBuilder.Append(typeName);
+                    
+                    if (typeName.Contains('.'))
+                        typeName = "global::" + typeName;
+                    
+                    libraryParameter.FunctionPointerType = typeName;
                 }
-
-                functionPointerTypeBuilder.Append(", ");
                 
                 libraryMethod.Parameters.Add(libraryParameter);
             }
-
-            functionPointerTypeBuilder
-                .Append(libraryMethod.ReturnType)
-                .Append('>');
-            
-            libraryMethod.FunctionPointerType = functionPointerTypeBuilder.ToString();
 
             result.Methods.Add(libraryMethod);
         }
