@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 
 namespace Piranha.Jawbone.Sdl;
 
@@ -6,12 +7,14 @@ public sealed partial class Sdl2
 {
     public static string GetFunctionName(string methodName)
     {
-        if (methodName == "BlitSurface")
-            return "SDL_UpperBlit";
         if (methodName.StartsWith("Gl"))
             return string.Concat("SDL_GL_", methodName.AsSpan(2));
-
-        return "SDL_" + methodName;
+        
+        return methodName switch
+        {
+            nameof(BlitSurface) => "SDL_UpperBlit",
+            _ => "SDL_" + methodName
+        };
     }
 
     public partial int Init(SdlInit flags);
