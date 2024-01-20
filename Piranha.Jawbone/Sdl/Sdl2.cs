@@ -1,8 +1,9 @@
+using Piranha.Jawbone.Generation;
 using System;
 
 namespace Piranha.Jawbone.Sdl;
 
-[Piranha.Jawbone.Generation.MapNativeFunctions]
+[MapNativeFunctions]
 public sealed partial class Sdl2
 {
     public static string GetFunctionName(string methodName)
