@@ -2,6 +2,7 @@ using System;
 
 namespace Piranha.Jawbone.Sdl;
 
+[Piranha.Jawbone.Generation.MapNativeFunctions]
 public sealed partial class Sdl2
 {
     public static string GetFunctionName(string methodName)
@@ -12,12 +13,14 @@ public sealed partial class Sdl2
         return methodName switch
         {
             nameof(BlitSurface) => "SDL_UpperBlit",
+            nameof(Free) => "SDL_free",
             _ => "SDL_" + methodName
         };
     }
 
     public partial int Init(SdlInit flags);
     public partial void Quit();
+    public partial void Free(nint mem);
     public partial CString GetError();
     public partial nint CreateRGBSurface(
         uint flags,
