@@ -4,7 +4,7 @@ using System;
 namespace Piranha.Jawbone.Sdl;
 
 [MapNativeFunctions]
-public sealed partial class Sdl2
+public sealed partial class Sdl2Library
 {
     public static string GetFunctionName(string methodName)
     {

@@ -12,7 +12,7 @@ class Program
         {
             Console.WriteLine("So it begins...");
             var handle = NativeLibrary.Load("/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0");
-            var sdl = new Sdl2(methodName => NativeLibrary.GetExport(handle, Sdl2.GetFunctionName(methodName)));
+            var sdl = new Sdl2Library(methodName => NativeLibrary.GetExport(handle, Sdl2Library.GetFunctionName(methodName)));
             sdl.Init(SdlInit.Video);
             var keyName = sdl.GetKeyName(58);
             Console.WriteLine("Key Name: " + keyName);

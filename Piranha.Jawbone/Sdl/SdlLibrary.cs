@@ -45,7 +45,7 @@ sealed class SdlLibrary : IDisposable
         }
     }
 
-    private static string GetSdlPath()
+    public static string GetSdlPath()
     {
         if (OperatingSystem.IsWindows())
         {

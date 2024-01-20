@@ -33,6 +33,13 @@ public static class SdlExtensions
             .AddSingleton(
                 serviceProvider =>
                 {
+                    var path = SdlLibrary.GetSdlPath();
+                    var library = new Sdl2Provider(path, flags);
+                    return library;
+                })
+            .AddSingleton(
+                serviceProvider =>
+                {
                     var bcm = serviceProvider.GetService<IBcm>();
                     bcm?.HostInit();
 
