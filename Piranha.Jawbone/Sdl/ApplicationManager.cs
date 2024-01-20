@@ -6,7 +6,7 @@ namespace Piranha.Jawbone.Sdl;
 
 public static class ApplicationManager
 {
-    public static void Run(ISdl2 sdl, ISdlEventHandler eventHandler)
+    public static void Run(Sdl2Library sdl, ISdlEventHandler eventHandler)
     {
         var nextSecond = Stopwatch.GetTimestamp() + Stopwatch.Frequency;
 
@@ -37,7 +37,7 @@ public static class ApplicationManager
         }
     }
 
-    public static void ToggleFullScreen(ISdl2 sdl, nint window)
+    public static void ToggleFullScreen(Sdl2Library sdl, nint window)
     {
         // https://superuser.com/a/1251294
         // http://lists.libsdl.org/pipermail/commits-libsdl.org/2018-January/002542.html

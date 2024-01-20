@@ -57,7 +57,7 @@ class Program
         {
             var handler = serviceProvider.GetRequiredService<SampleHandler>();
             //windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
-            var sdl = serviceProvider.GetRequiredService<ISdl2>();
+            var sdl = serviceProvider.GetRequiredService<Sdl2Library>();
 
             using (serviceProvider.GetRequiredService<GameLoopManager>())
                 ApplicationManager.Run(sdl, handler);

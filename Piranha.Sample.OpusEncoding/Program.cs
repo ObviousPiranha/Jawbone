@@ -43,7 +43,7 @@ class Program
     static void EncodeAndThenDecode()
     {
         using var serviceProvider = CreateServiceProvider();
-        var sdl = serviceProvider.GetRequiredService<ISdl2>();
+        var sdl = serviceProvider.GetRequiredService<Sdl2Library>();
         var stb = serviceProvider.GetRequiredService<IStb>();
         var opusProvider = serviceProvider.GetRequiredService<OpusProvider>();
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();

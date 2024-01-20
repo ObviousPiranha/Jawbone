@@ -12,7 +12,7 @@ public readonly struct OpenGlContext
     public readonly IOpenGl OpenGl { get; init; }
 
     public static OpenGlContext Create(
-        ISdl2 sdl,
+        Sdl2Library sdl,
         nint sdlWindow,
         ILogger? logger = null)
     {

@@ -33,7 +33,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
     private uint _vertexArray = default;
     private int _matrixUniform = default;
     private int _textureUniform = default;
-    private readonly ISdl2 _sdl;
+    private readonly Sdl2Library _sdl;
     private readonly nint _windowPtr;
     private readonly nint _contextPtr;
     private readonly IOpenGl _gl;
@@ -44,7 +44,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         ILogger<SampleHandler> logger,
         IAudioManager audioManager,
         IStb stb,
-        ISdl2 sdl,
+        Sdl2Library sdl,
         ScenePool<PiranhaScene> scenePool)
     {
         _stb = stb;
@@ -62,7 +62,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
             SdlWindow.OpenGl | SdlWindow.Resizable | SdlWindow.Shown);
 
         if (_windowPtr.IsInvalid())
-            throw new SdlException(sdl.GetError());
+            throw new SdlException(sdl.GetError().ToString() ?? "");
 
         var context = OpenGlContext.Create(_sdl, _windowPtr, _logger);
         _contextPtr = context.SdlGlContext;
