@@ -9,7 +9,7 @@ namespace Piranha.Jawbone.OpenGl;
 public static class GlTools
 {
     public static uint LoadShaderProgramFromFiles(
-        IOpenGl gl,
+        OpenGlLibrary gl,
         string vertexShaderPath,
         string fragmentShaderPath)
     {
@@ -19,7 +19,7 @@ public static class GlTools
     }
 
     public static uint LoadShaderProgram(
-        IOpenGl gl,
+        OpenGlLibrary gl,
         ReadOnlySpan<byte> vertexSource,
         ReadOnlySpan<byte> fragmentSource)
     {
@@ -61,7 +61,7 @@ public static class GlTools
     }
 
     public static unsafe uint LoadShader(
-        IOpenGl gl,
+        OpenGlLibrary gl,
         ReadOnlySpan<byte> source,
         uint shaderType)
     {
@@ -103,7 +103,7 @@ public static class GlTools
     }
 
     public static bool TryLogErrors(
-        this IOpenGl gl,
+        this OpenGlLibrary gl,
         ILogger logger,
         [CallerFilePath] string? file = null,
         [CallerMemberName] string? caller = null,

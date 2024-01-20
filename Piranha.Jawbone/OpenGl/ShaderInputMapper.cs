@@ -63,7 +63,7 @@ public readonly struct ShaderInputMapper
             Pair(typeof(PackedUnsignedVector4), (int)Gl.Bgra, Gl.UnsignedInt2101010Rev)
         }.ToImmutableDictionary();
 
-    public static ShaderInputMapper Create<T>(IOpenGl gl, uint program) where T : unmanaged
+    public static ShaderInputMapper Create<T>(OpenGlLibrary gl, uint program) where T : unmanaged
     {
         var builder = ImmutableArray.CreateBuilder<VertexInfo>();
         foreach (var fieldInfo in typeof(T).GetFields())
@@ -101,13 +101,13 @@ public readonly struct ShaderInputMapper
         _stride = stride;
     }
 
-    public void Enable(IOpenGl gl)
+    public void Enable(OpenGlLibrary gl)
     {
         foreach (var vertexInfo in _vertexInfo)
             gl.EnableVertexAttribArray(vertexInfo.Index);
     }
 
-    public void VertexAttribPointers(IOpenGl gl)
+    public void VertexAttribPointers(OpenGlLibrary gl)
     {
         foreach (var vertexInfo in _vertexInfo)
         {
@@ -121,7 +121,7 @@ public readonly struct ShaderInputMapper
         }
     }
 
-    public void Disable(IOpenGl gl)
+    public void Disable(OpenGlLibrary gl)
     {
         var last = _vertexInfo.Length - 1;
         for (int i = 0; i < _vertexInfo.Length; ++i)

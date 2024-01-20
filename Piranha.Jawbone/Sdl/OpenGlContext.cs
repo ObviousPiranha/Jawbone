@@ -9,7 +9,7 @@ namespace Piranha.Jawbone.Sdl;
 public readonly struct OpenGlContext
 {
     public readonly nint SdlGlContext { get; init; }
-    public readonly IOpenGl OpenGl { get; init; }
+    public readonly OpenGlLibrary OpenGl { get; init; }
 
     public static OpenGlContext Create(
         Sdl2Library sdl,
@@ -53,10 +53,8 @@ public readonly struct OpenGlContext
                 throw new SdlException(
                     "Unable to load GL library: " + sdl.GetError());
             }
-            var gl = NativeLibraryInterface.CreateInterface<IOpenGl>(
-                "SdlOpenGl",
-                static methodName => "gl" + methodName,
-                sdl.GlGetProcAddress);
+            var gl = new OpenGlLibrary(
+                methodName => sdl.GlGetProcAddress("gl" + methodName));
 
             gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
 

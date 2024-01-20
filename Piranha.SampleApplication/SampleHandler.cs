@@ -36,7 +36,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
     private readonly Sdl2Library _sdl;
     private readonly nint _windowPtr;
     private readonly nint _contextPtr;
-    private readonly IOpenGl _gl;
+    private readonly OpenGlLibrary _gl;
 
     public bool Running { get; private set; } = true;
 
