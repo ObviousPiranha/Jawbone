@@ -4,57 +4,54 @@ using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Benchmark;
 
-public static class DllImportStb
+public static class DllImportPiranha
 {
-    [DllImport("PiranhaNative.dll", EntryPoint = "piranha_get_string", CallingConvention = CallingConvention.Cdecl)]
-    public static extern nint GetString();
+    [DllImport("PiranhaNative.dll", EntryPoint = "piranha_get_null", CallingConvention = CallingConvention.Cdecl)]
+    public static extern nint GetNull();
 }
 
-public static partial class LibraryImportStb
+public static partial class LibraryImportPiranha
 {
-    [LibraryImport("PiranhaNative.dll", EntryPoint = "piranha_get_string")]
-    [UnmanagedCallConv(CallConvs = new System.Type[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
-    public static partial nint GetString();
+    [LibraryImport("PiranhaNative.dll", EntryPoint = "piranha_get_null")]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial nint GetNull();
 }
 
 [MemoryDiagnoser(false)]
-public class NativeInteropBenchmark
+public unsafe class NativeInteropBenchmark
 {
-    private readonly IStb _stb;
-    private readonly StbPointers _stbPointers;
+    private static nint _fp;
+    private readonly NativePiranha _nativePiranha;
 
     public NativeInteropBenchmark()
     {
-        var library = NativeLibraryInterface.FromFile<IStb>("PiranhaNative.dll", StbExtensions.ResolveName);
-        _stb = library.Library;
-
         var handle = NativeLibrary.Load("./PiranhaNative.dll");
-        _stbPointers = new(handle);
+        _fp = NativeLibrary.GetExport(handle, "piranha_get_null");
+        _nativePiranha = new(_ => _fp);
+    }
+
+    [Benchmark]
+    public void SourceGenInterop()
+    {
+        _ = _nativePiranha.GetNull();
+    }
+
+    [Benchmark]
+    public void StaticFp()
+    {
+        var f = (delegate* unmanaged[Cdecl]<nint>)_fp;
+        _ = f();
     }
 
     [Benchmark(Baseline = true)]
-    public void InterfaceInterop()
-    {
-        _ = _stb.PiranhaGetString();
-    }
-
-    [Benchmark]
-    public void PointerInterop()
-    {
-        _ = _stbPointers.GetString();
-    }
-
-    [Benchmark]
     public void DllImportInterop()
     {
-        var ptr = DllImportStb.GetString();
-        _ = Marshal.PtrToStringUTF8(ptr);
+        _ = DllImportPiranha.GetNull();
     }
 
     [Benchmark]
     public void LibraryImportStbInterop()
     {
-        var ptr = LibraryImportStb.GetString();
-        _ = Marshal.PtrToStringUTF8(ptr);
+        _ = LibraryImportPiranha.GetNull();
     }
 }

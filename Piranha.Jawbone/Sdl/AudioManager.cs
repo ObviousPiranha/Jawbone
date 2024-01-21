@@ -15,7 +15,7 @@ sealed class AudioManager : IAudioManager, IDisposable
     private readonly List<ScheduledAudio> _scheduledAudio = [];
     private readonly object _lock = new();
     private readonly GCHandle _handle;
-    private readonly ISdl2 _sdl;
+    private readonly Sdl2Library _sdl;
     private readonly ILogger<AudioManager> _logger;
     private readonly uint _device;
     private readonly SdlAudioSpec _expectedAudioSpec;
@@ -25,7 +25,7 @@ sealed class AudioManager : IAudioManager, IDisposable
     private int _nextId = 1;
 
     public AudioManager(
-        ISdl2 sdl,
+        Sdl2Library sdl,
         ILogger<AudioManager> logger)
     {
         _sdl = sdl;
@@ -60,7 +60,7 @@ sealed class AudioManager : IAudioManager, IDisposable
                 SdlAudioAllowChange.Any & ~SdlAudioAllowChange.Format);
 
             if (_device == 0)
-                _sdl.ThrowException();
+                SdlException.Throw(sdl);
         }
         catch
         {
@@ -120,7 +120,7 @@ sealed class AudioManager : IAudioManager, IDisposable
             _actualAudioSpec.Freq);
 
         if (stream.IsInvalid())
-            _sdl.ThrowException();
+            SdlException.Throw(_sdl);
 
         try
         {
@@ -128,13 +128,13 @@ sealed class AudioManager : IAudioManager, IDisposable
             var result = _sdl.AudioStreamPut(stream, data[0], data.Length);
 
             if (result != 0)
-                _sdl.ThrowException();
+                SdlException.Throw(_sdl);
 
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = _sdl.AudioStreamFlush(stream);
 
             if (result != 0)
-                _sdl.ThrowException();
+                SdlException.Throw(_sdl);
 
             var length = _sdl.AudioStreamAvailable(stream);
 
@@ -147,7 +147,7 @@ sealed class AudioManager : IAudioManager, IDisposable
                 var bytesRead = _sdl.AudioStreamGet(stream, out floats[0], length);
 
                 if (bytesRead == -1)
-                    _sdl.ThrowException();
+                    SdlException.Throw(_sdl);
 
                 lock (_lock)
                 {

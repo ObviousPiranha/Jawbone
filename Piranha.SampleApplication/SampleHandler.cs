@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Piranha.SampleApplication;
@@ -20,7 +21,6 @@ class SampleHandler : ISdlEventHandler, IDisposable
         new Point32(500, 250));
 
     private readonly UnmanagedList<Vertex> _bufferData = new();
-    private readonly IStb _stb;
     private readonly ILogger<SampleHandler> _logger;
     private readonly IAudioManager _audioManager;
     private readonly ScenePool<PiranhaScene> _scenePool;
@@ -33,21 +33,25 @@ class SampleHandler : ISdlEventHandler, IDisposable
     private uint _vertexArray = default;
     private int _matrixUniform = default;
     private int _textureUniform = default;
-    private readonly ISdl2 _sdl;
+    private readonly StbImageLibrary _stbImage;
+    private readonly StbVorbisLibrary _stbVorbis;
+    private readonly Sdl2Library _sdl;
     private readonly nint _windowPtr;
     private readonly nint _contextPtr;
-    private readonly IOpenGl _gl;
+    private readonly OpenGlLibrary _gl;
 
     public bool Running { get; private set; } = true;
 
     public SampleHandler(
         ILogger<SampleHandler> logger,
         IAudioManager audioManager,
-        IStb stb,
-        ISdl2 sdl,
+        StbImageLibrary stbImage,
+        StbVorbisLibrary stbVorbis,
+        Sdl2Library sdl,
         ScenePool<PiranhaScene> scenePool)
     {
-        _stb = stb;
+        _stbImage = stbImage;
+        _stbVorbis = stbVorbis;
         _sdl = sdl;
         _logger = logger;
         _audioManager = audioManager;
@@ -62,7 +66,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
             SdlWindow.OpenGl | SdlWindow.Resizable | SdlWindow.Shown);
 
         if (_windowPtr.IsInvalid())
-            throw new SdlException(sdl.GetError());
+            throw new SdlException(sdl.GetError().ToString() ?? "");
 
         var context = OpenGlContext.Create(_sdl, _windowPtr, _logger);
         _contextPtr = context.SdlGlContext;
@@ -122,8 +126,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
         // https://publicdomainvectors.org/en/free-clipart/Piranha-fish-vector/3815.html
 
         var pngBytes = File.ReadAllBytes("sheet.png");
-        var pixelBytes = _stb.StbiLoadFromMemory(
-            pngBytes[0],
+        var pixelBytes = _stbImage.LoadFromMemory(
+            in pngBytes[0],
             pngBytes.Length,
             out var w,
             out var h,
@@ -142,7 +146,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
             Gl.UnsignedByte,
             span[0]);
 
-        _stb.StbiImageFree(pixelBytes);
+        _stbImage.ImageFree(pixelBytes);
 
         _gl.TexParameteri(Target, Gl.TextureWrapS, Gl.ClampToEdge);
         _gl.TexParameteri(Target, Gl.TextureWrapT, Gl.ClampToEdge);
@@ -170,8 +174,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
         // neck_snap-Vladimir-719669812.wav
         // Public domain audio: http://soundbible.com/1953-Neck-Snap.html
         var audioBytes = File.ReadAllBytes("crunch.ogg");
-        int samples = _stb.StbVorbisDecodeMemory(
-            audioBytes[0],
+        int samples = _stbVorbis.DecodeMemory(
+            in audioBytes[0],
             audioBytes.Length,
             out var channelCount,
             out var sampleRate,
@@ -189,7 +193,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
         }
         finally
         {
-            _stb.PiranhaFree(output);
+            // Bad hack, but it's easy access to regular `free`.
+            _stbImage.ImageFree(output);
         }
     }
 

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Jawbone.Bcm;
 using Piranha.Jawbone.Extensions;
 using System;
 using System.IO;
@@ -10,8 +9,6 @@ namespace Piranha.Jawbone.Sdl;
 
 public static class SdlExtensions
 {
-    private const string BcmLibrary = "/opt/vc/lib/libbcm_host.so";
-
     public static IServiceCollection AddSdl2(this IServiceCollection services)
     {
         return services.AddSdl2(SdlInit.Everything);
@@ -21,26 +18,16 @@ public static class SdlExtensions
         this IServiceCollection services,
         SdlInit flags)
     {
-        var isVideoEnabled = (flags & SdlInit.Video) == SdlInit.Video;
-        if (isVideoEnabled && RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists(BcmLibrary))
-        {
-            services.AddNativeLibrary(
-                _ => NativeLibraryInterface.FromFile<IBcm>(
-                    BcmLibrary, name => name));
-        }
-
         return services
             .AddSingleton(
                 serviceProvider =>
                 {
-                    var bcm = serviceProvider.GetService<IBcm>();
-                    bcm?.HostInit();
-
-                    var library = new SdlLibrary(flags);
+                    var path = Sdl2Provider.GetSdlPath();
+                    var library = new Sdl2Provider(path, flags);
                     return library;
                 })
             .AddSingleton(
-                serviceProvider => serviceProvider.GetRequiredService<SdlLibrary>().Library);
+                serviceProvider => serviceProvider.GetRequiredService<Sdl2Provider>().Library);
     }
 
     public static IServiceCollection AddAudioManager(this IServiceCollection services)
@@ -48,20 +35,14 @@ public static class SdlExtensions
         return services.AddSingleton<IAudioManager, AudioManager>();
     }
 
-    public static void ThrowException(this ISdl2 sdl)
-    {
-        var message = sdl.GetError();
-        throw new SdlException(message);
-    }
-
     public static int BlitSurface(
-        this ISdl2 sdl,
+        this Sdl2Library sdl,
         nint source,
         in SdlRect sourceRectangle,
         nint destination,
         ref SdlRect destinationRectangle)
     {
-        return sdl.UpperBlit(
+        return sdl.BlitSurface(
             source,
             sourceRectangle,
             destination,
@@ -69,7 +50,7 @@ public static class SdlExtensions
     }
 
     public static short[] ConvertAudioToInt16(
-        this ISdl2 sdl,
+        this Sdl2Library sdl,
         ReadOnlySpan<short> pcm,
         int sourceFrequency,
         int sourceChannels,
@@ -85,7 +66,7 @@ public static class SdlExtensions
             destinationFrequency);
 
         if (stream.IsInvalid())
-            sdl.ThrowException();
+            SdlException.Throw(sdl);
 
         try
         {
@@ -93,13 +74,13 @@ public static class SdlExtensions
             var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
             if (result != 0)
-                sdl.ThrowException();
+                SdlException.Throw(sdl);
 
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = sdl.AudioStreamFlush(stream);
 
             if (result != 0)
-                sdl.ThrowException();
+                SdlException.Throw(sdl);
 
             var length = sdl.AudioStreamAvailable(stream);
 
@@ -112,7 +93,7 @@ public static class SdlExtensions
                 var bytesRead = sdl.AudioStreamGet(stream, out shorts[0], length);
 
                 if (bytesRead == -1)
-                    sdl.ThrowException();
+                    SdlException.Throw(sdl);
 
                 return shorts;
             }
@@ -128,7 +109,7 @@ public static class SdlExtensions
     }
 
     public static float[] ConvertAudioToFloat32(
-        this ISdl2 sdl,
+        this Sdl2Library sdl,
         ReadOnlySpan<short> pcm,
         int sourceFrequency,
         int sourceChannels,
@@ -144,7 +125,7 @@ public static class SdlExtensions
             destinationFrequency);
 
         if (stream.IsInvalid())
-            sdl.ThrowException();
+            SdlException.Throw(sdl);
 
         try
         {
@@ -152,13 +133,13 @@ public static class SdlExtensions
             var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
             if (result != 0)
-                sdl.ThrowException();
+                SdlException.Throw(sdl);
 
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = sdl.AudioStreamFlush(stream);
 
             if (result != 0)
-                sdl.ThrowException();
+                SdlException.Throw(sdl);
 
             var length = sdl.AudioStreamAvailable(stream);
 
@@ -171,7 +152,7 @@ public static class SdlExtensions
                 var bytesRead = sdl.AudioStreamGet(stream, out floats[0], length);
 
                 if (bytesRead == -1)
-                    sdl.ThrowException();
+                    SdlException.Throw(sdl);
 
                 return floats;
             }

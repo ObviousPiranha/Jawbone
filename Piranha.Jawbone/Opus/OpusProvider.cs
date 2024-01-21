@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Opus;
 
@@ -13,31 +14,26 @@ public sealed class OpusProvider : IDisposable
         "/usr/lib/libopus.so"
     };
 
-    public static OpusProvider Create(string libraryPath)
-    {
-        var native = NativeLibraryInterface.FromFile<IOpus>(
-            libraryPath,
-            methodName => NativeLibraryInterface.PascalCaseToSnakeCase("opus", methodName));
-
-        return new OpusProvider(native);
-    }
-
     public static OpusProvider Create()
     {
         var libraryPath = LibraryPaths.First(System.IO.File.Exists);
-        return Create(libraryPath);
+        return new OpusProvider(libraryPath);
     }
 
-    private readonly NativeLibraryInterface<IOpus> _native;
+    private readonly nint _handle;
+    private readonly OpusLibrary _library;
 
-    private OpusProvider(NativeLibraryInterface<IOpus> native)
+    public OpusProvider(string path)
     {
-        _native = native;
+        _handle = NativeLibrary.Load(path);
+        _library = new OpusLibrary(
+            methodName => NativeLibrary.GetExport(
+                _handle, PascalCase.ToSnakeCase("opus", methodName)));
     }
 
     public void Dispose()
     {
-        _native.Dispose();
+        NativeLibrary.Free(_handle);
     }
 
     public OpusEncoder CreateEncoder(
@@ -46,7 +42,7 @@ public sealed class OpusProvider : IDisposable
         OpusApplication application = Default.Application)
     {
         return new OpusEncoder(
-            _native.Library,
+            _library,
             sampleRate,
             channelCount,
             application);
@@ -57,7 +53,7 @@ public sealed class OpusProvider : IDisposable
         int channelCount = Default.ChannelCount)
     {
         return new OpusDecoder(
-            _native.Library,
+            _library,
             sampleRate,
             channelCount);
     }

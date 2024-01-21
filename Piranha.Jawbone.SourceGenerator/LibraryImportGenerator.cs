@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,9 +9,14 @@ using System.Threading;
 
 namespace Piranha.Jawbone.SourceGenerator;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public sealed class LibraryImportGenerator : IIncrementalGenerator
 {
+    private const int IndentSize = 4;
+    private const string AttributeName = "MapNativeFunctionsAttribute";
+    private const string AttributeNamespace = "Piranha.Jawbone.Generation";
+    private const string AttributeFullName = AttributeNamespace + "." + AttributeName;
+
     private static readonly SymbolDisplayFormat _symbolDisplayFormat = new(
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
@@ -18,10 +24,43 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var mappableClasses = context.SyntaxProvider.CreateSyntaxProvider(
-            FindMappableClasses, PrepareMethods);
+            FindPartialSealedClasses, PrepareMethods);
+
+        var mappedClasses = mappableClasses
+            .Where(libraryClass => libraryClass is not null)
+            .Select((libraryClass, _) => libraryClass!);
 
         context.RegisterSourceOutput(
-            mappableClasses, GenerateSource);
+            mappedClasses, GenerateSource);
+        context.RegisterPostInitializationOutput(
+            GenerateAttributeSource);
+    }
+
+    private static void GenerateAttributeSource(
+        IncrementalGeneratorPostInitializationContext context)
+    {
+        var classIndent = new IndentState(IndentSize, 1);
+        var methodIndent = classIndent.Indent();
+        var builder = new StringBuilder();
+
+        builder
+            .AppendLine("// AUTO-GENERATED")
+            .AppendLine()
+            .AppendLine("using System;")
+            .AppendLine()
+            .Append("namespace ")
+            .Append(AttributeNamespace)
+            .AppendLine(";")
+            .AppendLine()
+            .AppendLine("[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]")
+            .Append("sealed class ")
+            .Append(AttributeName)
+            .AppendLine(" : Attribute")
+            .AppendLine("{")
+            .AppendLine("}");
+        context.AddSource(
+            AttributeName + ".cs",
+            builder.ToString());
     }
 
     private static void GenerateSource(
@@ -48,7 +87,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             .AppendLine(libraryClass.ClassName)
             .AppendLine("{");
 
-        var classIndent = new IndentState(4, 1);
+        var classIndent = new IndentState(IndentSize, 1);
         var methodIndent = classIndent.Indent();
 
         builder
@@ -208,7 +247,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             builder.ToString());
     }
 
-    private static bool FindMappableClasses(
+    private static bool FindPartialSealedClasses(
         SyntaxNode syntaxNode,
         CancellationToken cancellationToken)
     {
@@ -218,18 +257,25 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
             classDeclarationSyntax.Modifiers.Any(SyntaxKind.SealedKeyword);
     }
 
-    private static LibraryClass PrepareMethods(
+    private static LibraryClass? PrepareMethods(
         GeneratorSyntaxContext generatorSyntaxContext,
         CancellationToken cancellationToken)
     {
         var classDeclarationSyntax = (ClassDeclarationSyntax)generatorSyntaxContext.Node;
+        var semanticModel = generatorSyntaxContext.SemanticModel;
+
+        if (!classDeclarationSyntax.AttributeLists.Any(
+            als => als.Attributes.Any(
+                att => semanticModel.GetTypeInfo(att, cancellationToken).Type?.ToDisplayString(_symbolDisplayFormat) == AttributeFullName)))
+        {
+            return null;
+        }
+
         var result = new LibraryClass
         {
             Namespace = GetNamespace(classDeclarationSyntax),
             ClassName = classDeclarationSyntax.Identifier.ValueText
         };
-
-        var semanticModel = generatorSyntaxContext.SemanticModel;
 
         var symbolDisplayFormat = new SymbolDisplayFormat(
             typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -265,7 +311,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 {
                     var typeName = GetTypeName(
                         semanticModel,
-                        parameter.Type,
+                        parameter.Type.CannotBeNull(),
                         cancellationToken);
 
                     if (typeName.Contains('.'))
@@ -288,7 +334,9 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
         ParameterSyntax parameterSyntax,
         CancellationToken cancellationToken)
     {
-        var type = semanticModel.GetTypeInfo(parameterSyntax.Type, cancellationToken).Type;
+        var type = semanticModel.GetTypeInfo(
+            parameterSyntax.Type.CannotBeNull(),
+            cancellationToken).Type.CannotBeNull();
         var typeString = type.ToDisplayString(_symbolDisplayFormat);
 
         if (typeString.Contains('.'))
@@ -321,7 +369,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
         ExpressionSyntax expressionSyntax,
         CancellationToken cancellationToken)
     {
-        var type = semanticModel.GetTypeInfo(expressionSyntax, cancellationToken).Type;
+        var type = semanticModel.GetTypeInfo(expressionSyntax, cancellationToken).Type.CannotBeNull();
         return type.ToDisplayString(_symbolDisplayFormat);
     }
 

@@ -10,13 +10,13 @@ public static class Platform
     public static readonly bool IsRaspberryPi = System.IO.Directory.Exists(PiLibFolder);
     public static readonly string ShaderPath = IsRaspberryPi ? "es300" : "gl150";
 
-    private static readonly string[] LibFolders = new string[]
-    {
+    private static readonly string[] LibFolders =
+    [
         "/usr/lib/x86_64-linux-gnu",
         "/usr/lib/aarch64-linux-gnu",
         "/usr/lib/arm-linux-gnueabihf",
         "/usr/lib"
-    };
+    ];
 
 
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom

@@ -5,8 +5,8 @@ namespace Piranha.Jawbone.Opus;
 // https://opus-codec.org/docs/opus_api-1.3.1/group__opus__encoder.html
 public sealed class OpusEncoder : IDisposable
 {
-    private readonly IOpus _opus;
-    private readonly IntPtr _encoder;
+    private readonly OpusLibrary _opus;
+    private readonly nint _encoder;
     private bool _destroyed;
 
     public int SamplingRate { get; }
@@ -30,7 +30,7 @@ public sealed class OpusEncoder : IDisposable
         }
     }
 
-    internal OpusEncoder(IOpus opus, int samplingRate, int channelCount, OpusApplication application)
+    internal OpusEncoder(OpusLibrary opus, int samplingRate, int channelCount, OpusApplication application)
     {
         SamplingRate = samplingRate;
         ChannelCount = channelCount;

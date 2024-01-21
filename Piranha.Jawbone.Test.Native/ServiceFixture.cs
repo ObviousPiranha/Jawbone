@@ -15,7 +15,7 @@ public sealed class ServiceFixture : IDisposable
     public ServiceFixture()
     {
         var services = new ServiceCollection();
-        services.AddSqlite3();
+        services.AddJawboneNativeLibraries();
 
         var options = new ServiceProviderOptions
         {
