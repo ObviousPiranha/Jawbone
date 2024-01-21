@@ -14,5 +14,6 @@ public struct StbttPackContext
     public int SkipMissing;
     public uint HOversample;
     public uint VOversample;
+    public nint Pixels;
     public nint Nodes;
 }
