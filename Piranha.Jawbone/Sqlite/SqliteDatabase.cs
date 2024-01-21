@@ -6,11 +6,11 @@ namespace Piranha.Jawbone.Sqlite;
 
 public sealed class SqliteDatabase : IDisposable
 {
-    public static SqliteDatabase Create(ISqlite3 sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadWrite | SqliteOpen.Create);
-    public static SqliteDatabase Open(ISqlite3 sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadWrite);
-    public static SqliteDatabase OpenRead(ISqlite3 sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadOnly);
+    public static SqliteDatabase Create(Sqlite3Library sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadWrite | SqliteOpen.Create);
+    public static SqliteDatabase Open(Sqlite3Library sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadWrite);
+    public static SqliteDatabase OpenRead(Sqlite3Library sqlite3, string path) => new SqliteDatabase(sqlite3, path, SqliteOpen.ReadOnly);
 
-    private readonly ISqlite3 _sqlite3;
+    private readonly Sqlite3Library _sqlite3;
     private IntPtr _database;
 
     public string Path { get; }
@@ -38,7 +38,7 @@ public sealed class SqliteDatabase : IDisposable
             throw new ObjectDisposedException("SQLite database is not open.");
     }
 
-    private SqliteDatabase(ISqlite3 sqlite3, string path, SqliteOpen flags)
+    private SqliteDatabase(Sqlite3Library sqlite3, string path, SqliteOpen flags)
     {
         _sqlite3 = sqlite3;
         var result = _sqlite3.OpenV2(path, out _database, (int)flags, null);
@@ -76,7 +76,7 @@ public sealed class SqliteDatabase : IDisposable
             IntPtr.Zero,
             IntPtr.Zero);
 
-        _sqlite3.ThrowOnError(_database, result);
+        SqliteException.ThrowOnError(_sqlite3, _database, result);
     }
 
     public SqliteStatement Prepare(string sql)
@@ -97,7 +97,7 @@ public sealed class SqliteDatabase : IDisposable
 
         try
         {
-            _sqlite3.ThrowOnError(_database, result);
+            SqliteException.ThrowOnError(_sqlite3, _database, result);
         }
         catch
         {

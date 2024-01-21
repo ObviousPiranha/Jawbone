@@ -24,9 +24,8 @@ class Program
                             options.IncludeScopes = true;
                         });
             })
-            .AddSqlite3()
             .AddSdl2()
-            .AddStb()
+            .AddJawboneNativeLibraries()
             .AddAudioManager()
             .AddSingleton<ScenePool<PiranhaScene>>()
             .AddSingleton<IGameLoop, GameLoop>()

@@ -13,4 +13,19 @@ public class SqliteException : Exception
     {
         SqliteError = sqliteError;
     }
+
+    public static void ThrowOnError(
+        Sqlite3Library sqlite3,
+        nint database,
+        int result)
+    {
+        if (result != SqliteResult.Ok &&
+            result != SqliteResult.RowReady &&
+            result != SqliteResult.Done)
+        {
+            throw new SqliteException(
+                sqlite3.Errmsg(database).GetStringOrEmpty(),
+                sqlite3.GetError(result));
+        }
+    }
 }

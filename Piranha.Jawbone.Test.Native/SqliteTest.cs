@@ -12,11 +12,11 @@ public class SqliteTest
 {
     private const string DatabasePath = ":memory:";
     private static readonly SqliteTable<SqliteRecord> Table = new();
-    private readonly ISqlite3 _sqlite3;
+    private readonly Sqlite3Library _sqlite3;
 
     public SqliteTest(ServiceFixture fixture)
     {
-        _sqlite3 = fixture.ServiceProvider.GetRequiredService<ISqlite3>();
+        _sqlite3 = fixture.ServiceProvider.GetRequiredService<Sqlite3Library>();
     }
 
     [Fact]

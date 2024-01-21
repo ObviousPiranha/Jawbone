@@ -14,14 +14,14 @@ public class SqliteStatement : IDisposable
     private static readonly IntPtr Static = new IntPtr(0);
 
     private readonly IntPtr _database;
-    private readonly ISqlite3 _sqlite3;
+    private readonly Sqlite3Library _sqlite3;
     private IntPtr _statement;
 
     public string Sql { get; }
 
-    private void ThrowOnError(int result) => _sqlite3.ThrowOnError(_database, result);
+    private void ThrowOnError(int result) => SqliteException.ThrowOnError(_sqlite3, _database, result);
 
-    public SqliteStatement(ISqlite3 sqlite3, IntPtr database, string sql)
+    public SqliteStatement(Sqlite3Library sqlite3, IntPtr database, string sql)
     {
         _database = database;
         _sqlite3 = sqlite3;
@@ -53,7 +53,7 @@ public class SqliteStatement : IDisposable
         _statement = IntPtr.Zero;
     }
 
-    public string? ColumnName(int index) => _sqlite3.ColumnName(_statement, index);
+    public string? ColumnName(int index) => _sqlite3.ColumnName(_statement, index).ToString();
 
     public void BindInt64(int index, long value)
     {
@@ -141,7 +141,7 @@ public class SqliteStatement : IDisposable
         else
         {
             throw new SqliteException(
-                _sqlite3.Errmsg(_database) ?? string.Empty,
+                _sqlite3.Errmsg(_database).GetStringOrEmpty(),
                 _sqlite3.GetError(result));
         }
     }

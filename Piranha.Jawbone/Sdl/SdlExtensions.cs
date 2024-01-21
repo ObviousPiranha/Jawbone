@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Piranha.Jawbone.Bcm;
 using Piranha.Jawbone.Extensions;
 using System;
 using System.IO;
@@ -10,8 +9,6 @@ namespace Piranha.Jawbone.Sdl;
 
 public static class SdlExtensions
 {
-    private const string BcmLibrary = "/opt/vc/lib/libbcm_host.so";
-
     public static IServiceCollection AddSdl2(this IServiceCollection services)
     {
         return services.AddSdl2(SdlInit.Everything);
@@ -21,14 +18,6 @@ public static class SdlExtensions
         this IServiceCollection services,
         SdlInit flags)
     {
-        var isVideoEnabled = (flags & SdlInit.Video) == SdlInit.Video;
-        if (isVideoEnabled && RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists(BcmLibrary))
-        {
-            services.AddNativeLibrary(
-                _ => NativeLibraryInterface.FromFile<IBcm>(
-                    BcmLibrary, name => name));
-        }
-
         return services
             .AddSingleton(
                 serviceProvider =>

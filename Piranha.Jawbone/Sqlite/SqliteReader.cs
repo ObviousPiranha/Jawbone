@@ -5,7 +5,7 @@ namespace Piranha.Jawbone.Sqlite;
 
 public sealed class SqliteReader : IDisposable
 {
-    private readonly ISqlite3 _sqlite3;
+    private readonly Sqlite3Library _sqlite3;
     private readonly IntPtr _database;
     private readonly IntPtr _statement;
     private readonly bool _ownsStatement;
@@ -13,7 +13,7 @@ public sealed class SqliteReader : IDisposable
     public int ColumnCount => _sqlite3.ColumnCount(_statement);
 
     public SqliteReader(
-        ISqlite3 sqlite3,
+        Sqlite3Library sqlite3,
         IntPtr database,
         IntPtr statement,
         bool ownsStatement)
@@ -30,16 +30,16 @@ public sealed class SqliteReader : IDisposable
             _sqlite3.Finalize(_statement) :
             _sqlite3.Reset(_statement);
 
-        _sqlite3.ThrowOnError(_database, result);
+        SqliteException.ThrowOnError(_sqlite3, _database, result);
     }
 
     private void ThrowOnError()
     {
         var errorCode = _sqlite3.Errcode(_database);
-        _sqlite3.ThrowOnError(_database, errorCode);
+        SqliteException.ThrowOnError(_sqlite3, _database, errorCode);
     }
 
-    public string? ColumnName(int index) => _sqlite3.ColumnName(_statement, index);
+    public string? ColumnName(int index) => _sqlite3.ColumnName(_statement, index).ToString();
 
     public string?[] GetColumnNames()
     {

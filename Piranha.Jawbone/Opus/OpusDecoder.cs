@@ -5,14 +5,14 @@ namespace Piranha.Jawbone.Opus;
 // https://opus-codec.org/docs/opus_api-1.3.1/group__opus__decoder.html
 public sealed class OpusDecoder : IDisposable
 {
-    private readonly IOpus _opus;
-    private readonly IntPtr _decoder;
+    private readonly OpusLibrary _opus;
+    private readonly nint _decoder;
     private bool _destroyed;
 
     public int SamplingRate { get; }
     public int ChannelCount { get; }
 
-    internal OpusDecoder(IOpus opus, int sampleRate, int channelCount)
+    internal OpusDecoder(OpusLibrary opus, int sampleRate, int channelCount)
     {
         SamplingRate = sampleRate;
         ChannelCount = channelCount;
