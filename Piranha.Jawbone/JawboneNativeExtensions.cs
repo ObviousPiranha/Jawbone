@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Piranha.Jawbone;
 
@@ -7,8 +8,12 @@ public static class JawboneNativeExtensions
     public static IServiceCollection AddJawboneNativeLibraries(
         this IServiceCollection services)
     {
+        var path = "PiranhaNative.dll";
+        if (OperatingSystem.IsLinux())
+            path = "./" + path;
+
         return services
-            .AddSingleton(_ => new JawboneNative("./PiranhaNative.dll"))
+            .AddSingleton(_ => new JawboneNative(path))
             .AddSingleton(
                 serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().Sqlite3)
             .AddSingleton(
