@@ -311,7 +311,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
                 {
                     var typeName = GetTypeName(
                         semanticModel,
-                        parameter.Type,
+                        parameter.Type.CannotBeNull(),
                         cancellationToken);
 
                     if (typeName.Contains('.'))
@@ -334,7 +334,9 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
         ParameterSyntax parameterSyntax,
         CancellationToken cancellationToken)
     {
-        var type = semanticModel.GetTypeInfo(parameterSyntax.Type, cancellationToken).Type;
+        var type = semanticModel.GetTypeInfo(
+            parameterSyntax.Type.CannotBeNull(),
+            cancellationToken).Type.CannotBeNull();
         var typeString = type.ToDisplayString(_symbolDisplayFormat);
 
         if (typeString.Contains('.'))
@@ -367,7 +369,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
         ExpressionSyntax expressionSyntax,
         CancellationToken cancellationToken)
     {
-        var type = semanticModel.GetTypeInfo(expressionSyntax, cancellationToken).Type;
+        var type = semanticModel.GetTypeInfo(expressionSyntax, cancellationToken).Type.CannotBeNull();
         return type.ToDisplayString(_symbolDisplayFormat);
     }
 

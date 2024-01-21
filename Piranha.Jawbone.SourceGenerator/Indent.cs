@@ -17,8 +17,3 @@ readonly struct IndentState
 
     public readonly IndentState Indent() => new(Size, Count + 1);
 }
-
-static class Extensions
-{
-    public static StringBuilder Indent(this StringBuilder sb, IndentState state) => sb.Append(' ', state.Total);
-}
