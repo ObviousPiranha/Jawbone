@@ -23,7 +23,7 @@ public class SqliteTest
     public void HasVersion()
     {
         var version = _sqlite3.Libversion();
-        Assert.NotNull(version);
+        Assert.NotEqual(default, version.Address);
     }
 
     [Fact]
