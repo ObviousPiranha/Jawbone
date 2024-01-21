@@ -39,7 +39,7 @@ sealed class JawboneNative : IDisposable
                     _handle, PascalCase.ToSnakeCase("stb_vorbis", methodName)));
             Piranha = new PiranhaLibrary(
                 methodName => NativeLibrary.GetExport(_handle, "piranha_free"));
-            
+
             Sqlite3.Initialize();
         }
         catch

@@ -25,7 +25,7 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
     {
         var mappableClasses = context.SyntaxProvider.CreateSyntaxProvider(
             FindPartialSealedClasses, PrepareMethods);
-        
+
         var mappedClasses = mappableClasses
             .Where(libraryClass => libraryClass is not null)
             .Select((libraryClass, _) => libraryClass!);

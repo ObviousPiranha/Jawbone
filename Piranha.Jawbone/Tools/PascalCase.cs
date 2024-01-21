@@ -15,7 +15,7 @@ public static class PascalCase
             else
                 builder.Append(c);
         }
-        
+
         return builder.ToString();
     }
 }

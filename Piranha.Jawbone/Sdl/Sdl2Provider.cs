@@ -23,7 +23,7 @@ sealed class Sdl2Provider : IDisposable
         Library = new Sdl2Library(
             methodName => NativeLibrary.GetExport(
                 _handle, Sdl2Library.GetFunctionName(methodName)));
-        
+
         var result = Library.Init(flags);
         if (result != 0)
             throw new SdlException("Unable to initialize SDL: " + Library.GetError().ToString());
