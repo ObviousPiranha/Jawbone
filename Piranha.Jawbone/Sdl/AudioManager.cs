@@ -3,6 +3,7 @@ using Piranha.Jawbone.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -13,7 +14,6 @@ sealed class AudioManager : IAudioManager, IDisposable
     private readonly List<AudioShader> _shaders = [];
     private readonly List<float[]> _sounds = [];
     private readonly List<ScheduledAudio> _scheduledAudio = [];
-    private readonly object _lock = new();
     private readonly GCHandle _handle;
     private readonly Sdl2Library _sdl;
     private readonly ILogger<AudioManager> _logger;
@@ -23,6 +23,21 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     private long _sampleIndex = 0;
     private int _nextId = 1;
+
+    public bool IsPaused
+    {
+        get
+        {
+            var status = _sdl.GetAudioDeviceStatus(_device);
+            return status == SdlAudioStatus.Paused;
+        }
+
+        set
+        {
+            var pauseOn = Convert.ToInt32(value);
+            _sdl.PauseAudioDevice(_device, pauseOn);
+        }
+    }
 
     public AudioManager(
         Sdl2Library sdl,
@@ -34,12 +49,12 @@ sealed class AudioManager : IAudioManager, IDisposable
 
         try
         {
-            IntPtr callback;
+            nint callback;
 
             unsafe
             {
-                delegate*<IntPtr, IntPtr, int, void> fp = &Callback;
-                callback = new IntPtr(fp);
+                delegate*<nint, nint, int, void> fp = &Callback;
+                callback = new nint(fp);
             }
 
             _expectedAudioSpec = new SdlAudioSpec
@@ -49,8 +64,14 @@ sealed class AudioManager : IAudioManager, IDisposable
                 Channels = 2,
                 Samples = 4096,
                 Callback = callback,
-                Userdata = (IntPtr)_handle
+                Userdata = (nint)_handle
             };
+
+            var deviceCount = _sdl.GetNumAudioDevices(0);
+            var devices = Enumerable
+                .Range(0, deviceCount)
+                .Select(n => _sdl.GetAudioDeviceName(n, 0).ToString() ?? "(null)");
+            _logger.LogInformation("Audio devices: {devices}", string.Join(", ", devices));
 
             _device = _sdl.OpenAudioDevice(
                 null,
@@ -61,6 +82,8 @@ sealed class AudioManager : IAudioManager, IDisposable
 
             if (_device == 0)
                 SdlException.Throw(sdl);
+            
+            _sdl.PauseAudioDevice(_device, 0);
         }
         catch
         {
@@ -75,34 +98,38 @@ sealed class AudioManager : IAudioManager, IDisposable
         // This object holds onto a GC handle to itself.
         // It would never die on its own.
 
-        lock (_lock)
-            _scheduledAudio.Clear();
+        // _logger.LogWarning("Ruh roh...");
+        // IsPaused = true;
+        // _sdl.PauseAudioDevice(_device, 1);
 
+        _sdl.LockAudioDevice(_device);
+        try
+        {
+            _scheduledAudio.Clear();
+        }
+        finally
+        {
+            _sdl.UnlockAudioDevice(_device);
+        }
+
+        var linuxDebug = OperatingSystem.IsLinux() && Debugger.IsAttached;
+
+        if (linuxDebug)
+            _logger.LogWarning("Attempting to pause SDL audio...");
+        
+        IsPaused = true;
+
+        if (linuxDebug)
+            _logger.LogWarning("Attempting to stop SDL audio...");
+        
         if (_handle.IsAllocated)
         {
+            // In Linux, this call hangs if a debugger is attached.
             _sdl.CloseAudioDevice(_device);
             _handle.Free();
         }
 
         _logger.LogInformation("Disposed audio manager");
-    }
-
-    public int PrepareAudio(
-        int frequency,
-        int channels,
-        ReadOnlySpan<short> data)
-    {
-        var bytes = MemoryMarshal.AsBytes(data);
-        return PrepareAudio(SdlAudioFormat.S16Lsb, frequency, channels, bytes);
-    }
-
-    public int PrepareAudio(
-        int frequency,
-        int channels,
-        ReadOnlySpan<float> data)
-    {
-        var bytes = MemoryMarshal.AsBytes(data);
-        return PrepareAudio(SdlAudioFormat.F32, frequency, channels, bytes);
     }
 
     public int PrepareAudio(
@@ -149,11 +176,16 @@ sealed class AudioManager : IAudioManager, IDisposable
                 if (bytesRead == -1)
                     SdlException.Throw(_sdl);
 
-                lock (_lock)
+                _sdl.LockAudioDevice(_device);
+                try
                 {
                     var soundIndex = _sounds.Count;
                     _sounds.Add(floats);
                     return soundIndex;
+                }
+                finally
+                {
+                    _sdl.UnlockAudioDevice(_device);
                 }
             }
             else
@@ -182,7 +214,8 @@ sealed class AudioManager : IAudioManager, IDisposable
         var delayOffset = (long)(delay.TotalSeconds * _actualAudioSpec.Freq) * _actualAudioSpec.Channels;
         var gapDelay = delayBetweenLoops < TimeSpan.Zero ? -1 : (int)(delayBetweenLoops.TotalSeconds * _actualAudioSpec.Freq) * _actualAudioSpec.Channels;
 
-        lock (_lock)
+        _sdl.LockAudioDevice(_device);
+        try
         {
             var scheduledAudio = new ScheduledAudio
             {
@@ -193,17 +226,18 @@ sealed class AudioManager : IAudioManager, IDisposable
             };
 
             _scheduledAudio.Add(scheduledAudio);
-
-            if (_scheduledAudio.Count == 1)
-                _sdl.PauseAudioDevice(_device, 0);
-
             return scheduledAudio.Id;
+        }
+        finally
+        {
+            _sdl.UnlockAudioDevice(_device);
         }
     }
 
     public bool CancelAudio(int scheduledAudioId)
     {
-        lock (_lock)
+        _sdl.LockAudioDevice(_device);
+        try
         {
             // Presumably, there will always be a relatively small number of items.
             // Even at the extreme end, there will be maybe 20 schedules.
@@ -217,6 +251,10 @@ sealed class AudioManager : IAudioManager, IDisposable
                 }
             }
         }
+        finally
+        {
+            _sdl.UnlockAudioDevice(_device);
+        }
 
         return false;
     }
@@ -224,86 +262,80 @@ sealed class AudioManager : IAudioManager, IDisposable
     private void AcquireData(Span<float> samples)
     {
         samples.Clear();
-        lock (_lock)
+        var endSampleIndex = _sampleIndex + samples.Length;
+        var scheduledAudioIndex = 0;
+
+        while (scheduledAudioIndex < _scheduledAudio.Count)
         {
-            var endSampleIndex = _sampleIndex + samples.Length;
-            var scheduledAudioIndex = 0;
+            var scheduledAudio = _scheduledAudio[scheduledAudioIndex];
 
-            while (scheduledAudioIndex < _scheduledAudio.Count)
+            if (0 <= scheduledAudio.LoopDelaySampleCount)
             {
-                var scheduledAudio = _scheduledAudio[scheduledAudioIndex];
-
-                if (0 <= scheduledAudio.LoopDelaySampleCount)
+                var fullSampleCount = scheduledAudio.Samples.Length + scheduledAudio.LoopDelaySampleCount;
+                while (scheduledAudio.StartSampleIndex < endSampleIndex)
                 {
-                    var fullSampleCount = scheduledAudio.Samples.Length + scheduledAudio.LoopDelaySampleCount;
-                    while (scheduledAudio.StartSampleIndex < endSampleIndex)
+                    var endAudioIndex = scheduledAudio.StartSampleIndex + scheduledAudio.Samples.Length;
+                    var lo = long.Max(_sampleIndex, scheduledAudio.StartSampleIndex);
+                    var hi = long.Min(endSampleIndex, endAudioIndex);
+
+                    for (var i = lo; i < hi; ++i)
                     {
-                        var endAudioIndex = scheduledAudio.StartSampleIndex + scheduledAudio.Samples.Length;
-                        var lo = Math.Max(_sampleIndex, scheduledAudio.StartSampleIndex);
-                        var hi = Math.Min(endSampleIndex, endAudioIndex);
+                        var index = (int)(i - _sampleIndex);
+                        samples[index] += scheduledAudio.Samples[i - scheduledAudio.StartSampleIndex];
+                    }
+
+                    if (hi == endAudioIndex)
+                    {
+                        scheduledAudio = scheduledAudio with
+                        {
+                            StartSampleIndex =
+                                scheduledAudio.StartSampleIndex +
+                                scheduledAudio.Samples.Length +
+                                scheduledAudio.LoopDelaySampleCount
+                        };
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                _scheduledAudio[scheduledAudioIndex++] = scheduledAudio;
+            }
+            else
+            {
+                var endAudioIndex = scheduledAudio.StartSampleIndex + scheduledAudio.Samples.Length;
+
+                if (_sampleIndex < endAudioIndex)
+                {
+                    if (scheduledAudio.StartSampleIndex < endSampleIndex)
+                    {
+                        var lo = long.Max(_sampleIndex, scheduledAudio.StartSampleIndex);
+                        var hi = long.Min(endSampleIndex, endAudioIndex);
 
                         for (var i = lo; i < hi; ++i)
                         {
                             var index = (int)(i - _sampleIndex);
                             samples[index] += scheduledAudio.Samples[i - scheduledAudio.StartSampleIndex];
                         }
-
-                        if (hi == endAudioIndex)
-                        {
-                            scheduledAudio = scheduledAudio with
-                            {
-                                StartSampleIndex =
-                                    scheduledAudio.StartSampleIndex +
-                                    scheduledAudio.Samples.Length +
-                                    scheduledAudio.LoopDelaySampleCount
-                            };
-                        }
-                        else
-                        {
-                            break;
-                        }
                     }
 
-                    _scheduledAudio[scheduledAudioIndex++] = scheduledAudio;
+                    ++scheduledAudioIndex;
                 }
                 else
                 {
-                    var endAudioIndex = scheduledAudio.StartSampleIndex + scheduledAudio.Samples.Length;
-
-                    if (_sampleIndex < endAudioIndex)
-                    {
-                        if (scheduledAudio.StartSampleIndex < endSampleIndex)
-                        {
-                            var lo = Math.Max(_sampleIndex, scheduledAudio.StartSampleIndex);
-                            var hi = Math.Min(endSampleIndex, endAudioIndex);
-
-                            for (var i = lo; i < hi; ++i)
-                            {
-                                var index = (int)(i - _sampleIndex);
-                                samples[index] += scheduledAudio.Samples[i - scheduledAudio.StartSampleIndex];
-                            }
-                        }
-
-                        ++scheduledAudioIndex;
-                    }
-                    else
-                    {
-                        _scheduledAudio.RemoveAt(scheduledAudioIndex);
-                    }
+                    _scheduledAudio.RemoveAt(scheduledAudioIndex);
                 }
-
-                foreach (var shader in _shaders)
-                    shader.Invoke(_actualAudioSpec.Freq, _actualAudioSpec.Channels, samples);
             }
 
-            // if (_scheduledAudio.Count == 0)
-            //     _sdl.PauseAudioDevice(_device, 1);
-
-            _sampleIndex = endSampleIndex;
+            foreach (var shader in _shaders)
+                shader.Invoke(_actualAudioSpec.Freq, _actualAudioSpec.Channels, samples);
         }
+
+        _sampleIndex = endSampleIndex;
     }
 
-    private unsafe static void Callback(IntPtr userdata, IntPtr data, int size)
+    private unsafe static void Callback(nint userdata, nint data, int size)
     {
         var handle = (GCHandle)userdata;
         var audioManager = handle.Target as AudioManager;
@@ -319,13 +351,27 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     public void AddShader(AudioShader audioShader)
     {
-        lock (_lock)
+        _sdl.LockAudioDevice(_device);
+        try
+        {
             _shaders.Add(audioShader);
+        }
+        finally
+        {
+            _sdl.UnlockAudioDevice(_device);
+        }
     }
 
     public void RemoveShader(AudioShader audioShader)
     {
-        lock (_lock)
+        _sdl.LockAudioDevice(_device);
+        try
+        {
             _shaders.Remove(audioShader);
+        }
+        finally
+        {
+            _sdl.UnlockAudioDevice(_device);
+        }
     }
 }

@@ -130,4 +130,9 @@ public sealed partial class Sdl2Library
     public partial CString GetCurrentVideoDriver();
     public partial int SetHint(string name, string value);
     public partial CString GetHint(string name);
+    public partial int GetNumAudioDevices(int isCapture);
+    public partial CString GetAudioDeviceName(int index, int isCapture);
+    public partial void LockAudioDevice(uint dev);
+    public partial void UnlockAudioDevice(uint dev);
+    public partial SdlAudioStatus GetAudioDeviceStatus(uint dev);
 }

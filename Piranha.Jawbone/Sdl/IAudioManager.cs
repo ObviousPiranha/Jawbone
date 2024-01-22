@@ -6,18 +6,9 @@ public delegate void AudioShader(int frequency, int channels, Span<float> sample
 
 public interface IAudioManager
 {
+    bool IsPaused { get; set; }
     void AddShader(AudioShader audioShader);
     void RemoveShader(AudioShader audioShader);
-
-    int PrepareAudio(
-        int frequency,
-        int channels,
-        ReadOnlySpan<short> data);
-
-    int PrepareAudio(
-        int frequency,
-        int channels,
-        ReadOnlySpan<float> data);
 
     int PrepareAudio(
         SdlAudioFormat format,
