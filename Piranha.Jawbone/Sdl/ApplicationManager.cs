@@ -15,7 +15,7 @@ public static class ApplicationManager
             var doSleep = true;
             while (sdl.PollEvent(out var sdlEvent) == 1)
             {
-                SdlEvent.Dispatch(sdlEvent, eventHandler);
+                SdlEvent.Dispatch(sdl, sdlEvent, eventHandler);
                 doSleep = false;
             }
 
@@ -53,6 +53,5 @@ public static class ApplicationManager
 
         var flag = sdl.GetWindowFlags(window) & SdlWindow.FullScreenDesktop;
         sdl.SetWindowFullscreen(window, flag ^ SdlWindow.FullScreenDesktop);
-
     }
 }
