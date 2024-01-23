@@ -19,7 +19,10 @@ public sealed class GameLoopManager : IDisposable
         _logger = logger;
         _gameLoop = gameLoop;
 
-        _thread = new Thread(RunGameLoopInBackground);
+        _thread = new Thread(RunGameLoopInBackground)
+        {
+            Name = "Jawbone Game Loop"
+        };
         _thread.Start();
     }
 
