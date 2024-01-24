@@ -82,8 +82,6 @@ sealed class AudioManager : IAudioManager, IDisposable
 
             if (_device == 0)
                 SdlException.Throw(sdl);
-            
-            _sdl.PauseAudioDevice(_device, 0);
         }
         catch
         {
@@ -226,6 +224,10 @@ sealed class AudioManager : IAudioManager, IDisposable
             };
 
             _scheduledAudio.Add(scheduledAudio);
+
+            if (_scheduledAudio.Count == 1 && IsPaused)
+                IsPaused = false;
+            
             return scheduledAudio.Id;
         }
         finally
