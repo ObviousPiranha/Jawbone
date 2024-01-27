@@ -37,7 +37,7 @@ public struct SdlEvent
     [FieldOffset(0)] public SdlDollarGestureEvent DGesture;
     [FieldOffset(0)] public SdlDropEvent Drop;
 
-    public static void Dispatch(in SdlEvent sdlEvent, ISdlEventHandler handler)
+    public static void Dispatch(Sdl2Library sdl, in SdlEvent sdlEvent, ISdlEventHandler handler)
     {
         switch (sdlEvent.Type)
         {
@@ -181,15 +181,19 @@ public struct SdlEvent
                 break;
             case SdlEventType.DropFile:
                 handler.OnDropFile(sdlEvent.Drop);
+                sdl.Free(sdlEvent.Drop.File);
                 break;
             case SdlEventType.DropText:
                 handler.OnDropText(sdlEvent.Drop);
+                sdl.Free(sdlEvent.Drop.File);
                 break;
             case SdlEventType.DropBegin:
                 handler.OnDropBegin(sdlEvent.Drop);
+                sdl.Free(sdlEvent.Drop.File);
                 break;
             case SdlEventType.DropComplete:
                 handler.OnDropComplete(sdlEvent.Drop);
+                sdl.Free(sdlEvent.Drop.File);
                 break;
             case SdlEventType.AudioDeviceAdded:
                 handler.OnAudioDeviceAdded(sdlEvent.ADevice);

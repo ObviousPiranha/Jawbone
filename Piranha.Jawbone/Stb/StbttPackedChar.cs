@@ -7,22 +7,22 @@ namespace Piranha.Jawbone.Stb;
 [StructLayout(LayoutKind.Sequential)]
 public struct StbttPackedChar
 {
-    public short x0;
-    public short y0;
-    public short x1;
-    public short y1;
-    public float xOff;
-    public float yOff;
-    public float xAdvance;
-    public float xOff2;
-    public float yOff2;
+    public short X0;
+    public short Y0;
+    public short X1;
+    public short Y1;
+    public float XOff;
+    public float YOff;
+    public float XAdvance;
+    public float XOff2;
+    public float YOff2;
 
-    public Quad<Vector2> GetCoordinates(Point32 sheetSize)
+    public readonly Quad<Vector2> GetCoordinates(Point32 sheetSize)
     {
         var width = (float)sheetSize.X;
         var height = (float)sheetSize.Y;
         return Quad.Create(
-            new Vector2(x0 / width, y0 / height),
-            new Vector2(x1 / width, y1 / height));
+            new Vector2(X0 / width, Y0 / height),
+            new Vector2(X1 / width, Y1 / height));
     }
 }
