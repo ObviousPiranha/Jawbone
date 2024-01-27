@@ -114,12 +114,12 @@ sealed class AudioManager : IAudioManager, IDisposable
 
         if (linuxDebug)
             _logger.LogWarning("Attempting to pause SDL audio...");
-        
+
         IsPaused = true;
 
         if (linuxDebug)
             _logger.LogWarning("Attempting to stop SDL audio...");
-        
+
         if (_handle.IsAllocated)
         {
             // In Linux, this call hangs if a debugger is attached.
@@ -227,7 +227,7 @@ sealed class AudioManager : IAudioManager, IDisposable
 
             if (_scheduledAudio.Count == 1 && IsPaused)
                 IsPaused = false;
-            
+
             return scheduledAudio.Id;
         }
         finally
