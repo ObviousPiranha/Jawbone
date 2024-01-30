@@ -27,7 +27,8 @@ public sealed partial class OpenGlLibrary
     public partial void DeleteVertexArrays(int n, in uint arrays);
     public partial void Disable(uint cap);
     public partial void DisableVertexAttribArray(int index);
-    public partial void DrawArrays(uint mode, int first, long count);
+    public partial void DrawArrays(uint mode, int first, int count);
+    public partial void DrawArraysInstanced(uint mode, int first, int count, int instanceCount);
     public partial void Enable(uint cap);
     public partial void EnableVertexAttribArray(int index);
     public partial void Flush();
