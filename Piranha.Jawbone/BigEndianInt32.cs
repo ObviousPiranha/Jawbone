@@ -22,4 +22,7 @@ public readonly struct BigEndianInt32 : IEquatable<BigEndianInt32>
     public readonly override bool Equals([NotNullWhen(true)] object? obj) => obj is BigEndianInt32 other && Equals(other);
     public readonly override int GetHashCode() => RawValue.GetHashCode();
     public readonly override string? ToString() => HostValue.ToString();
+
+    public static bool operator ==(BigEndianInt32 a, BigEndianInt32 b) => a.RawValue == b.RawValue;
+    public static bool operator !=(BigEndianInt32 a, BigEndianInt32 b) => a.RawValue != b.RawValue;
 }

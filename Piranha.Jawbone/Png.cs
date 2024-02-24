@@ -15,16 +15,24 @@ public static class Png
 
     public static Point32 GetImageSize(Stream stream)
     {
-        var header = Read<FirstHeader>(stream);
+        Read(stream, out FirstHeader header);
         return GetImageSize(header);
     }
 
-    private static Point32 GetImageSize(FirstHeader header)
+    public static Point32 GetImageSize(string file)
     {
+        using var stream = File.OpenRead(file);
+        return GetImageSize(stream);
+    }
+
+    private static Point32 GetImageSize(in FirstHeader header)
+    {
+        // // http://www.libpng.org/pub/png/spec/1.2/PNG-Structure.html
         var expectedFileSignature = BitConverter.ToUInt64(
             [137, 80, 78, 71, 13, 10, 26, 10]);
         if (header.FileSignature != expectedFileSignature)
             throw new InvalidOperationException("Bad PNG file signature");
+        // http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
         var expectedChunkType = BitConverter.ToUInt32("IHDR"u8);
         if (header.ChunkType != expectedChunkType)
             throw new InvalidOperationException("Wrong chunk type");
@@ -34,15 +42,13 @@ public static class Png
         return result;
     }
 
-    private static T Read<T>(Stream stream) where T : unmanaged
+    private static void Read<T>(Stream stream, out T result) where T : unmanaged
     {
-        T result;
         Unsafe.SkipInit(out result);
         var bytes = MemoryMarshal.AsBytes(new Span<T>(ref result));
         var n = stream.Read(bytes);
         if (n != bytes.Length)
             throw new InvalidOperationException("Not enough bytes");
-        return result;
     }
 
     private struct FirstHeader
