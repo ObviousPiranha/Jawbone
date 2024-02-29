@@ -51,6 +51,7 @@ public static class Png
             throw new InvalidOperationException("Not enough bytes");
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     private struct FirstHeader
     {
         public ulong FileSignature;
