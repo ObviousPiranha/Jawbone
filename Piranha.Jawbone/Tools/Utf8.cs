@@ -24,8 +24,9 @@ public static class Utf8
         return result;
     }
 
-    public static int Encode(Span<byte> bytes, int utf32)
+    public static int Encode(this Utf8Span span, int utf32)
     {
+        var bytes = span.Bytes;
         if (utf32 < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(utf32));
@@ -79,12 +80,12 @@ public static class Utf8
         static byte GetByte(int n) => (byte)(n & SixBits | LeadBit);
     }
 
-    public static (int codePoint, int length) ReadCodePoint(ReadOnlySpan<byte> utf8)
+    public static (int codePoint, int length) ReadCodePoint(this ReadOnlyUtf8Span utf8)
     {
-        var sigBitCount = CountSigBits(utf8[0]);
+        var sigBitCount = CountSigBits(utf8.Bytes[0]);
 
         if (sigBitCount == 0)
-            return (utf8[0], 1);
+            return (utf8.Bytes[0], 1);
 
         if (sigBitCount == 1)
             throw new FormatException("Continuation byte found instead of lead byte");
@@ -92,14 +93,14 @@ public static class Utf8
         if (4 < sigBitCount)
             throw new FormatException("UTF-8 only supports encodings up to 4 bytes.");
 
-        var codePoint = ~(int.MinValue >> (24 + sigBitCount)) & utf8[0];
+        var codePoint = ~(int.MinValue >> (24 + sigBitCount)) & utf8.Bytes[0];
 
         for (int i = 1; i < sigBitCount; ++i)
         {
-            if ((utf8[i] & LeadMask) != LeadBit)
+            if ((utf8.Bytes[i] & LeadMask) != LeadBit)
                 throw new FormatException("Missing continuation byte");
 
-            codePoint = (codePoint << 6) | (utf8[i] & SixBits);
+            codePoint = (codePoint << 6) | (utf8.Bytes[i] & SixBits);
         }
 
         return (codePoint, sigBitCount);

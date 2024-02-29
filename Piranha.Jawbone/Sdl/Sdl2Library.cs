@@ -90,7 +90,9 @@ public sealed partial class Sdl2Library
         SdlAudioAllowChange allowedChanges);
     public partial void CloseAudioDevice(uint dev);
     public partial void PauseAudioDevice(uint dev, int pauseOn);
-    public partial int QueueAudio(uint dev, in byte data, uint len);
+    public partial void ClearQueuedAudio(uint dev);
+    public partial int QueueAudio(uint dev, ref readonly byte data, uint len);
+    public partial int QueueAudio(uint dev, ref readonly float data, uint len);
     public partial nint NewAudioStream(
         SdlAudioFormat sourceFormat,
         byte sourceChannels,

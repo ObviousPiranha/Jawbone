@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
+using Piranha.Jawbone.Sdl;
 using System;
 using System.Numerics;
 
@@ -11,7 +12,7 @@ class GameLoop : IGameLoop
     private readonly Random _random = new();
     private readonly ILogger<GameLoop> _logger;
     private readonly ScenePool<PiranhaScene> _scenePool;
-
+    private readonly IAudioManager _audioManager;
     private int _staleCount = 0;
     private int _frameCount = 0;
     private Vector4 _startColor;
@@ -21,10 +22,12 @@ class GameLoop : IGameLoop
 
     public GameLoop(
         ILogger<GameLoop> logger,
-        ScenePool<PiranhaScene> scenePool)
+        ScenePool<PiranhaScene> scenePool,
+        IAudioManager audioManager)
     {
         _logger = logger;
         _scenePool = scenePool;
+        _audioManager = audioManager;
 
         _startColor = RandomColor();
         _endColor = RandomColor();
@@ -32,6 +35,7 @@ class GameLoop : IGameLoop
 
     public void FrameUpdate()
     {
+        _audioManager.PumpAudio();
         if (CycleFrameCount <= ++_frameCount)
         {
             _startColor = _endColor;

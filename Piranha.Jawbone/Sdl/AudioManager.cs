@@ -14,12 +14,13 @@ sealed class AudioManager : IAudioManager, IDisposable
     private readonly List<AudioShader> _shaders = [];
     private readonly List<float[]> _sounds = [];
     private readonly List<ScheduledAudio> _scheduledAudio = [];
-    private readonly GCHandle _handle;
     private readonly Sdl2Library _sdl;
     private readonly ILogger<AudioManager> _logger;
     private readonly uint _device;
     private readonly SdlAudioSpec _expectedAudioSpec;
     private readonly SdlAudioSpec _actualAudioSpec;
+    private readonly float[] _queueBuffer;
+    private readonly int _queueBufferSize;
 
     private long _sampleIndex = 0;
     private int _nextId = 1;
@@ -45,89 +46,71 @@ sealed class AudioManager : IAudioManager, IDisposable
     {
         _sdl = sdl;
         _logger = logger;
-        _handle = GCHandle.Alloc(this);
 
-        try
+        _expectedAudioSpec = new SdlAudioSpec
         {
-            nint callback;
+            Freq = 48000,
+            Format = SdlAudioFormat.F32,
+            Channels = 2,
+            Samples = 4096
+        };
 
-            unsafe
-            {
-                delegate*<nint, nint, int, void> fp = &Callback;
-                callback = new nint(fp);
-            }
+        var deviceCount = _sdl.GetNumAudioDevices(0);
+        var devices = Enumerable
+            .Range(0, deviceCount)
+            .Select(n => _sdl.GetAudioDeviceName(n, 0).ToString() ?? "(null)");
+        _logger.LogInformation("Audio devices: {devices}", string.Join(", ", devices));
 
-            _expectedAudioSpec = new SdlAudioSpec
-            {
-                Freq = 48000,
-                Format = SdlAudioFormat.F32,
-                Channels = 2,
-                Samples = 4096,
-                Callback = callback,
-                Userdata = (nint)_handle
-            };
+        _device = _sdl.OpenAudioDevice(
+            null,
+            0,
+            _expectedAudioSpec,
+            out _actualAudioSpec,
+            SdlAudioAllowChange.Any & ~SdlAudioAllowChange.Format);
 
-            var deviceCount = _sdl.GetNumAudioDevices(0);
-            var devices = Enumerable
-                .Range(0, deviceCount)
-                .Select(n => _sdl.GetAudioDeviceName(n, 0).ToString() ?? "(null)");
-            _logger.LogInformation("Audio devices: {devices}", string.Join(", ", devices));
+        if (_device == 0)
+            SdlException.Throw(sdl);
 
-            _device = _sdl.OpenAudioDevice(
-                null,
-                0,
-                _expectedAudioSpec,
-                out _actualAudioSpec,
-                SdlAudioAllowChange.Any & ~SdlAudioAllowChange.Format);
-
-            if (_device == 0)
-                SdlException.Throw(sdl);
-        }
-        catch
-        {
-            _handle.Free();
-            throw;
-        }
+        var valuesPerSecond = _actualAudioSpec.Freq * _actualAudioSpec.Channels;
+        var valuesPerFrame = valuesPerSecond / 60;
+        _queueBuffer = new float[valuesPerFrame];
+        _queueBufferSize = _queueBuffer.Length * Unsafe.SizeOf<float>();
     }
 
     public void Dispose()
     {
-        // No point in making a finalizer.
-        // This object holds onto a GC handle to itself.
-        // It would never die on its own.
+        _sdl.CloseAudioDevice(_device);
+        _logger.LogInformation("Disposed audio manager");
+    }
 
-        // _logger.LogWarning("Ruh roh...");
-        // IsPaused = true;
-        // _sdl.PauseAudioDevice(_device, 1);
+    public void PumpAudio()
+    {
+        if (IsPaused)
+            return;
 
         _sdl.LockAudioDevice(_device);
+        var doQueue = 0 < _scheduledAudio.Count;
+
         try
         {
-            _scheduledAudio.Clear();
+            if (doQueue)
+                AcquireData(_queueBuffer);
         }
         finally
         {
             _sdl.UnlockAudioDevice(_device);
         }
 
-        var linuxDebug = OperatingSystem.IsLinux() && Debugger.IsAttached;
-
-        if (linuxDebug)
-            _logger.LogWarning("Attempting to pause SDL audio...");
-
-        IsPaused = true;
-
-        if (linuxDebug)
-            _logger.LogWarning("Attempting to stop SDL audio...");
-
-        if (_handle.IsAllocated)
+        if (doQueue)
         {
-            // In Linux, this call hangs if a debugger is attached.
-            _sdl.CloseAudioDevice(_device);
-            _handle.Free();
-        }
+            var result = _sdl.QueueAudio(
+                _device,
+                in _queueBuffer[0],
+                (uint)_queueBufferSize);
 
-        _logger.LogInformation("Disposed audio manager");
+            if (result != 0)
+                SdlException.Throw(_sdl);
+        }
     }
 
     public int PrepareAudio(
@@ -211,6 +194,8 @@ sealed class AudioManager : IAudioManager, IDisposable
     {
         var delayOffset = (long)(delay.TotalSeconds * _actualAudioSpec.Freq) * _actualAudioSpec.Channels;
         var gapDelay = delayBetweenLoops < TimeSpan.Zero ? -1 : (int)(delayBetweenLoops.TotalSeconds * _actualAudioSpec.Freq) * _actualAudioSpec.Channels;
+        bool unpause;
+        int result;
 
         _sdl.LockAudioDevice(_device);
         try
@@ -225,15 +210,18 @@ sealed class AudioManager : IAudioManager, IDisposable
 
             _scheduledAudio.Add(scheduledAudio);
 
-            if (_scheduledAudio.Count == 1 && IsPaused)
-                IsPaused = false;
-
-            return scheduledAudio.Id;
+            unpause = _scheduledAudio.Count == 1 && IsPaused;
+            result = scheduledAudio.Id;
         }
         finally
         {
             _sdl.UnlockAudioDevice(_device);
         }
+
+        if (unpause)
+            IsPaused = false;
+
+        return result;
     }
 
     public bool CancelAudio(int scheduledAudioId)
@@ -335,20 +323,6 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
 
         _sampleIndex = endSampleIndex;
-    }
-
-    private unsafe static void Callback(nint userdata, nint data, int size)
-    {
-        var handle = (GCHandle)userdata;
-        var audioManager = handle.Target as AudioManager;
-
-        if (audioManager is not null)
-        {
-            var span = new Span<float>(
-                data.ToPointer(),
-                size / Unsafe.SizeOf<float>());
-            audioManager.AcquireData(span);
-        }
     }
 
     public void AddShader(AudioShader audioShader)

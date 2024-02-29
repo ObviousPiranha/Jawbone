@@ -23,4 +23,6 @@ public interface IAudioManager
         TimeSpan delayBetweenLoops);
 
     bool CancelAudio(int scheduledAudioId);
+
+    void PumpAudio();
 }
