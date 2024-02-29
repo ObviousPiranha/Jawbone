@@ -18,7 +18,7 @@ public ref struct Utf8Enumerator
             Current = 0;
             return false;
         }
-        
+
         (Current, var length) = Utf8.ReadCodePoint(_bytes[_index..]);
         _index += length;
         return true;

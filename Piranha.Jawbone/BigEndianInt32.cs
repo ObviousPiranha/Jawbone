@@ -12,7 +12,7 @@ public readonly struct BigEndianInt32 : IEquatable<BigEndianInt32>
         get => BitConverter.IsLittleEndian ?
             BinaryPrimitives.ReverseEndianness(RawValue) :
             RawValue;
-        
+
         init => RawValue = BitConverter.IsLittleEndian ?
             BinaryPrimitives.ReverseEndianness(value) :
             value;
