@@ -162,8 +162,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void RemoveAt(int index, int count)
     {
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         AsSpan(index + count).CopyTo(_items.AsSpan(index));
         Count -= count;
     }
