@@ -44,6 +44,11 @@ public sealed partial class Sdl2Library
         uint amask);
     public partial nint CreateWindow(string title, int x, int y, int w, int h, uint flags);
     public partial void DestroyWindow(nint window);
+    public partial nint CreateRenderer(nint window, int index, SdlRendererFlags flags);
+    public partial void DestroyRenderer(nint renderer);
+    public partial int RenderFillRect(nint renderer, ref readonly SdlRect rect);
+    public partial int FillRect(nint surface, ref readonly SdlRect rect, uint color);
+    public partial int GetRendererOutputSize(nint renderer, out int w, out int h);
     public partial void FreeSurface(nint surface);
     public partial int NumJoysticks();
     public partial int IsGameController(int index);

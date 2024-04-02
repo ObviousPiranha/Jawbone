@@ -29,7 +29,7 @@ public struct SdlSurface
     public static unsafe ref SdlSurface FromPointer(nint pointer)
     {
         if (pointer.IsInvalid())
-            throw new ArgumentException("Invalid pointer.", nameof(pointer));
+            throw new ArgumentNullException(nameof(pointer), "Invalid pointer.");
 
         return ref Unsafe.AsRef<SdlSurface>(pointer.ToPointer());
     }

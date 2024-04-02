@@ -14,9 +14,14 @@ public class SdlException : Exception
     {
     }
 
+    public static SdlException Create(Sdl2Library sdl)
+    {
+        return new SdlException(sdl.GetError().ToString() ?? "Unknown error");
+    }
+
     [DoesNotReturn]
     public static void Throw(Sdl2Library sdl)
     {
-        throw new SdlException(sdl.GetError().ToString() ?? "Unknown error");
+        throw Create(sdl);
     }
 }
