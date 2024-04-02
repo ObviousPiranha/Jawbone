@@ -14,7 +14,7 @@ sealed class AudioManager : IAudioManager, IDisposable
     private readonly List<AudioShader> _shaders = [];
     private readonly List<float[]> _sounds = [];
     private readonly List<ScheduledAudio> _scheduledAudio = [];
-    private readonly Sdl2Library _sdl;
+    private readonly Sdl3Library _sdl;
     private readonly ILogger<AudioManager> _logger;
     private readonly uint _device;
     private readonly SdlAudioSpec _expectedAudioSpec;
@@ -41,7 +41,7 @@ sealed class AudioManager : IAudioManager, IDisposable
     }
 
     public AudioManager(
-        Sdl2Library sdl,
+        Sdl3Library sdl,
         ILogger<AudioManager> logger)
     {
         _sdl = sdl;

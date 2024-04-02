@@ -22,12 +22,12 @@ public static class SdlExtensions
             .AddSingleton(
                 serviceProvider =>
                 {
-                    var path = Sdl2Provider.GetSdlPath();
-                    var library = new Sdl2Provider(path, flags);
+                    var path = Sdl3Provider.GetSdlPath();
+                    var library = new Sdl3Provider(path, flags);
                     return library;
                 })
             .AddSingleton(
-                serviceProvider => serviceProvider.GetRequiredService<Sdl2Provider>().Library);
+                serviceProvider => serviceProvider.GetRequiredService<Sdl3Provider>().Library);
     }
 
     public static IServiceCollection AddAudioManager(this IServiceCollection services)
@@ -36,7 +36,7 @@ public static class SdlExtensions
     }
 
     public static int BlitSurface(
-        this Sdl2Library sdl,
+        this Sdl3Library sdl,
         nint source,
         in SdlRect sourceRectangle,
         nint destination,
@@ -50,7 +50,7 @@ public static class SdlExtensions
     }
 
     public static short[] ConvertAudioToInt16(
-        this Sdl2Library sdl,
+        this Sdl3Library sdl,
         ReadOnlySpan<short> pcm,
         int sourceFrequency,
         int sourceChannels,
@@ -109,7 +109,7 @@ public static class SdlExtensions
     }
 
     public static float[] ConvertAudioToFloat32(
-        this Sdl2Library sdl,
+        this Sdl3Library sdl,
         ReadOnlySpan<short> pcm,
         int sourceFrequency,
         int sourceChannels,
