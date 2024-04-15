@@ -7,14 +7,17 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlSensorEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
-    public int Which;
+    public uint Reserved;
+    public ulong Timestamp;
+    public uint Which;
     public SensorData Data;
-    public ulong TimestampUs;
+    public ulong SensorTimestamp;
 
-    [InlineArray(6)]
+    [InlineArray(Length)]
     public struct SensorData
     {
+        public const int Length = 6;
+
         private float _a;
     }
 }

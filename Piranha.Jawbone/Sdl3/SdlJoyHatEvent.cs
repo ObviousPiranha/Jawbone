@@ -6,8 +6,9 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlJoyHatEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
-    public int Which;
+    public uint Reserved;
+    public ulong Timestamp;
+    public uint Which;
     public byte Hat;
     public byte Value;
     public byte Padding1;

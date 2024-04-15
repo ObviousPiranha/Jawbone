@@ -6,7 +6,11 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlDropEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
-    public nint File;
+    public uint Reserved;
+    public ulong Timestamp;
     public uint WindowId;
+    public float X;
+    public float Y;
+    public CString Source;
+    public CString Data;
 }

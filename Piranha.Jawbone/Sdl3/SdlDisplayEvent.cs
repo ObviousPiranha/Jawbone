@@ -6,12 +6,9 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlDisplayEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
-    public uint Display;
-    public SdlDisplayEventType Event;
-    public byte Padding1;
-    public byte Padding2;
-    public byte Padding3;
+    public uint Reserved;
+    public ulong Timestamp;
+    public uint DisplayId;
     public int Data1;
 
     public readonly SdlOrientation Orientation => (SdlOrientation)Data1;

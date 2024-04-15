@@ -1,7 +1,7 @@
 namespace Piranha.Jawbone.Sdl3;
 
-public static class SdlMouseWheelDirection
+public enum SdlMouseWheelDirection : uint
 {
-    public const uint Normal = 0;
-    public const uint Flipped = 1;
+    Normal = 0,
+    Flipped = 1
 }

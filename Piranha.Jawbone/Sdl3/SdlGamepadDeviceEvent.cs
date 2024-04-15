@@ -6,6 +6,7 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlGamepadDeviceEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
-    public int Which;
+    public uint Reserved;
+    public ulong Timestamp;
+    public uint Which;
 }

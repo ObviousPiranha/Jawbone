@@ -6,7 +6,8 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlUserEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
+    public uint Reserved;
+    public ulong Timestamp;
     public uint WindowsId;
     public int Code;
     public nint Data1;

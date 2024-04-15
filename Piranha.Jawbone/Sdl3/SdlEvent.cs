@@ -1,9 +1,8 @@
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl3;
 
-[StructLayout(LayoutKind.Explicit)]
+[StructLayout(LayoutKind.Explicit, Size = 128)]
 public struct SdlEvent
 {
     [FieldOffset(0)] public SdlEventType Type;
@@ -13,25 +12,24 @@ public struct SdlEvent
     [FieldOffset(0)] public SdlKeyboardDeviceEvent KDevice;
     [FieldOffset(0)] public SdlKeyboardEvent Key;
     [FieldOffset(0)] public SdlTextEditingEvent Edit;
-    [FieldOffset(0)] public SdlTextEditingExtEvent EditExt;
     [FieldOffset(0)] public SdlTextInputEvent Text;
     [FieldOffset(0)] public SdlMouseDeviceEvent MDevice;
     [FieldOffset(0)] public SdlMouseMotionEvent Motion;
     [FieldOffset(0)] public SdlMouseButtonEvent Button;
     [FieldOffset(0)] public SdlMouseWheelEvent Wheel;
+    [FieldOffset(0)] public SdlJoyDeviceEvent JDevice;
     [FieldOffset(0)] public SdlJoyAxisEvent JAxis;
     [FieldOffset(0)] public SdlJoyBallEvent JBall;
     [FieldOffset(0)] public SdlJoyHatEvent JHat;
     [FieldOffset(0)] public SdlJoyButtonEvent JButton;
-    [FieldOffset(0)] public SdlJoyDeviceEvent JDevice;
     [FieldOffset(0)] public SdlJoyBatteryEvent JBattery;
-    [FieldOffset(0)] public SdlControllerAxisEvent GAxis;
-    [FieldOffset(0)] public SdlControllerButtonEvent GButton;
     [FieldOffset(0)] public SdlGamepadDeviceEvent GDevice;
-    [FieldOffset(0)] public SdlControllerTouchpadEvent GTouchpad;
+    [FieldOffset(0)] public SdlGamepadAxisEvent GAxis;
+    [FieldOffset(0)] public SdlGamepadButtonEvent GButton;
+    [FieldOffset(0)] public SdlGamepadTouchpadEvent GTouchpad;
     [FieldOffset(0)] public SdlGamepadSensorEvent GSensor;
-    [FieldOffset(0)] public SdlControllerSensorEvent CSensor;
     [FieldOffset(0)] public SdlAudioDeviceEvent ADevice;
+    [FieldOffset(0)] public SdlCameraDeviceEvent CDevice;
     [FieldOffset(0)] public SdlSensorEvent Sensor;
     [FieldOffset(0)] public SdlQuitEvent Quit;
     [FieldOffset(0)] public SdlUserEvent User;
@@ -41,9 +39,8 @@ public struct SdlEvent
     [FieldOffset(0)] public SdlPenButtonEvent PButton;
     [FieldOffset(0)] public SdlDropEvent Drop;
     [FieldOffset(0)] public SdlClipboardEvent Clipboard;
-    [FieldOffset(0)] private PaddingArray _padding;
 
-    public static void Dispatch(Sdl3Library sdl, in SdlEvent sdlEvent, ISdlEventHandler handler)
+    public static void Dispatch(in SdlEvent sdlEvent, ISdlEventHandler handler)
     {
         switch (sdlEvent.Type)
         {
@@ -320,6 +317,18 @@ public struct SdlEvent
             case SdlEventType.PenButtonUp:
                 handler.OnPenButtonUp(sdlEvent.PButton);
                 break;
+            case SdlEventType.CameraDeviceAdded:
+                handler.OnCameraDeviceAdded(sdlEvent.CDevice);
+                break;
+            case SdlEventType.CameraDeviceRemoved:
+                handler.OnCameraDeviceRemoved(sdlEvent.CDevice);
+                break;
+            case SdlEventType.CameraDeviceApproved:
+                handler.OnCameraDeviceApproved(sdlEvent.CDevice);
+                break;
+            case SdlEventType.CameraDeviceDenied:
+                handler.OnCameraDeviceDenied(sdlEvent.CDevice);
+                break;
             case SdlEventType.RenderTargetsReset:
                 handler.OnRenderTargetsReset();
                 break;
@@ -331,11 +340,5 @@ public struct SdlEvent
                     handler.OnUserEvent(sdlEvent.User);
                 break;
         }
-    }
-
-    [InlineArray(128)]
-    private struct PaddingArray
-    {
-        private byte _a;
     }
 }

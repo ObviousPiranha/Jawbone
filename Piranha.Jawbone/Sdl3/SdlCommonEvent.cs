@@ -6,5 +6,6 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlCommonEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
+    public uint Reserved;
+    public ulong Timestamp;
 }

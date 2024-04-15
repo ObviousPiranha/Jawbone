@@ -7,8 +7,10 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlKeyboardEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
+    public uint Reserved;
+    public ulong Timestamp;
     public uint WindowId;
+    public uint KeyboardId;
     public byte State;
     public byte Repeat;
     public byte Padding2;

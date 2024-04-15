@@ -15,7 +15,7 @@ public static class ApplicationManager
             var doSleep = true;
             while (sdl.PollEvent(out var sdlEvent) == 1)
             {
-                SdlEvent.Dispatch(sdl, sdlEvent, eventHandler);
+                SdlEvent.Dispatch(sdlEvent, eventHandler);
                 doSleep = false;
             }
 

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl3;
@@ -10,8 +11,14 @@ public struct SdlGamepadSensorEvent
     public ulong Timestamp;
     public uint Which;
     public int Sensor;
-    public float Data0;
-    public float Data1;
-    public float Data2;
+    public SensorData Data;
     public ulong SensorTimestamp;
+
+    [InlineArray(Length)]
+    public struct SensorData
+    {
+        public const int Length = 3;
+
+        private float _a;
+    }
 }

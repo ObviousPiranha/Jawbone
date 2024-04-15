@@ -6,13 +6,14 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlMouseButtonEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
+    public uint Reserved;
+    public ulong Timestamp;
     public uint WindowId;
     public uint Which;
     public byte Button;
     public byte State;
     public byte Clicks;
-    public byte Padding1;
-    public int X;
-    public int Y;
+    public byte Padding;
+    public float X;
+    public float Y;
 }

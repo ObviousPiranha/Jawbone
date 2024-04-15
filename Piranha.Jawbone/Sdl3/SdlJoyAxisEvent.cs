@@ -6,8 +6,9 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlJoyAxisEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
-    public int Which;
+    public uint Reserved;
+    public ulong Timestamp;
+    public uint Which;
     public byte Axis;
     public byte Padding1;
     public byte Padding2;

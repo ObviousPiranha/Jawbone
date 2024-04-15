@@ -6,9 +6,10 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlTouchFingerEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
-    public long TouchId;
-    public long FingerId;
+    public uint Reserved;
+    public ulong Timestamp;
+    public ulong TouchId;
+    public ulong FingerId;
     public float X;
     public float Y;
     public float Dx;

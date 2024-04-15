@@ -67,15 +67,15 @@ public interface ISdlEventHandler
     void OnJoystickRemoved(SdlJoyDeviceEvent sdlEvent) { }
     void OnJoystickBatteryUpdated(SdlJoyBatteryEvent sdlEvent) { }
     void OnJoystickUpdateCompleted(SdlJoyDeviceEvent sdlEvent) { }
-    void OnGamepadAxisMotion(SdlControllerAxisEvent sdlEvent) { }
-    void OnGamepadButtonDown(SdlControllerButtonEvent sdlEvent) { }
-    void OnGamepadButtonUp(SdlControllerButtonEvent sdlEvent) { }
+    void OnGamepadAxisMotion(SdlGamepadAxisEvent sdlEvent) { }
+    void OnGamepadButtonDown(SdlGamepadButtonEvent sdlEvent) { }
+    void OnGamepadButtonUp(SdlGamepadButtonEvent sdlEvent) { }
     void OnGamepadDeviceAdded(SdlGamepadDeviceEvent sdlEvent) { }
     void OnGamepadDeviceRemoved(SdlGamepadDeviceEvent sdlEvent) { }
     void OnGamepadDeviceRemapped(SdlGamepadDeviceEvent sdlEvent) { }
-    void OnGamepadTouchpadDown(SdlControllerTouchpadEvent sdlEvent) { }
-    void OnGamepadTouchpadMotion(SdlControllerTouchpadEvent sdlEvent) { }
-    void OnGamepadTouchpadUp(SdlControllerTouchpadEvent sdlEvent) { }
+    void OnGamepadTouchpadDown(SdlGamepadTouchpadEvent sdlEvent) { }
+    void OnGamepadTouchpadMotion(SdlGamepadTouchpadEvent sdlEvent) { }
+    void OnGamepadTouchpadUp(SdlGamepadTouchpadEvent sdlEvent) { }
     void OnGamepadSensorUpdate(SdlGamepadSensorEvent sdlEvent) { }
     void OnGamepadUpdateComplete(SdlGamepadDeviceEvent sdlEvent) { }
     void OnGamepadSteamHandleUpdated(SdlGamepadDeviceEvent sdlEvent) { }
