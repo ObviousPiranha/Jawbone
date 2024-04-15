@@ -7,12 +7,9 @@ namespace Piranha.Jawbone.Sdl3;
 public struct SdlWindowEvent
 {
     public SdlEventType Type;
-    public uint Timestamp;
+    public uint Reserved;
+    public ulong Timestamp;
     public uint WindowId;
-    public SdlWindowEventType Event;
-    public byte Padding1;
-    public byte Padding2;
-    public byte Padding3;
     public int Data1;
     public int Data2;
 

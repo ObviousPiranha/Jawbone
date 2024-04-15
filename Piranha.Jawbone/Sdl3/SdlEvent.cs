@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl3;
@@ -9,10 +10,12 @@ public struct SdlEvent
     [FieldOffset(0)] public SdlCommonEvent Common;
     [FieldOffset(0)] public SdlDisplayEvent Display;
     [FieldOffset(0)] public SdlWindowEvent Window;
+    [FieldOffset(0)] public SdlKeyboardDeviceEvent KDevice;
     [FieldOffset(0)] public SdlKeyboardEvent Key;
     [FieldOffset(0)] public SdlTextEditingEvent Edit;
     [FieldOffset(0)] public SdlTextEditingExtEvent EditExt;
     [FieldOffset(0)] public SdlTextInputEvent Text;
+    [FieldOffset(0)] public SdlMouseDeviceEvent MDevice;
     [FieldOffset(0)] public SdlMouseMotionEvent Motion;
     [FieldOffset(0)] public SdlMouseButtonEvent Button;
     [FieldOffset(0)] public SdlMouseWheelEvent Wheel;
@@ -22,20 +25,23 @@ public struct SdlEvent
     [FieldOffset(0)] public SdlJoyButtonEvent JButton;
     [FieldOffset(0)] public SdlJoyDeviceEvent JDevice;
     [FieldOffset(0)] public SdlJoyBatteryEvent JBattery;
-    [FieldOffset(0)] public SdlControllerAxisEvent CAxis;
-    [FieldOffset(0)] public SdlControllerButtonEvent CButton;
-    [FieldOffset(0)] public SdlControllerDeviceEvent CDevice;
-    [FieldOffset(0)] public SdlControllerTouchpadEvent CTouchpad;
+    [FieldOffset(0)] public SdlControllerAxisEvent GAxis;
+    [FieldOffset(0)] public SdlControllerButtonEvent GButton;
+    [FieldOffset(0)] public SdlGamepadDeviceEvent GDevice;
+    [FieldOffset(0)] public SdlControllerTouchpadEvent GTouchpad;
+    [FieldOffset(0)] public SdlGamepadSensorEvent GSensor;
     [FieldOffset(0)] public SdlControllerSensorEvent CSensor;
     [FieldOffset(0)] public SdlAudioDeviceEvent ADevice;
     [FieldOffset(0)] public SdlSensorEvent Sensor;
     [FieldOffset(0)] public SdlQuitEvent Quit;
     [FieldOffset(0)] public SdlUserEvent User;
-    [FieldOffset(0)] public SdlSysWmEvent SysWm;
     [FieldOffset(0)] public SdlTouchFingerEvent TFinger;
-    [FieldOffset(0)] public SdlMultiGestureEvent MGesture;
-    [FieldOffset(0)] public SdlDollarGestureEvent DGesture;
+    [FieldOffset(0)] public SdlPenTipEvent PTip;
+    [FieldOffset(0)] public SdlPenMotionEvent PMotion;
+    [FieldOffset(0)] public SdlPenButtonEvent PButton;
     [FieldOffset(0)] public SdlDropEvent Drop;
+    [FieldOffset(0)] public SdlClipboardEvent Clipboard;
+    [FieldOffset(0)] private PaddingArray _padding;
 
     public static void Dispatch(Sdl3Library sdl, in SdlEvent sdlEvent, ISdlEventHandler handler)
     {
@@ -44,35 +50,119 @@ public struct SdlEvent
             case SdlEventType.Quit:
                 handler.OnQuit();
                 break;
-            case SdlEventType.AppTerminating:
-                handler.OnAppTerminating();
+            case SdlEventType.Terminating:
+                handler.OnTerminating();
                 break;
-            case SdlEventType.AppLowMemory:
-                handler.OnAppLowMemory();
+            case SdlEventType.LowMemory:
+                handler.OnLowMemory();
                 break;
-            case SdlEventType.AppWillEnterBackground:
-                handler.OnAppWillEnterBackground();
+            case SdlEventType.WillEnterBackground:
+                handler.OnWillEnterBackground();
                 break;
-            case SdlEventType.AppDidEnterBackground:
-                handler.OnAppDidEnterBackground();
+            case SdlEventType.DidEnterBackground:
+                handler.OnDidEnterBackground();
                 break;
-            case SdlEventType.AppWillEnterForeground:
-                handler.OnAppWillEnterForeground();
+            case SdlEventType.WillEnterForeground:
+                handler.OnWillEnterForeground();
                 break;
-            case SdlEventType.AppDidEnterForeground:
-                handler.OnAppDidEnterForeground();
+            case SdlEventType.DidEnterForeground:
+                handler.OnDidEnterForeground();
                 break;
             case SdlEventType.LocaleChanged:
                 handler.OnLocaleChanged();
                 break;
-            case SdlEventType.DisplayEvent:
-                Dispatch(sdlEvent.Display, handler);
+            case SdlEventType.DisplayOrientation:
+                handler.OnDisplayOrientation(sdlEvent.Display);
                 break;
-            case SdlEventType.WindowEvent:
-                Dispatch(sdlEvent.Window, handler);
+            case SdlEventType.DisplayAdded:
+                handler.OnDisplayAdded(sdlEvent.Display);
                 break;
-            case SdlEventType.SysWmEvent:
-                handler.OnSysWmEvent(sdlEvent.SysWm);
+            case SdlEventType.DisplayRemoved:
+                handler.OnDisplayRemoved(sdlEvent.Display);
+                break;
+            case SdlEventType.DisplayMoved:
+                handler.OnDisplayMoved(sdlEvent.Display);
+                break;
+            case SdlEventType.DisplayContentScaleChanged:
+                handler.OnDisplayContentScaleChanged(sdlEvent.Display);
+                break;
+            case SdlEventType.DisplayHdrStateChanged:
+                handler.OnDisplayHdrStateChanged(sdlEvent.Display);
+                break;
+            case SdlEventType.WindowShown:
+                handler.OnWindowShown(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowHidden:
+                handler.OnWindowHidden(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowExposed:
+                handler.OnWindowExposed(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowMoved:
+                handler.OnWindowMoved(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowResized:
+                handler.OnWindowResized(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowPixelSizeChanged:
+                handler.OnWindowPixelSizeChanged(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowMinimized:
+                handler.OnWindowMinimized(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowMaximized:
+                handler.OnWindowMaximized(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowRestored:
+                handler.OnWindowRestored(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowMouseEnter:
+                handler.OnWindowMouseEnter(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowMouseLeave:
+                handler.OnWindowMouseLeave(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowFocusGained:
+                handler.OnWindowFocusGained(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowFocusLost:
+                handler.OnWindowFocusLost(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowCloseRequested:
+                handler.OnWindowCloseRequested(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowTakeFocus:
+                handler.OnWindowTakeFocus(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowHitTest:
+                handler.OnWindowHitTest(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowIccProfChanged:
+                handler.OnWindowIccProfChanged(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowDisplayChanged:
+                handler.OnWindowDisplayChanged(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowDisplayScaleChanged:
+                handler.OnWindowDisplayScaleChanged(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowOccluded:
+                handler.OnWindowOccluded(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowEnterFullscreen:
+                handler.OnWindowEnterFullscreen(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowLeaveFullscreen:
+                handler.OnWindowLeaveFullscreen(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowDestroyed:
+                handler.OnWindowDestroyed(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowPenEnter:
+                handler.OnWindowPenEnter(sdlEvent.Window);
+                break;
+            case SdlEventType.WindowPenLeave:
+                handler.OnWindowPenLeave(sdlEvent.Window);
                 break;
             case SdlEventType.KeyDown:
                 handler.OnKeyDown(sdlEvent.Key);
@@ -89,8 +179,11 @@ public struct SdlEvent
             case SdlEventType.KeyMapChanged:
                 handler.OnKeyMapChanged();
                 break;
-            case SdlEventType.TextEditingExt:
-                handler.OnTextEditingExt(sdlEvent.EditExt);
+            case SdlEventType.KeyboardAdded:
+                handler.OnKeyboardAdded(sdlEvent.KDevice);
+                break;
+            case SdlEventType.KeyboardRemoved:
+                handler.OnKeyboardRemoved(sdlEvent.KDevice);
                 break;
             case SdlEventType.MouseMotion:
                 handler.OnMouseMotion(sdlEvent.Motion);
@@ -104,59 +197,74 @@ public struct SdlEvent
             case SdlEventType.MouseWheel:
                 handler.OnMouseWheel(sdlEvent.Wheel);
                 break;
-            case SdlEventType.JoyAxisMotion:
-                handler.OnJoyAxisMotion(sdlEvent.JAxis);
+            case SdlEventType.MouseAdded:
+                handler.OnMouseAdded(sdlEvent.MDevice);
                 break;
-            case SdlEventType.JoyBallMotion:
-                handler.OnJoyBallMotion(sdlEvent.JBall);
+            case SdlEventType.MouseRemoved:
+                handler.OnMouseRemoved(sdlEvent.MDevice);
                 break;
-            case SdlEventType.JoyHatMotion:
-                handler.OnJoyHatMotion(sdlEvent.JHat);
+            case SdlEventType.JoystickAxisMotion:
+                handler.OnJoystickAxisMotion(sdlEvent.JAxis);
                 break;
-            case SdlEventType.JoyButtonDown:
-                handler.OnJoyButtonDown(sdlEvent.JButton);
+            case SdlEventType.JoystickBallMotion:
+                handler.OnJoystickBallMotion(sdlEvent.JBall);
                 break;
-            case SdlEventType.JoyButtonUp:
-                handler.OnJoyButtonUp(sdlEvent.JButton);
+            case SdlEventType.JoystickHatMotion:
+                handler.OnJoystickHatMotion(sdlEvent.JHat);
                 break;
-            case SdlEventType.JoyDeviceAdded:
-                handler.OnJoyDeviceAdded(sdlEvent.JDevice);
+            case SdlEventType.JoystickButtonDown:
+                handler.OnJoystickButtonDown(sdlEvent.JButton);
                 break;
-            case SdlEventType.JoyDeviceRemoved:
-                handler.OnJoyDeviceRemoved(sdlEvent.JDevice);
+            case SdlEventType.JoystickButtonUp:
+                handler.OnJoystickButtonUp(sdlEvent.JButton);
                 break;
-            case SdlEventType.JoyBatteryUpdated:
-                handler.OnJoyBatteryUpdated(sdlEvent.JBattery);
+            case SdlEventType.JoystickAdded:
+                handler.OnJoystickAdded(sdlEvent.JDevice);
                 break;
-            case SdlEventType.ControllerAxisMotion:
-                handler.OnControllerAxisMotion(sdlEvent.CAxis);
+            case SdlEventType.JoystickRemoved:
+                handler.OnJoystickRemoved(sdlEvent.JDevice);
                 break;
-            case SdlEventType.ControllerButtonDown:
-                handler.OnControllerButtonDown(sdlEvent.CButton);
+            case SdlEventType.JoystickBatteryUpdated:
+                handler.OnJoystickBatteryUpdated(sdlEvent.JBattery);
                 break;
-            case SdlEventType.ControllerButtonUp:
-                handler.OnControllerButtonUp(sdlEvent.CButton);
+            case SdlEventType.JoystickUpdateComplete:
+                handler.OnJoystickUpdateCompleted(sdlEvent.JDevice);
                 break;
-            case SdlEventType.ControllerDeviceAdded:
-                handler.OnControllerDeviceAdded(sdlEvent.CDevice);
+            case SdlEventType.GamepadAxisMotion:
+                handler.OnGamepadAxisMotion(sdlEvent.GAxis);
                 break;
-            case SdlEventType.ControllerDeviceRemoved:
-                handler.OnControllerDeviceRemoved(sdlEvent.CDevice);
+            case SdlEventType.GamepadButtonDown:
+                handler.OnGamepadButtonDown(sdlEvent.GButton);
                 break;
-            case SdlEventType.ControllerDeviceRemapped:
-                handler.OnControllerDeviceRemapped(sdlEvent.CDevice);
+            case SdlEventType.GamepadButtonUp:
+                handler.OnGamepadButtonUp(sdlEvent.GButton);
                 break;
-            case SdlEventType.ControllerTouchpadDown:
-                handler.OnControllerTouchpadDown(sdlEvent.CTouchpad);
+            case SdlEventType.GamepadAdded:
+                handler.OnGamepadDeviceAdded(sdlEvent.GDevice);
                 break;
-            case SdlEventType.ControllerTouchpadMotion:
-                handler.OnControllerTouchpadMotion(sdlEvent.CTouchpad);
+            case SdlEventType.GamepadRemoved:
+                handler.OnGamepadDeviceRemoved(sdlEvent.GDevice);
                 break;
-            case SdlEventType.ControllerTouchpadUp:
-                handler.OnControllerTouchpadUp(sdlEvent.CTouchpad);
+            case SdlEventType.GamepadRemapped:
+                handler.OnGamepadDeviceRemapped(sdlEvent.GDevice);
                 break;
-            case SdlEventType.ControllerTouchpadUpdate:
-                handler.OnControllerTouchpadUpdate(sdlEvent.CTouchpad);
+            case SdlEventType.GamepadTouchpadDown:
+                handler.OnGamepadTouchpadDown(sdlEvent.GTouchpad);
+                break;
+            case SdlEventType.GamepadTouchpadMotion:
+                handler.OnGamepadTouchpadMotion(sdlEvent.GTouchpad);
+                break;
+            case SdlEventType.GamepadTouchpadUp:
+                handler.OnGamepadTouchpadUp(sdlEvent.GTouchpad);
+                break;
+            case SdlEventType.GamepadSensorUpdate:
+                handler.OnGamepadSensorUpdate(sdlEvent.GSensor);
+                break;
+            case SdlEventType.GamepadUpdateComplete:
+                handler.OnGamepadUpdateComplete(sdlEvent.GDevice);
+                break;
+            case SdlEventType.GamepadSteamHandleUpdated:
+                handler.OnGamepadSteamHandleUpdated(sdlEvent.GDevice);
                 break;
             case SdlEventType.FingerDown:
                 handler.OnFingerDown(sdlEvent.TFinger);
@@ -167,33 +275,23 @@ public struct SdlEvent
             case SdlEventType.FingerMotion:
                 handler.OnFingerMotion(sdlEvent.TFinger);
                 break;
-            case SdlEventType.DollarGesture:
-                handler.OnDollarGesture(sdlEvent.DGesture);
-                break;
-            case SdlEventType.DollarRecord:
-                handler.OnDollarRecord(sdlEvent.DGesture);
-                break;
-            case SdlEventType.Multigesture:
-                handler.OnMultigesture(sdlEvent.MGesture);
-                break;
             case SdlEventType.ClipboardUpdate:
-                handler.OnClipboardUpdate();
+                handler.OnClipboardUpdate(sdlEvent.Clipboard);
                 break;
             case SdlEventType.DropFile:
                 handler.OnDropFile(sdlEvent.Drop);
-                sdl.Free(sdlEvent.Drop.File);
                 break;
             case SdlEventType.DropText:
                 handler.OnDropText(sdlEvent.Drop);
-                sdl.Free(sdlEvent.Drop.File);
                 break;
             case SdlEventType.DropBegin:
                 handler.OnDropBegin(sdlEvent.Drop);
-                sdl.Free(sdlEvent.Drop.File);
                 break;
             case SdlEventType.DropComplete:
                 handler.OnDropComplete(sdlEvent.Drop);
-                sdl.Free(sdlEvent.Drop.File);
+                break;
+            case SdlEventType.DropPosition:
+                handler.OnDropPosition(sdlEvent.Drop);
                 break;
             case SdlEventType.AudioDeviceAdded:
                 handler.OnAudioDeviceAdded(sdlEvent.ADevice);
@@ -201,8 +299,26 @@ public struct SdlEvent
             case SdlEventType.AudioDeviceRemoved:
                 handler.OnAudioDeviceRemoved(sdlEvent.ADevice);
                 break;
+            case SdlEventType.AudioDeviceFormatChanged:
+                handler.OnAudioDeviceFormatChanged(sdlEvent.ADevice);
+                break;
             case SdlEventType.SensorUpdate:
                 handler.OnSensorUpdate(sdlEvent.Sensor);
+                break;
+            case SdlEventType.PenDown:
+                handler.OnPenDown(sdlEvent.PTip);
+                break;
+            case SdlEventType.PenUp:
+                handler.OnPenUp(sdlEvent.PTip);
+                break;
+            case SdlEventType.PenMotion:
+                handler.OnPenMotion(sdlEvent.PMotion);
+                break;
+            case SdlEventType.PenButtonDown:
+                handler.OnPenButtonDown(sdlEvent.PButton);
+                break;
+            case SdlEventType.PenButtonUp:
+                handler.OnPenButtonUp(sdlEvent.PButton);
                 break;
             case SdlEventType.RenderTargetsReset:
                 handler.OnRenderTargetsReset();
@@ -217,80 +333,9 @@ public struct SdlEvent
         }
     }
 
-    private static void Dispatch(in SdlDisplayEvent sdlEvent, ISdlEventHandler handler)
+    [InlineArray(128)]
+    private struct PaddingArray
     {
-        switch (sdlEvent.Event)
-        {
-            case SdlDisplayEventType.Connected:
-                handler.OnDisplayConnected(sdlEvent);
-                break;
-            case SdlDisplayEventType.Disconnected:
-                handler.OnDisplayDisconnected(sdlEvent);
-                break;
-            case SdlDisplayEventType.Orientation:
-                handler.OnDisplayOrientation(sdlEvent);
-                break;
-        }
-    }
-
-    private static void Dispatch(in SdlWindowEvent sdlEvent, ISdlEventHandler handler)
-    {
-        switch (sdlEvent.Event)
-        {
-            case SdlWindowEventType.Shown:
-                handler.OnWindowShown(sdlEvent);
-                break;
-            case SdlWindowEventType.Hidden:
-                handler.OnWindowHidden(sdlEvent);
-                break;
-            case SdlWindowEventType.Exposed:
-                handler.OnWindowExposed(sdlEvent);
-                break;
-            case SdlWindowEventType.Moved:
-                handler.OnWindowMoved(sdlEvent);
-                break;
-            case SdlWindowEventType.Resized:
-                handler.OnWindowResized(sdlEvent);
-                break;
-            case SdlWindowEventType.SizeChanged:
-                handler.OnWindowSizeChanged(sdlEvent);
-                break;
-            case SdlWindowEventType.Minimized:
-                handler.OnWindowMinimized(sdlEvent);
-                break;
-            case SdlWindowEventType.Maximized:
-                handler.OnWindowMaximized(sdlEvent);
-                break;
-            case SdlWindowEventType.Restored:
-                handler.OnWindowRestored(sdlEvent);
-                break;
-            case SdlWindowEventType.Enter:
-                handler.OnWindowEnter(sdlEvent);
-                break;
-            case SdlWindowEventType.Leave:
-                handler.OnWindowLeave(sdlEvent);
-                break;
-            case SdlWindowEventType.FocusGained:
-                handler.OnWindowFocusGained(sdlEvent);
-                break;
-            case SdlWindowEventType.FocusLost:
-                handler.OnWindowFocusLost(sdlEvent);
-                break;
-            case SdlWindowEventType.Close:
-                handler.OnWindowClose(sdlEvent);
-                break;
-            case SdlWindowEventType.TakeFocus:
-                handler.OnWindowTakeFocus(sdlEvent);
-                break;
-            case SdlWindowEventType.HitTest:
-                handler.OnWindowHitTest(sdlEvent);
-                break;
-            case SdlWindowEventType.IccProfChanged:
-                handler.OnWindowIccProfChanged(sdlEvent);
-                break;
-            case SdlWindowEventType.DisplayChanged:
-                handler.OnWindowDisplayChanged(sdlEvent);
-                break;
-        }
+        private byte _a;
     }
 }

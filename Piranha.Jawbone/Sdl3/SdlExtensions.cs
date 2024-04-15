@@ -1,20 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Extensions;
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl3;
 
 public static class SdlExtensions
 {
-    public static IServiceCollection AddSdl2(this IServiceCollection services)
-    {
-        return services.AddSdl2(SdlInit.Everything);
-    }
-
-    public static IServiceCollection AddSdl2(
+    public static IServiceCollection AddSdl3(
         this IServiceCollection services,
         SdlInit flags)
     {
@@ -23,8 +16,8 @@ public static class SdlExtensions
                 serviceProvider =>
                 {
                     var path = Sdl3Provider.GetSdlPath();
-                    var library = new Sdl3Provider(path, flags);
-                    return library;
+                    var provider = new Sdl3Provider(path, flags);
+                    return provider;
                 })
             .AddSingleton(
                 serviceProvider => serviceProvider.GetRequiredService<Sdl3Provider>().Library);
@@ -33,20 +26,6 @@ public static class SdlExtensions
     public static IServiceCollection AddAudioManager(this IServiceCollection services)
     {
         return services.AddSingleton<IAudioManager, AudioManager>();
-    }
-
-    public static int BlitSurface(
-        this Sdl3Library sdl,
-        nint source,
-        in SdlRect sourceRectangle,
-        nint destination,
-        ref SdlRect destinationRectangle)
-    {
-        return sdl.BlitSurface(
-            source,
-            sourceRectangle,
-            destination,
-            ref destinationRectangle);
     }
 
     public static short[] ConvertAudioToInt16(

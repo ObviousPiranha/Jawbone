@@ -9,8 +9,7 @@ sealed class Sdl3Provider : IDisposable
 {
     private static readonly string[] MacPaths =
     [
-        "/opt/homebrew/lib/libSDL2.dylib",
-        "/usr/local/opt/sdl2/lib/libSDL2.dylib"
+        // TODO
     ];
 
     private readonly nint _handle;
@@ -24,8 +23,8 @@ sealed class Sdl3Provider : IDisposable
             methodName => NativeLibrary.GetExport(
                 _handle, Sdl3Library.GetFunctionName(methodName)));
 
-        if (OperatingSystem.IsLinux())
-            Library.SetHint("SDL_VIDEODRIVER", "wayland,x11");
+        // if (OperatingSystem.IsLinux())
+        //     Library.SetHint("SDL_VIDEODRIVER", "wayland,x11");
         var result = Library.Init(flags);
         if (result != 0)
             throw new SdlException("Unable to initialize SDL: " + Library.GetError().ToString());
@@ -40,20 +39,12 @@ sealed class Sdl3Provider : IDisposable
     internal static string GetSdlPath()
     {
         if (OperatingSystem.IsWindows())
-        {
             return "SDL3.dll";
-        }
-        else if (OperatingSystem.IsLinux())
-        {
-            return Platform.FindLibs("libSDL2-2.0.so*", "libSDL2.so*") ?? throw new NullReferenceException();
-        }
-        else if (OperatingSystem.IsMacOS())
-        {
+        if (OperatingSystem.IsLinux())
+            return Platform.FindLibs("libSDL3.so*") ?? throw new NullReferenceException();
+        if (OperatingSystem.IsMacOS())
             return MacPaths.First(File.Exists);
-        }
-        else
-        {
-            throw new PlatformNotSupportedException();
-        }
+
+        throw new PlatformNotSupportedException();
     }
 }
