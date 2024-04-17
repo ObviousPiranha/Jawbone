@@ -36,32 +36,36 @@ public static class SdlExtensions
         int destinationFrequency,
         int destinationChannels)
     {
-        var stream = sdl.NewAudioStream(
-            SdlAudioFormat.S16Lsb,
-            (byte)sourceChannels,
-            sourceFrequency,
-            SdlAudioFormat.S16Lsb,
-            (byte)destinationChannels,
-            destinationFrequency);
+        var srcSpec = new SdlAudioSpec
+        {
+            Format = SdlAudioFormat.S16Lsb,
+            Channels = sourceChannels,
+            Freq = sourceFrequency
+        };
+        var dstSpec = new SdlAudioSpec
+        {
+            Format = SdlAudioFormat.S16Lsb,
+            Channels = destinationChannels,
+            Freq = destinationFrequency
+        };
+        var stream = sdl.CreateAudioStream(in srcSpec, in dstSpec);
 
         if (stream.IsInvalid())
             SdlException.Throw(sdl);
 
         try
         {
-            // https://wiki.libsdl.org/SDL_AudioStreamPut
-            var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
+            var result = sdl.PutAudioStreamData(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
             if (result != 0)
                 SdlException.Throw(sdl);
 
-            // https://wiki.libsdl.org/SDL_AudioStreamFlush
-            result = sdl.AudioStreamFlush(stream);
+            result = sdl.FlushAudioStream(stream);
 
             if (result != 0)
                 SdlException.Throw(sdl);
 
-            var length = sdl.AudioStreamAvailable(stream);
+            var length = sdl.GetAudioStreamAvailable(stream);
 
             if ((length & 1) != 0)
                 throw new SdlException("Audio data must align to 2 bytes.");
@@ -69,7 +73,7 @@ public static class SdlExtensions
             if (0 < length)
             {
                 var shorts = new short[length / Unsafe.SizeOf<short>()];
-                var bytesRead = sdl.AudioStreamGet(stream, out shorts[0], length);
+                var bytesRead = sdl.GetAudioStreamData(stream, out shorts[0], length);
 
                 if (bytesRead == -1)
                     SdlException.Throw(sdl);
@@ -83,7 +87,7 @@ public static class SdlExtensions
         }
         finally
         {
-            sdl.FreeAudioStream(stream);
+            sdl.DestroyAudioStream(stream);
         }
     }
 
@@ -95,32 +99,36 @@ public static class SdlExtensions
         int destinationFrequency,
         int destinationChannels)
     {
-        var stream = sdl.NewAudioStream(
-            SdlAudioFormat.S16Lsb,
-            (byte)sourceChannels,
-            sourceFrequency,
-            SdlAudioFormat.F32,
-            (byte)destinationChannels,
-            destinationFrequency);
+        var srcSpec = new SdlAudioSpec
+        {
+            Format = SdlAudioFormat.S16Lsb,
+            Channels = sourceChannels,
+            Freq = sourceFrequency
+        };
+        var dstSpec = new SdlAudioSpec
+        {
+            Format = SdlAudioFormat.F32,
+            Channels = destinationChannels,
+            Freq = destinationFrequency
+        };
+        var stream = sdl.CreateAudioStream(in srcSpec, in dstSpec);
 
         if (stream.IsInvalid())
             SdlException.Throw(sdl);
 
         try
         {
-            // https://wiki.libsdl.org/SDL_AudioStreamPut
-            var result = sdl.AudioStreamPut(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
+            var result = sdl.PutAudioStreamData(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
             if (result != 0)
                 SdlException.Throw(sdl);
 
-            // https://wiki.libsdl.org/SDL_AudioStreamFlush
-            result = sdl.AudioStreamFlush(stream);
+            result = sdl.FlushAudioStream(stream);
 
             if (result != 0)
                 SdlException.Throw(sdl);
 
-            var length = sdl.AudioStreamAvailable(stream);
+            var length = sdl.GetAudioStreamAvailable(stream);
 
             if ((length & 3) != 0)
                 throw new SdlException("Audio data must align to 4 bytes.");
@@ -128,7 +136,7 @@ public static class SdlExtensions
             if (0 < length)
             {
                 var floats = new float[length / Unsafe.SizeOf<float>()];
-                var bytesRead = sdl.AudioStreamGet(stream, out floats[0], length);
+                var bytesRead = sdl.GetAudioStreamData(stream, out floats[0], length);
 
                 if (bytesRead == -1)
                     SdlException.Throw(sdl);
@@ -142,7 +150,7 @@ public static class SdlExtensions
         }
         finally
         {
-            sdl.FreeAudioStream(stream);
+            sdl.DestroyAudioStream(stream);
         }
     }
 }

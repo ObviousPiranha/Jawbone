@@ -58,14 +58,13 @@ public readonly struct OpenGlContext
 
             gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
 
-            var version = new byte[4];
-            sdl.GetVersion(out version[0]);
+            sdl.GetVersion(out var version);
 
             if (logger is not null)
             {
                 var log = string.Concat(
                     "SDL version: ",
-                    string.Join('.', version),
+                    version.ToString(),
                     Environment.NewLine,
                     "SDL video driver: ",
                     sdl.GetCurrentVideoDriver(),

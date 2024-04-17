@@ -13,7 +13,7 @@ public static class ApplicationManager
         while (eventHandler.Running)
         {
             var doSleep = true;
-            while (sdl.PollEvent(out var sdlEvent) == 1)
+            while (sdl.PollEvent(out var sdlEvent))
             {
                 SdlEvent.Dispatch(sdlEvent, eventHandler);
                 doSleep = false;
@@ -44,14 +44,15 @@ public static class ApplicationManager
         // https://discourse.libsdl.org/t/cannot-remove-the-window-title-bar-and-borders/25615
         // https://discourse.libsdl.org/t/true-borderless-fullscreen-behaviour/24622
 
-        int displayIndex = sdl.GetWindowDisplayIndex(window);
-        if (displayIndex < 0)
+        var displayId = sdl.GetDisplayForWindow(window);
+        if (displayId == 0)
             throw new SdlException("error getting window display");
 
-        if (sdl.GetDisplayUsableBounds(displayIndex, out var rect) != 0)
+        if (sdl.GetDisplayUsableBounds(displayId, out var rect) != 0)
             throw new SdlException("error getting usable bounds");
 
-        var flag = sdl.GetWindowFlags(window) & SdlWindow.FullScreenDesktop;
-        sdl.SetWindowFullscreen(window, flag ^ SdlWindow.FullScreenDesktop);
+        var flags = sdl.GetWindowFlags(window);
+        var isBorderless = (flags & SdlWindow.Borderless) == SdlWindow.Borderless;
+        sdl.SetWindowFullscreen(window, isBorderless);
     }
 }

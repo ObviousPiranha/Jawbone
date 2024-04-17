@@ -14,12 +14,14 @@ public sealed partial class Sdl3Library
         return methodName switch
         {
             nameof(GetTicksNs) => "SDL_GetTicksNS",
+            nameof(Free) => "SDL_free",
             _ => "SDL_" + methodName
         };
     }
 
     public partial int Init(SdlInit flags);
     public partial void Quit();
+    public partial void Free(nint mem);
     public partial CString GetError();
     public partial nint CreateWindow(string title, int w, int h, SdlWindow flags);
     public partial void DestroyWindow(nint window);
@@ -38,7 +40,7 @@ public sealed partial class Sdl3Library
     public partial uint GetWindowID(nint window);
     public partial int GetWindowSize(nint window, out int width, out int height);
     public partial int GetWindowSizeInPixels(nint window, out int width, out int height);
-    public partial int GetWindowDisplayIndex(nint window);
+    public partial uint GetDisplayForWindow(nint window);
     public partial nint GetWindowSurface(nint window);
     public partial int MaximizeWindow(nint window);
     public partial int SetRenderDrawColor(nint renderer, byte r, byte g, byte b, byte a);
@@ -65,6 +67,7 @@ public sealed partial class Sdl3Library
     public partial uint OpenAudioDevice(uint devid, ref readonly SdlAudioSpec spec);
     public partial void CloseAudioDevice(uint devid);
     public partial int PauseAudioDevice(uint dev);
+
     public partial int ResumeAudioDevice(uint dev);
     public partial int ClearQueuedAudio(uint dev);
     public partial int QueueAudio(uint dev, ref readonly byte data, uint len);
@@ -106,8 +109,8 @@ public sealed partial class Sdl3Library
     public partial CString GetCurrentVideoDriver();
     public partial SdlBool SetHint(string name, string value);
     public partial CString GetHint(string name);
-    public partial int GetNumAudioDevices(int isCapture);
-    public partial CString GetAudioDeviceName(uint index);
+    public partial CString GetAudioDeviceName(uint devid);
+    public partial nint GetAudioOutputDevices(out int count);
     public partial int LockAudioDevice(uint dev);
     public partial void UnlockAudioDevice(uint dev);
     public partial SdlBool AudioDevicePaused(uint dev);

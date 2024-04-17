@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Piranha.Jawbone.Sdl3;
 
@@ -29,14 +30,15 @@ sealed class AudioManager : IAudioManager, IDisposable
     {
         get
         {
-            var status = _sdl.GetAudioDeviceStatus(_device);
-            return status == SdlAudioStatus.Paused;
+            return _sdl.AudioDevicePaused(_device);
         }
 
         set
         {
-            var pauseOn = Convert.ToInt32(value);
-            _sdl.PauseAudioDevice(_device, pauseOn);
+            if (value)
+                _sdl.PauseAudioDevice(_device);
+            else
+                _sdl.ResumeAudioDevice(_device);
         }
     }
 
@@ -51,22 +53,37 @@ sealed class AudioManager : IAudioManager, IDisposable
         {
             Freq = 48000,
             Format = SdlAudioFormat.F32,
-            Channels = 2,
-            Samples = 4096
+            Channels = 2
         };
 
-        var deviceCount = _sdl.GetNumAudioDevices(0);
-        var devices = Enumerable
-            .Range(0, deviceCount)
-            .Select(n => _sdl.GetAudioDeviceName(n, 0).ToString() ?? "(null)");
-        _logger.LogInformation("Audio devices: {devices}", string.Join(", ", devices));
+        var deviceIdsPointer = _sdl.GetAudioOutputDevices(out var deviceCount);
 
-        _device = _sdl.OpenAudioDevice(
-            null,
-            0,
-            _expectedAudioSpec,
-            out _actualAudioSpec,
-            SdlAudioAllowChange.Any & ~SdlAudioAllowChange.Format);
+        try
+        {
+            var deviceIds = deviceIdsPointer.ToReadOnlySpan<uint>(deviceCount);
+            var deviceNames = "(none)";
+
+            if (!deviceIds.IsEmpty)
+            {
+                var stringBuilder = new StringBuilder();
+                stringBuilder.Append(deviceIds[0]);
+
+                for (int i = 1; i < deviceIds.Length; ++i)
+                    stringBuilder.Append(", ").Append(deviceIds[i]);
+
+                deviceNames = stringBuilder.ToString();
+            }
+
+            _logger.LogInformation("Audio devices: {devices}", deviceNames);
+        }
+        finally
+        {
+            _sdl.Free(deviceIdsPointer);
+        }
+
+
+        _device = _sdl.OpenAudioDevice(0, in _expectedAudioSpec);
+        _actualAudioSpec = _expectedAudioSpec;
 
         if (_device == 0)
             SdlException.Throw(sdl);
@@ -119,13 +136,15 @@ sealed class AudioManager : IAudioManager, IDisposable
         int channels,
         ReadOnlySpan<byte> data)
     {
-        var stream = _sdl.NewAudioStream(
-            format,
-            checked((byte)channels),
-            frequency,
-            _actualAudioSpec.Format,
-            _actualAudioSpec.Channels,
-            _actualAudioSpec.Freq);
+        var sourceSpec = new SdlAudioSpec
+        {
+            Format = format,
+            Channels = channels,
+            Freq = frequency
+        };
+        var stream = _sdl.CreateAudioStream(
+            in sourceSpec,
+            in _actualAudioSpec);
 
         if (stream.IsInvalid())
             SdlException.Throw(_sdl);
@@ -133,18 +152,18 @@ sealed class AudioManager : IAudioManager, IDisposable
         try
         {
             // https://wiki.libsdl.org/SDL_AudioStreamPut
-            var result = _sdl.AudioStreamPut(stream, data[0], data.Length);
+            var result = _sdl.PutAudioStreamData(stream, data[0], data.Length);
 
             if (result != 0)
                 SdlException.Throw(_sdl);
 
             // https://wiki.libsdl.org/SDL_AudioStreamFlush
-            result = _sdl.AudioStreamFlush(stream);
+            result = _sdl.FlushAudioStream(stream);
 
             if (result != 0)
                 SdlException.Throw(_sdl);
 
-            var length = _sdl.AudioStreamAvailable(stream);
+            var length = _sdl.GetAudioStreamAvailable(stream);
 
             if ((length & 3) != 0)
                 throw new SdlException("Audio data must align to 4 bytes.");
@@ -152,7 +171,7 @@ sealed class AudioManager : IAudioManager, IDisposable
             if (0 < length)
             {
                 var floats = new float[length / Unsafe.SizeOf<float>()];
-                var bytesRead = _sdl.AudioStreamGet(stream, out floats[0], length);
+                var bytesRead = _sdl.GetAudioStreamData(stream, out floats[0], length);
 
                 if (bytesRead == -1)
                     SdlException.Throw(_sdl);
@@ -176,7 +195,7 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
         finally
         {
-            _sdl.FreeAudioStream(stream);
+            _sdl.DestroyAudioStream(stream);
         }
     }
 
