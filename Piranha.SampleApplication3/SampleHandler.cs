@@ -6,9 +6,7 @@ using Piranha.Jawbone.Sdl3;
 using Piranha.Jawbone.Stb;
 using System;
 using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Piranha.SampleApplication3;
@@ -33,6 +31,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
     private uint _vertexArray = default;
     private int _matrixUniform = default;
     private int _textureUniform = default;
+    private bool _isFullscreen = false;
     private readonly StbImageLibrary _stbImage;
     private readonly StbVorbisLibrary _stbVorbis;
     private readonly Sdl3Library _sdl;
@@ -266,6 +265,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
     {
         if (eventData.Keysym.Scancode == SdlScancode.Escape)
             Running = false;
+        else if (eventData.Keysym.Scancode == SdlScancode.F11)
+            _sdl.SetWindowFullscreen(_windowPtr, _isFullscreen = !_isFullscreen);
     }
 
     public void OnMouseButtonDown(SdlMouseButtonEvent eventData)
@@ -276,7 +277,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));
     }
 
-    public void OnWindowSizeChanged(SdlWindowEvent eventData)
+    public void OnWindowPixelSizeChanged(SdlWindowEvent eventData)
     {
         _gl.Viewport(0, 0, eventData.Data1, eventData.Data2);
         var aspectRatio = eventData.Data1 / (float)eventData.Data2;

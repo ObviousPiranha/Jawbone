@@ -36,23 +36,4 @@ public static class ApplicationManager
             }
         }
     }
-
-    public static void ToggleFullScreen(Sdl3Library sdl, nint window)
-    {
-        // https://superuser.com/a/1251294
-        // http://lists.libsdl.org/pipermail/commits-libsdl.org/2018-January/002542.html
-        // https://discourse.libsdl.org/t/cannot-remove-the-window-title-bar-and-borders/25615
-        // https://discourse.libsdl.org/t/true-borderless-fullscreen-behaviour/24622
-
-        var displayId = sdl.GetDisplayForWindow(window);
-        if (displayId == 0)
-            throw new SdlException("error getting window display");
-
-        if (sdl.GetDisplayUsableBounds(displayId, out var rect) != 0)
-            throw new SdlException("error getting usable bounds");
-
-        var flags = sdl.GetWindowFlags(window);
-        var isBorderless = (flags & SdlWindow.Borderless) == SdlWindow.Borderless;
-        sdl.SetWindowFullscreen(window, isBorderless);
-    }
 }
