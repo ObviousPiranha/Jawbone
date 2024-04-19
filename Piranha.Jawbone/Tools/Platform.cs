@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 
@@ -12,6 +13,7 @@ public static class Platform
 
     private static readonly string[] LibFolders =
     [
+        Environment.CurrentDirectory,
         "/usr/lib/x86_64-linux-gnu",
         "/usr/lib/aarch64-linux-gnu",
         "/usr/lib/arm-linux-gnueabihf",
@@ -38,7 +40,7 @@ public static class Platform
                 .EnumerateFiles(libFolder, libPattern)
                 .FirstOrDefault();
 
-            if (result != null)
+            if (result is not null)
                 return result;
         }
 
@@ -51,7 +53,7 @@ public static class Platform
         {
             var result = FindLib(libPattern);
 
-            if (result != null)
+            if (result is not null)
                 return result;
         }
 

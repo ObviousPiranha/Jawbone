@@ -69,15 +69,15 @@ public sealed partial class Sdl3Library
     public partial int PauseAudioDevice(uint dev);
 
     public partial int ResumeAudioDevice(uint dev);
-    public partial int ClearQueuedAudio(uint dev);
-    public partial int QueueAudio(uint dev, ref readonly byte data, uint len);
-    public partial int QueueAudio(uint dev, ref readonly float data, uint len);
     public partial nint CreateAudioStream(
         ref readonly SdlAudioSpec srcSpec,
         ref readonly SdlAudioSpec dstSpec);
     public partial void DestroyAudioStream(nint stream);
-    public partial int PutAudioStreamData(nint stream, in byte buffer, int length);
-    public partial int PutAudioStreamData(nint stream, in short buffer, int length);
+    public partial int BindAudioStream(uint devid, nint stream);
+    public partial void UnbindAudioStream(nint stream);
+    public partial int PutAudioStreamData(nint stream, ref readonly byte buffer, int length);
+    public partial int PutAudioStreamData(nint stream, ref readonly short buffer, int length);
+    public partial int PutAudioStreamData(nint stream, ref readonly float buffer, int length);
     public partial int FlushAudioStream(nint stream);
     public partial int GetAudioStreamAvailable(nint stream);
     public partial int GetAudioStreamData(nint stream, out byte buffer, int length);
@@ -111,7 +111,7 @@ public sealed partial class Sdl3Library
     public partial CString GetHint(string name);
     public partial CString GetAudioDeviceName(uint devid);
     public partial nint GetAudioOutputDevices(out int count);
-    public partial int LockAudioDevice(uint dev);
-    public partial void UnlockAudioDevice(uint dev);
+    public partial int LockAudioStream(nint stream);
+    public partial int UnlockAudioStream(nint stream);
     public partial SdlBool AudioDevicePaused(uint dev);
 }
