@@ -198,7 +198,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         }
     }
 
-    public void OnClose()
+    public void OnWindowCloseRequested(SdlWindowEvent sdlEvent)
     {
         _logger.LogDebug("OnClose");
         Running = false;
@@ -214,10 +214,15 @@ class SampleHandler : ISdlEventHandler, IDisposable
     public void OnLoop()
     {
         if (_scenePool.HasNewScene)
-            OnExpose();
+            Draw();
     }
 
-    public void OnExpose()
+    public void OnWindowExposed(SdlWindowEvent sdlEvent)
+    {
+        Draw();
+    }
+
+    public void Draw()
     {
         _gl.ClearColor(
             _currentScene.Color.X,
