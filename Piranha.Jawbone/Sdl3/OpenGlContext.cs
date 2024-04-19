@@ -8,7 +8,7 @@ namespace Piranha.Jawbone.Sdl3;
 
 public readonly struct OpenGlContext
 {
-    public readonly nint SdlGlContext { get; init; }
+    public readonly nint SdlGlContextPtr { get; init; }
     public readonly OpenGlLibrary OpenGl { get; init; }
 
     public static OpenGlContext Create(
@@ -28,17 +28,17 @@ public readonly struct OpenGlContext
             logger?.LogDebug("configuring OpenGL ES 3.0");
             sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
             sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
-            sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Es);
+            sdl.GlSetAttribute(SdlGl.ContextProfileMask, Sdl.Gl.Context.Profile.Es);
         }
         else
         {
-            sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
+            sdl.GlSetAttribute(SdlGl.ContextProfileMask, Sdl.Gl.Context.Profile.Core);
+            // sdl.GlSetAttribute(SdlGl.ContextFlags, SdlGlContext.ForwardCompatibleFlag);
             if (OperatingSystem.IsMacOS())
             {
                 logger?.LogDebug("configuring OpenGL 3.2");
                 sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
                 sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
-                sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
             }
         }
 
@@ -95,7 +95,7 @@ public readonly struct OpenGlContext
                 logger.LogDebug("Drivers: {drivers}", string.Join(", ", drivers));
             }
 
-            return new OpenGlContext { SdlGlContext = contextPtr, OpenGl = gl };
+            return new OpenGlContext { SdlGlContextPtr = contextPtr, OpenGl = gl };
         }
         catch
         {

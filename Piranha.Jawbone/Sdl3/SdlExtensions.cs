@@ -55,7 +55,7 @@ public static class SdlExtensions
 
         try
         {
-            var result = sdl.PutAudioStreamData(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
+            var result = sdl.PutAudioStreamData(stream, in pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
             if (result != 0)
                 SdlException.Throw(sdl);
@@ -118,7 +118,7 @@ public static class SdlExtensions
 
         try
         {
-            var result = sdl.PutAudioStreamData(stream, pcm[0], pcm.Length * Unsafe.SizeOf<short>());
+            var result = sdl.PutAudioStreamData(stream, in pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
             if (result != 0)
                 SdlException.Throw(sdl);

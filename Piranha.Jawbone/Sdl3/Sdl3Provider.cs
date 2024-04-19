@@ -23,8 +23,6 @@ sealed class Sdl3Provider : IDisposable
             methodName => NativeLibrary.GetExport(
                 _handle, Sdl3Library.GetFunctionName(methodName)));
 
-        // if (OperatingSystem.IsLinux())
-        //     Library.SetHint("SDL_VIDEODRIVER", "wayland,x11");
         var result = Library.Init(flags);
         if (result != 0)
             throw new SdlException("Unable to initialize SDL: " + Library.GetError().ToString());

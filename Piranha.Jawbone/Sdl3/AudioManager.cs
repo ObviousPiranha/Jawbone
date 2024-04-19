@@ -83,8 +83,9 @@ sealed class AudioManager : IAudioManager, IDisposable
             _sdl.Free(deviceIdsPointer);
         }
 
-
-        _device = _sdl.OpenAudioDevice(SdlAudioDevice.DefaultOutput, in _expectedAudioSpec);
+        _device = _sdl.OpenAudioDevice(
+            Sdl.Audio.Device.Default.Output,
+            in _expectedAudioSpec);
         _actualAudioSpec = _expectedAudioSpec;
 
         if (_device == 0)
@@ -158,13 +159,11 @@ sealed class AudioManager : IAudioManager, IDisposable
 
         try
         {
-            // https://wiki.libsdl.org/SDL_AudioStreamPut
-            var result = _sdl.PutAudioStreamData(stream, data[0], data.Length);
+            var result = _sdl.PutAudioStreamData(stream, in data[0], data.Length);
 
             if (result != 0)
                 SdlException.Throw(_sdl);
 
-            // https://wiki.libsdl.org/SDL_AudioStreamFlush
             result = _sdl.FlushAudioStream(stream);
 
             if (result != 0)

@@ -57,6 +57,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
         _audioManager = audioManager;
         _scenePool = scenePool;
 
+        // if (OperatingSystem.IsLinux())
+        //     _sdl.SetHint("SDL_VIDEO_DRIVER", "x11,wayland");
         _windowPtr = sdl.CreateWindow(
             "Sample Application",
             1024,
@@ -67,7 +69,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
             throw new SdlException(sdl.GetError().ToString() ?? "");
 
         var context = OpenGlContext.Create(_sdl, _windowPtr, _logger);
-        _contextPtr = context.SdlGlContext;
+        _contextPtr = context.SdlGlContextPtr;
         _gl = context.OpenGl;
 
         OnWindowCreated();
