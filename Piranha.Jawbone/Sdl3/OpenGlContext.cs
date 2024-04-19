@@ -30,12 +30,16 @@ public readonly struct OpenGlContext
             sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
             sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Es);
         }
-        else if (OperatingSystem.IsMacOS())
+        else
         {
-            logger?.LogDebug("configuring OpenGL 3.2");
-            sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-            sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
             sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
+            if (OperatingSystem.IsMacOS())
+            {
+                logger?.LogDebug("configuring OpenGL 3.2");
+                sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
+                sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
+                sdl.GlSetAttribute(SdlGl.ContextProfileMask, SdlGlContextProfile.Core);
+            }
         }
 
         var contextPtr = sdl.GlCreateContext(sdlWindow);

@@ -90,7 +90,7 @@ public sealed partial class Sdl3Library
     public partial int GlDeleteContext(nint context);
     public partial int GlMakeCurrent(nint window, nint context);
     public partial int GlSetSwapInterval(int interval);
-    public partial int GlSetAttribute(int attribute, int value);
+    public partial int GlSetAttribute(SdlGl attribute, int value);
     public partial void GlSwapWindow(nint window);
     public partial uint GetTicks();
     public partial ulong GetTicksNs();
