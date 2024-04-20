@@ -114,4 +114,6 @@ public sealed partial class Sdl3Library
     public partial int LockAudioStream(nint stream);
     public partial int UnlockAudioStream(nint stream);
     public partial SdlBool AudioDevicePaused(uint dev);
+    public partial int GetNumCameraDrivers();
+    public partial CString GetCameraDriver(int index);
 }

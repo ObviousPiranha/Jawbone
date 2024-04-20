@@ -31,4 +31,12 @@ public static class Sdl
             }
         }
     }
+
+    public static class Hint
+    {
+        public static class Video
+        {
+            public const string Driver = "SDL_VIDEO_DRIVER";
+        }
+    }
 }

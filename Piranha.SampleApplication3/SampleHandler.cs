@@ -57,8 +57,19 @@ class SampleHandler : ISdlEventHandler, IDisposable
         _audioManager = audioManager;
         _scenePool = scenePool;
 
-        // if (OperatingSystem.IsLinux())
-        //     _sdl.SetHint("SDL_VIDEO_DRIVER", "x11,wayland");
+        var cameraCount = _sdl.GetNumCameraDrivers();
+        if (0 < cameraCount)
+        {
+            for (int i = 0; i < cameraCount; ++i)
+                _logger.LogInformation("Camera: {name}", _sdl.GetCameraDriver(i));
+        }
+        else
+        {
+            _logger.LogInformation("No cameras found.");
+        }
+
+        if (OperatingSystem.IsLinux())
+            _sdl.SetHint(Sdl.Hint.Video.Driver, "x11,wayland");
         _windowPtr = sdl.CreateWindow(
             "Sample Application",
             1024,

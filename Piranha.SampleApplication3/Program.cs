@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
 using Piranha.Jawbone.Sdl3;
 using System;
+using System.Collections;
 
 namespace Piranha.SampleApplication3;
 
@@ -31,7 +32,7 @@ class Program
             .AddSingleton<SampleHandler>();
     }
 
-    static void RunApplication(bool fullscreen)
+    static void RunApplication()
     {
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
@@ -69,7 +70,10 @@ class Program
     {
         try
         {
-            RunApplication(0 < args.Length && args[0] == "fs");
+            var ev = Environment.GetEnvironmentVariables();
+            foreach (DictionaryEntry pair in ev)
+                Console.WriteLine($"{pair.Key}={pair.Value}");
+            RunApplication();
         }
         catch (Exception ex)
         {
