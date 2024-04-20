@@ -42,10 +42,11 @@ public struct SdlEvent
 
     public static void Dispatch(in SdlEvent sdlEvent, ISdlEventHandler handler)
     {
+        handler.OnCommonEvent(sdlEvent.Common);
         switch (sdlEvent.Type)
         {
             case SdlEventType.Quit:
-                handler.OnQuit();
+                handler.OnQuit(sdlEvent.Quit);
                 break;
             case SdlEventType.Terminating:
                 handler.OnTerminating();
@@ -174,7 +175,7 @@ public struct SdlEvent
                 handler.OnTextInput(sdlEvent.Text);
                 break;
             case SdlEventType.KeyMapChanged:
-                handler.OnKeyMapChanged();
+                handler.OnKeymapChanged();
                 break;
             case SdlEventType.KeyboardAdded:
                 handler.OnKeyboardAdded(sdlEvent.KDevice);

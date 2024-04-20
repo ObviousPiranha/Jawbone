@@ -32,6 +32,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
     private int _matrixUniform = default;
     private int _textureUniform = default;
     private bool _isFullscreen = false;
+    private int _eventCount = 0;
     private readonly StbImageLibrary _stbImage;
     private readonly StbVorbisLibrary _stbVorbis;
     private readonly Sdl3Library _sdl;
@@ -197,16 +198,22 @@ class SampleHandler : ISdlEventHandler, IDisposable
         }
     }
 
+    public void OnCommonEvent(SdlCommonEvent sdlEvent)
+    {
+        if (sdlEvent.Type != SdlEventType.MouseMotion)
+            _logger.LogInformation("{eventType} [{id}]", sdlEvent.Type, ++_eventCount);
+    }
+
     public void OnWindowCloseRequested(SdlWindowEvent sdlEvent)
     {
-        _logger.LogDebug("OnClose");
+        // _logger.LogDebug("OnClose");
         Running = false;
         _scenePool.Closed = true;
     }
 
-    public void OnQuit()
+    public void OnQuit(SdlQuitEvent sdlEvent)
     {
-        _logger.LogDebug("OnQuit");
+        // _logger.LogDebug("OnQuit");
         Running = false;
     }
 

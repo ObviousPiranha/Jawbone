@@ -35,5 +35,8 @@ public static class ApplicationManager
                 Thread.Sleep(1);
             }
         }
+
+        while (sdl.PollEvent(out var sdlEvent))
+            SdlEvent.Dispatch(sdlEvent, eventHandler);
     }
 }

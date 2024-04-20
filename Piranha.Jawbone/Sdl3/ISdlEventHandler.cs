@@ -6,7 +6,8 @@ public interface ISdlEventHandler
     void OnSecond() { }
     void OnLoop() { }
 
-    void OnQuit() { }
+    void OnCommonEvent(SdlCommonEvent sdlEvent) { }
+    void OnQuit(SdlQuitEvent sdlEvent) { }
     void OnTerminating() { }
     void OnLowMemory() { }
     void OnWillEnterBackground() { }
@@ -51,7 +52,7 @@ public interface ISdlEventHandler
     void OnTextInput(SdlTextInputEvent sdlEvent) { }
     void OnKeyboardAdded(SdlKeyboardDeviceEvent sdlEvent) { }
     void OnKeyboardRemoved(SdlKeyboardDeviceEvent sdlEvent) { }
-    void OnKeyMapChanged() { }
+    void OnKeymapChanged() { }
     void OnMouseMotion(SdlMouseMotionEvent sdlEvent) { }
     void OnMouseButtonDown(SdlMouseButtonEvent sdlEvent) { }
     void OnMouseButtonUp(SdlMouseButtonEvent sdlEvent) { }

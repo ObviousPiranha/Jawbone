@@ -22,7 +22,7 @@ class Program
                             options.IncludeScopes = true;
                         });
             })
-            .AddSdl3(SdlInit.Audio | SdlInit.Video | SdlInit.Events | SdlInit.Timer)
+            .AddSdl3(SdlInit.Audio | SdlInit.Video | SdlInit.Events | SdlInit.Timer | SdlInit.Camera)
             .AddJawboneNativeLibraries()
             .AddAudioManager()
             .AddSingleton<ScenePool<PiranhaScene>>()

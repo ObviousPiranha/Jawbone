@@ -64,7 +64,7 @@ class GameLoop : IGameLoop
         if (!_scenePool.SetLatestScene(scene))
         {
             ++_staleCount;
-            _logger.LogWarning("Stale scene ({0})", _staleCount);
+            // _logger.LogWarning("Stale scene ({staleCount})", _staleCount);
         }
     }
 
