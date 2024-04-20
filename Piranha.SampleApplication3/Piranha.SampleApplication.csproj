@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <None Include="vertex.shader" CopyToOutputDirectory="Always"/>
+    <None Include="fragment.shader" CopyToOutputDirectory="Always"/>
+    <None Include="sheet.png" CopyToOutputDirectory="Always"/>
+    <None Include="crunch.ogg" CopyToOutputDirectory="Always"/>
+    <None Include="PiranhaNative.dll" CopyToOutputDirectory="Always"/>
+    <None Include="SDL2.dll" CopyToOutputDirectory="Always" Condition="Exists('SDL2.dll')"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Piranha.Jawbone\Piranha.Jawbone.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="*"/>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="*"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>

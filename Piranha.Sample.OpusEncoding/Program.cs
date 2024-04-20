@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.Opus;
-using Piranha.Jawbone.Sdl;
+using Piranha.Jawbone.Sdl2;
 using Piranha.Jawbone.Stb;
 using System;
 using System.IO;

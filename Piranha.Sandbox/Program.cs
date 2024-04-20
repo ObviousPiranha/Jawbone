@@ -1,4 +1,4 @@
-﻿using Piranha.Jawbone.Sdl;
+﻿using Piranha.Jawbone.Sdl2;
 using System;
 using System.Runtime.InteropServices;
 

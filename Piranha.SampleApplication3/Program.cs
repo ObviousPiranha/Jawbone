@@ -1,0 +1,85 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Piranha.Jawbone;
+using Piranha.Jawbone.Sdl3;
+using System;
+using System.Collections;
+
+namespace Piranha.SampleApplication3;
+
+class Program
+{
+    static void ConfigureServices(IServiceCollection services)
+    {
+        services
+            .AddLogging(builder =>
+            {
+                builder.SetMinimumLevel(LogLevel.Debug);
+                builder
+                    .AddSimpleConsole(
+                        options =>
+                        {
+                            options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+                            options.IncludeScopes = true;
+                        });
+            })
+            .AddSdl3(SdlInit.Audio | SdlInit.Video | SdlInit.Events | SdlInit.Timer | SdlInit.Camera)
+            .AddJawboneNativeLibraries()
+            .AddAudioManager()
+            .AddSingleton<ScenePool<PiranhaScene>>()
+            .AddSingleton<IGameLoop, GameLoop>()
+            .AddSingleton<GameLoopManager>()
+            .AddSingleton<SampleHandler>();
+    }
+
+    static void RunApplication()
+    {
+        var serviceCollection = new ServiceCollection();
+        ConfigureServices(serviceCollection);
+
+        var options = new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        };
+
+        using var serviceProvider = serviceCollection.BuildServiceProvider(options);
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+        using (var process = System.Diagnostics.Process.GetCurrentProcess())
+        {
+            logger.LogInformation("Process ID - {pid}", process.Id);
+        }
+
+        try
+        {
+            var handler = serviceProvider.GetRequiredService<SampleHandler>();
+            //windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
+            var sdl = serviceProvider.GetRequiredService<Sdl3Library>();
+
+            using (serviceProvider.GetRequiredService<GameLoopManager>())
+                ApplicationManager.Run(sdl, handler);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error running window manager.");
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        try
+        {
+            var ev = Environment.GetEnvironmentVariables();
+            foreach (DictionaryEntry pair in ev)
+                Console.WriteLine($"{pair.Key}={pair.Value}");
+            RunApplication();
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(ex);
+            Console.ResetColor();
+        }
+    }
+}

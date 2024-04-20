@@ -1,9 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Piranha.Jawbone;
-using Piranha.Jawbone.Sdl;
-using Piranha.Jawbone.Sqlite;
-using Piranha.Jawbone.Stb;
+using Piranha.Jawbone.Sdl2;
 using System;
 
 namespace Piranha.SampleApplication;

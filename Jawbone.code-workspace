@@ -23,6 +23,9 @@
 		},
 		{
 			"path": "Piranha.Jawbone.SourceGenerator"
+		},
+		{
+			"path": "Piranha.SampleApplication3"
 		}
 	],
 	"settings": {

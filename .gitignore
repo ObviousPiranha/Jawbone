@@ -6,7 +6,7 @@ obj/
 *.exe
 *.dll
 *.bin
-*.so
+*.so*
 
 BenchmarkDotNet.Artifacts/
 *.speedscope.json
