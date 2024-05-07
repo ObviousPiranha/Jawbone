@@ -9,8 +9,7 @@ public static class StreamExtensions
 {
     public static T ReadValue<T>(this Stream stream) where T : unmanaged
     {
-        T result;
-        Unsafe.SkipInit(out result);
+        Unsafe.SkipInit(out T result);
         var n = stream.Read(
             MemoryMarshal.AsBytes(
                 new Span<T>(ref result)));
