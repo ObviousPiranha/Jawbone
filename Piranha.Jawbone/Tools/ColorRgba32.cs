@@ -12,6 +12,18 @@ public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>
     public byte B;
     public byte A;
 
+    public ColorRgba32(ColorRgb24 color) : this(color.R, color.G, color.B)
+    {
+    }
+
+    public ColorRgba32(byte r, byte g, byte b)
+    {
+        R = r;
+        G = g;
+        B = b;
+        A = 255;
+    }
+
     public ColorRgba32(byte r, byte g, byte b, byte a)
     {
         R = r;
@@ -131,6 +143,7 @@ public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>
         return true;
     }
 
+    public static explicit operator ColorRgb24(ColorRgba32 c) => new(c.R, c.G, c.B);
     public static bool operator ==(ColorRgba32 a, ColorRgba32 b) => a.Equals(b);
     public static bool operator !=(ColorRgba32 a, ColorRgba32 b) => !a.Equals(b);
 }
