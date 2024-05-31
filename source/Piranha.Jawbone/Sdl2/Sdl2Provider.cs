@@ -37,23 +37,25 @@ sealed class Sdl2Provider : IDisposable
         NativeLibrary.Free(_handle);
     }
 
-    internal static string GetSdlPath()
+    internal static string GetSdlPath(string? folder)
     {
+        var envVar = Environment.GetEnvironmentVariable("JAWBONE_PATH_SDL2");
+        if (!string.IsNullOrWhiteSpace(envVar))
+            return envVar;
+
+        string path;
         if (OperatingSystem.IsWindows())
-        {
-            return "SDL2.dll";
-        }
+            path = "SDL2.dll";
         else if (OperatingSystem.IsLinux())
-        {
-            return Platform.FindLibs("libSDL2-2.0.so*", "libSDL2.so*") ?? throw new NullReferenceException();
-        }
+            path = "libSDL2-2.0.so";
         else if (OperatingSystem.IsMacOS())
-        {
-            return MacPaths.First(File.Exists);
-        }
+            path = "libSDL2.dylib";
         else
-        {
             throw new PlatformNotSupportedException();
-        }
+
+        if (!string.IsNullOrWhiteSpace(folder))
+            path = Path.Combine(folder, path);
+
+        return path;
     }
 }
