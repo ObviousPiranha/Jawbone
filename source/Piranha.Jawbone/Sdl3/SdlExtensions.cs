@@ -9,13 +9,14 @@ public static class SdlExtensions
 {
     public static IServiceCollection AddSdl3(
         this IServiceCollection services,
-        SdlInit flags)
+        SdlInit flags,
+        string? folder = null)
     {
         return services
             .AddSingleton(
                 serviceProvider =>
                 {
-                    var path = Sdl3Provider.GetSdlPath();
+                    var path = Sdl3Provider.GetSdlPath(folder);
                     var provider = new Sdl3Provider(path, flags);
                     return provider;
                 })

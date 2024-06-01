@@ -7,11 +7,6 @@ namespace Piranha.Jawbone.Sdl3;
 
 sealed class Sdl3Provider : IDisposable
 {
-    private static readonly string[] MacPaths =
-    [
-        // TODO
-    ];
-
     private readonly nint _handle;
 
     public Sdl3Library Library { get; }
@@ -34,15 +29,25 @@ sealed class Sdl3Provider : IDisposable
         NativeLibrary.Free(_handle);
     }
 
-    internal static string GetSdlPath()
+    internal static string GetSdlPath(string? folder)
     {
-        if (OperatingSystem.IsWindows())
-            return "SDL3.dll";
-        if (OperatingSystem.IsLinux())
-            return Platform.FindLibs("libSDL3.so*") ?? throw new NullReferenceException();
-        if (OperatingSystem.IsMacOS())
-            return MacPaths.First(File.Exists);
+        var envVar = Environment.GetEnvironmentVariable("JAWBONE_PATH_SDL3");
+        if (!string.IsNullOrWhiteSpace(envVar))
+            return envVar;
 
-        throw new PlatformNotSupportedException();
+        string path;
+        if (OperatingSystem.IsWindows())
+            path = "SDL3.dll";
+        else if (OperatingSystem.IsLinux())
+            path = "libSDL3.so";
+        else if (OperatingSystem.IsMacOS())
+            path = "libSDL3.dylib";
+        else
+            throw new PlatformNotSupportedException();
+
+        if (!string.IsNullOrWhiteSpace(folder))
+            path = Path.Combine(folder, path);
+
+        return path;
     }
 }

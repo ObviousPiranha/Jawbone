@@ -7,12 +7,6 @@ namespace Piranha.Jawbone.Sdl2;
 
 sealed class Sdl2Provider : IDisposable
 {
-    private static readonly string[] MacPaths =
-    [
-        "/opt/homebrew/lib/libSDL2.dylib",
-        "/usr/local/opt/sdl2/lib/libSDL2.dylib"
-    ];
-
     private readonly nint _handle;
 
     public Sdl2Library Library { get; }
