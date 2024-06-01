@@ -1,9 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Piranha.Jawbone.Extensions;
 using System;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl2;
 
@@ -16,13 +14,14 @@ public static class SdlExtensions
 
     public static IServiceCollection AddSdl2(
         this IServiceCollection services,
-        SdlInit flags)
+        SdlInit flags,
+        string? folder = null)
     {
         return services
             .AddSingleton(
                 serviceProvider =>
                 {
-                    var path = Sdl2Provider.GetSdlPath();
+                    var path = Sdl2Provider.GetSdlPath(folder);
                     var library = new Sdl2Provider(path, flags);
                     return library;
                 })
