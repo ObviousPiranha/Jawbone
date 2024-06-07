@@ -54,6 +54,7 @@ public sealed partial class Sdl2Library
     public partial int IsGameController(int index);
     public partial nint GameControllerOpen(int index);
     public partial void GameControllerClose(nint gameController);
+    public partial CString GameControllerName(nint gameController);
     public partial nint JoystickOpen(int index);
     public partial void JoystickClose(nint joystick);
     public partial int GetDisplayBounds(int displayIndex, out SdlRect rect);
