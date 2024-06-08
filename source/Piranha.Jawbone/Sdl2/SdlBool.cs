@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Sdl3;
+namespace Piranha.Jawbone.Sdl2;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct SdlBool : IEquatable<SdlBool>

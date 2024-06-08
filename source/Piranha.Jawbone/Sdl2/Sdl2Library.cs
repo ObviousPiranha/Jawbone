@@ -3,6 +3,9 @@ using System;
 
 namespace Piranha.Jawbone.Sdl2;
 
+// https://wiki.libsdl.org/SDL2/FrontPage
+// https://wiki.libsdl.org/SDL2/CategoryAPI
+
 [MapNativeFunctions]
 public sealed partial class Sdl2Library
 {
@@ -52,9 +55,60 @@ public sealed partial class Sdl2Library
     public partial void FreeSurface(nint surface);
     public partial int NumJoysticks();
     public partial int IsGameController(int index);
-    public partial nint GameControllerOpen(int index);
+    public partial int GameControllerAddMapping(string mappingString);
+    // TODO: SDL_GameControllerAddMappingsFromRW
     public partial void GameControllerClose(nint gameController);
+    public partial int GameControllerEventState(int state);
+    public partial nint GameControllerFromInstanceID(uint joyid);
+    public partial nint GameControllerFromPlayerIndex(int playerIndex);
+    public partial SdlBool GameControllerGetAttached(nint gamecontroller);
+    public partial short GameControllerGetAxis(nint gamecontroller, SdlControllerAxis axis);
+    public partial SdlControllerAxis GameControllerGetAxisFromString(string str);
+    public partial SdlGameControllerButtonBind GameControllerGetBindForAxis(nint gamecontroller, SdlControllerAxis axis);
+    public partial SdlGameControllerButtonBind GameControllerGetBindForButton(nint gamecontroller, SdlControllerButton button);
+    public partial byte GameControllerGetButton(nint gamecontroller, SdlControllerButton button);
+    public partial SdlControllerButton GameControllerGetButtonFromString(string str);
+    public partial ushort GameControllerGetFirmwareVersion(nint gamecontroller);
+    public partial nint GameControllerGetJoystick(nint gamecontroller);
+    public partial int GameControllerGetNumTouchpadFingers(nint gamecontroller, int touchpad);
+    public partial int GameControllerGetNumTouchpads(nint gamecontroller);
+    public partial int GameControllerGetPlayerIndex(nint gamecontroller);
+    public partial ushort GameControllerGetProduct(nint gamecontroller);
+    public partial ushort GameControllerGetProductVersion(nint gamecontroller);
+    public partial int GameControllerGetSensorData(nint gamecontroller, SdlSensorType type, out float data, int numValues);
+    public partial float GameControllerGetSensorDataRate(nint gamecontroller, SdlSensorType type);
+    public partial int GameControllerGetSensorDataWithTimestamp(nint gamecontroller, SdlSensorType type, out ulong timestamp, out float data, int numValues);
+    public partial CString GameControllerGetSerial(nint gamecontroller);
+    public partial ulong GameControllerGetSteamHandle(nint gamecontroller);
+    public partial CString GameControllerGetStringForAxis(SdlControllerAxis axis);
+    public partial CString GameControllerGetStringForButton(SdlControllerButton button);
+    public partial int GameControllerGetTouchpadFinger(nint gamecontroller, int touchpad, int finger, out byte state, out float x, out float y, out float pressure);
+    public partial SdlControllerType GameControllerGetType(nint gamecontroller);
+    public partial ushort GameControllerGetVendor(nint gamecontroller);
+    public partial SdlBool GameControllerHasAxis(nint gamecontroller, SdlControllerAxis axis);
+    public partial SdlBool GameControllerHasButton(nint gamecontroller, SdlControllerButton button);
+    public partial SdlBool GameControllerHasLED(nint gamecontroller);
+    public partial SdlBool GameControllerHasRumble(nint gamecontroller);
+    public partial SdlBool GameControllerHasRumbleTriggers(nint gamecontroller);
+    public partial SdlBool GameControllerHasSensor(nint gamecontroller, SdlSensorType type);
+    public partial SdlBool GameControllerIsSensorEnabled(nint gamecontroller, SdlSensorType type);
+    public partial CString GameControllerMapping(nint gamecontroller);
+    public partial CString GameControllerMappingForDeviceIndex(int joystickIndex);
+    public partial CString GameControllerMappingForGUID(Guid guid);
+    public partial CString GameControllerMappingForIndex(int mappingIndex);
     public partial CString GameControllerName(nint gameController);
+    public partial int GameControllerNumMappings();
+    public partial nint GameControllerOpen(int index);
+    public partial CString GameControllerPath(nint gamecontroller);
+    public partial CString GameControllerPathForIndex(int joystickIndex);
+    public partial int GameControllerRumble(nint gameController, ushort lowFrequencyRumble, ushort highFrequencyRumble, uint durationMs);
+    public partial int GameControllerRumbleTriggers(nint gamecontroller, ushort leftRumble, ushort rightRumble, uint durationMs);
+    public partial int GameControllerSendEffect(nint gamecontroller, out byte data, int size);
+    public partial int GameControllerSetLED(nint gamecontroller, byte red, byte green, byte blue);
+    public partial void GameControllerSetPlayerIndex(nint gamecontroller, int playerIndex);
+    public partial int GameControllerSetSensorEnabled(nint gamecontroller, SdlSensorType type, SdlBool enabled);
+    public partial SdlControllerType GameControllerTypeForIndex(int joystickIndex);
+    public partial void GameControllerUpdate();
     public partial nint JoystickOpen(int index);
     public partial void JoystickClose(nint joystick);
     public partial int GetDisplayBounds(int displayIndex, out SdlRect rect);
