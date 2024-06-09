@@ -35,8 +35,6 @@ public static class GlTools
                 gl.AttachShader(program, vertexShader);
                 gl.AttachShader(program, fragmentShader);
                 gl.LinkProgram(program);
-                gl.DeleteShader(fragmentShader);
-                gl.DeleteShader(vertexShader);
                 gl.GetProgramiv(program, Gl.LinkStatus, out var result);
                 if (result == Gl.False)
                 {
