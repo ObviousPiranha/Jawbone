@@ -43,7 +43,7 @@ sealed class Sdl2Provider : IDisposable
         else if (OperatingSystem.IsLinux())
             path = "libSDL2-2.0.so";
         else if (OperatingSystem.IsMacOS())
-            path = "libSDL2.dylib";
+            path = "libSDL2-2.0.dylib";
         else
             throw new PlatformNotSupportedException();
 

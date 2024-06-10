@@ -288,10 +288,14 @@ public sealed class LibraryImportGenerator : IIncrementalGenerator
         foreach (var method in methods)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var returnType = GetTypeName(semanticModel, method.ReturnType, cancellationToken);
+            if (returnType.Contains('.'))
+                returnType = "global::" + returnType;
+
             var libraryMethod = new LibraryMethod
             {
                 MethodName = method.Identifier.ValueText,
-                ReturnType = GetTypeName(semanticModel, method.ReturnType, cancellationToken)
+                ReturnType = returnType
             };
 
             foreach (var parameter in method.ParameterList.Parameters)

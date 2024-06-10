@@ -1,6 +1,9 @@
 using Piranha.Jawbone.Generation;
 using System;
 
+// https://wiki.libsdl.org/SDL3/FrontPage
+// https://wiki.libsdl.org/SDL3/CategoryAPI
+
 namespace Piranha.Jawbone.Sdl3;
 
 [MapNativeFunctions]
