@@ -103,7 +103,7 @@ public sealed partial class Sdl2Library
     public partial CString GameControllerPathForIndex(int joystickIndex);
     public partial int GameControllerRumble(nint gameController, ushort lowFrequencyRumble, ushort highFrequencyRumble, uint durationMs);
     public partial int GameControllerRumbleTriggers(nint gamecontroller, ushort leftRumble, ushort rightRumble, uint durationMs);
-    public partial int GameControllerSendEffect(nint gamecontroller, out byte data, int size);
+    public partial int GameControllerSendEffect(nint gamecontroller, ref readonly byte data, int size);
     public partial int GameControllerSetLED(nint gamecontroller, byte red, byte green, byte blue);
     public partial void GameControllerSetPlayerIndex(nint gamecontroller, int playerIndex);
     public partial int GameControllerSetSensorEnabled(nint gamecontroller, SdlSensorType type, SdlBool enabled);
@@ -156,6 +156,15 @@ public sealed partial class Sdl2Library
     public partial CString JoystickPath(nint joystick);
     public partial CString JoystickPathForIndex(int deviceIndex);
     public partial void JoystickClose(nint joystick);
+    public partial int JoystickRumble(nint joystick, ushort lowFrequencyRumble, ushort highFrequencyRumble, uint durationMs);
+    public partial int JoystickRumbleTriggers(nint joystick, ushort leftRumble, ushort rightRumble, uint durationMs);
+    public partial int JoystickSendEffect(nint joystick, ref readonly byte data, int size);
+    public partial int JoystickSetLED(nint joystick, byte red, byte green, byte blue);
+    public partial void JoystickSetPlayerIndex(nint joystick, int playerIndex);
+    public partial int JoystickSetVirtualAxis(nint joystick, int axis, short value);
+    public partial int JoystickSetVirtualButton(nint joystick, int button, byte value);
+    public partial int JoystickSetVirtualHat(nint joystick, int hat, byte value);
+    public partial void JoystickUpdate();
     public partial int GetDisplayBounds(int displayIndex, out SdlRect rect);
     public partial int GetDisplayUsableBounds(int displayIndex, out SdlRect rect);
     public partial uint GetWindowFlags(nint window);
