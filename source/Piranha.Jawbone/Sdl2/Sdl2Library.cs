@@ -59,7 +59,7 @@ public sealed partial class Sdl2Library
     // TODO: SDL_GameControllerAddMappingsFromRW
     public partial void GameControllerClose(nint gameController);
     public partial int GameControllerEventState(int state);
-    public partial nint GameControllerFromInstanceID(uint joyid);
+    public partial nint GameControllerFromInstanceID(int joyid);
     public partial nint GameControllerFromPlayerIndex(int playerIndex);
     public partial SdlBool GameControllerGetAttached(nint gamecontroller);
     public partial short GameControllerGetAxis(nint gamecontroller, SdlControllerAxis axis);
