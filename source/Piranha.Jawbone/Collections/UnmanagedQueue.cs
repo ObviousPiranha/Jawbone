@@ -29,9 +29,9 @@ file static class UnmanagedQueueExtensions
 public sealed class UnmanagedQueue
 {
     private readonly object _lock = new();
-    private readonly Dictionary<Type, int> _blobHandlerIndicesByType = new();
-    private readonly List<BlobHandler> _blobHandlers = new();
-    private byte[] _bytes = Array.Empty<byte>();
+    private readonly Dictionary<Type, int> _blobHandlerIndicesByType = [];
+    private readonly List<BlobHandler> _blobHandlers = [];
+    private byte[] _bytes = [];
     private int _begin = 0;
     private int _length = 0;
 
