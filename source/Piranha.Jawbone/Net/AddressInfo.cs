@@ -6,8 +6,12 @@ namespace Piranha.Jawbone.Net;
 
 public readonly struct AddressInfo
 {
+    public readonly string? Node { get; init; }
+    public readonly string? Service { get; init; }
     public readonly ImmutableArray<Endpoint<AddressV4>> V4 { get; init; }
     public readonly ImmutableArray<Endpoint<AddressV6>> V6 { get; init; }
+
+    public readonly bool IsEmpty => V4.IsDefaultOrEmpty && V6.IsDefaultOrEmpty;
 
     public static AddressInfo Get(string? node, string? service = null)
     {
@@ -32,6 +36,8 @@ public readonly struct AddressInfo
 
             var result = new AddressInfo
             {
+                Node = node,
+                Service = service,
                 V4 = ImmutableArray.Create(v4, 0, countV4),
                 V6 = ImmutableArray.Create(v6, 0, countV6)
             };
