@@ -26,8 +26,8 @@ public static class SpanReaderExtensions
 
     public static ReadOnlySpan<char> ReadWord(ref this SpanReader<char> reader)
     {
-        while (reader.Position < reader.Span.Length && reader.Span[reader.Position] == ' ')
-            ++reader.Position;
+        while (reader.TryMatch(' '))
+            ;
 
         var pending = reader.Pending;
         var space = pending.IndexOf(' ');
@@ -47,10 +47,10 @@ public static class SpanReaderExtensions
 
     public static bool TryMatch<T>(
         ref this SpanReader<T> reader,
-        in T value
+        T value
     ) where T : IEquatable<T>
     {
-        if (reader.Span[reader.Position].Equals(value))
+        if (reader.Position < reader.Span.Length && reader.Span[reader.Position].Equals(value))
         {
             ++reader.Position;
             return true;
@@ -63,12 +63,12 @@ public static class SpanReaderExtensions
 
     public static bool TryMatch<T>(
         ref this SpanReader<T> reader,
-        ReadOnlySpan<T> block
+        ReadOnlySpan<T> values
         ) where T : IEquatable<T>
     {
-        if (reader.Pending.StartsWith(block))
+        if (reader.Pending.StartsWith(values))
         {
-            reader.Position += block.Length;
+            reader.Position += values.Length;
             return true;
         }
         else
