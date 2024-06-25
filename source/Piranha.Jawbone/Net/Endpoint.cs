@@ -18,6 +18,11 @@ public static class Endpoint
     {
         return new(address, port);
     }
+
+    public static Endpoint<AddressV6> MapToV6(this Endpoint<AddressV4> endpoint)
+    {
+        return Create((AddressV6)endpoint.Address, endpoint.Port);
+    }
 }
 
 [StructLayout(LayoutKind.Sequential)]
