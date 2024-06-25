@@ -9,9 +9,41 @@ using System.Text;
 namespace Piranha.Jawbone.Net;
 
 // https://en.wikipedia.org/wiki/IPv6_address
-[StructLayout(LayoutKind.Sequential)]
-public readonly struct AddressV6 : IAddress<AddressV6>
+[StructLayout(LayoutKind.Explicit, Size = 20)]
+public struct AddressV6 : IAddress<AddressV6>
 {
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU8
+    {
+        public const int Length = 16;
+        private byte _first;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU16
+    {
+        public const int Length = 8;
+        private ushort _first;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU32
+    {
+        public const int Length = 4;
+        private uint _first;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU64
+    {
+        public const int Length = 2;
+        private ulong _first;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
 
@@ -22,51 +54,53 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
-    public static AddressV6 Create(params byte[] values) => new(values);
-
     public static AddressV6 Create(SpanAction<byte> action)
     {
         var result = default(AddressV6);
-        var span = AsBytes(ref result);
-        action.Invoke(span);
+        action.Invoke(result.DataU8);
         return result;
     }
 
     public static AddressV6 Create<TState>(TState state, SpanAction<byte, TState> action)
     {
         var result = default(AddressV6);
-        var span = AsBytes(ref result);
-        action.Invoke(span, state);
+        action.Invoke(result.DataU8, state);
         return result;
     }
 
     public static AddressV6 FromHostOrdering(ReadOnlySpan<ushort> groups)
     {
         var result = default(AddressV6);
-        var outGroups = MemoryMarshal.Cast<AddressV6, ushort>(
-            new Span<AddressV6>(ref result))[..^2];
-        groups[..outGroups.Length].CopyTo(outGroups);
+        groups[..ArrayU16.Length].CopyTo(result.DataU16);
 
         if (BitConverter.IsLittleEndian)
         {
-            foreach (ref var block in outGroups)
+            foreach (ref var block in result.DataU16)
                 block = BinaryPrimitives.ReverseEndianness(block);
         }
 
         return result;
     }
 
-    private readonly uint _a;
-    private readonly uint _b;
-    private readonly uint _c;
-    private readonly uint _d;
-    private readonly uint _scopeId;
+    [FieldOffset(0)]
+    public ArrayU8 DataU8;
 
-    public readonly uint ScopeId => _scopeId;
-    public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
-    public readonly bool IsLinkLocal => (_a & LinkLocalMask()) == LinkLocalSubnet();
+    [FieldOffset(0)]
+    public ArrayU16 DataU16;
+
+    [FieldOffset(0)]
+    public ArrayU32 DataU32;
+
+    [FieldOffset(0)]
+    public ArrayU64 DataU64;
+
+    [FieldOffset(16)]
+    public uint ScopeId;
+
+    public readonly bool IsDefault => DataU64[0] == 0 && DataU64[1] == 0;
+    public readonly bool IsLinkLocal => (DataU32[0] & LinkLocalMask()) == LinkLocalSubnet();
     public readonly bool IsLoopback => Equals(Local) || (TryMapV4(out var v4) && v4.IsLoopback);
-    public readonly bool IsV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
+    public readonly bool IsV4Mapped => DataU64[0] == 0 && DataU32[2] == PrefixV4;
 
     public AddressV6(ReadOnlySpan<byte> values) : this(values, 0)
     {
@@ -74,25 +108,30 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public AddressV6(ReadOnlySpan<byte> values, uint scopeId) : this()
     {
-        var span = AsBytes(ref this);
-        values.Slice(0, span.Length).CopyTo(span);
-        _scopeId = scopeId;
+        values.Slice(0, ArrayU8.Length).CopyTo(DataU8);
+        ScopeId = scopeId;
+    }
+
+    public AddressV6(ArrayU32 data, uint scopeId = 0)
+    {
+        DataU32 = data;
+        ScopeId = scopeId;
     }
 
     private AddressV6(uint a, uint b, uint c, uint d, uint scopeId = 0)
     {
-        _a = a;
-        _b = b;
-        _c = c;
-        _d = d;
-        _scopeId = scopeId;
+        DataU32[0] = a;
+        DataU32[1] = b;
+        DataU32[2] = c;
+        DataU32[3] = d;
+        ScopeId = scopeId;
     }
 
     public readonly bool TryMapV4(out AddressV4 address)
     {
         if (IsV4Mapped)
         {
-            address = new(_d);
+            address = new(DataU32[3]);
             return true;
         }
         else
@@ -102,21 +141,19 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         }
     }
 
-    public readonly AddressV6 WithScopeId(uint scopeId) => new(_a, _b, _c, _d, scopeId);
+    public readonly AddressV6 WithScopeId(uint scopeId) => new(DataU32, scopeId);
 
     public readonly bool Equals(AddressV6 other)
     {
         return
-            _a == other._a &&
-            _b == other._b &&
-            _c == other._c &&
-            _d == other._d &&
-            _scopeId == other._scopeId;
+            DataU64[0] == other.DataU64[0] &&
+            DataU64[1] == other.DataU64[1] &&
+            ScopeId == other.ScopeId;
     }
 
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is AddressV6 other && Equals(other);
-    public override readonly int GetHashCode() => HashCode.Combine(_a, _b, _c, _d, _scopeId);
+    public override readonly int GetHashCode() => HashCode.Combine(DataU64[0], DataU64[1], ScopeId);
     public override readonly string ToString()
     {
         var builder = new StringBuilder(48);
@@ -129,21 +166,19 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         if (IsV4Mapped)
         {
             builder.Append("::ffff:");
-            new AddressV4(_d).AppendTo(builder);
+            new AddressV4(DataU32[3]).AppendTo(builder);
             return;
         }
 
         int zeroIndex = 0;
         int zeroLength = 0;
 
-        var span16 = MemoryMarshal.Cast<AddressV6, ushort>(
-            new ReadOnlySpan<AddressV6>(in this))[..^2];
-        for (int i = 0; i < span16.Length; ++i)
+        for (int i = 0; i < ArrayU16.Length; ++i)
         {
-            if (span16[i] == 0)
+            if (DataU16[i] == 0)
             {
                 int j = i + 1;
-                while (j < span16.Length && span16[j] == 0)
+                while (j < ArrayU16.Length && DataU16[j] == 0)
                     ++j;
 
                 var length = j - i;
@@ -172,8 +207,8 @@ public readonly struct AddressV6 : IAddress<AddressV6>
             builder.AppendV6Block(span);
         }
 
-        if (_scopeId != 0)
-            builder.Append('%').Append(_scopeId);
+        if (ScopeId != 0)
+            builder.Append('%').Append(ScopeId);
     }
 
     private static string? DoTheParse(ReadOnlySpan<char> originalInput, out AddressV6 result)
@@ -378,17 +413,8 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         return exceptionMessage is null;
     }
 
-    public static Span<byte> AsBytes(ref AddressV6 address)
-    {
-        return MemoryMarshal.AsBytes(
-            new Span<AddressV6>(ref address)).Slice(0, 16);
-    }
-
-    public static ReadOnlySpan<byte> AsReadOnlyBytes(ref readonly AddressV6 address)
-    {
-        return MemoryMarshal.AsBytes(
-            new ReadOnlySpan<AddressV6>(in address)).Slice(0, 16);
-    }
+    public static Span<byte> AsBytes(ref AddressV6 address) => address.DataU8;
+    public static ReadOnlySpan<byte> AsReadOnlyBytes(ref readonly AddressV6 address) => address.DataU8;
 
     public static bool operator ==(AddressV6 a, AddressV6 b) => a.Equals(b);
     public static bool operator !=(AddressV6 a, AddressV6 b) => !a.Equals(b);
@@ -398,6 +424,6 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         if (!address.IsV4Mapped)
             throw new InvalidCastException("IPv6 address is not IPv4-mapped.");
 
-        return new(address._d);
+        return new(address.DataU32[3]);
     }
 }
