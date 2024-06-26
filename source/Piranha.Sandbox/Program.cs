@@ -1,4 +1,5 @@
-﻿using Piranha.Jawbone.Net;
+﻿using Piranha.Jawbone;
+using Piranha.Jawbone.Net;
 using Piranha.Jawbone.Sdl2;
 using System;
 using System.Runtime.InteropServices;
@@ -11,6 +12,7 @@ class Program
     {
         try
         {
+            Console.WriteLine(Alignment.Of<AddressV6>());
             Console.WriteLine("Enter address text.");
 
             while (true)
@@ -25,7 +27,7 @@ class Program
                 else
                     Console.WriteLine("Failed to parse " + input);
             }
-            
+
             Console.WriteLine("Exiting...");
         }
         catch (Exception ex)

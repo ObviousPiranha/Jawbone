@@ -26,11 +26,11 @@ public static class Endpoint
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>>
+public struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>>
     where TAddress : unmanaged, IAddress<TAddress>
 {
-    public readonly TAddress Address { get; init; }
-    public readonly NetworkPort Port { get; init; }
+    public TAddress Address;
+    public NetworkPort Port;
     public readonly bool IsDefault => Address.IsDefault && Port.NetworkValue == 0;
 
     public Endpoint(TAddress address, NetworkPort port)
@@ -43,10 +43,10 @@ public readonly struct Endpoint<TAddress> : IEquatable<Endpoint<TAddress>>
     {
     }
 
-    public bool Equals(Endpoint<TAddress> other) => Address.Equals(other.Address) && Port.Equals(other.Port);
-    public override bool Equals(object? obj) => obj is Endpoint<TAddress> other && Equals(other);
-    public override int GetHashCode() => HashCode.Combine(Address, Port);
-    public override string ToString()
+    public readonly bool Equals(Endpoint<TAddress> other) => Address.Equals(other.Address) && Port.Equals(other.Port);
+    public override readonly bool Equals(object? obj) => obj is Endpoint<TAddress> other && Equals(other);
+    public override readonly int GetHashCode() => HashCode.Combine(Address, Port);
+    public override readonly string ToString()
     {
         var builder = new StringBuilder();
         builder.AppendEndpoint(this);

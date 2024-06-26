@@ -36,51 +36,22 @@ public struct AddressV6 : IAddress<AddressV6>
         private uint _first;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    [InlineArray(Length)]
-    public struct ArrayU64
-    {
-        public const int Length = 2;
-        private ulong _first;
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 
-    public static AddressV6 Local { get; } = Create(static span => span[^1] = 1);
+    private static AddressV6 CreateLocal()
+    {
+        var result = default(AddressV6);
+        result.DataU8[^1] = 1;
+        return result;
+    }
+
+    public static AddressV6 Local { get; } = CreateLocal();
 
     private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
-
-    public static AddressV6 Create(SpanAction<byte> action)
-    {
-        var result = default(AddressV6);
-        action.Invoke(result.DataU8);
-        return result;
-    }
-
-    public static AddressV6 Create<TState>(TState state, SpanAction<byte, TState> action)
-    {
-        var result = default(AddressV6);
-        action.Invoke(result.DataU8, state);
-        return result;
-    }
-
-    public static AddressV6 FromHostOrdering(ArrayU16 groups)
-    {
-        var result = default(AddressV6);
-        result.DataU16 = groups;
-
-        if (BitConverter.IsLittleEndian)
-        {
-            foreach (ref var block in result.DataU16)
-                block = BinaryPrimitives.ReverseEndianness(block);
-        }
-
-        return result;
-    }
 
     [FieldOffset(0)]
     public ArrayU8 DataU8;
@@ -91,16 +62,13 @@ public struct AddressV6 : IAddress<AddressV6>
     [FieldOffset(0)]
     public ArrayU32 DataU32;
 
-    [FieldOffset(0)]
-    public ArrayU64 DataU64;
-
     [FieldOffset(16)]
     public uint ScopeId;
 
-    public readonly bool IsDefault => DataU64[0] == 0 && DataU64[1] == 0;
+    public readonly bool IsDefault => DataU32[0] == 0 && DataU32[1] == 0 && DataU32[2] == 0 && DataU32[3] == 0;
     public readonly bool IsLinkLocal => (DataU32[0] & LinkLocalMask()) == LinkLocalSubnet();
     public readonly bool IsLoopback => Equals(Local) || (TryMapV4(out var v4) && v4.IsLoopback);
-    public readonly bool IsV4Mapped => DataU64[0] == 0 && DataU32[2] == PrefixV4;
+    public readonly bool IsV4Mapped => DataU32[0] == 0 && DataU32[1] == 0 && DataU32[2] == PrefixV4;
 
     public AddressV6(ReadOnlySpan<byte> values) : this(values, 0)
     {
@@ -141,19 +109,19 @@ public struct AddressV6 : IAddress<AddressV6>
         }
     }
 
-    public readonly AddressV6 WithScopeId(uint scopeId) => new(DataU32, scopeId);
-
     public readonly bool Equals(AddressV6 other)
     {
         return
-            DataU64[0] == other.DataU64[0] &&
-            DataU64[1] == other.DataU64[1] &&
+            DataU32[0] == other.DataU32[0] &&
+            DataU32[1] == other.DataU32[1] &&
+            DataU32[2] == other.DataU32[2] &&
+            DataU32[3] == other.DataU32[3] &&
             ScopeId == other.ScopeId;
     }
 
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is AddressV6 other && Equals(other);
-    public override readonly int GetHashCode() => HashCode.Combine(DataU64[0], DataU64[1], ScopeId);
+    public override readonly int GetHashCode() => HashCode.Combine(DataU32[0], DataU32[1], DataU32[2], DataU32[3], ScopeId);
     public override readonly string ToString()
     {
         var builder = new StringBuilder(48);
@@ -300,7 +268,15 @@ public struct AddressV6 : IAddress<AddressV6>
             return "Bad hex block.";
         }
 
-        result = FromHostOrdering(blocks).WithScopeId(scopeId);
+        result = default;
+        result.DataU16 = blocks;
+        result.ScopeId = scopeId;
+
+        if (BitConverter.IsLittleEndian)
+        {
+            foreach (ref var n in result.DataU16)
+                n = BinaryPrimitives.ReverseEndianness(n);
+        }
         return null;
 
         static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)
@@ -419,7 +395,7 @@ public struct AddressV6 : IAddress<AddressV6>
 
     public static bool operator ==(AddressV6 a, AddressV6 b) => a.Equals(b);
     public static bool operator !=(AddressV6 a, AddressV6 b) => !a.Equals(b);
-    public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, (uint)address);
+    public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, address.DataU32);
     public static explicit operator AddressV4(AddressV6 address)
     {
         if (!address.IsV4Mapped)

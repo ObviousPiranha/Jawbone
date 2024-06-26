@@ -197,6 +197,5 @@ public struct AddressV4 : IAddress<AddressV4>
 
     public static bool operator ==(AddressV4 a, AddressV4 b) => a.Equals(b);
     public static bool operator !=(AddressV4 a, AddressV4 b) => !a.Equals(b);
-    public static explicit operator uint(AddressV4 address) => address.DataU32;
 }
 
