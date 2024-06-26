@@ -68,10 +68,10 @@ public struct AddressV6 : IAddress<AddressV6>
         return result;
     }
 
-    public static AddressV6 FromHostOrdering(ReadOnlySpan<ushort> groups)
+    public static AddressV6 FromHostOrdering(ArrayU16 groups)
     {
         var result = default(AddressV6);
-        groups[..ArrayU16.Length].CopyTo(result.DataU16);
+        result.DataU16 = groups;
 
         if (BitConverter.IsLittleEndian)
         {
@@ -193,18 +193,18 @@ public struct AddressV6 : IAddress<AddressV6>
             }
         }
 
-        var span = AsReadOnlyBytes(in this);
-
         if (1 < zeroLength)
         {
+            var a = zeroIndex * 2;
+            var b = (zeroIndex + zeroLength) * 2;
             builder
-                .AppendV6Block(span.Slice(0, zeroIndex * 2))
+                .AppendV6Block(DataU8[..a])
                 .Append("::")
-                .AppendV6Block(span.Slice((zeroIndex + zeroLength) * 2));
+                .AppendV6Block(DataU8[b..]);
         }
         else
         {
-            builder.AppendV6Block(span);
+            builder.AppendV6Block(DataU8);
         }
 
         if (ScopeId != 0)
@@ -267,7 +267,7 @@ public struct AddressV6 : IAddress<AddressV6>
             }
         }
 
-        Span<ushort> blocks = stackalloc ushort[8];
+        var blocks = default(ArrayU16);
         var division = s.IndexOf("::");
 
         if (0 <= division)
@@ -284,16 +284,17 @@ public struct AddressV6 : IAddress<AddressV6>
                 return "Bad hex block.";
             }
 
-            if (leftBlocksWritten + rightBlocksWritten == blocks.Length)
+            if (leftBlocksWritten + rightBlocksWritten == ArrayU16.Length)
             {
                 result = default;
                 return "Malformed representation.";
             }
 
-            blocks.Slice(leftBlocksWritten, rightBlocksWritten).CopyTo(blocks[^rightBlocksWritten..]);
+            var end = leftBlocksWritten + rightBlocksWritten;
+            blocks[leftBlocksWritten..end].CopyTo(blocks[^rightBlocksWritten..]);
             blocks[leftBlocksWritten..^rightBlocksWritten].Clear();
         }
-        else if (!TryParseHexBlocks(s, blocks, out var blocksWritten) || blocksWritten < blocks.Length)
+        else if (!TryParseHexBlocks(s, blocks, out var blocksWritten) || blocksWritten < ArrayU16.Length)
         {
             result = default;
             return "Bad hex block.";
