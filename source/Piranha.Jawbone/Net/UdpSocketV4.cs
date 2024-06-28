@@ -26,7 +26,7 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
     {
         var result = JawboneNetworking.SendToV4(
             _handle,
-            message[0],
+            message.GetPinnableReference(),
             message.Length,
             destination.Address,
             destination.Port.NetworkValue,
@@ -45,7 +45,7 @@ public sealed class UdpSocketV4 : IUdpSocket<AddressV4>
         var milliseconds = (int)(timeout.Ticks / TimeSpan.TicksPerMillisecond);
         var result = JawboneNetworking.ReceiveFromV4(
             _handle,
-            out buffer[0],
+            out buffer.GetPinnableReference(),
             buffer.Length,
             out var address,
             out var networkOrderPort,

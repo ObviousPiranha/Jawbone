@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Extensions;
@@ -139,6 +140,21 @@ public static class CollectionExtensions
         dictionary[key] = nextValue;
 
         return nextValue;
+    }
+
+    public static ImmutableArray<TResult> ToImmutableArray<T, TResult>(
+        this ImmutableArray<T> array,
+        Func<T, TResult> conversion)
+    {
+        ArgumentNullException.ThrowIfNull(conversion);
+        if (array.IsDefault)
+            return default;
+        if (array.IsEmpty)
+            return [];
+        var result = new TResult[array.Length];
+        for (int i = 0; i < array.Length; ++i)
+            result[i] = conversion.Invoke(array[i]);
+        return ImmutableCollectionsMarshal.AsImmutableArray(result);
     }
 
     public static TResult[] ToArray<T, TResult>(this Span<T> span, Func<T, TResult> conversion)
