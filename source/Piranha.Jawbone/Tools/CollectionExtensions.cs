@@ -108,6 +108,12 @@ public static class CollectionExtensions
         return result;
     }
 
+    public static ReadOnlySpan<byte> NullTerminated(this Span<byte> span)
+    {
+        var index = span.IndexOf(default(byte));
+        return index == -1 ? span : span.Slice(0, index);
+    }
+
     public static ReadOnlySpan<byte> NullTerminated(this ReadOnlySpan<byte> span)
     {
         var index = span.IndexOf(default(byte));
