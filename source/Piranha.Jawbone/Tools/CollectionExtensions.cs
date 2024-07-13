@@ -108,7 +108,7 @@ public static class CollectionExtensions
         return result;
     }
 
-    public static ReadOnlySpan<byte> NullTerminated(this Span<byte> span)
+    public static Span<byte> NullTerminated(this Span<byte> span)
     {
         var index = span.IndexOf(default(byte));
         return index == -1 ? span : span.Slice(0, index);
@@ -118,6 +118,18 @@ public static class CollectionExtensions
     {
         var index = span.IndexOf(default(byte));
         return index == -1 ? span : span.Slice(0, index);
+    }
+
+    public static void Fill<T>(this Span<T> span, Func<int, T> factory)
+    {
+        for (int i = 0; i < span.Length; ++i)
+            span[i] = factory.Invoke(i);
+    }
+
+    public static void Fill<T, TState>(this Span<T> span, TState state, Func<int, TState, T> factory)
+    {
+        for (int i = 0; i < span.Length; ++i)
+            span[i] = factory.Invoke(i, state);
     }
 
     public static void MutateAll<T, TState>(this Span<T> span, TState state, Func<TState, T, T> mutator)
