@@ -21,7 +21,7 @@ class Program
 
                 if (string.IsNullOrWhiteSpace(input))
                     break;
-                
+
                 if (AddressV6.TryParse(input, null, out var address))
                     Console.WriteLine("Successfully parsed " + address);
                 else
