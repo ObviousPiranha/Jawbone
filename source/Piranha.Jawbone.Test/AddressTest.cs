@@ -5,6 +5,15 @@ using Xunit;
 
 namespace Piranha.Jawbone.Test;
 
+file static class Extensions
+{
+    public static AddressV6 WithScopeId(this AddressV6 address, uint scopeId)
+    {
+        address.ScopeId = scopeId;
+        return address;
+    }
+}
+
 public class AddressTest
 {
     [Fact]
@@ -169,13 +178,13 @@ public class AddressTest
 
     public static TheoryData<AddressV6> LinkLocal128 => new()
     {
-        AddressV6.Create(static span => MakeLinkLocal(span))
+        MakeLinkLocal()
     };
 
     public static TheoryData<AddressV6> NotLinkLocal128 => new()
     {
         AddressV6.Local,
-        AddressV6.Create(static span => span.Fill(0xab))
+        Create(static span => span.Fill(0xab))
     };
 
     public static TheoryData<AddressV4> RoundTripParse32 => new()
@@ -189,21 +198,30 @@ public class AddressTest
     public static TheoryData<AddressV6> RoundTripParse128 => new()
     {
         AddressV6.Local,
-        AddressV6.Create(static span => span.Fill(0xab)),
-        AddressV6.Create(static span =>
+        Create(static span => span.Fill(0xab)),
+        Create(static span =>
         {
             span[3] = 0xb;
             span[11] = 0xce;
         }),
         (AddressV6)AddressV4.Local,
         (AddressV6)AddressV4.Broadcast,
-        AddressV6.Create(static span => span.Fill(0xab)).WithScopeId(55),
+        Create(static span => span.Fill(0xab)).WithScopeId(55),
         AddressV6.Local.WithScopeId(127)
     };
 
-    private static void MakeLinkLocal(Span<byte> bytes)
+    private static AddressV6 Create(SpanAction<byte> action)
     {
-        bytes[0] = 0xfe;
-        bytes[1] = 0x80;
+        var result = default(AddressV6);
+        action.Invoke(result.DataU8);
+        return result;
+    }
+
+    private static AddressV6 MakeLinkLocal()
+    {
+        var result = default(AddressV6);
+        result.DataU8[0] = 0xfe;
+        result.DataU8[1] = 0x80;
+        return result;
     }
 }
