@@ -1,11 +1,10 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl2;
 
-sealed class Sdl2Provider : IDisposable
+public sealed class Sdl2Provider : IDisposable
 {
     private readonly nint _handle;
 

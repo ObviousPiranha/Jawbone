@@ -9,10 +9,15 @@ namespace Piranha.Jawbone.Sdl2;
 [MapNativeFunctions]
 public sealed partial class Sdl2Library
 {
+    private const string Vulkan = "Vulkan";
+
     public static string GetFunctionName(string methodName)
     {
         if (methodName.StartsWith("Gl"))
             return string.Concat("SDL_GL_", methodName.AsSpan(2));
+
+        if (methodName.StartsWith(Vulkan))
+            return string.Concat("SDL_Vulkan_", methodName.AsSpan(Vulkan.Length));
 
         return methodName switch
         {
@@ -21,6 +26,8 @@ public sealed partial class Sdl2Library
             _ => "SDL_" + methodName
         };
     }
+
+    public partial int VulkanCreateSurface(nint window, nint instance, out nint surface);
 
     public partial int Init(SdlInit flags);
     public partial void Quit();

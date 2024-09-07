@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Piranha.SampleVulkan", "Piranha.SampleVulkan\Piranha.SampleVulkan.csproj", "{04C2D4A1-92EA-45AB-986D-CE8BC4239E59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Piranha.Jawbone", "Piranha.Jawbone\Piranha.Jawbone.csproj", "{CEDEBDA2-D650-4F2F-B1D4-117BB2E24CF4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04C2D4A1-92EA-45AB-986D-CE8BC4239E59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04C2D4A1-92EA-45AB-986D-CE8BC4239E59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04C2D4A1-92EA-45AB-986D-CE8BC4239E59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04C2D4A1-92EA-45AB-986D-CE8BC4239E59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEDEBDA2-D650-4F2F-B1D4-117BB2E24CF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEDEBDA2-D650-4F2F-B1D4-117BB2E24CF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEDEBDA2-D650-4F2F-B1D4-117BB2E24CF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEDEBDA2-D650-4F2F-B1D4-117BB2E24CF4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
