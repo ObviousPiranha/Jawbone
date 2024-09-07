@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 
 namespace Piranha.Jawbone.Net;
@@ -99,5 +100,5 @@ public static class Windows
         new(11033, "WSA_IPSEC_NAME_POLICY_ERROR", "Name based IPSEC policy could not be added."),
     ];
 
-    public static readonly ImmutableDictionary<int, ErrorCode> ErrorCodeById = ErrorCodes.ToImmutableDictionary(v => v.Id);
+    public static readonly FrozenDictionary<int, ErrorCode> ErrorCodeById = ErrorCodes.ToFrozenDictionary(v => v.Id);
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
@@ -6,6 +7,9 @@ namespace Piranha.Jawbone.Net;
 
 public readonly struct AddressInfo
 {
+    private const int BufferSize = 64;
+
+    public DateTimeOffset CreatedAt { get; init; }
     public readonly string? Node { get; init; }
     public readonly string? Service { get; init; }
     public readonly ImmutableArray<Endpoint<AddressV4>> V4 { get; init; }
@@ -13,10 +17,13 @@ public readonly struct AddressInfo
 
     public readonly bool IsEmpty => V4.IsDefaultOrEmpty && V6.IsDefaultOrEmpty;
 
-    public static AddressInfo Get(string? node, string? service = null)
+    public static AddressInfo Get(
+        string? node,
+        string? service = null,
+        TimeProvider? timeProvider = null)
     {
-        var v4 = ArrayPool<Endpoint<AddressV4>>.Shared.Rent(64);
-        var v6 = ArrayPool<Endpoint<AddressV6>>.Shared.Rent(64);
+        var v4 = ArrayPool<Endpoint<AddressV4>>.Shared.Rent(BufferSize);
+        var v6 = ArrayPool<Endpoint<AddressV6>>.Shared.Rent(BufferSize);
 
         try
         {
@@ -34,8 +41,11 @@ public readonly struct AddressInfo
 
             SocketException.ThrowOnError(error, "Unable to get address info.");
 
+            timeProvider ??= TimeProvider.System;
+
             var result = new AddressInfo
             {
+                CreatedAt = timeProvider.GetLocalNow(),
                 Node = node,
                 Service = service,
                 V4 = ImmutableArray.Create(v4, 0, countV4),

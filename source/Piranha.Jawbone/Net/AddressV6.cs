@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -9,64 +8,66 @@ using System.Text;
 namespace Piranha.Jawbone.Net;
 
 // https://en.wikipedia.org/wiki/IPv6_address
-[StructLayout(LayoutKind.Sequential)]
-public readonly struct AddressV6 : IAddress<AddressV6>
+[StructLayout(LayoutKind.Explicit, Size = 20)]
+public struct AddressV6 : IAddress<AddressV6>
 {
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU8
+    {
+        public const int Length = 16;
+        private byte _first;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU16
+    {
+        public const int Length = 8;
+        private ushort _first;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU32
+    {
+        public const int Length = 4;
+        private uint _first;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000c0ff : 0xffc00000;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalSubnet() => BitConverter.IsLittleEndian ? 0x000080fe : 0xfe800000;
 
-    public static AddressV6 Local { get; } = Create(static span => span[^1] = 1);
+    private static AddressV6 CreateLocal()
+    {
+        var result = default(AddressV6);
+        result.DataU8[^1] = 1;
+        return result;
+    }
+
+    public static AddressV6 Local { get; } = CreateLocal();
 
     private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
 
-    public static AddressV6 Create(params byte[] values) => new(values);
+    [FieldOffset(0)]
+    public ArrayU8 DataU8;
 
-    public static AddressV6 Create(SpanAction<byte> action)
-    {
-        var result = default(AddressV6);
-        var span = AsBytes(ref result);
-        action.Invoke(span);
-        return result;
-    }
+    [FieldOffset(0)]
+    public ArrayU16 DataU16;
 
-    public static AddressV6 Create<TState>(TState state, SpanAction<byte, TState> action)
-    {
-        var result = default(AddressV6);
-        var span = AsBytes(ref result);
-        action.Invoke(span, state);
-        return result;
-    }
+    [FieldOffset(0)]
+    public ArrayU32 DataU32;
 
-    public static AddressV6 FromHostOrdering(ReadOnlySpan<ushort> groups)
-    {
-        var result = default(AddressV6);
-        var outGroups = MemoryMarshal.Cast<AddressV6, ushort>(
-            new Span<AddressV6>(ref result))[..^2];
-        groups[..outGroups.Length].CopyTo(outGroups);
+    [FieldOffset(16)]
+    public uint ScopeId;
 
-        if (BitConverter.IsLittleEndian)
-        {
-            foreach (ref var block in outGroups)
-                block = BinaryPrimitives.ReverseEndianness(block);
-        }
-
-        return result;
-    }
-
-    private readonly uint _a;
-    private readonly uint _b;
-    private readonly uint _c;
-    private readonly uint _d;
-    private readonly uint _scopeId;
-
-    public readonly uint ScopeId => _scopeId;
-    public readonly bool IsDefault => _a == 0 && _b == 0 && _c == 0 && _d == 0;
-    public readonly bool IsLinkLocal => (_a & LinkLocalMask()) == LinkLocalSubnet();
+    public readonly bool IsDefault => DataU32[0] == 0 && DataU32[1] == 0 && DataU32[2] == 0 && DataU32[3] == 0;
+    public readonly bool IsLinkLocal => (DataU32[0] & LinkLocalMask()) == LinkLocalSubnet();
     public readonly bool IsLoopback => Equals(Local) || (TryMapV4(out var v4) && v4.IsLoopback);
-    public readonly bool IsV4Mapped => _a == 0 && _b == 0 && _c == PrefixV4;
+    public readonly bool IsV4Mapped => DataU32[0] == 0 && DataU32[1] == 0 && DataU32[2] == PrefixV4;
 
     public AddressV6(ReadOnlySpan<byte> values) : this(values, 0)
     {
@@ -74,25 +75,30 @@ public readonly struct AddressV6 : IAddress<AddressV6>
 
     public AddressV6(ReadOnlySpan<byte> values, uint scopeId) : this()
     {
-        var span = AsBytes(ref this);
-        values.Slice(0, span.Length).CopyTo(span);
-        _scopeId = scopeId;
+        values.Slice(0, ArrayU8.Length).CopyTo(DataU8);
+        ScopeId = scopeId;
+    }
+
+    public AddressV6(ArrayU32 data, uint scopeId = 0)
+    {
+        DataU32 = data;
+        ScopeId = scopeId;
     }
 
     private AddressV6(uint a, uint b, uint c, uint d, uint scopeId = 0)
     {
-        _a = a;
-        _b = b;
-        _c = c;
-        _d = d;
-        _scopeId = scopeId;
+        DataU32[0] = a;
+        DataU32[1] = b;
+        DataU32[2] = c;
+        DataU32[3] = d;
+        ScopeId = scopeId;
     }
 
     public readonly bool TryMapV4(out AddressV4 address)
     {
         if (IsV4Mapped)
         {
-            address = new(_d);
+            address = new(DataU32[3]);
             return true;
         }
         else
@@ -102,21 +108,19 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         }
     }
 
-    public readonly AddressV6 WithScopeId(uint scopeId) => new(_a, _b, _c, _d, scopeId);
-
     public readonly bool Equals(AddressV6 other)
     {
         return
-            _a == other._a &&
-            _b == other._b &&
-            _c == other._c &&
-            _d == other._d &&
-            _scopeId == other._scopeId;
+            DataU32[0] == other.DataU32[0] &&
+            DataU32[1] == other.DataU32[1] &&
+            DataU32[2] == other.DataU32[2] &&
+            DataU32[3] == other.DataU32[3] &&
+            ScopeId == other.ScopeId;
     }
 
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is AddressV6 other && Equals(other);
-    public override readonly int GetHashCode() => HashCode.Combine(_a, _b, _c, _d, _scopeId);
+    public override readonly int GetHashCode() => HashCode.Combine(DataU32[0], DataU32[1], DataU32[2], DataU32[3], ScopeId);
     public override readonly string ToString()
     {
         var builder = new StringBuilder(48);
@@ -129,21 +133,19 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         if (IsV4Mapped)
         {
             builder.Append("::ffff:");
-            new AddressV4(_d).AppendTo(builder);
+            new AddressV4(DataU32[3]).AppendTo(builder);
             return;
         }
 
         int zeroIndex = 0;
         int zeroLength = 0;
 
-        var span16 = MemoryMarshal.Cast<AddressV6, ushort>(
-            new ReadOnlySpan<AddressV6>(in this))[..^2];
-        for (int i = 0; i < span16.Length; ++i)
+        for (int i = 0; i < ArrayU16.Length; ++i)
         {
-            if (span16[i] == 0)
+            if (DataU16[i] == 0)
             {
                 int j = i + 1;
-                while (j < span16.Length && span16[j] == 0)
+                while (j < ArrayU16.Length && DataU16[j] == 0)
                     ++j;
 
                 var length = j - i;
@@ -158,22 +160,22 @@ public readonly struct AddressV6 : IAddress<AddressV6>
             }
         }
 
-        var span = AsReadOnlyBytes(in this);
-
         if (1 < zeroLength)
         {
+            var a = zeroIndex * 2;
+            var b = (zeroIndex + zeroLength) * 2;
             builder
-                .AppendV6Block(span.Slice(0, zeroIndex * 2))
+                .AppendV6Block(DataU8[..a])
                 .Append("::")
-                .AppendV6Block(span.Slice((zeroIndex + zeroLength) * 2));
+                .AppendV6Block(DataU8[b..]);
         }
         else
         {
-            builder.AppendV6Block(span);
+            builder.AppendV6Block(DataU8);
         }
 
-        if (_scopeId != 0)
-            builder.Append('%').Append(_scopeId);
+        if (ScopeId != 0)
+            builder.Append('%').Append(ScopeId);
     }
 
     private static string? DoTheParse(ReadOnlySpan<char> originalInput, out AddressV6 result)
@@ -232,7 +234,7 @@ public readonly struct AddressV6 : IAddress<AddressV6>
             }
         }
 
-        Span<ushort> blocks = stackalloc ushort[8];
+        var blocks = default(ArrayU16);
         var division = s.IndexOf("::");
 
         if (0 <= division)
@@ -249,22 +251,31 @@ public readonly struct AddressV6 : IAddress<AddressV6>
                 return "Bad hex block.";
             }
 
-            if (leftBlocksWritten + rightBlocksWritten == blocks.Length)
+            if (leftBlocksWritten + rightBlocksWritten == ArrayU16.Length)
             {
                 result = default;
                 return "Malformed representation.";
             }
 
-            blocks.Slice(leftBlocksWritten, rightBlocksWritten).CopyTo(blocks[^rightBlocksWritten..]);
+            var end = leftBlocksWritten + rightBlocksWritten;
+            blocks[leftBlocksWritten..end].CopyTo(blocks[^rightBlocksWritten..]);
             blocks[leftBlocksWritten..^rightBlocksWritten].Clear();
         }
-        else if (!TryParseHexBlocks(s, blocks, out var blocksWritten) || blocksWritten < blocks.Length)
+        else if (!TryParseHexBlocks(s, blocks, out var blocksWritten) || blocksWritten < ArrayU16.Length)
         {
             result = default;
             return "Bad hex block.";
         }
 
-        result = FromHostOrdering(blocks).WithScopeId(scopeId);
+        result = default;
+        result.DataU16 = blocks;
+        result.ScopeId = scopeId;
+
+        if (BitConverter.IsLittleEndian)
+        {
+            foreach (ref var n in result.DataU16)
+                n = BinaryPrimitives.ReverseEndianness(n);
+        }
         return null;
 
         static bool TryParseHexBlocks(ReadOnlySpan<char> s, Span<ushort> blocks, out int blocksWritten)
@@ -378,26 +389,17 @@ public readonly struct AddressV6 : IAddress<AddressV6>
         return exceptionMessage is null;
     }
 
-    public static Span<byte> AsBytes(ref AddressV6 address)
-    {
-        return MemoryMarshal.AsBytes(
-            new Span<AddressV6>(ref address)).Slice(0, 16);
-    }
-
-    public static ReadOnlySpan<byte> AsReadOnlyBytes(ref readonly AddressV6 address)
-    {
-        return MemoryMarshal.AsBytes(
-            new ReadOnlySpan<AddressV6>(in address)).Slice(0, 16);
-    }
+    public static Span<byte> AsBytes(ref AddressV6 address) => address.DataU8;
+    public static ReadOnlySpan<byte> AsReadOnlyBytes(ref readonly AddressV6 address) => address.DataU8;
 
     public static bool operator ==(AddressV6 a, AddressV6 b) => a.Equals(b);
     public static bool operator !=(AddressV6 a, AddressV6 b) => !a.Equals(b);
-    public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, (uint)address);
+    public static explicit operator AddressV6(AddressV4 address) => new(0, 0, PrefixV4, address.DataU32);
     public static explicit operator AddressV4(AddressV6 address)
     {
         if (!address.IsV4Mapped)
             throw new InvalidCastException("IPv6 address is not IPv4-mapped.");
 
-        return new(address._d);
+        return new(address.DataU32[3]);
     }
 }

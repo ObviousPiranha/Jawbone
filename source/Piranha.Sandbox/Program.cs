@@ -1,4 +1,6 @@
-﻿using Piranha.Jawbone.Sdl2;
+﻿using Piranha.Jawbone;
+using Piranha.Jawbone.Net;
+using Piranha.Jawbone.Sdl2;
 using System;
 using System.Runtime.InteropServices;
 
@@ -10,18 +12,23 @@ class Program
     {
         try
         {
-            Console.WriteLine("So it begins...");
-            var handle = NativeLibrary.Load("/usr/lib/x86_64-linux-gnu/libSDL2-2.0.so.0");
-            var sdl = new Sdl2Library(methodName => NativeLibrary.GetExport(handle, Sdl2Library.GetFunctionName(methodName)));
-            sdl.Init(SdlInit.Video);
-            var keyName = sdl.GetKeyName(58);
-            Console.WriteLine("Key Name: " + keyName);
-            sdl.SetHint("SDL_YEAH", "nope");
-            Console.WriteLine("Get Hint: " + sdl.GetHint("SDL_YEAH"));
-            Console.WriteLine("Video Driver: " + sdl.GetCurrentVideoDriver());
-            sdl.Quit();
-            NativeLibrary.Free(handle);
-            Console.WriteLine("THE END");
+            Console.WriteLine(Alignment.Of<AddressV6>());
+            Console.WriteLine("Enter address text.");
+
+            while (true)
+            {
+                var input = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(input))
+                    break;
+
+                if (AddressV6.TryParse(input, null, out var address))
+                    Console.WriteLine("Successfully parsed " + address);
+                else
+                    Console.WriteLine("Failed to parse " + input);
+            }
+
+            Console.WriteLine("Exiting...");
         }
         catch (Exception ex)
         {

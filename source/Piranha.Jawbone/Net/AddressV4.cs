@@ -6,9 +6,25 @@ using System.Text;
 
 namespace Piranha.Jawbone.Net;
 
-[StructLayout(LayoutKind.Sequential)]
-public readonly struct AddressV4 : IAddress<AddressV4>
+[StructLayout(LayoutKind.Explicit, Size = 4)]
+public struct AddressV4 : IAddress<AddressV4>
 {
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU8
+    {
+        public const int Length = 4;
+        private byte _first;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    [InlineArray(Length)]
+    public struct ArrayU16
+    {
+        public const int Length = 2;
+        private ushort _first;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LinkLocalMask() => BitConverter.IsLittleEndian ? 0x0000ffff : 0xffff0000;
 
@@ -24,33 +40,38 @@ public readonly struct AddressV4 : IAddress<AddressV4>
     public static AddressV4 Local { get; } = new(127, 0, 0, 1);
     public static AddressV4 Broadcast { get; } = new(255, 255, 255, 255);
 
-    private readonly uint _a;
+    [FieldOffset(0)]
+    public ArrayU8 DataU8;
 
-    public readonly bool IsDefault => _a == 0;
-    public readonly bool IsLinkLocal => (_a & LinkLocalMask()) == LinkLocalSubnet();
-    public readonly bool IsLoopback => (_a & LoopbackMask()) == LoopbackSubnet();
+    [FieldOffset(0)]
+    public ArrayU16 DataU16;
 
-    public AddressV4(ReadOnlySpan<byte> values) : this()
+    [FieldOffset(0)]
+    public uint DataU32;
+
+    public readonly bool IsDefault => DataU32 == 0;
+    public readonly bool IsLinkLocal => (DataU32 & LinkLocalMask()) == LinkLocalSubnet();
+    public readonly bool IsLoopback => (DataU32 & LoopbackMask()) == LoopbackSubnet();
+
+    public AddressV4(ReadOnlySpan<byte> values)
     {
-        var span = AsBytes(ref this);
-        values.Slice(0, span.Length).CopyTo(span);
+        DataU32 = BitConverter.ToUInt32(values);
     }
 
-    public AddressV4(byte a, byte b, byte c, byte d) : this()
+    public AddressV4(byte a, byte b, byte c, byte d)
     {
-        var bytes = AsBytes(ref this);
-        bytes[3] = d;
-        bytes[2] = c;
-        bytes[1] = b;
-        bytes[0] = a;
+        DataU8[0] = a;
+        DataU8[1] = b;
+        DataU8[2] = c;
+        DataU8[3] = d;
     }
 
-    public AddressV4(uint address) => _a = address;
+    public AddressV4(uint address) => DataU32 = address;
 
-    public readonly bool Equals(AddressV4 other) => _a == other._a;
+    public readonly bool Equals(AddressV4 other) => DataU32 == other.DataU32;
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
         => obj is AddressV4 other && Equals(other);
-    public override readonly int GetHashCode() => _a.GetHashCode();
+    public override readonly int GetHashCode() => DataU32.GetHashCode();
     public override readonly string ToString()
     {
         var builder = new StringBuilder(15);
@@ -60,15 +81,14 @@ public readonly struct AddressV4 : IAddress<AddressV4>
 
     public readonly void AppendTo(StringBuilder builder)
     {
-        var span = AsReadOnlyBytes(in this);
         builder
-            .Append(span[0])
+            .Append(DataU8[0])
             .Append('.')
-            .Append(span[1])
+            .Append(DataU8[1])
             .Append('.')
-            .Append(span[2])
+            .Append(DataU8[2])
             .Append('.')
-            .Append(span[3]);
+            .Append(DataU8[3]);
     }
 
     private static string? DoTheParse(ReadOnlySpan<char> s, out AddressV4 result)
@@ -79,7 +99,7 @@ public readonly struct AddressV4 : IAddress<AddressV4>
         const string UnableToParseByte = "Unable to parse byte.";
         const string MissingDot = "Missing dot.";
 
-        Span<byte> bytes = stackalloc byte[4];
+        var bytes = default(ArrayU8);
 
         if (!TryParseByte(s, out var b))
         {
@@ -172,20 +192,10 @@ public readonly struct AddressV4 : IAddress<AddressV4>
         return TryParse(s.AsSpan(), provider, out result);
     }
 
-    public static Span<byte> AsBytes(ref AddressV4 address)
-    {
-        return MemoryMarshal.AsBytes(
-            new Span<AddressV4>(ref address));
-    }
-
-    public static ReadOnlySpan<byte> AsReadOnlyBytes(ref readonly AddressV4 address)
-    {
-        return MemoryMarshal.AsBytes(
-            new ReadOnlySpan<AddressV4>(in address));
-    }
+    public static Span<byte> AsBytes(ref AddressV4 address) => address.DataU8;
+    public static ReadOnlySpan<byte> AsReadOnlyBytes(ref readonly AddressV4 address) => address.DataU8;
 
     public static bool operator ==(AddressV4 a, AddressV4 b) => a.Equals(b);
     public static bool operator !=(AddressV4 a, AddressV4 b) => !a.Equals(b);
-    public static explicit operator uint(AddressV4 address) => address._a;
 }
 

@@ -10,5 +10,5 @@ public struct SdlRect
     public int W;
     public int H;
 
-    public override string ToString() => $"x {X} y {Y} w {W} h {H}";
+    public override readonly string ToString() => $"x {X} y {Y} w {W} h {H}";
 }

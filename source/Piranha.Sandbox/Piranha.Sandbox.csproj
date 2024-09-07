@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="PiranhaNative.dll" CopyToOutputDirectory="Always"/>
+    <!-- <None Include="PiranhaNative.dll" CopyToOutputDirectory="Always"/> -->
   </ItemGroup>
 
   <PropertyGroup>
