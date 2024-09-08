@@ -2,7 +2,9 @@
 using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.Sdl2;
 using System;
-using System.Threading;
+using System.Runtime.InteropServices;
+
+namespace Piranha.SampleVulkan;
 
 internal class Program
 {
@@ -21,8 +23,11 @@ internal class Program
         if (window.IsInvalid())
             throw new SdlException(sdl.GetError().ToString() ?? "[empty error]");
 
+        string[] extensions = [];
+
         if (OperatingSystem.IsLinux())
         {
+            extensions = ["VK_KHR_wayland_surface"];
             System.Runtime.InteropServices.NativeLibrary.SetDllImportResolver(
                 typeof(VkApplicationInfo).Assembly,
                 (lib, assembly, searchPath) =>
@@ -33,6 +38,14 @@ internal class Program
                     return default;
                 });
         }
+        else if (OperatingSystem.IsWindows())
+        {
+            extensions = ["VK_KHR_surface", "VK_KHR_win32_surface", "VK_EXT_debug_utils"];
+        }
+
+        nint* extensionsNative = stackalloc nint[extensions.Length];
+        for (int i = 0; i < extensions.Length; ++i)
+            extensionsNative[i] = Marshal.StringToHGlobalAnsi(extensions[i]);
 
         var vulkanAppName = "Hello Vulkan\0"u8;
         var vulkanEngineName = "Custom Engine\0"u8;
@@ -53,6 +66,8 @@ internal class Program
         var createInfo = default(VkInstanceCreateInfo);
         createInfo.sType = VkStructureType.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
+        createInfo.enabledExtensionCount = (uint)extensions.Length;
+        createInfo.ppEnabledExtensionNames = (byte**)extensionsNative;
         VkInstance instance;
         var vkResult = VulkanNative.vkCreateInstance(&createInfo, null, &instance);
         if (vkResult != 0)
@@ -70,7 +85,8 @@ internal class Program
             throw new SdlException(sdl.GetError().ToString() ?? "[empty error]");
 
         Console.WriteLine("Created SDL window!");
-        Thread.Sleep(1000);
+        ApplicationManager.RunBlocking(sdl, new EventHandler());
+
         sdl.DestroyWindow(window);
     }
 

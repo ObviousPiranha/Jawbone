@@ -200,7 +200,7 @@ public sealed partial class Sdl2Library
         in SdlRect sourceRectangle,
         nint destination,
         ref SdlRect destinationRectangle);
-    public partial int WaitEvent(out byte eventData);
+    public partial int WaitEvent(out SdlEvent eventData);
     public partial uint RegisterEvents(int numEvents);
     public partial int PushEvent(in byte eventData);
     public partial uint OpenAudioDevice(

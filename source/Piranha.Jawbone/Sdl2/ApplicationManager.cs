@@ -37,6 +37,14 @@ public static class ApplicationManager
         }
     }
 
+    public static void RunBlocking(Sdl2Library sdl, ISdlEventHandler eventHandler)
+    {
+        while (eventHandler.Running && sdl.WaitEvent(out var eventData) == 1)
+        {
+            SdlEvent.Dispatch(sdl, eventData, eventHandler);
+        }
+    }
+
     public static void ToggleFullScreen(Sdl2Library sdl, nint window)
     {
         // https://superuser.com/a/1251294
