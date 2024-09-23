@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using Xunit;
 
 namespace Piranha.Jawbone.Test;
@@ -39,5 +40,22 @@ public class RopeStreamTest
         var n = ropeStream.Read(buffer);
         Assert.Equal(originalMessage.Length, n);
         Assert.Equal(originalMessage.AsSpan(), buffer.AsSpan(0, n));
+        Assert.Equal(n, ropeStream.Position);
+
+        ropeStream.Position /= 2;
+    }
+
+    [Fact]
+    public void BenchmarkPrep()
+    {
+        var buffer = new byte[9000];
+        RandomNumberGenerator.Fill(buffer);
+
+        using var ropeStream = new RopeStream();
+
+        for (int i = 0; i < 100; ++i)
+            ropeStream.Write(buffer);
+
+        Assert.Equal(9000 * 100, ropeStream.Length);
     }
 }
