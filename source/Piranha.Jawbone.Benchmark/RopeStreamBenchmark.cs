@@ -1,4 +1,5 @@
 using BenchmarkDotNet.Attributes;
+using System.Buffers;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -22,9 +23,16 @@ public class RopeStreamBenchmark
     }
 
     [Benchmark]
-    public void FillRopeStream()
+    public void FillRopeStreamSharedPool()
     {
         using var stream = new RopeStream();
+        FillStream(stream);
+    }
+
+    [Benchmark]
+    public void FillRopeStreamPrivatePool()
+    {
+        using var stream = new RopeStream(arrayPool: ArrayPool<byte>.Create());
         FillStream(stream);
     }
 

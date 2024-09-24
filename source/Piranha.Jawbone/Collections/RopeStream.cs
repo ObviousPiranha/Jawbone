@@ -205,8 +205,8 @@ public sealed class RopeStream : Stream
 
     protected override void Dispose(bool disposing)
     {
-        // for (var segment = _first; segment is not null; segment = segment.NextSegment)
-        //     _arrayPool.Return(segment.Buffer);
+        for (var segment = _first; segment is not null; segment = segment.NextSegment)
+            _arrayPool.Return(segment.Buffer);
 
         _first = null;
         _current = null;
@@ -216,9 +216,9 @@ public sealed class RopeStream : Stream
 
     private byte[] Rent()
     {
-        // return _arrayPool.Rent(_pageSize);
-        return new byte[_pageSize];
+        return _arrayPool.Rent(_pageSize);
     }
+
     private Segment GetNext(Segment segment)
     {
         var result = segment.NextSegment;
