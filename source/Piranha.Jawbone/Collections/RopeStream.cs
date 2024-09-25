@@ -1,8 +1,6 @@
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace Piranha.Jawbone;
 
@@ -14,8 +12,6 @@ public sealed class RopeStream : Stream
     private int _currentIndex;
     private long _position;
     private long _length;
-
-    private ref Segment GetCurrentSegment() => ref _segments[_currentIndex];
 
     public long Capacity { get; private set; }
     public override bool CanRead => true;
@@ -145,6 +141,8 @@ public sealed class RopeStream : Stream
 
     public override void SetLength(long value)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(value);
+
         if (value < _position)
         {
             Position = value;
@@ -206,18 +204,24 @@ public sealed class RopeStream : Stream
 
     protected override void Dispose(bool disposing)
     {
-        foreach (var segment in _segments)
+        foreach (ref var segment in _segments.AsSpan())
         {
             if (0 < segment.Buffer.Length)
+            {
                 _arrayPool.Return(segment.Buffer);
+                segment = Segment.Empty;
+            }
             else
+            {
                 break;
+            }
         }
 
-        _segments.AsSpan().Fill(Segment.Empty);
         _length = 0;
         _position = 0;
     }
+
+    private ref Segment GetCurrentSegment() => ref _segments[_currentIndex];
 
     private byte[] Rent()
     {
@@ -237,7 +241,11 @@ public sealed class RopeStream : Stream
         if (_segments[result].Buffer.Length == 0)
         {
             var buffer = Rent();
-            _segments[result] = new Segment { Buffer = buffer, Offset = _segments[index].NextOffset };
+            _segments[result] = new Segment
+            {
+                Buffer = buffer,
+                Offset = _segments[index].NextOffset
+            };
             Capacity += buffer.Length;
         }
 
@@ -278,7 +286,6 @@ public sealed class RopeStream : Stream
             return Buffer.AsSpan(offset);
         }
 
-        public readonly int Remaining(long startPosition) => (int)(Offset - startPosition);
         private readonly int GetOffset(long startPosition) => (int)(startPosition - Offset);
 
         public static Segment Empty => new() { Buffer = [] };
