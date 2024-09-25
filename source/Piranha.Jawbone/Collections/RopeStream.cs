@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Piranha.Jawbone;
 
@@ -9,10 +10,12 @@ public sealed class RopeStream : Stream
 {
     private readonly ArrayPool<byte> _arrayPool;
     private readonly int _pageSize;
-    private long _length;
+    private Segment[] _segments;
+    private int _currentIndex;
     private long _position;
-    private Segment? _first;
-    private Segment? _current;
+    private long _length;
+
+    private ref Segment GetCurrentSegment() => ref _segments[_currentIndex];
 
     public long Capacity { get; private set; }
     public override bool CanRead => true;
@@ -26,31 +29,29 @@ public sealed class RopeStream : Stream
         {
             if (value == 0)
             {
-                _current = _first;
+                _currentIndex = 0;
                 _position = 0;
                 return;
             }
 
             ArgumentOutOfRangeException.ThrowIfNegative(value);
             ArgumentOutOfRangeException.ThrowIfLessThan(_length, value, nameof(value));
-            if (_current is null)
-                throw new InvalidOperationException("Current segment is missing!");
 
-            if (value < _current.RunningIndex)
+            if (value < GetCurrentSegment().Offset)
             {
                 do
                 {
-                    _current = _current.PreviousSegment ?? throw new NullReferenceException("Missing previous segment!");
+                    --_currentIndex;
                 }
-                while (value < _current.RunningIndex);
+                while (value < GetCurrentSegment().Offset);
             }
-            else if (_current.NextIndex < value)
+            else if (GetCurrentSegment().NextOffset < value)
             {
                 do
                 {
-                    _current = _current.NextSegment ?? throw new NullReferenceException("Missing next segment!");
+                    ++_currentIndex;
                 }
-                while (_current.NextIndex < value);
+                while (GetCurrentSegment().NextOffset < value);
             }
 
             _position = value;
@@ -65,6 +66,8 @@ public sealed class RopeStream : Stream
     {
         _pageSize = pageSize;
         _arrayPool = arrayPool ?? ArrayPool<byte>.Shared;
+        _segments = new Segment[8];
+        _segments.AsSpan().Fill(Segment.Empty);
     }
 
     public override void CopyTo(Stream destination, int bufferSize)
@@ -96,21 +99,16 @@ public sealed class RopeStream : Stream
     public override int Read(Span<byte> buffer)
     {
         var available = _length - _position;
-        if (_current is null)
-        {
-            Debug.Assert(available == 0);
-            return 0;
-        }
-
         var result = Min(available, buffer.Length);
         var remaining = buffer[..result];
 
         while (!remaining.IsEmpty)
         {
-            if (_position == _current.NextIndex)
-                _current = _current.NextSegment ?? throw new NullReferenceException("Next segment cannot be null!");
-            var size = int.Min(remaining.Length, _current.Remaining(_position));
-            _current.Read(_position, remaining[..size]);
+            if (_position == GetCurrentSegment().NextOffset)
+                ++_currentIndex;
+            var slice = GetCurrentSegment().Slice(_position);
+            var size = int.Min(remaining.Length, slice.Length);
+            slice[..size].CopyTo(remaining);
             remaining = remaining[size..];
             _position += size;
         }
@@ -155,15 +153,17 @@ public sealed class RopeStream : Stream
         {
             var remaining = value - _length;
 
-            var segment = EnsureCurrent();
+            EnsureAvailability();
             var position = _position;
+            var index = _currentIndex;
 
             while (0 < remaining)
             {
-                if (segment.NextIndex == position)
-                    segment = GetNext(segment);
-                var size = Min(remaining, segment.Available(position));
-                segment.Zero(position, size);
+                if (_segments[index].NextOffset == position)
+                    index = GetNext(index);
+                var slice = _segments[index].Slice(position);
+                var size = Min(remaining, slice.Length);
+                slice[..size].Clear();
                 remaining -= size;
                 position += size;
             }
@@ -183,14 +183,15 @@ public sealed class RopeStream : Stream
     {
         var remaining = buffer;
 
-        _current = EnsureCurrent();
+        EnsureAvailability();
 
         while (!remaining.IsEmpty)
         {
-            if (_current.NextIndex == _position)
-                _current = GetNext(_current);
-            var size = int.Min(remaining.Length, _current.Available(_position));
-            _current.Write(_position, remaining[..size]);
+            if (GetCurrentSegment().NextOffset == _position)
+                _currentIndex = GetNext(_currentIndex);
+            var slice = GetCurrentSegment().Slice(_position);
+            var size = int.Min(remaining.Length, slice.Length);
+            remaining[..size].CopyTo(slice);
             remaining = remaining[size..];
             _position += size;
         }
@@ -205,11 +206,15 @@ public sealed class RopeStream : Stream
 
     protected override void Dispose(bool disposing)
     {
-        for (var segment = _first; segment is not null; segment = segment.NextSegment)
-            _arrayPool.Return(segment.Buffer);
+        foreach (var segment in _segments)
+        {
+            if (0 < segment.Buffer.Length)
+                _arrayPool.Return(segment.Buffer);
+            else
+                break;
+        }
 
-        _first = null;
-        _current = null;
+        _segments.AsSpan().Fill(Segment.Empty);
         _length = 0;
         _position = 0;
     }
@@ -219,31 +224,33 @@ public sealed class RopeStream : Stream
         return _arrayPool.Rent(_pageSize);
     }
 
-    private Segment GetNext(Segment segment)
+    private int GetNext(int index)
     {
-        var result = segment.NextSegment;
+        var result = index + 1;
 
-        if (result is null)
+        if (result == _segments.Length)
         {
-            result = new Segment(segment.RunningIndex + segment.Buffer.Length, Rent(), segment);
-            segment.NextSegment = result;
-            Capacity += result.Buffer.Length;
+            Array.Resize(ref _segments, _segments.Length * 2);
+            _segments.AsSpan(result).Fill(Segment.Empty);
+        }
+
+        if (_segments[result].Buffer.Length == 0)
+        {
+            var buffer = Rent();
+            _segments[result] = new Segment { Buffer = buffer, Offset = _segments[index].NextOffset };
+            Capacity += buffer.Length;
         }
 
         return result;
     }
 
-    private Segment EnsureCurrent()
+    private void EnsureAvailability()
     {
-        if (_current is null)
+        if (_segments[0].Buffer.Length == 0)
         {
-            Debug.Assert(_first is null);
-            _first = new Segment(0, Rent());
-            _current = _first;
-            Capacity = _first.Buffer.Length;
+            _segments[0] = new Segment { Buffer = Rent() };
+            Capacity = _segments[0].Buffer.Length;
         }
-
-        return _current;
     }
 
     private static int Min(long i64, int i32)
@@ -253,53 +260,27 @@ public sealed class RopeStream : Stream
         return unchecked(i64 < i32 ? (int)i64 : i32);
     }
 
-    private sealed class Segment : ReadOnlySequenceSegment<byte>
+    private readonly struct Segment
     {
-        public byte[] Buffer { get; }
-        public Segment? NextSegment
-        {
-            get => (Segment?)Next;
-            set => Next = value;
-        }
+        public required readonly byte[] Buffer { get; init; }
+        public readonly long Offset { get; init; }
+        public readonly long NextOffset => Offset + Buffer.Length;
 
-        public Segment? PreviousSegment { get; }
-
-        public long NextIndex => RunningIndex + Memory.Length;
-
-        public Segment(long runningIndex, byte[] buffer, Segment? previousSegment = null)
-        {
-            RunningIndex = runningIndex;
-            Buffer = buffer;
-            Memory = buffer;
-            PreviousSegment = previousSegment;
-        }
-
-        public int Available(long startPosition)
+        public readonly int Available(long startPosition)
         {
             var offset = GetOffset(startPosition);
             return Buffer.Length - offset;
         }
 
-        public void Write(long startPosition, ReadOnlySpan<byte> bytes)
+        public readonly Span<byte> Slice(long startPosition)
         {
             var offset = GetOffset(startPosition);
-            bytes.CopyTo(Buffer.AsSpan(offset));
+            return Buffer.AsSpan(offset);
         }
 
-        public void Zero(long startPosition, int length)
-        {
-            var offset = GetOffset(startPosition);
-            Buffer.AsSpan(offset, length).Clear();
-        }
+        public readonly int Remaining(long startPosition) => (int)(Offset - startPosition);
+        private readonly int GetOffset(long startPosition) => (int)(startPosition - Offset);
 
-        public void Read(long startPosition, Span<byte> bytes)
-        {
-            var offset = GetOffset(startPosition);
-            Buffer.AsSpan(offset, bytes.Length).CopyTo(bytes);
-        }
-
-        public int Remaining(long startPosition) => (int)(NextIndex - startPosition);
-
-        private int GetOffset(long startPosition) => checked((int)(startPosition - RunningIndex));
+        public static Segment Empty => new() { Buffer = [] };
     }
 }

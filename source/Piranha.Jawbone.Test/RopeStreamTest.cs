@@ -46,16 +46,21 @@ public class RopeStreamTest
     }
 
     [Fact]
-    public void BenchmarkPrep()
+    public void ChangeLength()
     {
-        var buffer = new byte[9000];
-        RandomNumberGenerator.Fill(buffer);
-
         using var ropeStream = new RopeStream();
+        Assert.Equal(0, ropeStream.Length);
 
-        for (int i = 0; i < 100; ++i)
-            ropeStream.Write(buffer);
+        ReadOnlySpan<int> expectedValues = [0, 20, 100, 50, 0];
+        var buffer = new byte[100];
+        foreach (var expected in expectedValues)
+        {
+            ropeStream.SetLength(expected);
+            Assert.Equal(expected, ropeStream.Length);
 
-        Assert.Equal(9000 * 100, ropeStream.Length);
+            ropeStream.Position = 0;
+            var n = ropeStream.Read(buffer);
+            Assert.Equal(expected, n);
+        }
     }
 }
