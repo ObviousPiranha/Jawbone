@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using Xunit;
 
@@ -62,5 +63,23 @@ public class RopeStreamTest
             var n = ropeStream.Read(buffer);
             Assert.Equal(expected, n);
         }
+    }
+
+    [Fact]
+    public void CopyStreams()
+    {
+        var message = new byte[2048];
+        message.AsSpan().Fill(111);
+        using var ropeStream = new RopeStream();
+        ropeStream.Write(message);
+
+        Assert.Equal(message.Length, ropeStream.Length);
+
+        using var memoryStream = new MemoryStream();
+        ropeStream.Position = 0;
+        ropeStream.CopyTo(memoryStream);
+
+        var copiedMessage = memoryStream.ToArray();
+        Assert.Equal(message, copiedMessage);
     }
 }

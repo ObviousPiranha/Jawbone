@@ -1,6 +1,8 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Piranha.Jawbone;
 
@@ -68,26 +70,42 @@ public sealed class RopeStream : Stream
 
     public override void CopyTo(Stream destination, int bufferSize)
     {
-        var buffer = _arrayPool.Rent(bufferSize);
-
-        try
+        while (_position < _length)
         {
-            while (true)
-            {
-                var n = Read(buffer);
-                if (n == 0)
-                    return;
-                destination.Write(buffer.AsSpan(0, n));
-            }
+            if (_position == GetCurrentSegment().NextOffset)
+                ++_currentIndex;
+            var slice = GetCurrentSegment().GetArraySegment(_position);
+            var size = Min(_length - _position, slice.Count);
+            destination.Write(slice.Array!, slice.Offset, size);
+            _position += size;
         }
-        finally
+    }
+
+    public override async Task CopyToAsync(
+        Stream destination,
+        int bufferSize,
+        CancellationToken cancellationToken)
+    {
+        while (_position < _length)
         {
-            _arrayPool.Return(buffer);
+            if (_position == GetCurrentSegment().NextOffset)
+                ++_currentIndex;
+            var slice = GetCurrentSegment().GetArraySegment(_position);
+            var size = Min(_length - _position, slice.Count);
+            await destination.WriteAsync(slice[..size], cancellationToken);
+            _position += size;
         }
     }
 
     public override void Flush()
     {
+    }
+
+    public override Task FlushAsync(CancellationToken cancellationToken)
+    {
+        return cancellationToken.IsCancellationRequested ?
+            Task.FromCanceled(cancellationToken) :
+            Task.CompletedTask;
     }
 
     public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
@@ -110,6 +128,20 @@ public sealed class RopeStream : Stream
         }
 
         return result;
+    }
+
+    public override Task<int> ReadAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Read(buffer, offset, count));
+    }
+
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+    {
+        return ValueTask.FromResult(Read(buffer.Span));
     }
 
     public override int ReadByte()
@@ -149,20 +181,17 @@ public sealed class RopeStream : Stream
         }
         else if (_length < value)
         {
-            var remaining = value - _length;
-
             EnsureAvailability();
             var position = _position;
             var index = _currentIndex;
 
-            while (0 < remaining)
+            while (position < value)
             {
                 if (_segments[index].NextOffset == position)
                     index = GetNext(index);
                 var slice = _segments[index].Slice(position);
-                var size = Min(remaining, slice.Length);
+                var size = Min(value - position, slice.Length);
                 slice[..size].Clear();
-                remaining -= size;
                 position += size;
             }
         }
@@ -197,9 +226,27 @@ public sealed class RopeStream : Stream
         _length = long.Max(_length, _position);
     }
 
+    public override Task WriteAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken)
+    {
+        Write(buffer, offset, count);
+        return Task.CompletedTask;
+    }
+
+    public override ValueTask WriteAsync(
+        ReadOnlyMemory<byte> buffer,
+        CancellationToken cancellationToken = default)
+    {
+        Write(buffer.Span);
+        return ValueTask.CompletedTask;
+    }
+
     public override void WriteByte(byte value)
     {
-        base.WriteByte(value);
+        Write(new ReadOnlySpan<byte>(in value));
     }
 
     protected override void Dispose(bool disposing)
@@ -274,19 +321,19 @@ public sealed class RopeStream : Stream
         public readonly long Offset { get; init; }
         public readonly long NextOffset => Offset + Buffer.Length;
 
-        public readonly int Available(long startPosition)
-        {
-            var offset = GetOffset(startPosition);
-            return Buffer.Length - offset;
-        }
-
         public readonly Span<byte> Slice(long startPosition)
         {
-            var offset = GetOffset(startPosition);
+            var offset = GetIndex(startPosition);
             return Buffer.AsSpan(offset);
         }
 
-        private readonly int GetOffset(long startPosition) => (int)(startPosition - Offset);
+        public readonly ArraySegment<byte> GetArraySegment(long startPosition)
+        {
+            var offset = GetIndex(startPosition);
+            return new ArraySegment<byte>(Buffer, offset, Buffer.Length - offset);
+        }
+
+        private readonly int GetIndex(long startPosition) => (int)(startPosition - Offset);
 
         public static Segment Empty => new() { Buffer = [] };
     }
