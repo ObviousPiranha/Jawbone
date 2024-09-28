@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Windows;
 
-public sealed class WindowsUdpSocketV4 : IDisposable
+sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
 {
     private readonly nuint _fd;
 
@@ -107,12 +107,6 @@ public sealed class WindowsUdpSocketV4 : IDisposable
         return new WindowsUdpSocketV4(socket);
     }
 
-    public static WindowsUdpSocketV4 BindAnyIp(int port) => BindAnyIp((NetworkPort)port);
-    public static WindowsUdpSocketV4 BindAnyIp(NetworkPort port) => Bind(new(default, port));
-    public static WindowsUdpSocketV4 BindAnyIp() => Bind(default);
-    public static WindowsUdpSocketV4 BindLocalIp(int port) => Bind(new(AddressV4.Local, (NetworkPort)port));
-    public static WindowsUdpSocketV4 BindLocalIp(NetworkPort port) => Bind(new(AddressV4.Local, port));
-    public static WindowsUdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default(NetworkPort)));
     public static WindowsUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
     {
         var socket = CreateSocket();

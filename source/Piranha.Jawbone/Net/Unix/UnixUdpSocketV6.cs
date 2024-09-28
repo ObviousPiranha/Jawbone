@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Unix;
 
-public sealed class UnixUdpSocketV6 : IDisposable
+sealed class UnixUdpSocketV6 : IUdpSocket<AddressV6>
 {
     private readonly int _fd;
 
@@ -101,19 +101,13 @@ public sealed class UnixUdpSocketV6 : IDisposable
         return address.ToEndpoint();
     }
 
-    public static UnixUdpSocketV6 Create(bool allowV4 = false)
+    public static UnixUdpSocketV6 Create(bool allowV4)
     {
         var socket = CreateSocket(allowV4);
         return new UnixUdpSocketV6(socket);
     }
 
-    public static UnixUdpSocketV6 BindAnyIp(int port, bool allowV4 = false) => BindAnyIp((NetworkPort)port, allowV4);
-    public static UnixUdpSocketV6 BindAnyIp(NetworkPort port, bool allowV4 = false) => Bind(new(default, port), allowV4);
-    public static UnixUdpSocketV6 BindAnyIp(bool allowV4 = false) => Bind(default, allowV4);
-    public static UnixUdpSocketV6 BindLocalIp(int port, bool allowV4 = false) => Bind(new(AddressV6.Local, (NetworkPort)port), allowV4);
-    public static UnixUdpSocketV6 BindLocalIp(NetworkPort port, bool allowV4 = false) => Bind(new(AddressV6.Local, port), allowV4);
-    public static UnixUdpSocketV6 BindLocalIp(bool allowV4 = false) => Bind(new(AddressV6.Local, default(NetworkPort)), allowV4);
-    public static UnixUdpSocketV6 Bind(Endpoint<AddressV6> endpoint, bool allowV4 = false)
+    public static UnixUdpSocketV6 Bind(Endpoint<AddressV6> endpoint, bool allowV4)
     {
         var socket = CreateSocket(allowV4);
 

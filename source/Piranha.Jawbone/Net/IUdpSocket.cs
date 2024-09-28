@@ -2,20 +2,15 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public interface IUdpSocket : IDisposable
-{
-    void Shutdown();
-}
-
-public interface IUdpSocket<TAddress> : IUdpSocket
+public interface IUdpSocket<TAddress> : IDisposable
     where TAddress : unmanaged, IAddress<TAddress>
 {
     int Send(
         ReadOnlySpan<byte> message,
         Endpoint<TAddress> destination);
-    int Receive(
+    void Receive(
         Span<byte> buffer,
-        out Endpoint<TAddress> origin,
-        TimeSpan timeout);
-    Endpoint<TAddress> GetEndpoint();
+        TimeSpan timeout,
+        out UdpReceiveResult<TAddress> result);
+    Endpoint<TAddress> GetSocketName();
 }

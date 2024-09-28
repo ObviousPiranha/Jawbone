@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Piranha.Jawbone.Net.Unix;
 
-public sealed class UnixUdpSocketV4 : IDisposable
+sealed class UnixUdpSocketV4 : IUdpSocket<AddressV4>
 {
     private readonly int _fd;
 
@@ -106,12 +106,6 @@ public sealed class UnixUdpSocketV4 : IDisposable
         return new UnixUdpSocketV4(socket);
     }
 
-    public static UnixUdpSocketV4 BindAnyIp(int port) => BindAnyIp((NetworkPort)port);
-    public static UnixUdpSocketV4 BindAnyIp(NetworkPort port) => Bind(new(default, port));
-    public static UnixUdpSocketV4 BindAnyIp() => Bind(default);
-    public static UnixUdpSocketV4 BindLocalIp(int port) => Bind(new(AddressV4.Local, (NetworkPort)port));
-    public static UnixUdpSocketV4 BindLocalIp(NetworkPort port) => Bind(new(AddressV4.Local, port));
-    public static UnixUdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default(NetworkPort)));
     public static UnixUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
     {
         var socket = CreateSocket();

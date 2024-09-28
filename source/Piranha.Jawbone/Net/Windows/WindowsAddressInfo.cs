@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 
 namespace Piranha.Jawbone.Net.Windows;
 
-public static class WindowsAddressInfo
+static class WindowsAddressInfo
 {
     public static unsafe AddressInfo Get(
         string? node,
