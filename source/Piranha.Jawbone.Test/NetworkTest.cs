@@ -23,14 +23,15 @@ public class NetworkTest
         var endpointB = socketB.GetSocketName();
 
         socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var result);
-        result.ThrowOnError();
+        Assert.Equal(UdpReceiveState.Success, result.State);
         Assert.Equal(endpointB.Port, result.Origin.Port);
         Assert.Equal(AddressV4.Local, result.Origin.Address);
         Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
         Assert.True(receiveBuffer.AsSpan(0, result.ReceivedByteCount).SequenceEqual(sendBuffer));
 
-        socketA.Send(sendBuffer, endpointB);
+        socketA.Send(sendBuffer, AddressV4.Local.OnPort(endpointB.Port));
         socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out result);
+        Assert.Equal(UdpReceiveState.Success, result.State);
         Assert.Equal(endpointA.Port, result.Origin.Port);
         Assert.Equal(AddressV4.Local, result.Origin.Address);
         Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
@@ -52,13 +53,15 @@ public class NetworkTest
         var endpointB = socketB.GetSocketName();
 
         socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var result);
+        Assert.Equal(UdpReceiveState.Success, result.State);
         Assert.Equal(endpointB.Port, result.Origin.Port);
         Assert.Equal(AddressV6.Local, result.Origin.Address);
         Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
         Assert.True(receiveBuffer.AsSpan(0, result.ReceivedByteCount).SequenceEqual(sendBuffer));
 
-        socketA.Send(sendBuffer, endpointB);
+        socketA.Send(sendBuffer, AddressV6.Local.OnPort(endpointB.Port));
         socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out result);
+        Assert.Equal(UdpReceiveState.Success, result.State);
         Assert.Equal(endpointA.Port, result.Origin.Port);
         Assert.Equal(AddressV6.Local, result.Origin.Address);
         Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
