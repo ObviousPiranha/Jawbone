@@ -12,8 +12,10 @@ class Program
     {
         try
         {
-            // UnixNetworkTest();
-            WindowsNetworkTest();
+            if (OperatingSystem.IsWindows())
+                WindowsNetworkTest();
+            else
+                UnixNetworkTest();
         }
         catch (Exception ex)
         {
@@ -83,6 +85,7 @@ class Program
         var buffer = new byte[2048];
         Console.WriteLine("Begin receive...");
         server.Receive(buffer, TimeSpan.FromSeconds(2), out var result);
+        result.ThrowOnError();
 
         if (result.State == UdpReceiveState.Timeout)
         {
