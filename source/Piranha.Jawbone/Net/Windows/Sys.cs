@@ -1,9 +1,9 @@
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 
-namespace Piranha.Jawbone.Net;
+namespace Piranha.Jawbone.Net.Windows;
 
-public static class Windows
+static class Sys
 {
     public static readonly ImmutableArray<ErrorCode> ErrorCodes =
     [

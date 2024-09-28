@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace Piranha.Jawbone.Net;
 
@@ -10,28 +9,34 @@ public class SocketException : Exception
     {
         if (0 < error)
         {
-            var errorCode = ErrorCode.None;
-
-            if (OperatingSystem.IsWindows())
+            var exception = new SocketException(message)
             {
-                if (Windows.ErrorCodeById.TryGetValue(error, out var windowsErrorCode))
-                    errorCode = windowsErrorCode;
-            }
-            else // Assume UNIX.
-            {
-                if (0 < error && error < Linux.ErrorCodes.Length)
-                    errorCode = Linux.ErrorCodes[error];
-            }
-
-            var exception = new SocketException(message + " " + errorCode.ToString())
-            {
-                Code = errorCode
+                Error = error
             };
+
             throw exception;
         }
     }
 
-    public ErrorCode Code { get; internal init; } = ErrorCode.None;
+    public int Error { get; init; }
+    public ErrorCode Code
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                if (Windows.Sys.ErrorCodeById.TryGetValue(Error, out var windowsErrorCode))
+                    return windowsErrorCode;
+            }
+            else
+            {
+                if (0 < Error && Error < Unix.Sys.ErrorCodes.Length)
+                    return Unix.Sys.ErrorCodes[Error];
+            }
+
+            return ErrorCode.None;
+        }
+    }
 
     public SocketException() { }
     public SocketException(string message) : base(message) { }
