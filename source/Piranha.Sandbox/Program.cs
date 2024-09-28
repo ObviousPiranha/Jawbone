@@ -27,6 +27,10 @@ class Program
 
     static void WindowsNetworkTest()
     {
+        var addressInfo = WindowsAddressInfo.Get("google.com");
+        Console.WriteLine("V4: " + string.Join(", ", addressInfo.V4));
+        Console.WriteLine("V6: " + string.Join(", ", addressInfo.V6));
+
         var port = 7777;
         // var serverEndpoint = AddressV4.Local.OnPort(2);
         using var server = WindowsUdpSocketV6.BindAnyIp(port, true);
