@@ -1,20 +1,21 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Windows;
 
-public sealed class UnixUdpSocketV4 : IDisposable
+public sealed class WindowsUdpSocketV4 : IDisposable
 {
-    private readonly int _fd;
+    private readonly nuint _fd;
 
-    private UnixUdpSocketV4(int fd)
+    private WindowsUdpSocketV4(nuint fd)
     {
         _fd = fd;
     }
 
     public void Dispose()
     {
-        var result = Sys.Close(_fd);
+        var result = Sys.CloseSocket(_fd);
         if (result == -1)
             Sys.Throw("Unable to close socket.");
     }
@@ -53,8 +54,8 @@ public sealed class UnixUdpSocketV4 : IDisposable
             else
                 milliseconds = unchecked((int)ms64);
         }
-        var pfd = new PollFd { Fd = _fd, Events = Poll.In };
-        var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
+        var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
+        var pollResult = Sys.WsaPoll(ref pfd, 1, milliseconds);
 
         if (0 < pollResult)
         {
@@ -64,7 +65,7 @@ public sealed class UnixUdpSocketV4 : IDisposable
                 var receiveResult = Sys.RecvFromV4(
                     _fd,
                     out buffer.GetPinnableReference(),
-                    (nuint)buffer.Length,
+                    buffer.Length,
                     0,
                     out var address,
                     ref addressLength);
@@ -82,7 +83,7 @@ public sealed class UnixUdpSocketV4 : IDisposable
         else if (pollResult < 0)
         {
             result.State = UdpReceiveState.Failure;
-            result.Error = Sys.ErrNo();
+            result.Error = Sys.WsaGetLastError();
         }
         else
         {
@@ -100,19 +101,19 @@ public sealed class UnixUdpSocketV4 : IDisposable
         return address.ToEndpoint();
     }
 
-    public static UnixUdpSocketV4 Create()
+    public static WindowsUdpSocketV4 Create()
     {
         var socket = CreateSocket();
-        return new UnixUdpSocketV4(socket);
+        return new WindowsUdpSocketV4(socket);
     }
 
-    public static UnixUdpSocketV4 BindAnyIp(int port) => BindAnyIp((NetworkPort)port);
-    public static UnixUdpSocketV4 BindAnyIp(NetworkPort port) => Bind(new(default, port));
-    public static UnixUdpSocketV4 BindAnyIp() => Bind(default);
-    public static UnixUdpSocketV4 BindLocalIp(int port) => Bind(new(AddressV4.Local, (NetworkPort)port));
-    public static UnixUdpSocketV4 BindLocalIp(NetworkPort port) => Bind(new(AddressV4.Local, port));
-    public static UnixUdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default(NetworkPort)));
-    public static UnixUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
+    public static WindowsUdpSocketV4 BindAnyIp(int port) => BindAnyIp((NetworkPort)port);
+    public static WindowsUdpSocketV4 BindAnyIp(NetworkPort port) => Bind(new(default, port));
+    public static WindowsUdpSocketV4 BindAnyIp() => Bind(default);
+    public static WindowsUdpSocketV4 BindLocalIp(int port) => Bind(new(AddressV4.Local, (NetworkPort)port));
+    public static WindowsUdpSocketV4 BindLocalIp(NetworkPort port) => Bind(new(AddressV4.Local, port));
+    public static WindowsUdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default(NetworkPort)));
+    public static WindowsUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
     {
         var socket = CreateSocket();
 
@@ -124,31 +125,31 @@ public sealed class UnixUdpSocketV4 : IDisposable
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {endpoint}.");
 
-            return new UnixUdpSocketV4(socket);
+            return new WindowsUdpSocketV4(socket);
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.CloseSocket(socket);
             throw;
         }
     }
 
-    private static int CreateSocket()
+    private static nuint CreateSocket()
     {
-        int socket = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
+        var socket = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
 
-        if (socket == -1)
+        if (socket == Sys.InvalidSocket)
             Sys.Throw("Unable to open socket.");
 
         return socket;
     }
 
-    private static void AssertAddrLen(uint addrLen)
+    private static void AssertAddrLen(int addrLen)
     {
         Debug.Assert(
             addrLen == AddrLen,
             "The returned address length does not match.");
     }
 
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
+    private static int AddrLen => Unsafe.SizeOf<SockAddrIn>();
 }
