@@ -1,9 +1,6 @@
-﻿using Piranha.Jawbone;
-using Piranha.Jawbone.Net;
+﻿using Piranha.Jawbone.Net;
 using Piranha.Jawbone.Net.Unix;
-using Piranha.Jawbone.Sdl2;
 using System;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Piranha.Sandbox;
@@ -14,6 +11,10 @@ class Program
     {
         try
         {
+            var addressInfo = UnixAddressInfo.Get("google.com");
+            Console.WriteLine("V4: " + string.Join(", ", addressInfo.V4));
+            Console.WriteLine("V6: " + string.Join(", ", addressInfo.V6));
+
             var port = 7777;
             // var serverEndpoint = AddressV4.Local.OnPort(2);
             using var server = UnixUdpSocketV6.BindAnyIp(port, true);

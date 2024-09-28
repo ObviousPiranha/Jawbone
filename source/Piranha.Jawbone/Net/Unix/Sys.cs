@@ -69,6 +69,12 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "poll")]
     public static partial int Poll(ref PollFd fds, nuint nfds, int timeout);
 
+    [LibraryImport(Lib, EntryPoint = "getaddrinfo", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int GetAddrInfo(string? node, string? service, in AddrInfo hints, out AddrInfo* res);
+
+    [LibraryImport(Lib, EntryPoint = "freeaddrinfo")]
+    public static partial void FreeAddrInfo(AddrInfo* res);
+
     [LibraryImport(Lib, EntryPoint = "setsockopt")]
     public static partial int SetSockOpt(
         int socket,
