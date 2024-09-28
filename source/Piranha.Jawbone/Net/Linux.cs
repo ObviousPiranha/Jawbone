@@ -1,9 +1,126 @@
+using System;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Net;
 
-public static class Linux
+public static unsafe partial class Linux
 {
+    public static class Af
+    {
+        public const int INet = 2;
+    }
+
+    public static class Sock
+    {
+        public const int DGram = 2;
+    }
+
+    public static class IpProto
+    {
+        public const int Udp = 17;
+    }
+
+    public struct SockAddr
+    {
+        [InlineArray(Length)]
+        public struct Data
+        {
+            public const int Length = 14;
+            private byte _e0;
+        }
+
+        public ushort SaFamily;
+        public Data SaData;
+    }
+
+    public struct SockAddrIn
+    {
+        [InlineArray(Length)]
+        public struct Zero
+        {
+            public const int Length = 8;
+            private byte _e0;
+        }
+
+        public ushort SinFamily;
+        public ushort SinPort;
+        public uint SinAddr;
+        public Zero SinZero;
+    }
+
+    [StructLayout(LayoutKind.Explicit, Size = 16)]
+    public struct In6Addr
+    {
+        [FieldOffset(0)]
+        public AddressV6.ArrayU8 U6Addr8;
+        [FieldOffset(0)]
+        public AddressV6.ArrayU16 U6Addr16;
+        [FieldOffset(0)]
+        public AddressV6.ArrayU32 U6Addr32;
+    }
+
+    public struct SockAddrIn6
+    {
+        public ushort Sin6Family;
+        public ushort Sin6Port;
+        public uint Sin6FlowInfo;
+        public In6Addr Sin6Addr;
+        public uint Sin6ScopeId;
+    }
+
+    public struct PollFd
+    {
+        public int Fd;
+        public short Events;
+        public short REvents;
+    }
+
+    public static class EventTypes
+    {
+        public const short PollIn = 1 << 0;
+        public const short PollPri = 1 << 1;
+        public const short PollOut = 1 << 2;
+    }
+
+    public const string Lib = "libc";
+
+    [LibraryImport(Lib, EntryPoint = "socket")]
+    public static partial int* ErrNoLocation();
+
+    [LibraryImport(Lib, EntryPoint = "socket")]
+    public static partial int Socket(int domain, int type, int protocol);
+
+    [LibraryImport(Lib, EntryPoint = "bind")]
+    public static partial int Bind(int sockfd, in SockAddrIn addr, uint addrlen);
+
+    [LibraryImport(Lib, EntryPoint = "sendto")]
+    public static partial nint SendTo(
+        int sockfd,
+        in byte buf,
+        nuint len,
+        int flags,
+        in SockAddrIn destAddr,
+        uint addrlen);
+
+    [LibraryImport(Lib, EntryPoint = "recvfrom")]
+    public static partial nint RecvFrom(
+        int socket,
+        out byte buffer,
+        nuint length,
+        int flags,
+        out SockAddrIn address,
+        ref uint addressLen);
+
+    [LibraryImport(Lib, EntryPoint = "poll")]
+    public static partial int Poll(ref PollFd fds, nuint nfds, int timeout);
+
+    [LibraryImport(Lib, EntryPoint = "close")]
+    public static partial int Close(int fd);
+
+    public static unsafe int ErrNo() => *ErrNoLocation();
+
     public static readonly ImmutableArray<ErrorCode> ErrorCodes =
     [
         ErrorCode.None,

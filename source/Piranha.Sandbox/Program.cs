@@ -3,6 +3,7 @@ using Piranha.Jawbone.Net;
 using Piranha.Jawbone.Sdl2;
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Piranha.Sandbox;
 
@@ -12,23 +13,24 @@ class Program
     {
         try
         {
-            Console.WriteLine(Alignment.Of<AddressV6>());
-            Console.WriteLine("Enter address text.");
+            var serverEndpoint = AddressV4.Local.OnPort(7777);
+            using var server = LinuxUdpSocketV4.Bind(serverEndpoint);
+            using var client = LinuxUdpSocketV4.Create();
 
-            while (true)
+            client.Send("Hello, IPv4!"u8, serverEndpoint);
+
+            var buffer = new byte[2048];
+            var n = server.Receive(buffer, out var origin, TimeSpan.FromSeconds(2));
+
+            if (n == 0)
             {
-                var input = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(input))
-                    break;
-
-                if (AddressV6.TryParse(input, null, out var address))
-                    Console.WriteLine("Successfully parsed " + address);
-                else
-                    Console.WriteLine("Failed to parse " + input);
+                Console.WriteLine("Timed out.");
             }
-
-            Console.WriteLine("Exiting...");
+            else
+            {
+                var text = Encoding.UTF8.GetString(buffer.AsSpan(0, n));
+                Console.WriteLine("Received: " + text);
+            }
         }
         catch (Exception ex)
         {

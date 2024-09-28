@@ -31,7 +31,7 @@ public class SocketException : Exception
         }
     }
 
-    public ErrorCode Code { get; private set; } = ErrorCode.None;
+    public ErrorCode Code { get; internal init; } = ErrorCode.None;
 
     public SocketException() { }
     public SocketException(string message) : base(message) { }
