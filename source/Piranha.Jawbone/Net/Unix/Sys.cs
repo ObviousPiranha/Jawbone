@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -20,6 +21,9 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "bind")]
     public static partial int BindV4(int sockfd, in SockAddrIn addr, uint addrlen);
 
+    [LibraryImport(Lib, EntryPoint = "bind")]
+    public static partial int BindV6(int sockfd, in SockAddrIn6 addr, uint addrlen);
+
     [LibraryImport(Lib, EntryPoint = "sendto")]
     public static partial nint SendToV4(
         int sockfd,
@@ -27,6 +31,15 @@ static unsafe partial class Sys
         nuint len,
         int flags,
         in SockAddrIn destAddr,
+        uint addrlen);
+
+        [LibraryImport(Lib, EntryPoint = "sendto")]
+    public static partial nint SendToV6(
+        int sockfd,
+        in byte buf,
+        nuint len,
+        int flags,
+        in SockAddrIn6 destAddr,
         uint addrlen);
 
     [LibraryImport(Lib, EntryPoint = "recvfrom")]
@@ -38,11 +51,31 @@ static unsafe partial class Sys
         out SockAddrIn address,
         ref uint addressLen);
 
+    [LibraryImport(Lib, EntryPoint = "recvfrom")]
+    public static partial nint RecvFromV6(
+        int socket,
+        out byte buffer,
+        nuint length,
+        int flags,
+        out SockAddrIn6 address,
+        ref uint addressLen);
+
     [LibraryImport(Lib, EntryPoint = "getsockname")]
     public static partial int GetSockNameV4(int sockfd, out SockAddrIn addr, ref uint addrlen);
 
+    [LibraryImport(Lib, EntryPoint = "getsockname")]
+    public static partial int GetSockNameV6(int sockfd, out SockAddrIn6 addr, ref uint addrlen);
+
     [LibraryImport(Lib, EntryPoint = "poll")]
     public static partial int Poll(ref PollFd fds, nuint nfds, int timeout);
+
+    [LibraryImport(Lib, EntryPoint = "setsockopt")]
+    public static partial int SetSockOpt(
+        int socket,
+        int level,
+        int optionName,
+        in int optionValue,
+        uint optionLen);
 
     [LibraryImport(Lib, EntryPoint = "close")]
     public static partial int Close(int fd);
@@ -50,6 +83,19 @@ static unsafe partial class Sys
     public static unsafe int LinuxErrNo() => *ErrNoLocation();
     public static unsafe int MacErrNo() => *Error();
     public static int ErrNo() => OperatingSystem.IsMacOS() ? MacErrNo() : LinuxErrNo();
+
+    public static uint SockLen<T>() => (uint)Unsafe.SizeOf<T>();
+
+    [DoesNotReturn]
+    public static void Throw(string message)
+    {
+        var exception = new SocketException(message)
+        {
+            Error = ErrNo()
+        };
+
+        throw exception;
+    }
 
     public static readonly ImmutableArray<ErrorCode> ErrorCodes =
     [

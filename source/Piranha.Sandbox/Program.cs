@@ -14,13 +14,19 @@ class Program
     {
         try
         {
-            var serverEndpoint = AddressV4.Local.OnPort(7777);
+            var port = 7777;
             // var serverEndpoint = AddressV4.Local.OnPort(2);
-            using var server = UnixUdpSocketV4.Bind(serverEndpoint);
+            using var server = UnixUdpSocketV6.BindAnyIp(port, true);
             // using var oops = UnixUdpSocketV4.Bind(serverEndpoint);
             using var client = UnixUdpSocketV4.Create();
 
-            client.Send("Hello, IPv4!"u8, serverEndpoint);
+            var serverSocketName = server.GetSocketName();
+            Console.WriteLine("Server socket name: " + serverSocketName);
+            var clientSocketName = client.GetSocketName();
+            Console.WriteLine("Client socket name: " + clientSocketName);
+            client.Send("Hello, IPv6!"u8, AddressV4.Local.OnPort(port));
+            clientSocketName = client.GetSocketName();
+            Console.WriteLine("Client socket name: " + clientSocketName);
 
             var buffer = new byte[2048];
             Console.WriteLine("Begin receive...");

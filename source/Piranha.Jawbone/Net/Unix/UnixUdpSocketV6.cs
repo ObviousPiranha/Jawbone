@@ -1,15 +1,14 @@
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Unix;
 
-public sealed class UnixUdpSocketV4 : IDisposable
+public sealed class UnixUdpSocketV6 : IDisposable
 {
     private readonly int _fd;
 
-    private UnixUdpSocketV4(int fd)
+    private UnixUdpSocketV6(int fd)
     {
         _fd = fd;
     }
@@ -21,11 +20,11 @@ public sealed class UnixUdpSocketV4 : IDisposable
             Sys.Throw("Unable to close socket.");
     }
 
-    public unsafe int Send(ReadOnlySpan<byte> message, Endpoint<AddressV4> destination)
+    public unsafe int Send(ReadOnlySpan<byte> message, Endpoint<AddressV6> destination)
     {
-        var sa = SockAddrIn.FromEndpoint(destination);
+        var sa = SockAddrIn6.FromEndpoint(destination);
 
-        var result = Sys.SendToV4(
+        var result = Sys.SendToV6(
             _fd,
             message.GetPinnableReference(),
             (nuint)message.Length,
@@ -42,7 +41,7 @@ public sealed class UnixUdpSocketV4 : IDisposable
     public unsafe void Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<AddressV4> result)
+        out UdpReceiveResult<AddressV6> result)
     {
         result = default;
         int milliseconds;
@@ -63,7 +62,7 @@ public sealed class UnixUdpSocketV4 : IDisposable
             if ((pfd.REvents & Poll.In) != 0)
             {
                 var addressLength = AddrLen;
-                var receiveResult = Sys.RecvFromV4(
+                var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
                     (nuint)buffer.Length,
@@ -92,41 +91,41 @@ public sealed class UnixUdpSocketV4 : IDisposable
         }
     }
 
-    public unsafe Endpoint<AddressV4> GetSocketName()
+    public unsafe Endpoint<AddressV6> GetSocketName()
     {
         var addressLength = AddrLen;
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
         AssertAddrLen(addressLength);
         return address.ToEndpoint();
     }
 
-    public static UnixUdpSocketV4 Create()
+    public static UnixUdpSocketV6 Create(bool allowV4 = false)
     {
-        var socket = CreateSocket();
-        return new UnixUdpSocketV4(socket);
+        var socket = CreateSocket(allowV4);
+        return new UnixUdpSocketV6(socket);
     }
 
-    public static UnixUdpSocketV4 BindAnyIp(int port) => BindAnyIp((NetworkPort)port);
-    public static UnixUdpSocketV4 BindAnyIp(NetworkPort port) => Bind(new(default, port));
-    public static UnixUdpSocketV4 BindAnyIp() => Bind(default);
-    public static UnixUdpSocketV4 BindLocalIp(int port) => Bind(new(AddressV4.Local, (NetworkPort)port));
-    public static UnixUdpSocketV4 BindLocalIp(NetworkPort port) => Bind(new(AddressV4.Local, port));
-    public static UnixUdpSocketV4 BindLocalIp() => Bind(new(AddressV4.Local, default(NetworkPort)));
-    public static UnixUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
+    public static UnixUdpSocketV6 BindAnyIp(int port, bool allowV4 = false) => BindAnyIp((NetworkPort)port, allowV4);
+    public static UnixUdpSocketV6 BindAnyIp(NetworkPort port, bool allowV4 = false) => Bind(new(default, port), allowV4);
+    public static UnixUdpSocketV6 BindAnyIp(bool allowV4 = false) => Bind(default, allowV4);
+    public static UnixUdpSocketV6 BindLocalIp(int port, bool allowV4 = false) => Bind(new(AddressV6.Local, (NetworkPort)port), allowV4);
+    public static UnixUdpSocketV6 BindLocalIp(NetworkPort port, bool allowV4 = false) => Bind(new(AddressV6.Local, port), allowV4);
+    public static UnixUdpSocketV6 BindLocalIp(bool allowV4 = false) => Bind(new(AddressV6.Local, default(NetworkPort)), allowV4);
+    public static UnixUdpSocketV6 Bind(Endpoint<AddressV6> endpoint, bool allowV4 = false)
     {
-        var socket = CreateSocket();
+        var socket = CreateSocket(allowV4);
 
         try
         {
-            var sa = SockAddrIn.FromEndpoint(endpoint);
-            var bindResult = Sys.BindV4(socket, sa, AddrLen);
+            var sa = SockAddrIn6.FromEndpoint(endpoint);
+            var bindResult = Sys.BindV6(socket, sa, AddrLen);
 
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {endpoint}.");
 
-            return new UnixUdpSocketV4(socket);
+            return new UnixUdpSocketV6(socket);
         }
         catch
         {
@@ -135,14 +134,33 @@ public sealed class UnixUdpSocketV4 : IDisposable
         }
     }
 
-    private static int CreateSocket()
+    private static int CreateSocket(bool allowV4)
     {
-        int socket = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
+        var socket = Sys.Socket(Af.INet6, Sock.DGram, IpProto.Udp);
 
         if (socket == -1)
             Sys.Throw("Unable to open socket.");
 
-        return socket;
+        try
+        {
+            int yes = allowV4 ? 0 : 1;
+            var result = Sys.SetSockOpt(
+                socket,
+                IpProto.Ipv6,
+                Ipv6.V6Only,
+                yes,
+                Sys.SockLen<int>());
+
+            if (result == -1)
+                Sys.Throw("Unable to set socket option.");
+
+            return socket;
+        }
+        catch
+        {
+            _ = Sys.Close(socket);
+            throw;
+        }
     }
 
     private static void AssertAddrLen(uint addrLen)
@@ -152,5 +170,5 @@ public sealed class UnixUdpSocketV4 : IDisposable
             "The returned address length does not match.");
     }
 
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
+    private static uint AddrLen => (uint)Unsafe.SizeOf<SockAddrIn6>();
 }
