@@ -1,3 +1,5 @@
+using System;
+
 namespace Piranha.Jawbone.Net;
 
 public struct UdpReceiveResult<TAddress> where TAddress : unmanaged, IAddress<TAddress>
@@ -21,5 +23,21 @@ public static class UdpReceiveResult
                 Error = udpReceiveResult.Error
             };
         }
+    }
+
+    public static void ThrowOnTimeout<TAddress>(
+        in this UdpReceiveResult<TAddress> udpReceiveResult
+        ) where TAddress : unmanaged, IAddress<TAddress>
+    {
+        if (udpReceiveResult.State == UdpReceiveState.Timeout)
+            throw new TimeoutException("UDP socket timed out.");
+    }
+
+    public static void ThrowOnErrorOrTimeout<TAddress>(
+        in this UdpReceiveResult<TAddress> udpReceiveResult
+        ) where TAddress : unmanaged, IAddress<TAddress>
+    {
+        udpReceiveResult.ThrowOnError();
+        udpReceiveResult.ThrowOnTimeout();
     }
 }

@@ -2,7 +2,7 @@ using Piranha.Jawbone.Net;
 using System;
 using Xunit;
 
-namespace Piranha.Jawbone.Test.Native;
+namespace Piranha.Jawbone.Test;
 
 public class NetworkTest
 {
