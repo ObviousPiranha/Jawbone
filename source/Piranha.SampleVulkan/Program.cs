@@ -2,6 +2,7 @@
 using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.Sdl2;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -10,6 +11,10 @@ namespace Piranha.SampleVulkan;
 
 internal class Program
 {
+    static string[] deviceExtensions = new string[] {
+            "VK_KHR_swapchain"
+        };
+
     private static unsafe void Main(string[] args)
     {
         using var sdlProvider = new Sdl2Provider(GetLib(), SdlInit.Everything);
@@ -103,22 +108,44 @@ internal class Program
             
             var physicalDevices = stackalloc VkPhysicalDevice[(int)deviceCount];
             VulkanNative.vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices);
-            var options = new JsonSerializerOptions { WriteIndented = true };
+            var options = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
+            options.Converters.Add(new UIntPtrJsonConverter());
 
             for (int i = 0; i < deviceCount; ++i)
             {
                 // vkGetPhysicalDeviceProperties
                 var props = default(VkPhysicalDeviceProperties);
                 VulkanNative.vkGetPhysicalDeviceProperties(physicalDevices[i], &props);
-
                 Console.WriteLine(Marshal.PtrToStringUTF8(new nint(props.deviceName)));
                 Console.WriteLine(JsonSerializer.Serialize(props, options));
+                CheckPhysicalDeviceExtensionSupport(physicalDevices[i]);
             }
         }
 
         //ApplicationManager.RunBlocking(sdl, new EventHandler());
 
         sdl.DestroyWindow(window);
+    }
+
+    private static unsafe bool CheckPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+    {
+        uint extensionCount;
+        Helpers.CheckErrors(VulkanNative.vkEnumerateDeviceExtensionProperties(physicalDevice, null, &extensionCount, null));
+
+        VkExtensionProperties* availableExtensions = stackalloc VkExtensionProperties[(int)extensionCount];
+        Helpers.CheckErrors(VulkanNative.vkEnumerateDeviceExtensionProperties(physicalDevice, null, &extensionCount, availableExtensions));
+
+        HashSet<string> requiredExtensions = new HashSet<string>(deviceExtensions);
+
+        Console.WriteLine($"{extensionCount} supported extensions:");
+        for (int i = 0; i < extensionCount; ++i)
+        {
+            var extension = availableExtensions[i];
+            Console.WriteLine($"{Helpers.GetString(extension.extensionName)}");
+            requiredExtensions.Remove(Helpers.GetString(extension.extensionName));
+        }
+
+        return requiredExtensions.Count == 0;
     }
 
     static uint Version(uint major, uint minor, uint patch)
