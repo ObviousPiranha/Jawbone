@@ -69,6 +69,7 @@ public class NetworkTest
     [Fact]
     public void CanSendUdp32And128WhenAllowed()
     {
+        var v4LocalAsV6 = (AddressV6)AddressV4.Local;
         var sendBuffer = new byte[256];
         sendBuffer.AsSpan().Fill(0xab);
 
@@ -77,13 +78,12 @@ public class NetworkTest
 
         using var socketA = UdpSocketV4.Create();
 
-        using var socketB = UdpSocketV6.BindAnyIp(true);
+        using var socketB = UdpSocketV6.Bind(v4LocalAsV6.OnAnyPort(), true);
         var endpointB = socketB.GetSocketName();
         var destinationB = AddressV4.Local.OnPort(endpointB.Port);
 
         socketA.Send(sendBuffer, destinationB);
         var endpointA = socketA.GetSocketName();
-        var v4LocalAsV6 = (AddressV6)AddressV4.Local;
         var destinationA = v4LocalAsV6.OnPort(endpointA.Port);
         socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var resultV6);
         var debug1 = v4LocalAsV6.ToString();
