@@ -116,7 +116,7 @@ internal class Program
             }
         }
 
-        ApplicationManager.RunBlocking(sdl, new EventHandler());
+        //ApplicationManager.RunBlocking(sdl, new EventHandler());
 
         sdl.DestroyWindow(window);
     }
