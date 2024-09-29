@@ -39,14 +39,14 @@ static unsafe partial class Sys
         in SockAddrIn destAddr,
         uint addrlen);
 
-        [LibraryImport(Lib, EntryPoint = "sendto")]
+    [LibraryImport(Lib, EntryPoint = "sendto")]
     public static partial nint SendToV6(
-        int sockfd,
-        in byte buf,
-        nuint len,
-        int flags,
-        in SockAddrIn6 destAddr,
-        uint addrlen);
+    int sockfd,
+    in byte buf,
+    nuint len,
+    int flags,
+    in SockAddrIn6 destAddr,
+    uint addrlen);
 
     // https://man7.org/linux/man-pages/man3/recvfrom.3p.html
     [LibraryImport(Lib, EntryPoint = "recvfrom")]
