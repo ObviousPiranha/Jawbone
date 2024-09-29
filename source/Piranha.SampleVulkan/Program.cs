@@ -3,6 +3,8 @@ using Piranha.Jawbone.Extensions;
 using Piranha.Jawbone.Sdl2;
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.Json;
 
 namespace Piranha.SampleVulkan;
 
@@ -83,8 +85,37 @@ internal class Program
 
         if (result == 0)
             throw new SdlException(sdl.GetError().ToString() ?? "[empty error]");
-
         Console.WriteLine("Created SDL window!");
+
+        // Physical device
+        // https://vkguide.dev/docs/new_chapter_1/vulkan_init_flow/
+        // https://vkguide.dev/docs/new_chapter_1/vulkan_init_code/
+        // https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Physical_devices_and_queue_families
+        {
+            // https://harrylovescode.gitbooks.io/vulkan-api/content/chap03/chap03.html
+            VkPhysicalDevice physicalDevice;
+
+            uint deviceCount = 0;
+            VulkanNative.vkEnumeratePhysicalDevices(instance, &deviceCount, null);
+
+            if (deviceCount == 0)
+                throw new Exception("You have no graphics, you doofus");
+            
+            var physicalDevices = stackalloc VkPhysicalDevice[(int)deviceCount];
+            VulkanNative.vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices);
+            var options = new JsonSerializerOptions { WriteIndented = true };
+
+            for (int i = 0; i < deviceCount; ++i)
+            {
+                // vkGetPhysicalDeviceProperties
+                var props = default(VkPhysicalDeviceProperties);
+                VulkanNative.vkGetPhysicalDeviceProperties(physicalDevices[i], &props);
+
+                Console.WriteLine(Marshal.PtrToStringUTF8(new nint(props.deviceName)));
+                Console.WriteLine(JsonSerializer.Serialize(props, options));
+            }
+        }
+
         ApplicationManager.RunBlocking(sdl, new EventHandler());
 
         sdl.DestroyWindow(window);
