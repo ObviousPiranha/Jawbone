@@ -5,5 +5,8 @@ using Piranha.Jawbone.Net;
 // var summary = BenchmarkRunner.Run<AesBenchmark>();
 // var summary = BenchmarkRunner.Run<AddressKeyBenchmark<AddressV4>>();
 // var summary = BenchmarkRunner.Run<AddressKeyBenchmark<AddressV6>>();
-var summary = BenchmarkRunner.Run<NativeInteropBenchmark>();
+// var summary = BenchmarkRunner.Run<NativeInteropBenchmark>();
 // var summary = BenchmarkRunner.Run<SocketBenchmark>();
+
+// var summary = BenchmarkRunner.Run<RopeStreamBenchmark>();
+var summary = BenchmarkRunner.Run<RopeStreamReadBenchmark>();

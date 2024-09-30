@@ -1,27 +1,36 @@
 namespace Piranha.Jawbone.Net;
 
-public static class Address
+public readonly struct Address
 {
-    public static Endpoint<TAddress> OnAnyPort<TAddress>(
-        this TAddress address
-        ) where TAddress : unmanaged, IAddress<TAddress>
+    private readonly AddressV6 _storage;
+
+    public readonly AddressType Type { get; }
+
+    public Address(AddressV4 address)
     {
-        return new(address, default(NetworkPort));
+        Type = AddressType.V4;
+        _storage.DataU32[0] = address.DataU32;
     }
 
-    public static Endpoint<TAddress> OnPort<TAddress>(
-        this TAddress address,
-        int port
-        ) where TAddress : unmanaged, IAddress<TAddress>
+    public Address(AddressV6 address)
     {
-        return new(address, port);
+        Type = AddressType.V6;
+        _storage = address;
     }
 
-    public static Endpoint<TAddress> OnPort<TAddress>(
-        this TAddress address,
-        NetworkPort port
-        ) where TAddress : unmanaged, IAddress<TAddress>
+    public AddressV4 AsV4() => new(_storage.DataU32[0]);
+    public AddressV6 AsV6() => _storage;
+
+    public readonly override string? ToString()
     {
-        return new(address, port);
+        return Type switch
+        {
+            AddressType.V4 => AsV4().ToString(),
+            AddressType.V6 => AsV6().ToString(),
+            _ => null
+        };
     }
+
+    public static implicit operator Address(AddressV4 address) => new(address);
+    public static implicit operator Address(AddressV6 address) => new(address);
 }

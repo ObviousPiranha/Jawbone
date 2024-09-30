@@ -1,10 +1,129 @@
 using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Net;
+namespace Piranha.Jawbone.Net.Windows;
 
-public static class Windows
+static unsafe partial class Sys
 {
+    public const string Lib = "ws2_32";
+    public const string KernelLib = "kernel32";
+    public static nuint InvalidSocket => nuint.MaxValue;
+    private static readonly byte[] s_wsaData = new byte[512];
+
+    static Sys()
+    {
+        var result = WsaStartup(0x0202, out s_wsaData[0]);
+        if (result != 0)
+        {
+            throw new SocketException("Unable to initialize Windows networking.")
+            {
+                Error = result
+            };
+        }
+    }
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsastartup
+    [LibraryImport(Lib, EntryPoint = "WSAStartup")]
+    public static partial int WsaStartup(ushort versionRequired, out byte wsaData);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsagetlasterror
+    [LibraryImport(Lib, EntryPoint = "WSAGetLastError")]
+    public static partial int WsaGetLastError();
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-socket
+    [LibraryImport(Lib, EntryPoint = "socket")]
+    public static partial nuint Socket(int af, int type, int protocol);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-bind
+    [LibraryImport(Lib, EntryPoint = "bind")]
+    public static partial int BindV4(nuint s, in SockAddrIn name, int namelen);
+
+    [LibraryImport(Lib, EntryPoint = "bind")]
+    public static partial int BindV6(nuint s, in SockAddrIn6 name, int namelen);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-sendto
+    [LibraryImport(Lib, EntryPoint = "sendto")]
+    public static partial nint SendToV4(
+        nuint s,
+        in byte buf,
+        nuint len,
+        int flags,
+        in SockAddrIn to,
+        int tolen);
+
+    [LibraryImport(Lib, EntryPoint = "sendto")]
+    public static partial nint SendToV6(
+        nuint s,
+        in byte buf,
+        nuint len,
+        int flags,
+        in SockAddrIn6 to,
+        int tolen);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-recvfrom
+    [LibraryImport(Lib, EntryPoint = "recvfrom")]
+    public static partial nint RecvFromV4(
+        nuint s,
+        out byte buf,
+        int len,
+        int flags,
+        out SockAddrIn from,
+        ref int fromlen);
+
+    [LibraryImport(Lib, EntryPoint = "recvfrom")]
+    public static partial nint RecvFromV6(
+        nuint s,
+        out byte buf,
+        int len,
+        int flags,
+        out SockAddrIn6 from,
+        ref int fromlen);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-getsockname
+    [LibraryImport(Lib, EntryPoint = "getsockname")]
+    public static partial int GetSockNameV4(nuint s, out SockAddrIn name, ref int namelen);
+
+    [LibraryImport(Lib, EntryPoint = "getsockname")]
+    public static partial int GetSockNameV6(nuint s, out SockAddrIn6 name, ref int namelen);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsapoll
+    [LibraryImport(Lib, EntryPoint = "WSAPoll")]
+    public static partial int WsaPoll(ref WsaPollFd fds, uint nfds, int timeout);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfo
+    [LibraryImport(Lib, EntryPoint = "getaddrinfo", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int GetAddrInfo(string? node, string? service, in AddrInfo hints, out AddrInfo* res);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-freeaddrinfo
+    [LibraryImport(Lib, EntryPoint = "freeaddrinfo")]
+    public static partial void FreeAddrInfo(AddrInfo* res);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-setsockopt
+    [LibraryImport(Lib, EntryPoint = "setsockopt")]
+    public static partial int SetSockOpt(
+        nuint s,
+        int level,
+        int optname,
+        in uint optval,
+        int optlen);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-closesocket
+    [LibraryImport(Lib, EntryPoint = "closesocket")]
+    public static partial int CloseSocket(nuint s);
+
+    [DoesNotReturn]
+    public static void Throw(string message)
+    {
+        var exception = new SocketException(message)
+        {
+            Error = WsaGetLastError()
+        };
+
+        throw exception;
+    }
+
     public static readonly ImmutableArray<ErrorCode> ErrorCodes =
     [
         new(10004, "WSAEINTR", "A blocking operation was interrupted by a call to WSACancelBlockingCall."),

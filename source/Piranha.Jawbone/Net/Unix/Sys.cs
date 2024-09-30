@@ -1,9 +1,120 @@
+using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Net;
+namespace Piranha.Jawbone.Net.Unix;
 
-public static class Linux
+static unsafe partial class Sys
 {
+    public const string Lib = "libc";
+
+    [LibraryImport(Lib, EntryPoint = "__error")] // macOS only
+    public static partial int* Error();
+
+    [LibraryImport(Lib, EntryPoint = "__errno_location")] // Linux only
+    public static partial int* ErrNoLocation();
+
+    // https://man7.org/linux/man-pages/man2/socket.2.html
+    // https://man7.org/linux/man-pages/man7/ipv6.7.html
+    [LibraryImport(Lib, EntryPoint = "socket")]
+    public static partial int Socket(int domain, int type, int protocol);
+
+    // https://man7.org/linux/man-pages/man2/bind.2.html
+    // https://man7.org/linux/man-pages/man3/bind.3p.html
+    [LibraryImport(Lib, EntryPoint = "bind")]
+    public static partial int BindV4(int sockfd, in SockAddrIn addr, uint addrlen);
+
+    [LibraryImport(Lib, EntryPoint = "bind")]
+    public static partial int BindV6(int sockfd, in SockAddrIn6 addr, uint addrlen);
+
+    // https://man7.org/linux/man-pages/man2/sendto.2.html
+    [LibraryImport(Lib, EntryPoint = "sendto")]
+    public static partial nint SendToV4(
+        int sockfd,
+        in byte buf,
+        nuint len,
+        int flags,
+        in SockAddrIn destAddr,
+        uint addrlen);
+
+    [LibraryImport(Lib, EntryPoint = "sendto")]
+    public static partial nint SendToV6(
+    int sockfd,
+    in byte buf,
+    nuint len,
+    int flags,
+    in SockAddrIn6 destAddr,
+    uint addrlen);
+
+    // https://man7.org/linux/man-pages/man3/recvfrom.3p.html
+    [LibraryImport(Lib, EntryPoint = "recvfrom")]
+    public static partial nint RecvFromV4(
+        int socket,
+        out byte buffer,
+        nuint length,
+        int flags,
+        out SockAddrIn address,
+        ref uint addressLen);
+
+    [LibraryImport(Lib, EntryPoint = "recvfrom")]
+    public static partial nint RecvFromV6(
+        int socket,
+        out byte buffer,
+        nuint length,
+        int flags,
+        out SockAddrIn6 address,
+        ref uint addressLen);
+
+    // https://man7.org/linux/man-pages/man2/getsockname.2.html
+    [LibraryImport(Lib, EntryPoint = "getsockname")]
+    public static partial int GetSockNameV4(int sockfd, out SockAddrIn addr, ref uint addrlen);
+
+    [LibraryImport(Lib, EntryPoint = "getsockname")]
+    public static partial int GetSockNameV6(int sockfd, out SockAddrIn6 addr, ref uint addrlen);
+
+    // https://man7.org/linux/man-pages/man2/poll.2.html
+    [LibraryImport(Lib, EntryPoint = "poll")]
+    public static partial int Poll(ref PollFd fds, nuint nfds, int timeout);
+
+    // https://man7.org/linux/man-pages/man3/gai_strerror.3.html
+    [LibraryImport(Lib, EntryPoint = "getaddrinfo", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int GetAddrInfo(string? node, string? service, in AddrInfo hints, out AddrInfo* res);
+
+    [LibraryImport(Lib, EntryPoint = "freeaddrinfo")]
+    public static partial void FreeAddrInfo(AddrInfo* res);
+
+    // https://man7.org/linux/man-pages/man2/setsockopt.2.html
+    [LibraryImport(Lib, EntryPoint = "setsockopt")]
+    public static partial int SetSockOpt(
+        int socket,
+        int level,
+        int optionName,
+        in int optionValue,
+        uint optionLen);
+
+    // https://man7.org/linux/man-pages/man2/close.2.html
+    [LibraryImport(Lib, EntryPoint = "close")]
+    public static partial int Close(int fd);
+
+    public static unsafe int LinuxErrNo() => *ErrNoLocation();
+    public static unsafe int MacErrNo() => *Error();
+    public static int ErrNo() => OperatingSystem.IsMacOS() ? MacErrNo() : LinuxErrNo();
+
+    public static uint SockLen<T>() => (uint)Unsafe.SizeOf<T>();
+
+    [DoesNotReturn]
+    public static void Throw(string message)
+    {
+        var exception = new SocketException(message)
+        {
+            Error = ErrNo()
+        };
+
+        throw exception;
+    }
+
     public static readonly ImmutableArray<ErrorCode> ErrorCodes =
     [
         ErrorCode.None,
