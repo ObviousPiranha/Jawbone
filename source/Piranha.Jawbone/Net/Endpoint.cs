@@ -25,6 +25,10 @@ public struct Endpoint : IEquatable<Endpoint>
 
     public static bool operator ==(Endpoint a, Endpoint b) => a.Equals(b);
     public static bool operator !=(Endpoint a, Endpoint b) => !a.Equals(b);
+    public static implicit operator Endpoint(Endpoint<AddressV4> endpoint) => new(endpoint.Address, endpoint.Port);
+    public static implicit operator Endpoint(Endpoint<AddressV6> endpoint) => new(endpoint.Address, endpoint.Port);
+    public static explicit operator Endpoint<AddressV4>(Endpoint endpoint) => new((AddressV4)endpoint.Address, endpoint.Port);
+    public static explicit operator Endpoint<AddressV6>(Endpoint endpoint) => new((AddressV6)endpoint.Address, endpoint.Port);
 
     public static Endpoint Create(Address address, int port) => new(address, port);
     public static Endpoint Create(Address address, NetworkPort port) => new(address, port);

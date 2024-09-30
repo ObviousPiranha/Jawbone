@@ -12,7 +12,8 @@ class Program
     {
         try
         {
-            NetworkTest();
+            // NetworkTest();
+            BindTest();
         }
         catch (Exception ex)
         {
@@ -22,6 +23,13 @@ class Program
             Console.WriteLine(ex);
             Console.WriteLine();
         }
+    }
+
+    static void BindTest()
+    {
+        using var socketA = UdpSocketV6.BindAnyIp(7777);
+        using var socketB = UdpSocketV4.BindAnyIp(7777);
+        Console.WriteLine("Huh. Wow.");
     }
 
     static void NetworkTest()
