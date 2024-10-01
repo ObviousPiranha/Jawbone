@@ -17,7 +17,11 @@ public static class UdpSocketV6
         {
             return Windows.WindowsUdpSocketV6.Bind(endpoint, allowV4);
         }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsMacOS())
+        {
+            return Mac.MacUdpSocketV6.Bind(endpoint, allowV4);
+        }
+        else if (OperatingSystem.IsLinux())
         {
             return Linux.LinuxUdpSocketV6.Bind(endpoint, allowV4);
         }
@@ -34,7 +38,11 @@ public static class UdpSocketV6
         {
             return Windows.WindowsUdpSocketV6.Create(allowV4);
         }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsMacOS())
+        {
+            return Mac.MacUdpSocketV6.Create(allowV4);
+        }
+        else if (OperatingSystem.IsLinux())
         {
             return Linux.LinuxUdpSocketV6.Create(allowV4);
         }

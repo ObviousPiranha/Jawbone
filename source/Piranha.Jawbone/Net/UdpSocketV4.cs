@@ -16,7 +16,11 @@ public static class UdpSocketV4
         {
             return Windows.WindowsUdpSocketV4.Bind(endpoint);
         }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsMacOS())
+        {
+            return Mac.MacUdpSocketV4.Bind(endpoint);
+        }
+        else if (OperatingSystem.IsLinux())
         {
             return Linux.LinuxUdpSocketV4.Bind(endpoint);
         }
