@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Mac;
@@ -62,7 +63,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             if ((pfd.REvents & Poll.In) != 0)
             {
                 var addressLength = AddrLen;
-                Console.WriteLine("ADDRESS LEN BEFORE: " + addressLength);
+                File.AppendAllText("debug.txt", "ADDRESS LEN BEFORE: " + addressLength + Environment.NewLine);
                 var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -71,7 +72,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
                     out var address,
                     ref addressLength);
 
-                Console.WriteLine("ADDRESS LEN AFTER: " + addressLength);
+                File.AppendAllText("debug.txt", "ADDRESS LEN AFTER: " + addressLength + Environment.NewLine);
                 AssertAddrLen(addressLength);
 
                 if (receiveResult == -1)
