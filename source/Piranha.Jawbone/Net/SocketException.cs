@@ -18,25 +18,24 @@ public class SocketException : Exception
         }
     }
 
-    public int Error { get; init; }
-    public ErrorCode Code
+    public static ErrorCode GetErrorCode(int error)
     {
-        get
+        if (OperatingSystem.IsWindows())
         {
-            if (OperatingSystem.IsWindows())
-            {
-                if (Windows.Sys.ErrorCodeById.TryGetValue(Error, out var windowsErrorCode))
-                    return windowsErrorCode;
-            }
-            else
-            {
-                if (0 < Error && Error < Unix.Sys.ErrorCodes.Length)
-                    return Unix.Sys.ErrorCodes[Error];
-            }
-
-            return ErrorCode.None;
+            if (Windows.Sys.ErrorCodeById.TryGetValue(error, out var windowsErrorCode))
+                return windowsErrorCode;
         }
+        else
+        {
+            if (0 < error && error < Unix.Sys.ErrorCodes.Length)
+                return Unix.Sys.ErrorCodes[error];
+        }
+
+        return ErrorCode.None;
     }
+
+    public int Error { get; init; }
+    public ErrorCode Code => GetErrorCode(Error);
 
     public SocketException() { }
     public SocketException(string message) : base(message) { }

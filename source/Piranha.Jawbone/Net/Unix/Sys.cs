@@ -10,11 +10,11 @@ static unsafe partial class Sys
 {
     public const string Lib = "libc";
 
-    [LibraryImport(Lib, EntryPoint = "__error")] // macOS only
-    public static partial int* Error();
+    [LibraryImport(Lib, EntryPoint = "__error")]
+    public static partial int* MacError();
 
-    [LibraryImport(Lib, EntryPoint = "__errno_location")] // Linux only
-    public static partial int* ErrNoLocation();
+    [LibraryImport(Lib, EntryPoint = "__errno_location")]
+    public static partial int* LinuxError();
 
     // https://man7.org/linux/man-pages/man2/socket.2.html
     // https://man7.org/linux/man-pages/man7/ipv6.7.html
@@ -98,18 +98,18 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "close")]
     public static partial int Close(int fd);
 
-    public static unsafe int LinuxErrNo() => *ErrNoLocation();
-    public static unsafe int MacErrNo() => *Error();
-    public static int ErrNo() => OperatingSystem.IsMacOS() ? MacErrNo() : LinuxErrNo();
+    public static int ErrNo() => OperatingSystem.IsMacOS() ? *MacError() : *LinuxError();
 
     public static uint SockLen<T>() => (uint)Unsafe.SizeOf<T>();
 
     [DoesNotReturn]
     public static void Throw(string message)
     {
-        var exception = new SocketException(message)
+        var error = ErrNo();
+        var errorCode = SocketException.GetErrorCode(error);
+        var exception = new SocketException(message + " " + errorCode.ToString())
         {
-            Error = ErrNo()
+            Error = error
         };
 
         throw exception;
