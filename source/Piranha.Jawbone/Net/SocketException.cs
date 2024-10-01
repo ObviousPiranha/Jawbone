@@ -25,10 +25,19 @@ public class SocketException : Exception
             if (Windows.Sys.ErrorCodeById.TryGetValue(error, out var windowsErrorCode))
                 return windowsErrorCode;
         }
+        else if (OperatingSystem.IsMacOS())
+        {
+            if (0 < error && error < Mac.Error.Codes.Length)
+                return Mac.Error.Codes[error];
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            if (0 < error && error < Linux.Error.Codes.Length)
+                return Linux.Error.Codes[error];
+        }
         else
         {
-            if (0 < error && error < Unix.Sys.ErrorCodes.Length)
-                return Unix.Sys.ErrorCodes[error];
+            throw new PlatformNotSupportedException();
         }
 
         return ErrorCode.None;

@@ -11,7 +11,7 @@ static class UnixAddressInfo
         TimeProvider? timeProvider = null)
     {
         var hints = default(AddrInfo);
-        hints.AiFamily = Af.Unspec;
+        hints.AiFamily = Sys.Select(Mac.Af.Unspec, Linux.Af.Unspec);
         var result = Sys.GetAddrInfo(node, service, hints, out var res);
 
         if (result == -1)
@@ -24,13 +24,13 @@ static class UnixAddressInfo
         {
             for (var ai = res; ai != null; ai = ai->AiNext)
             {
-                if (ai->AiFamily == Af.INet)
+                if (ai->AiFamily == Sys.Select(Mac.Af.INet, Linux.Af.INet))
                 {
                     var addr = (SockAddrIn*)ai->AiAddr;
                     var endpoint = addr->ToEndpoint();
                     v4.Add(endpoint);
                 }
-                else if (ai->AiFamily == Af.INet6)
+                if (ai->AiFamily == Sys.Select(Mac.Af.INet6, Linux.Af.INet6))
                 {
                     var addr = (SockAddrIn6*)ai->AiAddr;
                     var endpoint = addr->ToEndpoint();

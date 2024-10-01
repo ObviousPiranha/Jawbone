@@ -129,7 +129,10 @@ sealed class UnixUdpSocketV4 : IUdpSocket<AddressV4>
 
     private static int CreateSocket()
     {
-        int socket = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
+        int socket = Sys.Socket(
+            Sys.Select(Mac.Af.INet, Linux.Af.INet),
+            Sock.DGram,
+            IpProto.Udp);
 
         if (socket == -1)
             Sys.Throw("Unable to open socket.");

@@ -27,7 +27,7 @@ struct SockAddrIn
     {
         return new SockAddrIn
         {
-            SinFamily = Af.INet,
+            SinFamily = (ushort)Sys.Select(Mac.Af.INet, Linux.Af.INet),
             SinPort = endpoint.Port.NetworkValue,
             SinAddr = endpoint.Address.DataU32
         };
