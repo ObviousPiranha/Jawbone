@@ -73,9 +73,9 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
 
                 Endpoint<AddressV6> endpoint;
                 if (addressLength == (uint)sizeof(SockAddrIn))
-                    endpoint = address.A.ToEndpoint().MapToV6();
+                    endpoint = address.V4.ToEndpoint().MapToV6();
                 else if (addressLength == (uint)sizeof(SockAddrIn6))
-                    endpoint = address.B.ToEndpoint();
+                    endpoint = address.V6.ToEndpoint();
                 else
                     throw new SocketException("Unsupported address size: " + addressLength);
                 if (receiveResult == -1)
@@ -104,7 +104,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
         AssertAddrLen(addressLength);
-        return address.B.ToEndpoint();
+        return address.V6.ToEndpoint();
     }
 
     public static MacUdpSocketV6 Create(bool allowV4)

@@ -6,7 +6,7 @@ namespace Piranha.Jawbone.Net.Mac;
 struct SockAddrStorage
 {
     [FieldOffset(0)]
-    public SockAddrIn A;
+    public SockAddrIn V4;
     [FieldOffset(0)]
-    public SockAddrIn6 B;
+    public SockAddrIn6 V6;
 }
