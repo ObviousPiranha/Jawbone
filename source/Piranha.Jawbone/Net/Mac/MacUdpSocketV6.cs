@@ -62,6 +62,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             if ((pfd.REvents & Poll.In) != 0)
             {
                 var addressLength = AddrLen;
+                Console.WriteLine("ADDRESS LEN BEFORE: " + addressLength);
                 var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -70,6 +71,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
                     out var address,
                     ref addressLength);
 
+                Console.WriteLine("ADDRESS LEN AFTER: " + addressLength);
                 AssertAddrLen(addressLength);
 
                 if (receiveResult == -1)
