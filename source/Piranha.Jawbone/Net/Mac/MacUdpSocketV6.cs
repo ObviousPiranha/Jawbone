@@ -63,7 +63,6 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             if ((pfd.REvents & Poll.In) != 0)
             {
                 var addressLength = AddrLen;
-                File.AppendAllText("debug.txt", "ADDRESS LEN BEFORE: " + addressLength + Environment.NewLine);
                 var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -72,14 +71,18 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
                     out var address,
                     ref addressLength);
 
-                File.AppendAllText("debug.txt", "ADDRESS LEN AFTER: " + addressLength + Environment.NewLine);
-                AssertAddrLen(addressLength);
-
+                Endpoint<AddressV6> endpoint;
+                if (addressLength == (uint)sizeof(SockAddrIn))
+                    endpoint = address.A.ToEndpoint().MapToV6();
+                else if (addressLength == (uint)sizeof(SockAddrIn6))
+                    endpoint = address.B.ToEndpoint();
+                else
+                    throw new SocketException("Unsupported address size: " + addressLength);
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
                 result.State = UdpReceiveState.Success;
-                result.Origin = address.ToEndpoint();
+                result.Origin = endpoint;
                 result.ReceivedByteCount = (int)receiveResult;
             }
         }
@@ -101,7 +104,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
         AssertAddrLen(addressLength);
-        return address.ToEndpoint();
+        return address.B.ToEndpoint();
     }
 
     public static MacUdpSocketV6 Create(bool allowV4)
@@ -167,5 +170,5 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             "The returned address length does not match.");
     }
 
-    private static uint AddrLen => (uint)Unsafe.SizeOf<SockAddrIn6>();
+    private static uint AddrLen => (uint)Unsafe.SizeOf<SockAddrStorage>();
 }
