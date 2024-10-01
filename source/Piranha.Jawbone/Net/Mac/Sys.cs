@@ -1,20 +1,16 @@
 using System;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Mac;
 
 static unsafe partial class Sys
 {
     public const string Lib = "libc";
 
     [LibraryImport(Lib, EntryPoint = "__error")]
-    public static partial int* MacError();
-
-    [LibraryImport(Lib, EntryPoint = "__errno_location")]
-    public static partial int* LinuxError();
+    public static partial int* ErrorLocation();
 
     // https://man7.org/linux/man-pages/man2/socket.2.html
     // https://man7.org/linux/man-pages/man7/ipv6.7.html
@@ -98,7 +94,7 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "close")]
     public static partial int Close(int fd);
 
-    public static int ErrNo() => OperatingSystem.IsMacOS() ? *MacError() : *LinuxError();
+    public static int ErrNo() => *ErrorLocation();
 
     public static uint SockLen<T>() => (uint)Unsafe.SizeOf<T>();
 

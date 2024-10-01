@@ -1,4 +1,4 @@
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Linux;
 
 static class Sock
 {

@@ -2,13 +2,13 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Mac;
 
-sealed class UnixUdpSocketV6 : IUdpSocket<AddressV6>
+sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
 {
     private readonly int _fd;
 
-    private UnixUdpSocketV6(int fd)
+    private MacUdpSocketV6(int fd)
     {
         _fd = fd;
     }
@@ -101,13 +101,13 @@ sealed class UnixUdpSocketV6 : IUdpSocket<AddressV6>
         return address.ToEndpoint();
     }
 
-    public static UnixUdpSocketV6 Create(bool allowV4)
+    public static MacUdpSocketV6 Create(bool allowV4)
     {
         var socket = CreateSocket(allowV4);
-        return new UnixUdpSocketV6(socket);
+        return new MacUdpSocketV6(socket);
     }
 
-    public static UnixUdpSocketV6 Bind(Endpoint<AddressV6> endpoint, bool allowV4)
+    public static MacUdpSocketV6 Bind(Endpoint<AddressV6> endpoint, bool allowV4)
     {
         var socket = CreateSocket(allowV4);
 
@@ -119,7 +119,7 @@ sealed class UnixUdpSocketV6 : IUdpSocket<AddressV6>
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {endpoint}.");
 
-            return new UnixUdpSocketV6(socket);
+            return new MacUdpSocketV6(socket);
         }
         catch
         {
@@ -130,10 +130,7 @@ sealed class UnixUdpSocketV6 : IUdpSocket<AddressV6>
 
     private static int CreateSocket(bool allowV4)
     {
-        var socket = Sys.Socket(
-            Sys.Select(Mac.Af.INet6, Linux.Af.INet6),
-            Sock.DGram,
-            IpProto.Udp);
+        var socket = Sys.Socket(Af.INet6, Sock.DGram, IpProto.Udp);
 
         if (socket == -1)
             Sys.Throw("Unable to open socket.");
@@ -144,7 +141,7 @@ sealed class UnixUdpSocketV6 : IUdpSocket<AddressV6>
             var result = Sys.SetSockOpt(
                 socket,
                 IpProto.Ipv6,
-                Sys.Select(Mac.Ipv6.V6Only, Linux.Ipv6.V6Only),
+                Ipv6.V6Only,
                 yes,
                 Sys.SockLen<int>());
 

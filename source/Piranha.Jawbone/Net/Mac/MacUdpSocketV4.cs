@@ -1,13 +1,13 @@
 using System;
 using System.Diagnostics;
 
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Mac;
 
-sealed class UnixUdpSocketV4 : IUdpSocket<AddressV4>
+sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
 {
     private readonly int _fd;
 
-    private UnixUdpSocketV4(int fd)
+    private MacUdpSocketV4(int fd)
     {
         _fd = fd;
     }
@@ -100,13 +100,13 @@ sealed class UnixUdpSocketV4 : IUdpSocket<AddressV4>
         return address.ToEndpoint();
     }
 
-    public static UnixUdpSocketV4 Create()
+    public static MacUdpSocketV4 Create()
     {
         var socket = CreateSocket();
-        return new UnixUdpSocketV4(socket);
+        return new MacUdpSocketV4(socket);
     }
 
-    public static UnixUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
+    public static MacUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
     {
         var socket = CreateSocket();
 
@@ -118,7 +118,7 @@ sealed class UnixUdpSocketV4 : IUdpSocket<AddressV4>
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {endpoint}.");
 
-            return new UnixUdpSocketV4(socket);
+            return new MacUdpSocketV4(socket);
         }
         catch
         {
@@ -129,10 +129,7 @@ sealed class UnixUdpSocketV4 : IUdpSocket<AddressV4>
 
     private static int CreateSocket()
     {
-        int socket = Sys.Socket(
-            Sys.Select(Mac.Af.INet, Linux.Af.INet),
-            Sock.DGram,
-            IpProto.Udp);
+        int socket = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
 
         if (socket == -1)
             Sys.Throw("Unable to open socket.");

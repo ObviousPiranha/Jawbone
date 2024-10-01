@@ -1,6 +1,4 @@
 ﻿using Piranha.Jawbone.Net;
-using Piranha.Jawbone.Net.Unix;
-using Piranha.Jawbone.Net.Windows;
 using System;
 using System.Text;
 
@@ -59,7 +57,7 @@ class Program
         var port = 7777;
         // var serverEndpoint = AddressV4.Local.OnPort(2);
         using var server = UdpSocketV6.BindAnyIp(port, true);
-        // using var oops = UnixUdpSocketV4.Bind(serverEndpoint);
+        // using var oops = LinuxUdpSocketV4.Bind(serverEndpoint);
         using var client = UdpSocketV4.Create();
 
         var serverSocketName = server.GetSocketName();

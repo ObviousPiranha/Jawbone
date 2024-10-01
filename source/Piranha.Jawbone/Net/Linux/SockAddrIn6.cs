@@ -1,4 +1,4 @@
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Linux;
 
 struct SockAddrIn6
 {
@@ -19,7 +19,7 @@ struct SockAddrIn6
     {
         return new SockAddrIn6
         {
-            Sin6Family = (ushort)Sys.Select(Mac.Af.INet6, Linux.Af.INet6),
+            Sin6Family = Af.INet6,
             Sin6Port = endpoint.Port.NetworkValue,
             Sin6Addr = new(endpoint.Address.DataU32),
             Sin6ScopeId = endpoint.Address.ScopeId

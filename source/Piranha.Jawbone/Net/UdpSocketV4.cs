@@ -18,7 +18,7 @@ public static class UdpSocketV4
         }
         else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
         {
-            return Unix.UnixUdpSocketV4.Bind(endpoint);
+            return Linux.LinuxUdpSocketV4.Bind(endpoint);
         }
         else
         {
@@ -33,9 +33,13 @@ public static class UdpSocketV4
         {
             return Windows.WindowsUdpSocketV4.Create();
         }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsMacOS())
         {
-            return Unix.UnixUdpSocketV4.Create();
+            return Mac.MacUdpSocketV4.Create();
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            return Linux.LinuxUdpSocketV4.Create();
         }
         else
         {

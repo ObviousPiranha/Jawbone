@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Linux;
 
 [StructLayout(LayoutKind.Explicit, Size = 16)]
 struct In6Addr

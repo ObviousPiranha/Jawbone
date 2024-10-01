@@ -1,4 +1,4 @@
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Mac;
 
 unsafe struct AddrInfo
 {

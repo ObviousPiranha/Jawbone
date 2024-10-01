@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Piranha.Jawbone.Net.Unix;
+namespace Piranha.Jawbone.Net.Linux;
 
 struct SockAddrIn
 {
@@ -27,7 +27,7 @@ struct SockAddrIn
     {
         return new SockAddrIn
         {
-            SinFamily = (ushort)Sys.Select(Mac.Af.INet, Linux.Af.INet),
+            SinFamily = Af.INet,
             SinPort = endpoint.Port.NetworkValue,
             SinAddr = endpoint.Address.DataU32
         };
