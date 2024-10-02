@@ -147,6 +147,25 @@ public static class SpanReaderExtensions
         }
     }
 
+    public static bool TrySlice<T>(
+        ref this SpanReader<T> reader,
+        int length,
+        out ReadOnlySpan<T> result)
+    {
+        var pending = reader.Pending;
+        if (length < 0 || pending.Length < length)
+        {
+            result = default;
+            return false;
+        }
+        else
+        {
+            reader.Position += length;
+            result = pending[..length];
+            return true;
+        }
+    }
+
     public static T Take<T>(ref this SpanReader<T> reader)
     {
         var result = reader.Span[reader.Position];

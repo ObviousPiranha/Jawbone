@@ -1,4 +1,5 @@
 using Piranha.Jawbone.Net.Linux;
+using Piranha.Jawbone.Net.Mac;
 using Piranha.Jawbone.Net.Windows;
 using System;
 using System.Collections.Immutable;
@@ -26,7 +27,11 @@ public readonly struct AddressInfo
         {
             return WindowsAddressInfo.Get(node, service, timeProvider);
         }
-        else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsMacOS())
+        {
+            return MacAddressInfo.Get(node, service, timeProvider);
+        }
+        else if (OperatingSystem.IsLinux())
         {
             return LinuxAddressInfo.Get(node, service, timeProvider);
         }

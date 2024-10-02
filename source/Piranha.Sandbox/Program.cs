@@ -1,5 +1,7 @@
 ﻿using Piranha.Jawbone.Net;
+using Piranha.Jawbone.Png;
 using System;
+using System.IO;
 using System.Text;
 
 namespace Piranha.Sandbox;
@@ -11,7 +13,8 @@ class Program
         try
         {
             // NetworkTest();
-            BindTest();
+            // BindTest();
+            PngTest(args[0]);
         }
         catch (Exception ex)
         {
@@ -21,6 +24,12 @@ class Program
             Console.WriteLine(ex);
             Console.WriteLine();
         }
+    }
+
+    static void PngTest(string path)
+    {
+        var bytes = File.ReadAllBytes(path);
+        Png.DebugWalk(bytes);
     }
 
     static void BindTest()
