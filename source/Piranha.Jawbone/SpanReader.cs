@@ -180,6 +180,13 @@ public static class SpanReaderExtensions
         return ref reader;
     }
 
+    public static T Blit<T>(ref this SpanReader<byte> reader) where T : unmanaged
+    {
+        var value = MemoryMarshal.Read<T>(reader.Pending);
+        reader.Position += Unsafe.SizeOf<T>();
+        return value;
+    }
+
     public static bool TryBlit<T>(
         ref this SpanReader<byte> reader,
         out T value

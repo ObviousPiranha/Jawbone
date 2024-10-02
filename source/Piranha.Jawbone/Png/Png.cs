@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -8,6 +9,11 @@ namespace Piranha.Jawbone.Png;
 
 public static class Png
 {
+    private static readonly ulong Signature = BitConverter.ToUInt64([137, 80, 78, 71, 13, 10, 26, 10]);
+    private static readonly uint Ihdr = BitConverter.ToUInt32("IHDR"u8);
+    private static readonly uint Iend = BitConverter.ToUInt32("IEND"u8);
+    private static readonly uint Idat = BitConverter.ToUInt32("IDAT"u8);
+
     public static Point32 GetImageSize(ReadOnlySpan<byte> bytes)
     {
         var header = MemoryMarshal.Read<FirstHeader>(bytes);
@@ -36,7 +42,7 @@ public static class Png
             return;
         }
 
-        if (signature != ChunkHeader.Signature)
+        if (signature != Signature)
         {
             Console.WriteLine("Signature mismatch!");
             return;
@@ -58,7 +64,7 @@ public static class Png
         Console.WriteLine("Chunk type: " + Encoding.UTF8.GetString(chunkType));
         var chunkTypeValue = BitConverter.ToUInt32(chunkType);
 
-        if (chunkTypeValue != ChunkHeader.Ihdr)
+        if (chunkTypeValue != Ihdr)
         {
             Console.WriteLine("Incorrect first chunk type.");
             return;
@@ -72,9 +78,23 @@ public static class Png
             return;
         }
 
+        if (length < 13)
+        {
+            Console.WriteLine("IHDR chunk is not 13 bytes.");
+            return;
+        }
+
         if (!reader.TrySlice((int)length, out var chunk))
         {
             Console.WriteLine("Not enough bytes in chunk.");
+            return;
+        }
+
+        var header = PngHeader.FromChunk(chunk);
+
+        if (!header.IsValid)
+        {
+            Console.WriteLine("Header contains invalid values.");
             return;
         }
 
@@ -84,7 +104,7 @@ public static class Png
             return;
         }
 
-        var crcChunk = reader.Span.Slice(crcStart, chunk.Length + 4);
+        var crcChunk = reader.Span.Slice(crcStart, 4 + chunk.Length);
         var crc = Crc.Calculate(crcChunk);
         var word = chunk.Length == 1 ? "byte" : "bytes";
 
@@ -96,7 +116,8 @@ public static class Png
 
         Console.WriteLine($"CRC ({crc}) correct for {chunk.Length} {word}.");
 
-        while (chunkTypeValue != ChunkHeader.Iend && reader.TryBlit(out bigEndianLength))
+        using var inputStream = new MemoryStream();
+        while (chunkTypeValue != Iend && reader.TryBlit(out bigEndianLength))
         {
             length = bigEndianLength.HostValue;
 
@@ -140,7 +161,20 @@ public static class Png
 
             word = chunk.Length == 1 ? "byte" : "bytes";
             Console.WriteLine($"CRC ({crc}) correct for {chunk.Length} {word}.");
+
+            if (chunkTypeValue == Idat)
+            {
+                inputStream.Write(chunk);
+            }
         }
+
+        inputStream.Position = 0;
+        using var zlibStream = new ZLibStream(inputStream, CompressionMode.Decompress);
+        // using var outputStream = new MemoryStream();
+        using var outputStream = File.Create("png.bin");
+        zlibStream.CopyTo(outputStream);
+        //var array = outputStream.ToArray();
+        Console.WriteLine($"Inflated to {outputStream.Length} bytes.");
 
         Console.WriteLine("Success!");
     }
