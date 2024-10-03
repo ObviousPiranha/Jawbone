@@ -48,123 +48,24 @@ public static class Png
             return;
         }
 
-        if (!reader.TryBlit(out BigEndianUInt32 bigEndianLength))
+        if (!Chunk.TryRead(ref reader, out var chunk))
         {
-            Console.WriteLine("Missing chunk length.");
-        }
-
-        var crcStart = reader.Position;
-
-        if (!reader.TrySlice(4, out var chunkType))
-        {
-            Console.WriteLine("Missing chunk header.");
+            Console.WriteLine("Missing or bad chunk.");
             return;
         }
 
-        Console.WriteLine("Chunk type: " + Encoding.UTF8.GetString(chunkType));
-        var chunkTypeValue = BitConverter.ToUInt32(chunkType);
-
-        if (chunkTypeValue != Ihdr)
-        {
-            Console.WriteLine("Incorrect first chunk type.");
+        if (!chunk.DebugVerify())
             return;
-        }
-
-        var length = bigEndianLength.HostValue;
-
-        if (int.MaxValue < length)
-        {
-            Console.WriteLine("Chunk too big.");
-            return;
-        }
-
-        if (length < 13)
-        {
-            Console.WriteLine("IHDR chunk is not 13 bytes.");
-            return;
-        }
-
-        if (!reader.TrySlice((int)length, out var chunk))
-        {
-            Console.WriteLine("Not enough bytes in chunk.");
-            return;
-        }
-
-        var header = PngHeader.FromChunk(chunk);
-
-        if (!header.IsValid)
-        {
-            Console.WriteLine("Header contains invalid values.");
-            return;
-        }
-
-        if (!reader.TryBlit(out BigEndianUInt32 bigEndianCrc))
-        {
-            Console.WriteLine("Missing CRC.");
-            return;
-        }
-
-        var crcChunk = reader.Span.Slice(crcStart, 4 + chunk.Length);
-        var crc = Crc.Calculate(crcChunk);
-        var word = chunk.Length == 1 ? "byte" : "bytes";
-
-        if (crc != bigEndianCrc.HostValue)
-        {
-            Console.WriteLine($"Incorrect CRC for {chunk.Length} {word}. Expected {crc}. Actual {crc}.");
-            return;
-        }
-
-        Console.WriteLine($"CRC ({crc}) correct for {chunk.Length} {word}.");
 
         using var inputStream = new MemoryStream();
-        while (chunkTypeValue != Iend && reader.TryBlit(out bigEndianLength))
+        while (chunk.ChunkType != Iend && Chunk.TryRead(ref reader, out chunk))
         {
-            length = bigEndianLength.HostValue;
-
-            if (int.MaxValue < length)
-            {
-                Console.WriteLine("Chunk too big.");
+            if (!chunk.DebugVerify())
                 return;
-            }
 
-            crcStart = reader.Position;
-
-            if (!reader.TrySlice(4, out chunkType))
+            if (chunk.ChunkType == Idat)
             {
-                Console.WriteLine("Missing chunk header.");
-                return;
-            }
-
-            Console.WriteLine("Chunk type: " + Encoding.UTF8.GetString(chunkType));
-            chunkTypeValue = BitConverter.ToUInt32(chunkType);
-
-            if (!reader.TrySlice((int)length, out chunk))
-            {
-                Console.WriteLine("Not enough bytes in chunk.");
-                return;
-            }
-
-            if (!reader.TryBlit(out bigEndianCrc))
-            {
-                Console.WriteLine("Missing CRC.");
-                return;
-            }
-
-            crcChunk = reader.Span.Slice(crcStart, 4 + chunk.Length);
-            crc = Crc.Calculate(crcChunk);
-
-            if (crc != bigEndianCrc.HostValue)
-            {
-                Console.WriteLine($"Incorrect CRC. Expected {crc}. Actual {crc}.");
-                return;
-            }
-
-            word = chunk.Length == 1 ? "byte" : "bytes";
-            Console.WriteLine($"CRC ({crc}) correct for {chunk.Length} {word}.");
-
-            if (chunkTypeValue == Idat)
-            {
-                inputStream.Write(chunk);
+                inputStream.Write(chunk.Data);
             }
         }
 

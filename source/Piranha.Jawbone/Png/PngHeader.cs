@@ -48,8 +48,8 @@ struct PngHeader
         var reader = chunk.ToReader();
         var result = new PngHeader
         {
-            Width = reader.Blit<BigEndianInt32>().HostValue,
-            Height = reader.Blit<BigEndianInt32>().HostValue,
+            Width = reader.ReadBigEndianInt32(),
+            Height = reader.ReadBigEndianInt32(),
             BitDepth = reader.Take(),
             ColorType = reader.Take(),
             CompressionMethod = reader.Take(),
