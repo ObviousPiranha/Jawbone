@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Piranha.Jawbone.Png;
 
@@ -114,11 +113,5 @@ public static class Png
         public uint ChunkType;
         public BigEndianInt32 Width;
         public BigEndianInt32 Height;
-        public byte BitDepth;
-        public byte ColorType;
-        public byte CompressionMethod;
-        public byte FilterMethod;
-        public byte InterlaceMethod;
-        public uint Crc;
     }
 }
