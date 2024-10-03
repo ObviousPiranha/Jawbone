@@ -12,6 +12,13 @@ public struct UdpReceiveResult<TAddress> where TAddress : unmanaged, IAddress<TA
 
 public static class UdpReceiveResult
 {
+    public static ErrorCode GetErrorCode<TAddress>(
+        in this UdpReceiveResult<TAddress> udpReceiveResult
+        ) where TAddress : unmanaged, IAddress<TAddress>
+    {
+        return SocketException.GetErrorCode(udpReceiveResult.Error);
+    }
+
     public static void ThrowOnError<TAddress>(
         in this UdpReceiveResult<TAddress> udpReceiveResult
         ) where TAddress : unmanaged, IAddress<TAddress>
