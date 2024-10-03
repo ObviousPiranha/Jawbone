@@ -53,6 +53,12 @@ public static class Png
             return;
         }
 
+        if (chunk.ChunkType != Ihdr)
+        {
+            Console.WriteLine("Missing IHDR chunk.");
+            return;
+        }
+
         if (!chunk.DebugVerify())
             return;
 

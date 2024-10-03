@@ -2,10 +2,8 @@ using Microsoft.Extensions.Logging;
 using Piranha.Jawbone.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Sdl2;
 
