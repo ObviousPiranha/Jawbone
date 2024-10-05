@@ -43,4 +43,12 @@ public static class AaQuad
             aaq.C,
             new(aaq.C.X, aaq.A.Y, z));
     }
+
+    public static Vector2 Size(this AaQuad<Vector2> aaq) => aaq.C - aaq.A;
+    public static float Width(this AaQuad<Vector2> aaq) => aaq.C.X - aaq.A.X;
+    public static float Width(this AaQuad<Vector3> aaq) => aaq.C.X - aaq.A.X;
+    public static float Height(this AaQuad<Vector2> aaq) => aaq.C.Y - aaq.A.Y;
+    public static float Height(this AaQuad<Vector3> aaq) => aaq.C.Y - aaq.A.Y;
+    public static float XyRatio(this AaQuad<Vector2> aaq) => aaq.Width() / aaq.Height();
+    public static float XyRatio(this AaQuad<Vector3> aaq) => aaq.Width() / aaq.Height();
 }
