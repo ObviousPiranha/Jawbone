@@ -41,7 +41,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
     public unsafe void Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<AddressV6> result)
+        out UdpReceiveResult<Endpoint<AddressV6>> result)
     {
         result = default;
         int milliseconds;

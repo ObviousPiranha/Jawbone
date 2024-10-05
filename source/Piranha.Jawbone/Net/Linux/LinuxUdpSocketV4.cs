@@ -40,7 +40,7 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
     public unsafe void Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<AddressV4> result)
+        out UdpReceiveResult<Endpoint<AddressV4>> result)
     {
         result = default;
         int milliseconds;
