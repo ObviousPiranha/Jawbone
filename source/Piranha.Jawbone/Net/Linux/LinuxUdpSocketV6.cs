@@ -78,6 +78,7 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
                 result.State = UdpReceiveState.Success;
                 result.Origin = address.ToEndpoint();
                 result.ReceivedByteCount = (int)receiveResult;
+                result.Received = buffer[..(int)receiveResult];
             }
         }
         else if (pollResult < 0)

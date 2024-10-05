@@ -14,7 +14,8 @@ class Program
         {
             // NetworkTest();
             // BindTest();
-            PngTest(args[0]);
+            // PngTest(args[0]);
+            V6Shenanigans();
         }
         catch (Exception ex)
         {
@@ -24,6 +25,21 @@ class Program
             Console.WriteLine(ex);
             Console.WriteLine();
         }
+    }
+
+    static void V6Shenanigans()
+    {
+        using var v4 = UdpSocketV4.BindLocalIp();
+        var endpoint = v4.GetSocketName();
+        Console.WriteLine("Server: " + endpoint);
+        using var v6 = UdpSocketV6.Create(allowV4: false);
+        v6.Send("Hello, IPv4!"u8, endpoint.MapToV6());
+        Console.WriteLine("Client: " + v6.GetSocketName());
+        var buffer = new byte[2048];
+        v4.Receive(buffer, TimeSpan.FromSeconds(2), out var result);
+        result.ThrowOnErrorOrTimeout();
+        var message = Encoding.UTF8.GetString(result.Received);
+        Console.WriteLine($"Received from {result.Origin}: {message}");
     }
 
     static void PngTest(string path)

@@ -2,8 +2,9 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public struct UdpReceiveResult<TAddress> where TAddress : unmanaged, IAddress<TAddress>
+public ref struct UdpReceiveResult<TAddress> where TAddress : unmanaged, IAddress<TAddress>
 {
+    public ReadOnlySpan<byte> Received;
     public UdpReceiveState State;
     public int ReceivedByteCount;
     public int Error;

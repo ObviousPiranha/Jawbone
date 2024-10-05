@@ -53,7 +53,6 @@ public readonly struct Address : IEquatable<Address>
             AddressType.V6 => AsV6().Equals(other.AsV6()),
             _ => true
         };
-
     }
 
     public static explicit operator AddressV4(Address address)
