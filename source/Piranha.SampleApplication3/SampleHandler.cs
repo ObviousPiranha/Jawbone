@@ -194,10 +194,11 @@ class SampleHandler : ISdlEventHandler, IDisposable
 
         try
         {
+            var audioSpan = output.ToReadOnlySpan<short>(samples * channelCount);
             // _audioManager.PrepareAudio(
             //     sampleRate,
             //     channelCount,
-            //     output.ToReadOnlySpan<short>(samples * channelCount));
+            //     audioSpan);
         }
         finally
         {
