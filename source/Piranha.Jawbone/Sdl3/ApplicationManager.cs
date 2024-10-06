@@ -13,7 +13,7 @@ public static class ApplicationManager
         while (eventHandler.Running)
         {
             var doSleep = true;
-            while (Sdl.PollEvent(out var sdlEvent) != 0)
+            while (Sdl.PollEvent(out var sdlEvent))
             {
                 SdlEvent.Dispatch(sdlEvent, eventHandler);
                 doSleep = false;
@@ -36,7 +36,7 @@ public static class ApplicationManager
             }
         }
 
-        while (Sdl.PollEvent(out var sdlEvent) != 0)
+        while (Sdl.PollEvent(out var sdlEvent))
             SdlEvent.Dispatch(sdlEvent, eventHandler);
     }
 }

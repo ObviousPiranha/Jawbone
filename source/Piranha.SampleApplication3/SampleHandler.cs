@@ -280,7 +280,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         if (eventData.Scancode == SdlScancode.Escape)
             Running = false;
         else if (eventData.Scancode == SdlScancode.F11)
-            Sdl.SetWindowFullscreen(_windowPtr, Convert.ToByte(_isFullscreen = !_isFullscreen));
+            Sdl.SetWindowFullscreen(_windowPtr, _isFullscreen = !_isFullscreen);
     }
 
     public void OnMouseButtonDown(SdlMouseButtonEvent eventData)

@@ -69,6 +69,11 @@ internal class Program
                     builder.Append(s[i]);
             }
         }
+        builder
+            .Replace("GPU", "Gpu")
+            .Replace("CPU", "Cpu")
+            .Replace("EGL", "Egl")
+            .Replace("GL", "Gl");
         return builder.ToString();
     }
 
@@ -80,7 +85,7 @@ internal class Program
         var baseFolder = Path.GetDirectoryName(Path.GetDirectoryName(path));
         var folders = new string[]
         {
-            "/usr/lib/gcc/x86_64-linux-gnu/13/include",
+            "/usr/lib/gcc/x86_64-linux-gnu/11/include",
             "/usr/local/include",
             "/usr/include/x86_64-linux-gnu",
             "/usr/include"
@@ -105,7 +110,7 @@ internal class Program
 
         var newNameByOldName = new Dictionary<string, string>
         {
-            ["bool"] = "byte",
+            ["bool"] = "CBool",
             ["Uint8"] = "byte",
             ["Uint16"] = "ushort",
             ["Uint32"] = "uint",

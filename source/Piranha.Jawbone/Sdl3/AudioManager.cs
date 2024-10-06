@@ -27,7 +27,7 @@ sealed class AudioManager : IAudioManager, IDisposable
     {
         get
         {
-            return Sdl.AudioDevicePaused(_device) != 0;
+            return Sdl.AudioDevicePaused(_device);
         }
 
         set
@@ -130,7 +130,7 @@ sealed class AudioManager : IAudioManager, IDisposable
                 in _queueBuffer[0],
                 _queueBufferSize);
 
-            if (result == 0)
+            if (!result)
                 SdlException.Throw();
         }
     }
@@ -158,12 +158,12 @@ sealed class AudioManager : IAudioManager, IDisposable
         {
             var result = Sdl.PutAudioStreamData(stream, in data[0], data.Length);
 
-            if (result == 0)
+            if (!result)
                 SdlException.Throw();
 
             result = Sdl.FlushAudioStream(stream);
 
-            if (result == 0)
+            if (!result)
                 SdlException.Throw();
 
             var length = Sdl.GetAudioStreamAvailable(stream);

@@ -43,12 +43,12 @@ public static class SdlExtensions
                 in pcm[0],
                 pcm.Length * Unsafe.SizeOf<short>());
 
-            if (result != 0)
+            if (!result)
                 SdlException.Throw();
 
             result = Sdl.FlushAudioStream(stream);
 
-            if (result != 0)
+            if (!result)
                 SdlException.Throw();
 
             var length = Sdl.GetAudioStreamAvailable(stream);
@@ -105,12 +105,12 @@ public static class SdlExtensions
         {
             var result = Sdl.PutAudioStreamData(stream, in pcm[0], pcm.Length * Unsafe.SizeOf<short>());
 
-            if (result != 0)
+            if (!result)
                 SdlException.Throw();
 
             result = Sdl.FlushAudioStream(stream);
 
-            if (result != 0)
+            if (!result)
                 SdlException.Throw();
 
             var length = Sdl.GetAudioStreamAvailable(stream);
