@@ -65,8 +65,6 @@ class SampleHandler : ISdlEventHandler, IDisposable
             _logger.LogInformation("No cameras found.");
         }
 
-        // if (OperatingSystem.IsLinux())
-        //     Sdl.SetHint(Sdl.Hint.Video.Driver, "x11,wayland");
         _windowPtr = Sdl.CreateWindow(
             "Sample Application",
             1024,

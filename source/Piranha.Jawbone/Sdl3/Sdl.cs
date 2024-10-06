@@ -2916,11 +2916,11 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_hid_ble_scan")]
     public static partial void HidBleScan(byte active);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_SetHintWithPriority")]
-    public static partial byte SetHintWithPriority(nint name, nint value, SdlHintPriority priority);
+    [LibraryImport(Lib, EntryPoint = "SDL_SetHintWithPriority", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial byte SetHintWithPriority(string name, string value, SdlHintPriority priority);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_SetHint")]
-    public static partial byte SetHint(nint name, nint value);
+    [LibraryImport(Lib, EntryPoint = "SDL_SetHint", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial byte SetHint(string name, string value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_ResetHint")]
     public static partial byte ResetHint(nint name);
