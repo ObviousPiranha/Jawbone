@@ -6,7 +6,7 @@ namespace Piranha.Jawbone;
 
 public static partial class C
 {
-    public static ImmutableArray<string> SystemLibs => ImmutableArray.Create(["libc", "kernel32", "ws2_32"]);
+    public static ImmutableArray<string> SystemLibs { get; } = ImmutableArray.Create(["libc", "kernel32", "ws2_32"]);
 
     public static void Free(nint ptr)
     {

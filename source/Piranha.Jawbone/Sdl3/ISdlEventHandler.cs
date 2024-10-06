@@ -20,7 +20,7 @@ public interface ISdlEventHandler
     void OnDisplayOrientation(SdlDisplayEvent sdlEvent) { }
     void OnDisplayMoved(SdlDisplayEvent sdlEvent) { }
     void OnDisplayContentScaleChanged(SdlDisplayEvent sdlEvent) { }
-    void OnDisplayHdrStateChanged(SdlDisplayEvent sdlEvent) { }
+    void OnWindowHdrStateChanged(SdlDisplayEvent sdlEvent) { }
     void OnWindowShown(SdlWindowEvent sdlEvent) { }
     void OnWindowHidden(SdlWindowEvent sdlEvent) { }
     void OnWindowExposed(SdlWindowEvent sdlEvent) { }
@@ -35,7 +35,6 @@ public interface ISdlEventHandler
     void OnWindowFocusGained(SdlWindowEvent sdlEvent) { }
     void OnWindowFocusLost(SdlWindowEvent sdlEvent) { }
     void OnWindowCloseRequested(SdlWindowEvent sdlEvent) { }
-    void OnWindowTakeFocus(SdlWindowEvent sdlEvent) { }
     void OnWindowHitTest(SdlWindowEvent sdlEvent) { }
     void OnWindowIccProfChanged(SdlWindowEvent sdlEvent) { }
     void OnWindowDisplayChanged(SdlWindowEvent sdlEvent) { }
@@ -44,8 +43,6 @@ public interface ISdlEventHandler
     void OnWindowEnterFullscreen(SdlWindowEvent sdlEvent) { }
     void OnWindowLeaveFullscreen(SdlWindowEvent sdlEvent) { }
     void OnWindowDestroyed(SdlWindowEvent sdlEvent) { }
-    void OnWindowPenEnter(SdlWindowEvent sdlEvent) { }
-    void OnWindowPenLeave(SdlWindowEvent sdlEvent) { }
     void OnKeyDown(SdlKeyboardEvent sdlEvent) { }
     void OnKeyUp(SdlKeyboardEvent sdlEvent) { }
     void OnTextEditing(SdlTextEditingEvent sdlEvent) { }
@@ -93,8 +90,8 @@ public interface ISdlEventHandler
     void OnAudioDeviceRemoved(SdlAudioDeviceEvent sdlEvent) { }
     void OnAudioDeviceFormatChanged(SdlAudioDeviceEvent sdlEvent) { }
     void OnSensorUpdate(SdlSensorEvent sdlEvent) { }
-    void OnPenDown(SdlPenTipEvent sdlEvent) { }
-    void OnPenUp(SdlPenTipEvent sdlEvent) { }
+    void OnPenDown(SdlPenProximityEvent sdlEvent) { }
+    void OnPenUp(SdlPenProximityEvent sdlEvent) { }
     void OnPenMotion(SdlPenMotionEvent sdlEvent) { }
     void OnPenButtonDown(SdlPenButtonEvent sdlEvent) { }
     void OnPenButtonUp(SdlPenButtonEvent sdlEvent) { }

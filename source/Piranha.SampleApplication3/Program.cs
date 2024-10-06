@@ -4,6 +4,7 @@ using Piranha.Jawbone;
 using Piranha.Jawbone.Sdl3;
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace Piranha.SampleApplication3;
 
@@ -23,7 +24,6 @@ class Program
                             options.IncludeScopes = true;
                         });
             })
-            .AddSdl3(SdlInit.Audio | SdlInit.Video | SdlInit.Events | SdlInit.Timer | SdlInit.Camera)
             .AddJawboneNativeLibraries()
             .AddAudioManager()
             .AddSingleton<ScenePool<PiranhaScene>>()
@@ -51,18 +51,37 @@ class Program
             logger.LogInformation("Process ID - {pid}", process.Id);
         }
 
+        NativeLibrary.SetDllImportResolver(
+            typeof(Sdl).Assembly,
+            (libraryName, assembly, searchPath) =>
+            {
+                if (C.SystemLibs.Contains(libraryName))
+                {
+                    return NativeLibrary.Load(libraryName, assembly, searchPath);
+                }
+                else
+                {
+                    return NativeLibrary.Load("./" + Sdl.GetDefaultLibName(), assembly, searchPath);
+                }
+            });
+
+        Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera);
+
         try
         {
             var handler = serviceProvider.GetRequiredService<SampleHandler>();
             //windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
-            var sdl = serviceProvider.GetRequiredService<Sdl3Library>();
 
             using (serviceProvider.GetRequiredService<GameLoopManager>())
-                ApplicationManager.Run(sdl, handler);
+                ApplicationManager.Run(handler);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error running window manager.");
+        }
+        finally
+        {
+            Sdl.Quit();
         }
     }
 

@@ -3,6 +3,7 @@ using CppAst;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Security;
 using System.Text;
 
@@ -34,7 +35,7 @@ internal class Program
                 .Replace("Glcontext", "GlContext")
                 .Replace("Glprofile", "GlProfile");
         }
-        
+
         return s;
     }
 
@@ -57,7 +58,7 @@ internal class Program
                 }
                 else
                 {
-                    builder.Append(char.ToLowerInvariant(s[i]));
+                    builder.Append(s[i]);
                 }
             }
             else
@@ -79,7 +80,7 @@ internal class Program
         var baseFolder = Path.GetDirectoryName(Path.GetDirectoryName(path));
         var folders = new string[]
         {
-            "/usr/lib/gcc/x86_64-linux-gnu/11/include",
+            "/usr/lib/gcc/x86_64-linux-gnu/13/include",
             "/usr/local/include",
             "/usr/include/x86_64-linux-gnu",
             "/usr/include"
@@ -90,10 +91,13 @@ internal class Program
         options.TargetSystem = "linux";
         var compilation = CppParser.Parse(source, options);
 
-        using var writer = File.CreateText("code.cs.txt");
-        writer.WriteLine("using System.Runtime.InteropServices;");
-        writer.WriteLine();
-        writer.WriteLine("namespace Piranha.Jawbone.Sdl3;");
+        var targetFolder = "../generated";
+        Directory.CreateDirectory(targetFolder);
+
+        // using var writer = File.CreateText("code.cs.txt");
+        // writer.WriteLine("using System.Runtime.InteropServices;");
+        // writer.WriteLine();
+        // writer.WriteLine("namespace Piranha.Jawbone.Sdl3;");
 
         // Print diagnostic messages
         foreach (var message in compilation.Diagnostics.Messages)
@@ -101,6 +105,7 @@ internal class Program
 
         var newNameByOldName = new Dictionary<string, string>
         {
+            ["bool"] = "byte",
             ["Uint8"] = "byte",
             ["Uint16"] = "ushort",
             ["Uint32"] = "uint",
@@ -118,12 +123,17 @@ internal class Program
         };
 
         // Print All enums
+        var enumFolder = Path.Combine(targetFolder, "Enum");
+        Directory.CreateDirectory(enumFolder);
         foreach (var cppEnum in compilation.Enums)
         {
             Console.WriteLine(cppEnum);
 
             var newName = FixName(cppEnum.Name);
             newNameByOldName.Add(cppEnum.Name, newName);
+
+            using var writer = File.CreateText(Path.Combine(enumFolder, newName + ".cs"));
+            writer.WriteLine("namespace Piranha.Jawbone.Sdl3;");
             writer.WriteLine();
             writer.Write("public enum ");
             writer.WriteLine(newName + " // " + cppEnum.Name);
@@ -151,7 +161,7 @@ internal class Program
 
                     if (!matches)
                         break;
-                    
+
                     ++skip;
                 }
             }
@@ -160,7 +170,7 @@ internal class Program
             foreach (var item in cppEnum.Items)
             {
                 Console.WriteLine("  - " + item);
-                writer.WriteLine("    " + FixStyle(item.Name[skip..]) + " = " + item.Value + ", // " + item.Name);
+                writer.WriteLine("    " + FixStyle(item.Name[skip..].ToLowerInvariant()) + " = " + item.Value + ", // " + item.Name);
             }
 
             writer.WriteLine("}");
@@ -175,7 +185,7 @@ internal class Program
             {
                 newNameByOldName.Add(cppTypedef.Name, "nint");
             }
-            else 
+            else
             {
                 var name = cppTypedef.ElementType.GetDisplayName();
                 if (newNameByOldName.TryGetValue(name, out var oldName))
@@ -190,8 +200,10 @@ internal class Program
             var newName = FixName(cppClass.Name);
             newNameByOldName.Add(cppClass.Name, newName);
         }
-        
+
         // Print All classes, structs
+        var structFolder = Path.Combine(targetFolder, "Struct");
+        Directory.CreateDirectory(structFolder);
         foreach (var cppClass in compilation.Classes)
         {
             Console.WriteLine(cppClass);
@@ -201,6 +213,8 @@ internal class Program
 
             var newName = newNameByOldName[cppClass.Name];
 
+            using var writer = File.CreateText(Path.Combine(structFolder, newName + ".cs"));
+            writer.WriteLine("namespace Piranha.Jawbone.Sdl3;");
             writer.WriteLine();
             writer.WriteLine("public struct " + newName + " // " + cppClass.Name);
             writer.WriteLine("{");
@@ -226,40 +240,60 @@ internal class Program
                     throw;
                 }
             }
-            
+
             writer.WriteLine("}");
         }
 
-        writer.WriteLine();
-        writer.WriteLine("public static partial class Sdl");
-        writer.WriteLine("{");
-            writer.WriteLine("    public const string Lib = \"SDL3\";");
-        // Print All functions
-        foreach (var cppFunction in compilation.Functions)
         {
-            Console.WriteLine(cppFunction);
-            if (!cppFunction.Name.StartsWith("SDL_"))
-                continue;
-
+            using var writer = File.CreateText(Path.Combine(targetFolder, "Sdl.cs"));
+            writer.WriteLine("namespace Piranha.Jawbone.Sdl3;");
             writer.WriteLine();
-            writer.WriteLine($"    [LibraryImport(Lib, EntryPoint = \"{cppFunction.Name}\")]");
+            writer.WriteLine("public static partial class Sdl");
+            writer.WriteLine("{");
+            writer.WriteLine("    public const string Lib = \"SDL3\";");
+            // Print All functions
+            var keywords = new string[] { "base", "lock", "event", "string", "override" };
+            foreach (var cppFunction in compilation.Functions)
+            {
+                Console.WriteLine(cppFunction);
+                if (!cppFunction.Name.StartsWith("SDL_"))
+                    continue;
 
-            var displayName = cppFunction.ReturnType.GetDisplayName();
-            var returnType = (cppFunction.ReturnType.TypeKind & CppTypeKind.Pointer) == CppTypeKind.Pointer ?
-                "nint" : newNameByOldName.GetValueOrDefault(displayName, displayName);
-            var newName = FixStyle(cppFunction.Name[4..]);
-            writer.WriteLine($"    public static partial {returnType} {newName}();");
+                var displayName = cppFunction.ReturnType.GetDisplayName();
+                var returnType = (cppFunction.ReturnType.TypeKind & CppTypeKind.Pointer) == CppTypeKind.Pointer ?
+                    "nint" : newNameByOldName.GetValueOrDefault(displayName, displayName);
+                var newName = FixStyle(cppFunction.Name[4..]);
 
+                var args = new List<string>();
+                foreach (var p in cppFunction.Parameters)
+                {
+                    var type = (p.Type.TypeKind & CppTypeKind.Pointer) == CppTypeKind.Pointer ? "nint" : p.Type.GetDisplayName();
+                    type = newNameByOldName.GetValueOrDefault(type, type);
+                    var name = p.Name;
+                    if (keywords.Contains(name))
+                        name = "@" + name;
+                    args.Add((type + " " + name).Replace("const ", ""));
+                }
+
+                var argString = string.Join(", ", args);
+
+                if (args.Exists(x => x.Contains("va_list")))
+                    continue;
+                writer.WriteLine();
+                writer.WriteLine($"    [LibraryImport(Lib, EntryPoint = \"{cppFunction.Name}\")]");
+                writer.WriteLine($"    public static partial {returnType} {newName}({argString});");
+            }
+
+            writer.WriteLine("}");
         }
 
-        writer.WriteLine("}");
 
         var divider = new string('-', 60);
         Console.WriteLine(divider);
         foreach (var pair in newNameByOldName)
             Console.WriteLine($"{pair.Key} : {pair.Value}");
         Console.WriteLine(divider);
-        
+
         Console.WriteLine($"{compilation.Functions.Count} functions");
     }
 }
