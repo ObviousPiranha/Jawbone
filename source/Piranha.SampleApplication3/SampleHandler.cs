@@ -193,10 +193,10 @@ class SampleHandler : ISdlEventHandler, IDisposable
         try
         {
             var audioSpan = output.ToReadOnlySpan<short>(samples * channelCount);
-            // _audioManager.PrepareAudio(
-            //     sampleRate,
-            //     channelCount,
-            //     audioSpan);
+            _audioManager.PrepareAudio(
+                sampleRate,
+                channelCount,
+                audioSpan);
         }
         finally
         {
@@ -285,7 +285,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
 
     public void OnMouseButtonDown(SdlMouseButtonEvent eventData)
     {
-        // _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         // _audioManager.ScheduleAudio(0, default);
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.2));
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));
@@ -302,5 +302,10 @@ class SampleHandler : ISdlEventHandler, IDisposable
     {
         Sdl.GlDestroyContext(_contextPtr);
         Sdl.DestroyWindow(_windowPtr);
+    }
+
+    public void OnCameraDeviceAdded(SdlCameraDeviceEvent sdlEvent)
+    {
+        _logger.LogInformation("Camera: {name}", Sdl.GetCameraName(sdlEvent.Which));
     }
 }

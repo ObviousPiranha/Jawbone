@@ -34,23 +34,6 @@ class Program
 
     static void RunApplication()
     {
-        var serviceCollection = new ServiceCollection();
-        ConfigureServices(serviceCollection);
-
-        var options = new ServiceProviderOptions
-        {
-            ValidateOnBuild = true,
-            ValidateScopes = true
-        };
-
-        using var serviceProvider = serviceCollection.BuildServiceProvider(options);
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-
-        using (var process = System.Diagnostics.Process.GetCurrentProcess())
-        {
-            logger.LogInformation("Process ID - {pid}", process.Id);
-        }
-
         NativeLibrary.SetDllImportResolver(
             typeof(Sdl).Assembly,
             (libraryName, assembly, searchPath) =>
@@ -69,6 +52,23 @@ class Program
 
         try
         {
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
+
+            var options = new ServiceProviderOptions
+            {
+                ValidateOnBuild = true,
+                ValidateScopes = true
+            };
+
+            using var serviceProvider = serviceCollection.BuildServiceProvider(options);
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+            using (var process = System.Diagnostics.Process.GetCurrentProcess())
+            {
+                logger.LogInformation("Process ID - {pid}", process.Id);
+            }
+
             var handler = serviceProvider.GetRequiredService<SampleHandler>();
             //windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
 
@@ -77,7 +77,9 @@ class Program
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error running window manager.");
+            Console.WriteLine();
+            Console.WriteLine(ex);
+            Console.WriteLine();
         }
         finally
         {

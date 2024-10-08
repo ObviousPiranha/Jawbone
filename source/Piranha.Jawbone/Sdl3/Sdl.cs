@@ -1366,7 +1366,7 @@ public static partial class Sdl
     public static partial nint GetCameraSupportedFormats(uint devid, nint count);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetCameraName")]
-    public static partial nint GetCameraName(uint instance_id);
+    public static partial CString GetCameraName(uint instance_id);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetCameraPosition")]
     public static partial SdlCameraPosition GetCameraPosition(uint instance_id);
