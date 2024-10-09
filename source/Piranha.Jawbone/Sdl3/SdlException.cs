@@ -18,7 +18,7 @@ public class SdlException : Exception
     {
         message ??= "SDL error.";
         var sdlError = Sdl.GetError().ToString() ?? "Unknown SDL error";
-        return new SdlException(message + " " + sdlError);
+        return new SdlException((message + " " + sdlError).Trim());
     }
 
     [DoesNotReturn]

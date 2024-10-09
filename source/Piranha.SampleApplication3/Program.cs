@@ -48,7 +48,8 @@ class Program
                 }
             });
 
-        Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera);
+        Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera).ThrowOnSdlFailure("Unable to initialize SDL.");
+        Sdl.SetAppMetadata("Jawbone SDL3 Sample", "1.0").ThrowOnSdlFailure("Unable to set app metadata.");
 
         try
         {
@@ -99,7 +100,9 @@ class Program
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine();
             Console.WriteLine(ex);
+            Console.WriteLine();
             Console.ResetColor();
         }
     }

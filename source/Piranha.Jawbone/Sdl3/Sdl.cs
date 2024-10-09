@@ -9,8 +9,11 @@ public static partial class Sdl
 {
     public const string Lib = "SDL3";
 
-    // #define SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK ((SDL_AudioDeviceID) 0xFFFFFFFFu)
-    public const uint AudioDeviceDefaultPlayback = uint.MaxValue;
+    public static void ThrowOnSdlFailure(this CBool result, string? message)
+    {
+        if (!result)
+            SdlException.Throw(message);
+    }
 
     public static string GetDefaultLibName()
     {
@@ -2958,11 +2961,11 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_Quit")]
     public static partial void Quit();
 
-    [LibraryImport(Lib, EntryPoint = "SDL_SetAppMetadata")]
-    public static partial CBool SetAppMetadata(nint appname, nint appversion, nint appidentifier);
+    [LibraryImport(Lib, EntryPoint = "SDL_SetAppMetadata", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial CBool SetAppMetadata(string? appname = null, string? appversion = null, string? appidentifier = null);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_SetAppMetadataProperty")]
-    public static partial CBool SetAppMetadataProperty(nint name, nint value);
+    [LibraryImport(Lib, EntryPoint = "SDL_SetAppMetadataProperty", StringMarshalling = StringMarshalling.Utf8)]
+    public static partial CBool SetAppMetadataProperty(string? name, string? value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetAppMetadataProperty")]
     public static partial nint GetAppMetadataProperty(nint name);
