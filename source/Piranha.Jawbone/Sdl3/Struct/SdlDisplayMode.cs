@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Piranha.Jawbone.Sdl3;
 
 public struct SdlDisplayMode // SDL_DisplayMode
@@ -11,4 +13,9 @@ public struct SdlDisplayMode // SDL_DisplayMode
     public int RefreshRateNumerator; // int refresh_rate_numerator
     public int RefreshRateDenominator; // int refresh_rate_denominator
     public nint Internal; // SDL_DisplayModeData * internal
+
+    public static unsafe ref SdlDisplayMode FromPointer(nint ptr)
+    {
+        return ref Unsafe.AsRef<SdlDisplayMode>(ptr.ToPointer());
+    }
 }

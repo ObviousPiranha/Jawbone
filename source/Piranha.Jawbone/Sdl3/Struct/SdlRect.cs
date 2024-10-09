@@ -6,4 +6,6 @@ public struct SdlRect // SDL_Rect
     public int Y; // int y
     public int W; // int w
     public int H; // int h
+
+    public readonly override string ToString() => $"{X}, {Y} {W}x{H}";
 }

@@ -8,6 +8,6 @@ public struct SdlDropEvent // SDL_DropEvent
     public uint WindowID; // SDL_WindowID windowID
     public float X; // float x
     public float Y; // float y
-    public nint Source; // char const * source
-    public nint Data; // char const * data
+    public CString Source; // char const * source
+    public CString Data; // char const * data
 }

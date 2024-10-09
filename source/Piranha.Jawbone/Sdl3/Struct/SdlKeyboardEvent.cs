@@ -9,7 +9,7 @@ public struct SdlKeyboardEvent // SDL_KeyboardEvent
     public uint Which; // SDL_KeyboardID which
     public SdlScancode Scancode; // SDL_Scancode scancode
     public uint Key; // SDL_Keycode key
-    public ushort Mod; // SDL_Keymod mod
+    public SdlKeymod Mod; // SDL_Keymod mod
     public ushort Raw; // Uint16 raw
     public byte Down; // bool down
     public byte Repeat; // bool repeat

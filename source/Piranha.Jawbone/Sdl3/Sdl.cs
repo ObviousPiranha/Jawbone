@@ -1315,7 +1315,7 @@ public static partial class Sdl
     public static partial CBool FillSurfaceRects(nint dst, nint rects, int count, uint color);
 
     [LibraryImport(Lib, EntryPoint = "SDL_BlitSurface")]
-    public static partial CBool BlitSurface(nint src, nint srcrect, nint dst, nint dstrect);
+    public static partial CBool BlitSurface(nint src, in SdlRect srcrect, nint dst, in SdlRect dstrect);
 
     [LibraryImport(Lib, EntryPoint = "SDL_BlitSurfaceUnchecked")]
     public static partial CBool BlitSurfaceUnchecked(nint src, nint srcrect, nint dst, nint dstrect);
@@ -1510,10 +1510,10 @@ public static partial class Sdl
     public static partial nint GetDisplayName(uint displayID);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetDisplayBounds")]
-    public static partial CBool GetDisplayBounds(uint displayID, nint rect);
+    public static partial CBool GetDisplayBounds(uint displayID, out SdlRect rect);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetDisplayUsableBounds")]
-    public static partial CBool GetDisplayUsableBounds(uint displayID, nint rect);
+    public static partial CBool GetDisplayUsableBounds(uint displayID, out SdlRect rect);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetNaturalDisplayOrientation")]
     public static partial SdlDisplayOrientation GetNaturalDisplayOrientation(uint displayID);
@@ -2080,7 +2080,7 @@ public static partial class Sdl
     public static partial CBool IsGamepad(uint instance_id);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGamepadNameForID")]
-    public static partial nint GetGamepadNameForID(uint instance_id);
+    public static partial CString GetGamepadNameForID(uint instance_id);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGamepadPathForID")]
     public static partial nint GetGamepadPathForID(uint instance_id);
@@ -2125,7 +2125,7 @@ public static partial class Sdl
     public static partial uint GetGamepadID(nint gamepad);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGamepadName")]
-    public static partial nint GetGamepadName(nint gamepad);
+    public static partial CString GetGamepadName(nint gamepad);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGamepadPath")]
     public static partial nint GetGamepadPath(nint gamepad);
@@ -2305,7 +2305,7 @@ public static partial class Sdl
     public static partial SdlScancode GetScancodeFromName(nint name);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetKeyName")]
-    public static partial nint GetKeyName(uint key);
+    public static partial CString GetKeyName(uint key);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetKeyFromName")]
     public static partial uint GetKeyFromName(nint name);

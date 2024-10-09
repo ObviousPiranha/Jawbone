@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Piranha.Jawbone.Sdl3;
 
 public struct SdlSurface // SDL_Surface
@@ -10,4 +12,9 @@ public struct SdlSurface // SDL_Surface
     public nint Pixels; // void * pixels
     public int Refcount; // int refcount
     public nint Reserved; // void * reserved
+
+    public static unsafe ref SdlSurface FromPointer(nint ptr)
+    {
+        return ref Unsafe.AsRef<SdlSurface>(ptr.ToPointer());
+    }
 }
