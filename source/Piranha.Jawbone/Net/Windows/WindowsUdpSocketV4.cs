@@ -41,7 +41,7 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
     public unsafe void Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<AddressV4> result)
+        out UdpReceiveResult<Endpoint<AddressV4>> result)
     {
         result = default;
         int milliseconds;
@@ -78,6 +78,7 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
                 result.State = UdpReceiveState.Success;
                 result.Origin = address.ToEndpoint();
                 result.ReceivedByteCount = (int)receiveResult;
+                result.Received = buffer[..(int)receiveResult];
             }
         }
         else if (pollResult < 0)

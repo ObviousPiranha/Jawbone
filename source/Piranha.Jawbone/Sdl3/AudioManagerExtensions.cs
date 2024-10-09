@@ -26,7 +26,7 @@ public static class AudioManagerExtensions
         ReadOnlySpan<short> s16Data)
     {
         return audioManager.PrepareAudio(
-            SdlAudioFormat.S16Lsb,
+            SdlAudioFormat.S16,
             frequency,
             channels,
             MemoryMarshal.AsBytes(s16Data));

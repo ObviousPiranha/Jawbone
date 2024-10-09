@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +11,7 @@ static unsafe partial class Sys
     public const string Lib = "ws2_32";
     public const string KernelLib = "kernel32";
     public static nuint InvalidSocket => nuint.MaxValue;
-    private static readonly byte[] s_wsaData = new byte[512];
+    private static readonly byte[] s_wsaData = GC.AllocateUninitializedArray<byte>(512, true);
 
     static Sys()
     {

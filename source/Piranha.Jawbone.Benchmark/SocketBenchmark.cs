@@ -68,14 +68,15 @@ public class SocketBenchmark
     public void SendJawbone()
     {
         using var serverSocket = UdpSocketV4.BindAnyIp();
-        var serverEndpoint = serverSocket.GetEndpoint();
+        var serverEndpoint = serverSocket.GetSocketName();
 
         {
-            using var clientSocket = UdpSocketV4.CreateWithoutBinding();
+            using var clientSocket = UdpSocketV4.Create();
             clientSocket.Send(_sendBuffer, AddressV4.Local.OnPort(serverEndpoint.Port));
         }
 
-        var n = serverSocket.Receive(_receiveBuffer, out _, _timeout);
-        Validate(n);
+        serverSocket.Receive(_receiveBuffer, _timeout, out var result);
+        result.ThrowOnErrorOrTimeout();
+        Validate(result.ReceivedByteCount);
     }
 }

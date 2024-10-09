@@ -12,66 +12,69 @@ public readonly struct OpenGlContext
     public readonly OpenGlLibrary OpenGl { get; init; }
 
     public static OpenGlContext Create(
-        Sdl3Library sdl,
         nint sdlWindow,
         ILogger? logger = null)
     {
-        sdl.GlSetAttribute(SdlGl.RedSize, 8);
-        sdl.GlSetAttribute(SdlGl.GreenSize, 8);
-        sdl.GlSetAttribute(SdlGl.BlueSize, 8);
-        sdl.GlSetAttribute(SdlGl.AlphaSize, 8);
-        // _sdl.GlSetAttribute(SdlGl.DepthSize, 24);
-        sdl.GlSetAttribute(SdlGl.DoubleBuffer, 1);
+        Sdl.GlSetAttribute(SdlGlAttr.RedSize, 8);
+        Sdl.GlSetAttribute(SdlGlAttr.GreenSize, 8);
+        Sdl.GlSetAttribute(SdlGlAttr.BlueSize, 8);
+        Sdl.GlSetAttribute(SdlGlAttr.AlphaSize, 8);
+        // _Sdl.GLSetAttribute(SdlGlAttr.DepthSize, 24);
+        Sdl.GlSetAttribute(SdlGlAttr.Doublebuffer, 1);
 
         if (Platform.IsRaspberryPi)
         {
             logger?.LogDebug("configuring OpenGL ES 3.0");
-            sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-            sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 0);
-            sdl.GlSetAttribute(SdlGl.ContextProfileMask, Sdl.Gl.Context.Profile.Es);
+            Sdl.GlSetAttribute(SdlGlAttr.ContextMajorVersion, 3);
+            Sdl.GlSetAttribute(SdlGlAttr.ContextMinorVersion, 0);
+            Sdl.GlSetAttribute(SdlGlAttr.ContextProfileMask, (int)SdlGlProfile.Es);
         }
         else
         {
-            sdl.GlSetAttribute(SdlGl.ContextProfileMask, Sdl.Gl.Context.Profile.Core);
-            // sdl.GlSetAttribute(SdlGl.ContextFlags, SdlGlContext.ForwardCompatibleFlag);
+            // Sdl.GlSetAttribute(SdlGlAttr.ContextProfileMask, (int)SdlGlContextFlag.);
+            // Sdl.GLSetAttribute(SdlGlAttr.ContextFlags, SdlGlContext.ForwardCompatibleFlag);
             if (OperatingSystem.IsMacOS())
             {
                 logger?.LogDebug("configuring OpenGL 3.2");
-                sdl.GlSetAttribute(SdlGl.ContextMajorVersion, 3);
-                sdl.GlSetAttribute(SdlGl.ContextMinorVersion, 2);
+                Sdl.GlSetAttribute(SdlGlAttr.ContextMajorVersion, 3);
+                Sdl.GlSetAttribute(SdlGlAttr.ContextMinorVersion, 2);
             }
         }
 
-        var contextPtr = sdl.GlCreateContext(sdlWindow);
+        var contextPtr = Sdl.GlCreateContext(sdlWindow);
 
         if (contextPtr.IsInvalid())
         {
             throw new SdlException(
-                "Unable to create GL context: " + sdl.GetError());
+                "Unable to create GL context: " + Sdl.GetError());
         }
 
         try
         {
-            if (sdl.GlLoadLibrary() != 0)
+            if (!Sdl.GlLoadLibrary(default))
             {
                 throw new SdlException(
-                    "Unable to load GL library: " + sdl.GetError());
+                    "Unable to load GL library: " + Sdl.GetError());
             }
             var gl = new OpenGlLibrary(
-                methodName => sdl.GlGetProcAddress("gl" + methodName));
+                methodName => Sdl.GlGetProcAddress("gl" + methodName));
 
             gl.GetIntegerv(Gl.MaxTextureSize, out var maxTextureSize);
 
-            sdl.GetVersion(out var version);
+            var version = Sdl.GetVersion();
+            var major = version / 1000000;
+            var minor = version / 1000 % 1000;
+            var micro = version % 1000;
+            var versionString = $"{major}.{minor}.{micro}";
 
             if (logger is not null)
             {
                 var log = string.Concat(
                     "SDL version: ",
-                    version.ToString(),
+                    versionString,
                     Environment.NewLine,
                     "SDL video driver: ",
-                    sdl.GetCurrentVideoDriver(),
+                    Sdl.GetCurrentVideoDriver(),
                     Environment.NewLine,
                     "OpenGL version: ",
                     gl.GetString(Gl.Version),
@@ -90,8 +93,8 @@ public readonly struct OpenGlContext
 
                 logger.LogInformation("{versionInfo}", log);
 
-                var driverCount = sdl.GetNumVideoDrivers();
-                var drivers = Enumerable.Range(0, driverCount).Select(n => sdl.GetVideoDriver(n));
+                var driverCount = Sdl.GetNumVideoDrivers();
+                var drivers = Enumerable.Range(0, driverCount).Select(n => Sdl.GetVideoDriver(n));
                 logger.LogDebug("Drivers: {drivers}", string.Join(", ", drivers));
             }
 
@@ -99,7 +102,7 @@ public readonly struct OpenGlContext
         }
         catch
         {
-            sdl.GlDeleteContext(contextPtr);
+            Sdl.GlDestroyContext(contextPtr);
             contextPtr = default;
             throw;
         }

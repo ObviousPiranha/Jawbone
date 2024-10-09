@@ -29,8 +29,6 @@ public static class JawboneNativeExtensions
             .AddSingleton(
                 serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().StbTrueType)
             .AddSingleton(
-                serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().StbVorbis)
-            .AddSingleton(
-                serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().Piranha);
+                serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().StbVorbis);
     }
 }

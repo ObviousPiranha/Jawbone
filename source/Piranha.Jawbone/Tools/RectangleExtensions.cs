@@ -52,4 +52,6 @@ public static class RectangleExtensions
     public static int LowX(this Rectangle32 r) => r.Position.X;
     public static int LowY(this Rectangle32 r) => r.Position.Y;
     public static Point32 Middle(this Rectangle32 r) => r.Position + r.Size / 2;
+    public static int MiddleX(this Rectangle32 r) => r.Position.X + r.Size.X / 2;
+    public static int MiddleY(this Rectangle32 r) => r.Position.Y + r.Size.Y / 2;
 }

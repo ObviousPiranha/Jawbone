@@ -11,6 +11,6 @@ public interface IUdpSocket<TAddress> : IDisposable
     void Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<TAddress> result);
+        out UdpReceiveResult<Endpoint<TAddress>> result);
     Endpoint<TAddress> GetSocketName();
 }

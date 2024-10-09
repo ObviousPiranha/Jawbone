@@ -14,14 +14,16 @@ public class SdlException : Exception
     {
     }
 
-    public static SdlException Create(Sdl3Library sdl)
+    public static SdlException Create(string? message = null)
     {
-        return new SdlException(sdl.GetError().ToString() ?? "Unknown error");
+        message ??= "SDL error.";
+        var sdlError = Sdl.GetError().ToString() ?? "Unknown SDL error";
+        return new SdlException((message + " " + sdlError).Trim());
     }
 
     [DoesNotReturn]
-    public static void Throw(Sdl3Library sdl)
+    public static void Throw(string? message = null)
     {
-        throw Create(sdl);
+        throw Create(message);
     }
 }

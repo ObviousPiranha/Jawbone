@@ -9,6 +9,8 @@ public struct CString
 {
     public nint Address;
 
+    public CString(nint address) => Address = address;
+
     public readonly string GetStringOrDefault(string defaultValue) => ToString() ?? defaultValue;
     public readonly string GetStringOrEmpty() => ToString() ?? "";
     public unsafe readonly ReadOnlySpan<byte> AsSpan()

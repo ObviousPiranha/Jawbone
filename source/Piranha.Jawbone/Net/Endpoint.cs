@@ -1,12 +1,38 @@
 using System;
-using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Piranha.Jawbone.Net;
 
-public static class Endpoint
+public struct Endpoint : IEquatable<Endpoint>
 {
+    public Address Address;
+    public NetworkPort Port;
+
+    public Endpoint(Address address, NetworkPort port)
+    {
+        Address = address;
+        Port = port;
+    }
+
+    public Endpoint(Address address, int port) : this(address, (NetworkPort)port)
+    {
+    }
+
+    public readonly bool Equals(Endpoint other) => Address.Equals(other.Address) && Port.Equals(other.Port);
+    public readonly override bool Equals(object? obj) => obj is Endpoint other && Equals(other);
+    public readonly override int GetHashCode() => HashCode.Combine(Address, Port);
+
+    public static bool operator ==(Endpoint a, Endpoint b) => a.Equals(b);
+    public static bool operator !=(Endpoint a, Endpoint b) => !a.Equals(b);
+    public static implicit operator Endpoint(Endpoint<AddressV4> endpoint) => new(endpoint.Address, endpoint.Port);
+    public static implicit operator Endpoint(Endpoint<AddressV6> endpoint) => new(endpoint.Address, endpoint.Port);
+    public static explicit operator Endpoint<AddressV4>(Endpoint endpoint) => new((AddressV4)endpoint.Address, endpoint.Port);
+    public static explicit operator Endpoint<AddressV6>(Endpoint endpoint) => new((AddressV6)endpoint.Address, endpoint.Port);
+
+    public static Endpoint Create(Address address, int port) => new(address, port);
+    public static Endpoint Create(Address address, NetworkPort port) => new(address, port);
+
     public static Endpoint<TAddress> Create<TAddress>(TAddress address, int port)
         where TAddress : unmanaged, IAddress<TAddress>
     {
@@ -17,11 +43,6 @@ public static class Endpoint
         where TAddress : unmanaged, IAddress<TAddress>
     {
         return new(address, port);
-    }
-
-    public static Endpoint<AddressV6> MapToV6(this Endpoint<AddressV4> endpoint)
-    {
-        return Create((AddressV6)endpoint.Address, endpoint.Port);
     }
 }
 

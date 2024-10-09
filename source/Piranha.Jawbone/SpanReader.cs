@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -147,6 +148,25 @@ public static class SpanReaderExtensions
         }
     }
 
+    public static bool TrySlice<T>(
+        ref this SpanReader<T> reader,
+        int length,
+        out ReadOnlySpan<T> result)
+    {
+        var pending = reader.Pending;
+        if (length < 0 || pending.Length < length)
+        {
+            result = default;
+            return false;
+        }
+        else
+        {
+            reader.Position += length;
+            result = pending[..length];
+            return true;
+        }
+    }
+
     public static T Take<T>(ref this SpanReader<T> reader)
     {
         var result = reader.Span[reader.Position];
@@ -159,6 +179,13 @@ public static class SpanReaderExtensions
         reader.Span.Slice(reader.Position, items.Length).CopyTo(items);
         reader.Position += items.Length;
         return ref reader;
+    }
+
+    public static T Blit<T>(ref this SpanReader<byte> reader) where T : unmanaged
+    {
+        var value = MemoryMarshal.Read<T>(reader.Pending);
+        reader.Position += Unsafe.SizeOf<T>();
+        return value;
     }
 
     public static bool TryBlit<T>(
@@ -193,5 +220,61 @@ public static class SpanReaderExtensions
         {
             return false;
         }
+    }
+
+    public static bool TryReadBigEndianInt32(
+        ref this SpanReader<byte> reader,
+        out int result)
+    {
+        if (reader.TryBlit<int>(out var bigEndianValue))
+        {
+            result = BitConverter.IsLittleEndian ?
+                BinaryPrimitives.ReverseEndianness(bigEndianValue) :
+                bigEndianValue;
+            return true;
+        }
+        else
+        {
+            result = default;
+            return false;
+        }
+    }
+
+    public static int ReadBigEndianInt32(
+        ref this SpanReader<byte> reader)
+    {
+        var bigEndianValue = reader.Blit<int>();
+        var result = BitConverter.IsLittleEndian ?
+            BinaryPrimitives.ReverseEndianness(bigEndianValue) :
+            bigEndianValue;
+        return result;
+    }
+
+    public static bool TryReadBigEndianUInt32(
+        ref this SpanReader<byte> reader,
+        out uint result)
+    {
+        if (reader.TryBlit(out uint bigEndianValue))
+        {
+            result = BitConverter.IsLittleEndian ?
+                BinaryPrimitives.ReverseEndianness(bigEndianValue) :
+                bigEndianValue;
+            return true;
+        }
+        else
+        {
+            result = default;
+            return false;
+        }
+    }
+
+    public static uint ReadBigEndianUInt32(
+        ref this SpanReader<byte> reader)
+    {
+        var bigEndianValue = reader.Blit<uint>();
+        var result = BitConverter.IsLittleEndian ?
+            BinaryPrimitives.ReverseEndianness(bigEndianValue) :
+            bigEndianValue;
+        return result;
     }
 }

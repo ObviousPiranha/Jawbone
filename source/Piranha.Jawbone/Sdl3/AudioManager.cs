@@ -12,7 +12,6 @@ sealed class AudioManager : IAudioManager, IDisposable
     private readonly List<AudioShader> _shaders = [];
     private readonly List<float[]> _sounds = [];
     private readonly List<ScheduledAudio> _scheduledAudio = [];
-    private readonly Sdl3Library _sdl;
     private readonly ILogger<AudioManager> _logger;
     private readonly uint _device;
     private readonly SdlAudioSpec _expectedAudioSpec;
@@ -28,23 +27,21 @@ sealed class AudioManager : IAudioManager, IDisposable
     {
         get
         {
-            return _sdl.AudioDevicePaused(_device);
+            return Sdl.AudioDevicePaused(_device);
         }
 
         set
         {
             if (value)
-                _sdl.PauseAudioDevice(_device);
+                Sdl.PauseAudioDevice(_device);
             else
-                _sdl.ResumeAudioDevice(_device);
+                Sdl.ResumeAudioDevice(_device);
         }
     }
 
     public AudioManager(
-        Sdl3Library sdl,
         ILogger<AudioManager> logger)
     {
-        _sdl = sdl;
         _logger = logger;
 
         _expectedAudioSpec = new SdlAudioSpec
@@ -54,7 +51,7 @@ sealed class AudioManager : IAudioManager, IDisposable
             Channels = 2
         };
 
-        var deviceIdsPointer = _sdl.GetAudioOutputDevices(out var deviceCount);
+        var deviceIdsPointer = Sdl.GetAudioPlaybackDevices(out var deviceCount);
 
         try
         {
@@ -64,12 +61,12 @@ sealed class AudioManager : IAudioManager, IDisposable
             if (!deviceIds.IsEmpty)
             {
                 var stringBuilder = new StringBuilder();
-                var deviceName = _sdl.GetAudioDeviceName(deviceIds[0]).ToString() ?? "(none)";
+                var deviceName = Sdl.GetAudioDeviceName(deviceIds[0]).ToString() ?? "(none)";
                 stringBuilder.Append(deviceName);
 
                 for (int i = 1; i < deviceIds.Length; ++i)
                 {
-                    deviceName = _sdl.GetAudioDeviceName(deviceIds[i]).ToString() ?? "(none)";
+                    deviceName = Sdl.GetAudioDeviceName(deviceIds[i]).ToString() ?? "(none)";
                     stringBuilder.Append(", ").Append(deviceName);
                 }
 
@@ -80,31 +77,31 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
         finally
         {
-            _sdl.Free(deviceIdsPointer);
+            Sdl.Free(deviceIdsPointer);
         }
 
-        _device = _sdl.OpenAudioDevice(
-            Sdl.Audio.Device.Default.Output,
+        _device = Sdl.OpenAudioDevice(
+            SdlAudioDeviceDefault.Playback,
             in _expectedAudioSpec);
         _actualAudioSpec = _expectedAudioSpec;
 
         if (_device == 0)
-            SdlException.Throw(sdl);
+            SdlException.Throw("Unable to open audio device.");
 
         var valuesPerSecond = _actualAudioSpec.Freq * _actualAudioSpec.Channels;
         var valuesPerFrame = valuesPerSecond / 60;
         _queueBuffer = new float[valuesPerFrame];
         _queueBufferSize = _queueBuffer.Length * Unsafe.SizeOf<float>();
 
-        _stream = _sdl.CreateAudioStream(in _actualAudioSpec, in _actualAudioSpec);
-        _sdl.BindAudioStream(_device, _stream);
+        _stream = Sdl.CreateAudioStream(in _actualAudioSpec, in _actualAudioSpec);
+        Sdl.BindAudioStream(_device, _stream).ThrowOnSdlFailure("Unable to bind audio stream.");
     }
 
     public void Dispose()
     {
-        _sdl.UnbindAudioStream(_stream);
-        _sdl.DestroyAudioStream(_stream);
-        _sdl.CloseAudioDevice(_device);
+        Sdl.UnbindAudioStream(_stream);
+        Sdl.DestroyAudioStream(_stream);
+        Sdl.CloseAudioDevice(_device);
         _logger.LogInformation("Disposed audio manager");
     }
 
@@ -113,7 +110,7 @@ sealed class AudioManager : IAudioManager, IDisposable
         if (IsPaused)
             return;
 
-        _sdl.LockAudioStream(_stream);
+        Sdl.LockAudioStream(_stream).ThrowOnSdlFailure("Unable to lock audio stream.");
         var doQueue = 0 < _scheduledAudio.Count;
 
         try
@@ -123,18 +120,18 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
         finally
         {
-            _sdl.UnlockAudioStream(_stream);
+            Sdl.UnlockAudioStream(_stream).ThrowOnSdlFailure("Unable to unlock audio stream.");
         }
 
         if (doQueue)
         {
-            var result = _sdl.PutAudioStreamData(
+            var result = Sdl.PutAudioStreamData(
                 _stream,
                 in _queueBuffer[0],
                 _queueBufferSize);
 
-            if (result != 0)
-                SdlException.Throw(_sdl);
+            if (!result)
+                SdlException.Throw();
         }
     }
 
@@ -150,26 +147,26 @@ sealed class AudioManager : IAudioManager, IDisposable
             Channels = channels,
             Freq = frequency
         };
-        var stream = _sdl.CreateAudioStream(
+        var stream = Sdl.CreateAudioStream(
             in sourceSpec,
             in _actualAudioSpec);
 
         if (stream.IsInvalid())
-            SdlException.Throw(_sdl);
+            SdlException.Throw();
 
         try
         {
-            var result = _sdl.PutAudioStreamData(stream, in data[0], data.Length);
+            var result = Sdl.PutAudioStreamData(stream, in data[0], data.Length);
 
-            if (result != 0)
-                SdlException.Throw(_sdl);
+            if (!result)
+                SdlException.Throw();
 
-            result = _sdl.FlushAudioStream(stream);
+            result = Sdl.FlushAudioStream(stream);
 
-            if (result != 0)
-                SdlException.Throw(_sdl);
+            if (!result)
+                SdlException.Throw();
 
-            var length = _sdl.GetAudioStreamAvailable(stream);
+            var length = Sdl.GetAudioStreamAvailable(stream);
 
             if ((length & 3) != 0)
                 throw new SdlException("Audio data must align to 4 bytes.");
@@ -177,12 +174,12 @@ sealed class AudioManager : IAudioManager, IDisposable
             if (0 < length)
             {
                 var floats = new float[length / Unsafe.SizeOf<float>()];
-                var bytesRead = _sdl.GetAudioStreamData(stream, out floats[0], length);
+                var bytesRead = Sdl.GetAudioStreamData(stream, out floats[0], length);
 
                 if (bytesRead == -1)
-                    SdlException.Throw(_sdl);
+                    SdlException.Throw();
 
-                _sdl.LockAudioStream(_stream);
+                Sdl.LockAudioStream(_stream).ThrowOnSdlFailure("Unable to lock audio stream.");
                 try
                 {
                     var soundIndex = _sounds.Count;
@@ -191,7 +188,7 @@ sealed class AudioManager : IAudioManager, IDisposable
                 }
                 finally
                 {
-                    _sdl.UnlockAudioStream(_stream);
+                    Sdl.UnlockAudioStream(_stream).ThrowOnSdlFailure("Unable to unlock audio stream.");
                 }
             }
             else
@@ -201,7 +198,7 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
         finally
         {
-            _sdl.DestroyAudioStream(stream);
+            Sdl.DestroyAudioStream(stream);
         }
     }
 
@@ -222,7 +219,7 @@ sealed class AudioManager : IAudioManager, IDisposable
         bool unpause;
         int result;
 
-        _sdl.LockAudioStream(_stream);
+        Sdl.LockAudioStream(_stream).ThrowOnSdlFailure("Unable to lock audio stream.");
         try
         {
             var scheduledAudio = new ScheduledAudio
@@ -240,7 +237,7 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
         finally
         {
-            _sdl.UnlockAudioStream(_stream);
+            Sdl.UnlockAudioStream(_stream).ThrowOnSdlFailure("Unable to unlock audio stream.");
         }
 
         if (unpause)
@@ -251,7 +248,7 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     public bool CancelAudio(int scheduledAudioId)
     {
-        _sdl.LockAudioStream(_stream);
+        Sdl.LockAudioStream(_stream).ThrowOnSdlFailure("Unable to lock audio stream.");
         try
         {
             // Presumably, there will always be a relatively small number of items.
@@ -268,7 +265,7 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
         finally
         {
-            _sdl.UnlockAudioStream(_stream);
+            Sdl.UnlockAudioStream(_stream).ThrowOnSdlFailure("Unable to unlock audio stream.");
         }
 
         return false;
@@ -352,27 +349,27 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     public void AddShader(AudioShader audioShader)
     {
-        _sdl.LockAudioStream(_stream);
+        Sdl.LockAudioStream(_stream).ThrowOnSdlFailure("Unable to lock audio stream.");
         try
         {
             _shaders.Add(audioShader);
         }
         finally
         {
-            _sdl.UnlockAudioStream(_stream);
+            Sdl.UnlockAudioStream(_stream).ThrowOnSdlFailure("Unable to unlock audio stream.");
         }
     }
 
     public void RemoveShader(AudioShader audioShader)
     {
-        _sdl.LockAudioStream(_stream);
+        Sdl.LockAudioStream(_stream).ThrowOnSdlFailure("Unable to lock audio stream.");
         try
         {
             _shaders.Remove(audioShader);
         }
         finally
         {
-            _sdl.UnlockAudioStream(_stream);
+            Sdl.UnlockAudioStream(_stream).ThrowOnSdlFailure("Unable to unlock audio stream.");
         }
     }
 }

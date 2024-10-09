@@ -1,13 +1,21 @@
 using Piranha.Jawbone.Net;
 using System;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Piranha.Jawbone.Test;
 
 public class NetworkTest
 {
+    private readonly ITestOutputHelper _output;
+
+    public NetworkTest(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
     [Fact]
-    public void SendUdp32()
+    public void SendAndReceiveUdpV4()
     {
         var sendBuffer = new byte[256];
         sendBuffer.AsSpan().Fill(0xab);
@@ -37,7 +45,7 @@ public class NetworkTest
     }
 
     [Fact]
-    public void SendUdp128()
+    public void SendAndReceiveUdpV6()
     {
         var sendBuffer = new byte[256];
         sendBuffer.AsSpan().Fill(0xab);
@@ -67,7 +75,7 @@ public class NetworkTest
     }
 
     [Fact]
-    public void CanSendUdp32And128WhenAllowed()
+    public void CanSendUdpV4ToV6WhenAllowed()
     {
         var v4LocalAsV6 = (AddressV6)AddressV4.Local;
         var sendBuffer = new byte[256];
@@ -106,7 +114,7 @@ public class NetworkTest
     }
 
     [Fact]
-    public void CannotSendUdp32And128WhenDisallowed()
+    public void CannotSendUdpV4ToV6WhenDisallowed()
     {
         var sendBuffer = new byte[256];
         sendBuffer.AsSpan().Fill(0xab);
@@ -125,7 +133,7 @@ public class NetworkTest
     }
 
     [Fact]
-    public void CannotBindSamePort32()
+    public void CannotBindSamePortV4()
     {
         using var socketA = UdpSocketV4.BindLocalIp();
         var endpointA = socketA.GetSocketName();
@@ -140,7 +148,7 @@ public class NetworkTest
     }
 
     [Fact]
-    public void CannotBindSamePort128()
+    public void CannotBindSamePortV6()
     {
         using var socketA = UdpSocketV6.BindLocalIp();
         var endpoint = socketA.GetSocketName();
@@ -152,5 +160,47 @@ public class NetworkTest
             using var socketB = UdpSocketV6.BindLocalIp(endpoint.Port);
             _ = socketB.GetSocketName();
         });
+    }
+
+    [Fact]
+    public void CanBindSamePortOnV4AndV6()
+    {
+        // Allow up to three attempts for really unlucky port selection.
+        for (int i = 0; i < 3; ++i)
+        {
+            try
+            {
+                using var v4 = UdpSocketV4.BindLocalIp();
+                var endpointV4 = v4.GetSocketName();
+                using var v6 = UdpSocketV6.BindLocalIp(endpointV4.Port);
+                var endpointV6 = v6.GetSocketName();
+                Assert.Equal(endpointV4.Port, endpointV6.Port);
+                _output.WriteLine($"Bound on port {endpointV4.Port}.");
+                return;
+            }
+            catch
+            {
+                _output.WriteLine($"Bind #{i + 1} was unsuccessful.");
+            }
+        }
+
+        Assert.Fail("Ran out of retries. Unable to bind V4 and V6 to same port.");
+    }
+
+    [Fact]
+    public void CannotBindSamePortOnV4AndV6InDualMode()
+    {
+        var target = ((AddressV6)AddressV4.Local).OnAnyPort();
+        for (int i = 0; i < 3; ++i)
+        {
+            using var v6 = UdpSocketV6.Bind(target, allowV4: true);
+            var endpointV6 = v6.GetSocketName();
+
+            Assert.Throws<SocketException>(
+                () =>
+                {
+                    using var v4 = UdpSocketV4.BindLocalIp(endpointV6.Port);
+                });
+        }
     }
 }

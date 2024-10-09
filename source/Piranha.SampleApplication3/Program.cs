@@ -4,6 +4,7 @@ using Piranha.Jawbone;
 using Piranha.Jawbone.Sdl3;
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace Piranha.SampleApplication3;
 
@@ -23,7 +24,6 @@ class Program
                             options.IncludeScopes = true;
                         });
             })
-            .AddSdl3(SdlInit.Audio | SdlInit.Video | SdlInit.Events | SdlInit.Timer | SdlInit.Camera)
             .AddJawboneNativeLibraries()
             .AddAudioManager()
             .AddSingleton<ScenePool<PiranhaScene>>()
@@ -34,35 +34,57 @@ class Program
 
     static void RunApplication()
     {
-        var serviceCollection = new ServiceCollection();
-        ConfigureServices(serviceCollection);
+        NativeLibrary.SetDllImportResolver(
+            typeof(Sdl).Assembly,
+            (libraryName, assembly, searchPath) =>
+            {
+                if (C.SystemLibs.Contains(libraryName))
+                {
+                    return NativeLibrary.Load(libraryName, assembly, searchPath);
+                }
+                else
+                {
+                    return NativeLibrary.Load("./" + Sdl.GetDefaultLibName(), assembly, searchPath);
+                }
+            });
 
-        var options = new ServiceProviderOptions
-        {
-            ValidateOnBuild = true,
-            ValidateScopes = true
-        };
-
-        using var serviceProvider = serviceCollection.BuildServiceProvider(options);
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-
-        using (var process = System.Diagnostics.Process.GetCurrentProcess())
-        {
-            logger.LogInformation("Process ID - {pid}", process.Id);
-        }
+        Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera).ThrowOnSdlFailure("Unable to initialize SDL.");
+        Sdl.SetAppMetadata("Jawbone SDL3 Sample", "1.0").ThrowOnSdlFailure("Unable to set app metadata.");
 
         try
         {
+            var serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
+
+            var options = new ServiceProviderOptions
+            {
+                ValidateOnBuild = true,
+                ValidateScopes = true
+            };
+
+            using var serviceProvider = serviceCollection.BuildServiceProvider(options);
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+            using (var process = System.Diagnostics.Process.GetCurrentProcess())
+            {
+                logger.LogInformation("Process ID - {pid}", process.Id);
+            }
+
             var handler = serviceProvider.GetRequiredService<SampleHandler>();
             //windowManager.AddWindow("Sample Application", 1024, 768, fullscreen, handler);
-            var sdl = serviceProvider.GetRequiredService<Sdl3Library>();
 
             using (serviceProvider.GetRequiredService<GameLoopManager>())
-                ApplicationManager.Run(sdl, handler);
+                ApplicationManager.Run(handler);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error running window manager.");
+            Console.WriteLine();
+            Console.WriteLine(ex);
+            Console.WriteLine();
+        }
+        finally
+        {
+            Sdl.Quit();
         }
     }
 
@@ -78,7 +100,9 @@ class Program
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine();
             Console.WriteLine(ex);
+            Console.WriteLine();
             Console.ResetColor();
         }
     }

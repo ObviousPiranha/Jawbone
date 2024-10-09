@@ -14,7 +14,6 @@ sealed class JawboneNative : IDisposable
     public StbImageWriteLibrary StbImageWrite { get; }
     public StbTrueTypeLibrary StbTrueType { get; }
     public StbVorbisLibrary StbVorbis { get; }
-    public PiranhaLibrary Piranha { get; }
 
     public JawboneNative(string libraryPath)
     {
@@ -37,8 +36,6 @@ sealed class JawboneNative : IDisposable
             StbVorbis = new StbVorbisLibrary(
                 methodName => NativeLibrary.GetExport(
                     _handle, PascalCase.ToSnakeCase("stb_vorbis", methodName)));
-            Piranha = new PiranhaLibrary(
-                methodName => NativeLibrary.GetExport(_handle, "piranha_free"));
 
             Sqlite3.Initialize();
         }

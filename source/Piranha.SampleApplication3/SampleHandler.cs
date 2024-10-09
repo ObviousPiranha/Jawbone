@@ -35,7 +35,6 @@ class SampleHandler : ISdlEventHandler, IDisposable
     private int _eventCount = 0;
     private readonly StbImageLibrary _stbImage;
     private readonly StbVorbisLibrary _stbVorbis;
-    private readonly Sdl3Library _sdl;
     private readonly nint _windowPtr;
     private readonly nint _contextPtr;
     private readonly OpenGlLibrary _gl;
@@ -47,39 +46,35 @@ class SampleHandler : ISdlEventHandler, IDisposable
         IAudioManager audioManager,
         StbImageLibrary stbImage,
         StbVorbisLibrary stbVorbis,
-        Sdl3Library sdl,
         ScenePool<PiranhaScene> scenePool)
     {
         _stbImage = stbImage;
         _stbVorbis = stbVorbis;
-        _sdl = sdl;
         _logger = logger;
         _audioManager = audioManager;
         _scenePool = scenePool;
 
-        var cameraCount = _sdl.GetNumCameraDrivers();
+        var cameraCount = Sdl.GetNumCameraDrivers();
         if (0 < cameraCount)
         {
             for (int i = 0; i < cameraCount; ++i)
-                _logger.LogInformation("Camera: {name}", _sdl.GetCameraDriver(i));
+                _logger.LogInformation("Camera: {name}", Sdl.GetCameraDriver(i));
         }
         else
         {
             _logger.LogInformation("No cameras found.");
         }
 
-        if (OperatingSystem.IsLinux())
-            _sdl.SetHint(Sdl.Hint.Video.Driver, "x11,wayland");
-        _windowPtr = sdl.CreateWindow(
+        _windowPtr = Sdl.CreateWindow(
             "Sample Application",
             1024,
             768,
-            SdlWindow.OpenGl | SdlWindow.Resizable);
+            SdlWindowFlags.OpenGl | SdlWindowFlags.Resizable);
 
         if (_windowPtr.IsInvalid())
-            throw new SdlException(sdl.GetError().ToString() ?? "");
+            SdlException.Throw("Unable to create window.");
 
-        var context = OpenGlContext.Create(_sdl, _windowPtr, _logger);
+        var context = OpenGlContext.Create(_windowPtr, _logger);
         _contextPtr = context.SdlGlContextPtr;
         _gl = context.OpenGl;
 
@@ -170,7 +165,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         _bufferData.Add(positions, textureCoordinates);
 
         Point32 size;
-        _sdl.GetWindowSize(_windowPtr, out size.X, out size.Y);
+        Sdl.GetWindowSize(_windowPtr, out size.X, out size.Y);
         _gl.Viewport(0, 0, size.X, size.Y);
         var aspectRatio = size.X / (float)size.Y;
         _matrix = Matrix4x4.CreateOrthographic(aspectRatio * 2f, 2f, 1f, -1f);
@@ -197,10 +192,11 @@ class SampleHandler : ISdlEventHandler, IDisposable
 
         try
         {
+            var audioSpan = output.ToReadOnlySpan<short>(samples * channelCount);
             _audioManager.PrepareAudio(
                 sampleRate,
                 channelCount,
-                output.ToReadOnlySpan<short>(samples * channelCount));
+                audioSpan);
         }
         finally
         {
@@ -276,15 +272,15 @@ class SampleHandler : ISdlEventHandler, IDisposable
         _gl.Disable(Gl.Blend);
         _gl.UseProgram(0);
         _ = GlTools.TryLogErrors(_gl, _logger);
-        _sdl.GlSwapWindow(_windowPtr);
+        Sdl.GlSwapWindow(_windowPtr);
     }
 
     public void OnKeyUp(SdlKeyboardEvent eventData)
     {
-        if (eventData.Keysym.Scancode == SdlScancode.Escape)
+        if (eventData.Scancode == SdlScancode.Escape)
             Running = false;
-        else if (eventData.Keysym.Scancode == SdlScancode.F11)
-            _sdl.SetWindowFullscreen(_windowPtr, _isFullscreen = !_isFullscreen);
+        else if (eventData.Scancode == SdlScancode.F11)
+            Sdl.SetWindowFullscreen(_windowPtr, _isFullscreen = !_isFullscreen);
     }
 
     public void OnMouseButtonDown(SdlMouseButtonEvent eventData)
@@ -304,7 +300,12 @@ class SampleHandler : ISdlEventHandler, IDisposable
 
     public void Dispose()
     {
-        _sdl.GlDeleteContext(_contextPtr);
-        _sdl.DestroyWindow(_windowPtr);
+        Sdl.GlDestroyContext(_contextPtr);
+        Sdl.DestroyWindow(_windowPtr);
+    }
+
+    public void OnCameraDeviceAdded(SdlCameraDeviceEvent sdlEvent)
+    {
+        _logger.LogInformation("Camera: {name}", Sdl.GetCameraName(sdlEvent.Which));
     }
 }
