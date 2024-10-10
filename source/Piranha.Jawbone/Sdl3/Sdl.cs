@@ -931,7 +931,7 @@ public static partial class Sdl
     public static partial nint GetAudioRecordingDevices(nint count);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetAudioDeviceName")]
-    public static partial nint GetAudioDeviceName(uint devid);
+    public static partial CString GetAudioDeviceName(uint devid);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetAudioDeviceFormat")]
     public static partial CBool GetAudioDeviceFormat(uint devid, nint spec, nint sample_frames);
@@ -1489,10 +1489,10 @@ public static partial class Sdl
     public static partial int GetNumVideoDrivers();
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetVideoDriver")]
-    public static partial nint GetVideoDriver(int index);
+    public static partial CString GetVideoDriver(int index);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetCurrentVideoDriver")]
-    public static partial nint GetCurrentVideoDriver();
+    public static partial CString GetCurrentVideoDriver();
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetSystemTheme")]
     public static partial SdlSystemTheme GetSystemTheme();
@@ -1507,7 +1507,7 @@ public static partial class Sdl
     public static partial uint GetDisplayProperties(uint displayID);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetDisplayName")]
-    public static partial nint GetDisplayName(uint displayID);
+    public static partial CString GetDisplayName(uint displayID);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetDisplayBounds")]
     public static partial CBool GetDisplayBounds(uint displayID, out SdlRect rect);
