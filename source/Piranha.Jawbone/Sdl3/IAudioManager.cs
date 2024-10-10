@@ -5,6 +5,7 @@ namespace Piranha.Jawbone.Sdl3;
 public interface IAudioManager
 {
     bool IsPaused { get; set; }
+    float Gain { get; set; }
 
     int PrepareAudio(
         int frequency,

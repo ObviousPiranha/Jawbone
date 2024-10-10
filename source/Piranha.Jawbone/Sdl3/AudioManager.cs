@@ -16,6 +16,7 @@ sealed class AudioManager : IAudioManager, IDisposable
     private readonly uint _device;
     private readonly SdlAudioSpec _expectedAudioSpec;
     private readonly SdlAudioSpec _actualAudioSpec;
+    private float _gain = 1f;
 
     public bool IsPaused
     {
@@ -31,6 +32,12 @@ sealed class AudioManager : IAudioManager, IDisposable
             else
                 Sdl.ResumeAudioDevice(_device);
         }
+    }
+
+    public float Gain
+    {
+        get => Sdl.GetAudioDeviceGain(_device);
+        set => Sdl.SetAudioDeviceGain(_device, value).ThrowOnSdlFailure("Unable to set gain.");
     }
 
     public AudioManager(
