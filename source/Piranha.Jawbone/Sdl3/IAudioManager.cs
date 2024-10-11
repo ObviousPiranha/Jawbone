@@ -17,5 +17,7 @@ public interface IAudioManager
         int channels,
         ReadOnlySpan<float> data);
 
-    int PlayAudio(int soundId);
+    int PlayAudio(int soundId, float gain = 1f);
+    bool TrySetGain(int playbackId, float gain);
+    bool TryStopAudio(int playbackId);
 }

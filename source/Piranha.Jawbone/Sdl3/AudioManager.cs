@@ -11,12 +11,13 @@ namespace Piranha.Jawbone.Sdl3;
 sealed class AudioManager : IAudioManager, IDisposable
 {
     private readonly List<float[]> _sounds = [];
-    private readonly List<nint> _streams = [];
+    private readonly Dictionary<int, nint> _streamsById = [];
     private readonly ILogger<AudioManager> _logger;
     private readonly uint _device;
     private readonly SdlAudioSpec _expectedAudioSpec;
     private readonly SdlAudioSpec _actualAudioSpec;
-    private float _gain = 1f;
+
+    private int _nextId = 1;
 
     public bool IsPaused
     {
@@ -36,8 +37,19 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     public float Gain
     {
-        get => Sdl.GetAudioDeviceGain(_device);
-        set => Sdl.SetAudioDeviceGain(_device, value).ThrowOnSdlFailure("Unable to set gain.");
+        get
+        {
+            var result = Sdl.GetAudioDeviceGain(_device);
+            if (result < 0f)
+                SdlException.Throw("Unable to get audio gain.");
+            return result;
+        }
+
+        set
+        {
+            Sdl.SetAudioDeviceGain(_device, value)
+                .ThrowOnSdlFailure("Unable to set gain.");
+        }
     }
 
     public AudioManager(
@@ -92,7 +104,7 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     public void Dispose()
     {
-        foreach (var stream in _streams)
+        foreach (var stream in _streamsById.Values)
         {
             Sdl.UnbindAudioStream(stream);
             Sdl.DestroyAudioStream(stream);
@@ -183,47 +195,90 @@ sealed class AudioManager : IAudioManager, IDisposable
             MemoryMarshal.AsBytes(data));
     }
 
-    public int PlayAudio(int soundId)
+    public int PlayAudio(int soundId, float gain)
     {
         var sound = _sounds[soundId];
-        var stream = GetAvailableStream();
+        var pair = GetAvailableStream();
+        Sdl.SetAudioStreamGain(pair.Value, gain)
+            .ThrowOnSdlFailure("Unable to set stream gain.");
         var result = Sdl.PutAudioStreamData(
-            stream,
+            pair.Value,
             in sound[0],
             sound.Length * Unsafe.SizeOf<float>());
 
         result.ThrowOnSdlFailure("Unable to put stream data.");
 
-        Sdl.FlushAudioStream(stream).ThrowOnSdlFailure("Unable to flush audio stream.");
-        return 0;
+        Sdl.FlushAudioStream(pair.Value)
+            .ThrowOnSdlFailure("Unable to flush audio stream.");
+        return pair.Key;
     }
 
-    private nint GetAvailableStream()
+    public bool TrySetGain(int playbackId, float gain)
     {
-        foreach (var stream in _streams)
+        if (_streamsById.TryGetValue(playbackId, out var stream))
         {
-            if (Sdl.GetAudioStreamAvailable(stream) == 0)
-                return stream;
+            Sdl.SetAudioStreamGain(stream, gain)
+                .ThrowOnSdlFailure("Unable to set stream gain.");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool TryStopAudio(int playbackId)
+    {
+        if (_streamsById.TryGetValue(playbackId, out var stream))
+        {
+            Sdl.ClearAudioStream(stream)
+                .ThrowOnSdlFailure("Unable to clear audio stream.");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private KeyValuePair<int, nint> GetAvailableStream()
+    {
+        var found = default(KeyValuePair<int, nint>);
+        foreach (var pair in _streamsById)
+        {
+            if (Sdl.GetAudioStreamAvailable(pair.Value) == 0)
+            {
+                found = pair;
+                break;
+            }
         }
 
-        _logger.LogInformation("Creating audio stream {n}", _streams.Count);
-        var newStream = Sdl.CreateAudioStream(in _expectedAudioSpec, in _actualAudioSpec);
-
-        if (newStream == default)
-            SdlException.Throw("Failed to make new audio stream.");
-
-        try
+        if (found.Key != 0)
         {
-            Sdl.BindAudioStream(_device, newStream).ThrowOnSdlFailure("Unable to bind audio stream.");
+            _streamsById.Remove(found.Key);
+            _streamsById.Add(_nextId, found.Value);
+            return KeyValuePair.Create(_nextId++, found.Value);
         }
-        catch
+        else
         {
-            Sdl.DestroyAudioStream(newStream);
-            throw;
+            _logger.LogInformation("Creating audio stream {n}", _streamsById.Count);
+            var newStream = Sdl.CreateAudioStream(in _expectedAudioSpec, in _actualAudioSpec);
+
+            if (newStream == default)
+                SdlException.Throw("Failed to make new audio stream.");
+
+            try
+            {
+                Sdl.BindAudioStream(_device, newStream).ThrowOnSdlFailure("Unable to bind audio stream.");
+            }
+            catch
+            {
+                Sdl.DestroyAudioStream(newStream);
+                throw;
+            }
+
+            _streamsById.Add(_nextId, newStream);
+            return KeyValuePair.Create(_nextId++, newStream);
         }
-
-        _streams.Add(newStream);
-
-        return newStream;
     }
 }
