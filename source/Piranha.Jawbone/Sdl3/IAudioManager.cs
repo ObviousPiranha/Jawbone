@@ -21,4 +21,5 @@ public interface IAudioManager
     bool TrySetGain(int playbackId, float gain);
     bool TrySetRatio(int playbackId, float ratio);
     bool TryStopAudio(int playbackId);
+    int PlayLoopingAudio(int soundId, float gain = 1f, float ratio = 1f);
 }

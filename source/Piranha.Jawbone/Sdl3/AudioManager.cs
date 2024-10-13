@@ -10,6 +10,7 @@ namespace Piranha.Jawbone.Sdl3;
 
 sealed class AudioManager : IAudioManager, IDisposable
 {
+    private readonly List<LoopingAudio> _loopingAudio = [];
     private readonly List<float[]> _sounds = [];
     private readonly Dictionary<int, nint> _streamsById = [];
     private readonly ILogger<AudioManager> _logger;
@@ -104,19 +105,18 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     public void Dispose()
     {
+        _logger.LogInformation("Stopping looping audio...");
+        foreach (var loopingAudio in _loopingAudio)
+            loopingAudio.Dispose();
+        _logger.LogInformation("Disposing other audio...");
         foreach (var stream in _streamsById.Values)
         {
             Sdl.UnbindAudioStream(stream);
             Sdl.DestroyAudioStream(stream);
         }
+        _logger.LogInformation("Closing audio device...");
         Sdl.CloseAudioDevice(_device);
-        _logger.LogInformation("Disposed audio manager");
-    }
-
-    public void PumpAudio()
-    {
-        if (IsPaused)
-            return;
+        _logger.LogInformation("Disposed audio manager!");
     }
 
     private int PrepareAudio(
@@ -256,6 +256,18 @@ sealed class AudioManager : IAudioManager, IDisposable
         {
             return false;
         }
+    }
+
+    public int PlayLoopingAudio(
+        int soundId,
+        float gain,
+        float ratio)
+    {
+        var audio = _sounds[soundId];
+        var loopingAudio = new LoopingAudio(_actualAudioSpec);
+        _loopingAudio.Add(loopingAudio);
+        loopingAudio.Start(_device, audio, gain, ratio);
+        return -1;
     }
 
     private KeyValuePair<int, nint> GetAvailableStream()

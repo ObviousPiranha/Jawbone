@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone;
@@ -21,6 +22,7 @@ public static partial class C
     }
 
     [LibraryImport("kernel32", EntryPoint = "free")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     private static partial void WindowsFree(nint ptr);
 
     [LibraryImport("libc", EntryPoint = "free")]
