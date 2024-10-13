@@ -140,7 +140,8 @@ sealed class AudioManager : IAudioManager, IDisposable
 
         try
         {
-            Sdl.PutAudioStreamData(stream, in data[0], data.Length).ThrowOnSdlFailure("Unable to put stream data.");
+            Sdl.PutAudioStreamData(stream, in data[0], data.Length)
+                .ThrowOnSdlFailure("Unable to put stream data.");
             Sdl.FlushAudioStream(stream).ThrowOnSdlFailure("Unable to flush.");
 
             var length = Sdl.GetAudioStreamAvailable(stream);
@@ -195,16 +196,18 @@ sealed class AudioManager : IAudioManager, IDisposable
             MemoryMarshal.AsBytes(data));
     }
 
-    public int PlayAudio(int soundId, float gain)
+    public int PlayAudio(int soundId, float gain, float ratio)
     {
         var sound = _sounds[soundId];
         var pair = GetAvailableStream();
         Sdl.SetAudioStreamGain(pair.Value, gain)
             .ThrowOnSdlFailure("Unable to set stream gain.");
+        Sdl.SetAudioStreamFrequencyRatio(pair.Value, ratio)
+            .ThrowOnSdlFailure("Unable to set stream ratio.");
         var result = Sdl.PutAudioStreamData(
             pair.Value,
             in sound[0],
-            sound.Length * Unsafe.SizeOf<float>());
+            sound.ByteSize());
 
         result.ThrowOnSdlFailure("Unable to put stream data.");
 
@@ -219,6 +222,20 @@ sealed class AudioManager : IAudioManager, IDisposable
         {
             Sdl.SetAudioStreamGain(stream, gain)
                 .ThrowOnSdlFailure("Unable to set stream gain.");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool TrySetRatio(int playbackId, float ratio)
+    {
+        if (_streamsById.TryGetValue(playbackId, out var stream))
+        {
+            Sdl.SetAudioStreamFrequencyRatio(stream, ratio)
+                .ThrowOnSdlFailure("Unable to set stream ratio.");
             return true;
         }
         else
