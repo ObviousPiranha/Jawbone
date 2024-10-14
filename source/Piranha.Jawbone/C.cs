@@ -26,5 +26,6 @@ public static partial class C
     private static partial void WindowsFree(nint ptr);
 
     [LibraryImport("libc", EntryPoint = "free")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     private static partial void UnixFree(nint ptr);
 }

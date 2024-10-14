@@ -10,7 +10,8 @@ namespace Piranha.Jawbone.Sdl3;
 
 sealed class AudioManager : IAudioManager, IDisposable
 {
-    private readonly List<LoopingAudio> _loopingAudio = [];
+    private readonly Dictionary<int, LoopingAudio> _loopingAudio = [];
+    private readonly Stack<LoopingAudio> _loopingAudioPool = [];
     private readonly List<float[]> _sounds = [];
     private readonly Dictionary<int, nint> _streamsById = [];
     private readonly ILogger<AudioManager> _logger;
@@ -18,7 +19,8 @@ sealed class AudioManager : IAudioManager, IDisposable
     private readonly SdlAudioSpec _expectedAudioSpec;
     private readonly SdlAudioSpec _actualAudioSpec;
 
-    private int _nextId = 1;
+    private int _nextPlayId = 1;
+    private int _nextLoopId = 1;
 
     public bool IsPaused
     {
@@ -105,8 +107,11 @@ sealed class AudioManager : IAudioManager, IDisposable
 
     public void Dispose()
     {
-        _logger.LogInformation("Stopping looping audio...");
-        foreach (var loopingAudio in _loopingAudio)
+        _logger.LogInformation("Disposing looping audio...");
+        foreach (var loopingAudio in _loopingAudio.Values)
+            loopingAudio.Dispose();
+        _loopingAudio.Clear();
+        while (_loopingAudioPool.TryPop(out var loopingAudio))
             loopingAudio.Dispose();
         _logger.LogInformation("Disposing other audio...");
         foreach (var stream in _streamsById.Values)
@@ -114,6 +119,7 @@ sealed class AudioManager : IAudioManager, IDisposable
             Sdl.UnbindAudioStream(stream);
             Sdl.DestroyAudioStream(stream);
         }
+        _streamsById.Clear();
         _logger.LogInformation("Closing audio device...");
         Sdl.CloseAudioDevice(_device);
         _logger.LogInformation("Disposed audio manager!");
@@ -258,16 +264,58 @@ sealed class AudioManager : IAudioManager, IDisposable
         }
     }
 
-    public int PlayLoopingAudio(
+    public int LoopAudio(
         int soundId,
         float gain,
         float ratio)
     {
         var audio = _sounds[soundId];
-        var loopingAudio = new LoopingAudio(_actualAudioSpec);
-        _loopingAudio.Add(loopingAudio);
+        if (!_loopingAudioPool.TryPop(out var loopingAudio))
+            loopingAudio = new LoopingAudio(_actualAudioSpec);
+
         loopingAudio.Start(_device, audio, gain, ratio);
-        return -1;
+        _loopingAudio.Add(_nextLoopId, loopingAudio);
+        return _nextLoopId++;
+    }
+
+    public bool TrySetLoopGain(int loopId, float gain)
+    {
+        if (_loopingAudio.TryGetValue(loopId, out var loopingAudio))
+        {
+            loopingAudio.SetGain(gain);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool TrySetLoopRatio(int loopId, float ratio)
+    {
+        if (_loopingAudio.TryGetValue(loopId, out var loopingAudio))
+        {
+            loopingAudio.SetRatio(ratio);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool TryStopLoop(int loopId)
+    {
+        if (_loopingAudio.Remove(loopId, out var loopingAudio))
+        {
+            loopingAudio.Stop();
+            _loopingAudioPool.Push(loopingAudio);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     private KeyValuePair<int, nint> GetAvailableStream()
@@ -285,8 +333,8 @@ sealed class AudioManager : IAudioManager, IDisposable
         if (found.Key != 0)
         {
             _streamsById.Remove(found.Key);
-            _streamsById.Add(_nextId, found.Value);
-            return KeyValuePair.Create(_nextId++, found.Value);
+            _streamsById.Add(_nextPlayId, found.Value);
+            return KeyValuePair.Create(_nextPlayId++, found.Value);
         }
         else
         {
@@ -306,8 +354,8 @@ sealed class AudioManager : IAudioManager, IDisposable
                 throw;
             }
 
-            _streamsById.Add(_nextId, newStream);
-            return KeyValuePair.Create(_nextId++, newStream);
+            _streamsById.Add(_nextPlayId, newStream);
+            return KeyValuePair.Create(_nextPlayId++, newStream);
         }
     }
 }

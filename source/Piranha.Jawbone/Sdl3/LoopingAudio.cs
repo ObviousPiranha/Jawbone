@@ -14,7 +14,8 @@ sealed class LoopingAudio : IDisposable
 
     private float[] _audio = [];
     private int _offset;
-    private bool _playing;
+
+    public bool Playing { get; private set; }
 
     public LoopingAudio(in SdlAudioSpec spec)
     {
@@ -24,6 +25,18 @@ sealed class LoopingAudio : IDisposable
             .ThrowOnSdlFailure("Unable to set stream callback.");
         if (_stream == default)
             SdlException.Throw("Unable to create audio stream.");
+    }
+
+    public void SetGain(float gain)
+    {
+        Sdl.SetAudioStreamGain(_stream, gain)
+            .ThrowOnSdlFailure("Unable to set gain.");
+    }
+
+    public void SetRatio(float ratio)
+    {
+        Sdl.SetAudioStreamFrequencyRatio(_stream, ratio)
+            .ThrowOnSdlFailure("Unable to set ratio.");
     }
 
     public unsafe void Start(uint deviceId, float[] audio, float gain, float ratio)
@@ -39,16 +52,16 @@ sealed class LoopingAudio : IDisposable
             .ThrowOnSdlFailure("Unable to set stream gain.");
         Sdl.SetAudioStreamFrequencyRatio(_stream, ratio)
             .ThrowOnSdlFailure("Unable to set stream ratio.");
-        _playing = true;
+        Playing = true;
         Sdl.BindAudioStream(deviceId, _stream)
             .ThrowOnSdlFailure("Unable to bind audio stream");
     }
 
     public void Stop()
     {
-        if (!_playing)
+        if (!Playing)
             return;
-        _playing = false;
+        Playing = false;
         Sdl.UnbindAudioStream(_stream);
     }
 
@@ -61,25 +74,26 @@ sealed class LoopingAudio : IDisposable
 
     private void Update(int amount)
     {
-        if (_audio.Length == 0)
+        var audio = _audio.AsSpan();
+        if (audio.IsEmpty)
             return;
         var remaining = amount;
         var offset = _offset;
 
         while (0 < remaining)
         {
-            var available = _audio.Length - offset;
+            var available = audio.Length - offset;
 
             if (available <= remaining)
             {
-                Sdl.PutAudioStreamData(_stream, in _audio[offset], available * Unsafe.SizeOf<float>())
+                Sdl.PutAudioStreamData(_stream, in audio[offset], available * Unsafe.SizeOf<float>())
                     .ThrowOnSdlFailure("Unable to put audio stream data.");
                 remaining -= available;
                 offset = 0;
             }
             else
             {
-                Sdl.PutAudioStreamData(_stream, in _audio[offset], remaining * Unsafe.SizeOf<float>())
+                Sdl.PutAudioStreamData(_stream, in audio[offset], remaining * Unsafe.SizeOf<float>())
                     .ThrowOnSdlFailure("Unable to put audio stream data.");
                 offset += remaining;
                 break;

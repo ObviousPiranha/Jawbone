@@ -7,7 +7,18 @@ namespace Piranha.Jawbone.Sdl3;
 #pragma warning disable CA1401
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-public delegate void SdlAudioStreamCallback(nint userdata, nint stream, int additional_amount, int total_amount);
+public delegate void SdlAudioStreamCallback(
+    nint userdata,
+    nint stream,
+    int additional_amount,
+    int total_amount);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public unsafe delegate void SdlAudioPostmixCallback(
+    nint userdata,
+    in SdlAudioSpec spec,
+    float* buffer,
+    int buflen);
 
 public static partial class Sdl
 {
@@ -1417,7 +1428,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetAudioPostmixCallback")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetAudioPostmixCallback(uint devid, nint callback, nint userdata);
+    public static partial CBool SetAudioPostmixCallback(uint devid, SdlAudioPostmixCallback? callback, nint userdata);
 
     [LibraryImport(Lib, EntryPoint = "SDL_LoadWAV_IO")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
