@@ -24,7 +24,7 @@ public static partial class C
         throw new PlatformNotSupportedException();
     }
 
-    [LibraryImport(Library, EntryPoint = "free")]
+    [LibraryImport(Library, EntryPoint = "jawbone_free")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void Free(nint ptr);
 }
