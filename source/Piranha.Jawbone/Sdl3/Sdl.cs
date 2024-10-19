@@ -800,7 +800,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetError")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetError();
+    public static partial CString GetError();
 
     [LibraryImport(Lib, EntryPoint = "SDL_ClearError")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
