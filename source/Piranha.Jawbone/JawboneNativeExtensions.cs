@@ -6,17 +6,16 @@ namespace Piranha.Jawbone;
 
 public static class JawboneNativeExtensions
 {
-    private const string DllName = "PiranhaNative.dll";
-
     public static IServiceCollection AddJawboneNativeLibraries(
         this IServiceCollection services,
         string? folder = null)
     {
-        var path = DllName;
+        var name = GetLibraryName();
+        var path = name;
         if (!string.IsNullOrWhiteSpace(folder))
-            path = Path.Combine(folder, DllName);
+            path = Path.Combine(folder, name);
         else if (OperatingSystem.IsLinux())
-            path = "./" + DllName;
+            path = "./" + name;
 
         return services
             .AddSingleton(_ => new JawboneNative(path))
@@ -30,5 +29,17 @@ public static class JawboneNativeExtensions
                 serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().StbTrueType)
             .AddSingleton(
                 serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().StbVorbis);
+    }
+
+    private static string GetLibraryName()
+    {
+        if (OperatingSystem.IsWindows())
+            return "JawboneNative.dll";
+        else if (OperatingSystem.IsMacOS())
+            return "libJawboneNative.dylib";
+        else if (OperatingSystem.IsLinux())
+            return "libJawboneNative.so";
+
+        throw new PlatformNotSupportedException();
     }
 }

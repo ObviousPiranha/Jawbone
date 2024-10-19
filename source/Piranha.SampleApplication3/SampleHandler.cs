@@ -285,7 +285,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
 
     public void OnMouseButtonDown(SdlMouseButtonEvent eventData)
     {
-        _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        _audioManager.LoopAudio(0);
+        // _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         // _audioManager.ScheduleAudio(0, default);
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.2));
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));
