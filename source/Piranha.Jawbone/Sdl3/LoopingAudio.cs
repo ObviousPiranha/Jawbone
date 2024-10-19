@@ -110,8 +110,7 @@ sealed class LoopingAudio : IDisposable
         int totalAmount)
     {
         var handle = (GCHandle)userdata;
-        var obj = handle.Target as LoopingAudio;
-        if (obj is null)
+        if (handle.Target is not LoopingAudio obj)
             return;
         Debug.Assert(stream == obj._stream);
         Debug.Assert(0 < totalAmount);
