@@ -31,13 +31,13 @@ public readonly struct OpenGlContext
         }
         else
         {
-            // Sdl.GlSetAttribute(SdlGlAttr.ContextProfileMask, (int)SdlGlContextFlag.);
             // Sdl.GLSetAttribute(SdlGlAttr.ContextFlags, SdlGlContext.ForwardCompatibleFlag);
             if (OperatingSystem.IsMacOS())
             {
-                logger?.LogDebug("configuring OpenGL 3.2");
-                Sdl.GlSetAttribute(SdlGlAttr.ContextMajorVersion, 3);
-                Sdl.GlSetAttribute(SdlGlAttr.ContextMinorVersion, 2);
+                logger?.LogDebug("configuring Mac OpenGL");
+                Sdl.GlSetAttribute(SdlGlAttr.ContextProfileMask, (int)SdlGlProfile.Core);
+                // Sdl.GlSetAttribute(SdlGlAttr.ContextMajorVersion, 3);
+                // Sdl.GlSetAttribute(SdlGlAttr.ContextMinorVersion, 2);
             }
         }
 
