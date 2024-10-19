@@ -10,7 +10,7 @@ public static class JawboneNativeExtensions
         this IServiceCollection services,
         string? folder = null)
     {
-        var name = GetLibraryName();
+        var name = C.GetLibraryName();
         var path = name;
         if (!string.IsNullOrWhiteSpace(folder))
             path = Path.Combine(folder, name);
@@ -29,17 +29,5 @@ public static class JawboneNativeExtensions
                 serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().StbTrueType)
             .AddSingleton(
                 serviceProvider => serviceProvider.GetRequiredService<JawboneNative>().StbVorbis);
-    }
-
-    private static string GetLibraryName()
-    {
-        if (OperatingSystem.IsWindows())
-            return "JawboneNative.dll";
-        else if (OperatingSystem.IsMacOS())
-            return "libJawboneNative.dylib";
-        else if (OperatingSystem.IsLinux())
-            return "libJawboneNative.so";
-
-        throw new PlatformNotSupportedException();
     }
 }
