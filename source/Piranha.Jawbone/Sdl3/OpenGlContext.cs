@@ -24,21 +24,16 @@ public readonly struct OpenGlContext
 
         if (Platform.IsRaspberryPi)
         {
-            logger?.LogDebug("configuring OpenGL ES 3.0");
+            logger?.LogInformation("configuring OpenGL ES 3.0");
             Sdl.GlSetAttribute(SdlGlAttr.ContextMajorVersion, 3);
             Sdl.GlSetAttribute(SdlGlAttr.ContextMinorVersion, 0);
             Sdl.GlSetAttribute(SdlGlAttr.ContextProfileMask, (int)SdlGlProfile.Es);
         }
         else
         {
-            // Sdl.GLSetAttribute(SdlGlAttr.ContextFlags, SdlGlContext.ForwardCompatibleFlag);
-            if (OperatingSystem.IsMacOS())
-            {
-                logger?.LogDebug("configuring Mac OpenGL");
-                Sdl.GlSetAttribute(SdlGlAttr.ContextProfileMask, (int)SdlGlProfile.Core);
-                // Sdl.GlSetAttribute(SdlGlAttr.ContextMajorVersion, 3);
-                // Sdl.GlSetAttribute(SdlGlAttr.ContextMinorVersion, 2);
-            }
+            // Needed for Mac to work.
+            logger?.LogInformation("configuring OpenGL core");
+            Sdl.GlSetAttribute(SdlGlAttr.ContextProfileMask, (int)SdlGlProfile.Core);
         }
 
         var contextPtr = Sdl.GlCreateContext(sdlWindow);
@@ -47,6 +42,16 @@ public readonly struct OpenGlContext
         {
             throw new SdlException(
                 "Unable to create GL context: " + Sdl.GetError());
+        }
+
+        var result = Sdl.GlGetAttribute(SdlGlAttr.ShareWithCurrentContext, out var value);
+        if (result)
+        {
+            logger?.LogInformation("SDL_GL_SHARE_WITH_CURRENT_CONTEXT: {value}", value);
+        }
+        else
+        {
+            logger?.LogWarning("Unable to get attribute SDL_GL_SHARE_WITH_CURRENT_CONTEXT.");
         }
 
         try

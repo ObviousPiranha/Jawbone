@@ -2369,7 +2369,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GL_GetAttribute")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool GlGetAttribute(SdlGlAttr attr, nint value);
+    public static partial CBool GlGetAttribute(SdlGlAttr attr, out int value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GL_CreateContext")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
