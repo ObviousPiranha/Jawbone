@@ -35,7 +35,6 @@ class GameLoop : IGameLoop
 
     public void FrameUpdate()
     {
-        _audioManager.PumpAudio();
         if (CycleFrameCount <= ++_frameCount)
         {
             _startColor = _endColor;

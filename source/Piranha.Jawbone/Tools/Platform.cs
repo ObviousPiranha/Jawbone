@@ -8,7 +8,7 @@ public static class Platform
 {
     public const string PiLibFolder = "/usr/lib/aarch64-linux-gnu";
 
-    public static readonly bool IsRaspberryPi = System.IO.Directory.Exists(PiLibFolder);
+    public static readonly bool IsRaspberryPi = Directory.Exists(PiLibFolder);
     public static readonly string ShaderPath = IsRaspberryPi ? "es300" : "gl150";
 
     private static readonly string[] LibFolders =
@@ -19,13 +19,6 @@ public static class Platform
         "/usr/lib/arm-linux-gnueabihf",
         "/usr/lib"
     ];
-
-
-    // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
-    public static readonly uint Rmask = IsRaspberryPi ? (uint)0x00ff0000 : (uint)0x000000ff;
-    public static readonly uint Gmask = IsRaspberryPi ? (uint)0x0000ff00 : (uint)0x0000ff00;
-    public static readonly uint Bmask = IsRaspberryPi ? (uint)0x000000ff : (uint)0x00ff0000;
-    public static readonly uint Amask = IsRaspberryPi ? (uint)0x00000000 : (uint)0xff000000;
 
     public static string GetShaderPath(string shaderId) => ShaderPath + "." + shaderId;
 

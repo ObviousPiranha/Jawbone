@@ -6,17 +6,16 @@ namespace Piranha.Jawbone;
 
 public static class JawboneNativeExtensions
 {
-    private const string DllName = "PiranhaNative.dll";
-
     public static IServiceCollection AddJawboneNativeLibraries(
         this IServiceCollection services,
         string? folder = null)
     {
-        var path = DllName;
+        var name = C.GetLibraryName();
+        var path = name;
         if (!string.IsNullOrWhiteSpace(folder))
-            path = Path.Combine(folder, DllName);
+            path = Path.Combine(folder, name);
         else if (OperatingSystem.IsLinux())
-            path = "./" + DllName;
+            path = "./" + name;
 
         return services
             .AddSingleton(_ => new JawboneNative(path))

@@ -2,27 +2,27 @@ using System;
 
 namespace Piranha.Jawbone.Sdl3;
 
-public delegate void AudioShader(int frequency, int channels, Span<float> samples);
-
 public interface IAudioManager
 {
     bool IsPaused { get; set; }
-    void AddShader(AudioShader audioShader);
-    void RemoveShader(AudioShader audioShader);
+    float Gain { get; set; }
 
     int PrepareAudio(
-        SdlAudioFormat format,
         int frequency,
         int channels,
-        ReadOnlySpan<byte> data);
+        ReadOnlySpan<short> data);
 
-    int ScheduleAudio(int soundId, TimeSpan delay);
-    int ScheduleLoopingAudio(
-        int soundId,
-        TimeSpan delay,
-        TimeSpan delayBetweenLoops);
+    int PrepareAudio(
+        int frequency,
+        int channels,
+        ReadOnlySpan<float> data);
 
-    bool CancelAudio(int scheduledAudioId);
-
-    void PumpAudio();
+    int PlayAudio(int soundId, float gain = 1f, float ratio = 1f);
+    bool TrySetGain(int playbackId, float gain);
+    bool TrySetRatio(int playbackId, float ratio);
+    bool TryStopAudio(int playbackId);
+    int LoopAudio(int soundId, float gain = 1f, float ratio = 1f);
+    bool TrySetLoopGain(int loopId, float gain);
+    bool TrySetLoopRatio(int loopId, float ratio);
+    bool TryStopLoop(int loopId);
 }

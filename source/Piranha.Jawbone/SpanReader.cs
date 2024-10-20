@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -27,9 +28,7 @@ public static class SpanReaderExtensions
 
     public static ReadOnlySpan<char> ReadWord(ref this SpanReader<char> reader)
     {
-        while (reader.TryMatch(' '))
-            ;
-
+        reader.SkipAll(' ');
         var pending = reader.Pending;
         var space = pending.IndexOf(' ');
         if (space == -1)
@@ -44,6 +43,45 @@ public static class SpanReaderExtensions
             reader.Position += space + 1;
             return result;
         }
+    }
+
+    public static ref SpanReader<T> SkipAll<T>(
+        ref this SpanReader<T> reader,
+        T item
+    ) where T : IEquatable<T>
+    {
+        var index = reader.Pending.IndexOfAnyExcept(item);
+        if (index == -1)
+            reader.Position = reader.Span.Length;
+        else
+            reader.Position += index;
+        return ref reader;
+    }
+
+    public static ref SpanReader<T> SkipAll<T>(
+        ref this SpanReader<T> reader,
+        ReadOnlySpan<T> items
+    ) where T : IEquatable<T>
+    {
+        var index = reader.Pending.IndexOfAnyExcept(items);
+        if (index == -1)
+            reader.Position = reader.Span.Length;
+        else
+            reader.Position += index;
+        return ref reader;
+    }
+
+    public static ref SpanReader<T> SkipAll<T>(
+        ref this SpanReader<T> reader,
+        SearchValues<T> items
+    ) where T : IEquatable<T>
+    {
+        var index = reader.Pending.IndexOfAnyExcept(items);
+        if (index == -1)
+            reader.Position = reader.Span.Length;
+        else
+            reader.Position += index;
+        return ref reader;
     }
 
     public static bool TryMatch<T>(

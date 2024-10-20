@@ -8,4 +8,7 @@ public struct SdlWindowEvent // SDL_WindowEvent
     public uint WindowID; // SDL_WindowID windowID
     public int Data1; // Sint32 data1
     public int Data2; // Sint32 data2
+
+    public readonly int X => Data1;
+    public readonly int Y => Data2;
 }

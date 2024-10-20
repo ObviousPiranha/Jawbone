@@ -33,8 +33,6 @@ class SampleHandler : ISdlEventHandler, IDisposable
     private int _textureUniform = default;
     private bool _isFullscreen = false;
     private int _eventCount = 0;
-    private readonly StbImageLibrary _stbImage;
-    private readonly StbVorbisLibrary _stbVorbis;
     private readonly nint _windowPtr;
     private readonly nint _contextPtr;
     private readonly OpenGlLibrary _gl;
@@ -44,12 +42,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
     public SampleHandler(
         ILogger<SampleHandler> logger,
         IAudioManager audioManager,
-        StbImageLibrary stbImage,
-        StbVorbisLibrary stbVorbis,
         ScenePool<PiranhaScene> scenePool)
     {
-        _stbImage = stbImage;
-        _stbVorbis = stbVorbis;
         _logger = logger;
         _audioManager = audioManager;
         _scenePool = scenePool;
@@ -132,7 +126,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         // https://publicdomainvectors.org/en/free-clipart/Piranha-fish-vector/3815.html
 
         var pngBytes = File.ReadAllBytes("sheet.png");
-        var pixelBytes = _stbImage.LoadFromMemory(
+        var pixelBytes = StbImage.LoadFromMemory(
             in pngBytes[0],
             pngBytes.Length,
             out var w,
@@ -152,7 +146,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
             Gl.UnsignedByte,
             span[0]);
 
-        _stbImage.ImageFree(pixelBytes);
+        StbImage.ImageFree(pixelBytes);
 
         _gl.TexParameteri(Target, Gl.TextureWrapS, Gl.ClampToEdge);
         _gl.TexParameteri(Target, Gl.TextureWrapT, Gl.ClampToEdge);
@@ -180,7 +174,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         // neck_snap-Vladimir-719669812.wav
         // Public domain audio: http://soundbible.com/1953-Neck-Snap.html
         var audioBytes = File.ReadAllBytes("crunch.ogg");
-        int samples = _stbVorbis.DecodeMemory(
+        int samples = StbVorbis.DecodeMemory(
             in audioBytes[0],
             audioBytes.Length,
             out var channelCount,
@@ -200,8 +194,7 @@ class SampleHandler : ISdlEventHandler, IDisposable
         }
         finally
         {
-            // Bad hack, but it's easy access to regular `free`.
-            _stbImage.ImageFree(output);
+            C.Free(output);
         }
     }
 
@@ -285,7 +278,8 @@ class SampleHandler : ISdlEventHandler, IDisposable
 
     public void OnMouseButtonDown(SdlMouseButtonEvent eventData)
     {
-        _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+        _audioManager.LoopAudio(0);
+        // _audioManager.ScheduleLoopingAudio(0, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         // _audioManager.ScheduleAudio(0, default);
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.2));
         // _audioManager.ScheduleAudio(0, TimeSpan.FromSeconds(0.4));

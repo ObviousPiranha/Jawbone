@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Extensions;
@@ -225,5 +226,26 @@ public static class CollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(text);
         return text.AsSpan().StartsWith(value, out after);
+    }
+
+    public static int ByteSize<T>(
+        this ReadOnlySpan<T> span
+    ) where T : unmanaged
+    {
+        return span.Length * Unsafe.SizeOf<T>();
+    }
+
+    public static int ByteSize<T>(
+        this Span<T> span
+    ) where T : unmanaged
+    {
+        return span.Length * Unsafe.SizeOf<T>();
+    }
+
+    public static int ByteSize<T>(
+        this T[]? array
+    ) where T : unmanaged
+    {
+        return array.AsSpan().ByteSize();
     }
 }

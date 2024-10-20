@@ -24,7 +24,6 @@ class Program
                             options.IncludeScopes = true;
                         });
             })
-            .AddJawboneNativeLibraries()
             .AddAudioManager()
             .AddSingleton<ScenePool<PiranhaScene>>()
             .AddSingleton<IGameLoop, GameLoop>()
@@ -41,6 +40,10 @@ class Program
                 if (C.SystemLibs.Contains(libraryName))
                 {
                     return NativeLibrary.Load(libraryName, assembly, searchPath);
+                }
+                else if (libraryName == C.Library)
+                {
+                    return NativeLibrary.Load("./" + C.GetLibraryName(), assembly, searchPath);
                 }
                 else
                 {

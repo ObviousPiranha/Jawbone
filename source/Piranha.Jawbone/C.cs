@@ -1,28 +1,32 @@
 using System;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone;
 
+#pragma warning disable CA1401
+
 public static partial class C
 {
+    public const string Library = "JawboneNative";
     public static ImmutableArray<string> SystemLibs { get; } = ImmutableArray.Create(["libc", "kernel32", "ws2_32"]);
 
-    public static void Free(nint ptr)
+    public static string GetLibraryName()
     {
         if (OperatingSystem.IsWindows())
-            WindowsFree(ptr);
+            return "JawboneNative.dll";
         else if (OperatingSystem.IsMacOS())
-            UnixFree(ptr);
+            return "libJawboneNative.dylib";
         else if (OperatingSystem.IsLinux())
-            UnixFree(ptr);
-        else
-            throw new PlatformNotSupportedException();
+            return "libJawboneNative.so";
+
+        throw new PlatformNotSupportedException();
     }
 
-    [LibraryImport("kernel32", EntryPoint = "free")]
-    private static partial void WindowsFree(nint ptr);
-
-    [LibraryImport("libc", EntryPoint = "free")]
-    private static partial void UnixFree(nint ptr);
+    [LibraryImport(Library, EntryPoint = "jawbone_free")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void Free(nint ptr);
 }
+
+#pragma warning restore CA1401
