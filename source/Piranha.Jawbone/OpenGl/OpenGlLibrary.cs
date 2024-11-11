@@ -57,6 +57,16 @@ public sealed partial class OpenGlLibrary
         uint format,
         uint type,
         in byte data);
+    public partial void TexImage2D(
+        uint target,
+        int level,
+        uint internalFormat,
+        int width,
+        int height,
+        int border,
+        uint format,
+        uint type,
+        nint data);
     public partial void TexImage3D(
         uint target,
         int level,
