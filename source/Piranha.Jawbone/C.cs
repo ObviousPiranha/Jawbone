@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,7 +9,6 @@ namespace Piranha.Jawbone;
 public static partial class C
 {
     public const string Library = "JawboneNative";
-    public static ImmutableArray<string> SystemLibs { get; } = ImmutableArray.Create(["libc", "kernel32", "ws2_32"]);
 
     public static string GetLibraryName()
     {
