@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 namespace Piranha.Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Range32 : IEquatable<Range32>
+public struct Range32 : IEquatable<Range32>
 {
-    public readonly int Start;
-    public readonly int Length;
+    public int Start;
+    public int Length;
 
     public Range32(int start, int length)
     {
