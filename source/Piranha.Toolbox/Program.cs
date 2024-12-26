@@ -65,6 +65,7 @@ internal class Program
             var folderName = Path.GetFileName(innerFolder.AsSpan());
             if (folderName.SequenceEqual("bin") || folderName.SequenceEqual("obj"))
                 continue;
+            FixNamespaceFolder(innerFolder);
         }
     }
 
