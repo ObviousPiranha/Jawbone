@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Numerics;
@@ -12,7 +13,7 @@ public readonly struct ShaderInputMapper
 {
     private static KeyValuePair<Type, CommonVertexInfo> Pair(Type type, int glSize, uint glType)
         => KeyValuePair.Create(type, new CommonVertexInfo { Size = glSize, Type = glType });
-    private static readonly ImmutableDictionary<Type, CommonVertexInfo> CommonVertexInfoByType =
+    private static readonly FrozenDictionary<Type, CommonVertexInfo> CommonVertexInfoByType =
         new KeyValuePair<Type, CommonVertexInfo>[]
         {
             Pair(typeof(Half), 1, Gl.HalfFloat),
@@ -61,30 +62,45 @@ public readonly struct ShaderInputMapper
             Pair(typeof(ColorRgb24), 3, Gl.UnsignedByte),
             Pair(typeof(ColorRgba32), 4, Gl.UnsignedByte),
             Pair(typeof(PackedUnsignedVector4), (int)Gl.Bgra, Gl.UnsignedInt2101010Rev)
-        }.ToImmutableDictionary();
+        }.ToFrozenDictionary();
 
-    public static ShaderInputMapper Create<T>(OpenGlLibrary gl, uint program) where T : unmanaged
+    public static ShaderInputMapper Create<T>(
+        OpenGlLibrary gl,
+        uint program,
+        Func<string, string>? fieldNameToShaderName = default
+        ) where T : unmanaged
     {
         var builder = ImmutableArray.CreateBuilder<VertexInfo>();
         foreach (var fieldInfo in typeof(T).GetFields())
         {
+            var name = fieldInfo.Name;
+            var normalized = false;
             var attribute = fieldInfo.GetCustomAttribute<ShaderInputAttribute>(false);
 
-            if (attribute is null)
+            if (attribute is not null)
+            {
+                name = attribute.Name;
+                normalized = (attribute.Settings & ShaderInputSettings.Normalized) == ShaderInputSettings.Normalized;
+            }
+            else if (fieldNameToShaderName is not null)
+            {
+                name = fieldNameToShaderName.Invoke(fieldInfo.Name);
+            }
+            else
+            {
                 continue;
-
-            var normalized = (attribute.Settings & ShaderInputSettings.Normalized) == ShaderInputSettings.Normalized;
+            }
 
             var info = new VertexInfo
             {
                 Common = CommonVertexInfoByType[fieldInfo.FieldType],
-                Index = gl.GetAttribLocation(program, attribute.Name),
+                Index = gl.GetAttribLocation(program, name),
                 Normalized = normalized ? Gl.True : Gl.False,
                 Offset = Marshal.OffsetOf<T>(fieldInfo.Name).ToInt32()
             };
 
             if (info.Index == -1)
-                throw new OpenGlException($"Unable to locate attribute '{attribute.Name}' for shader program ({program}).");
+                throw new OpenGlException($"Unable to locate attribute '{name}' for shader program ({program}).");
 
             builder.Add(info);
         }
