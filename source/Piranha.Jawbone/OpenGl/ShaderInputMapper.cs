@@ -133,7 +133,7 @@ public readonly struct ShaderInputMapper
                 vertexInfo.Common.Type,
                 vertexInfo.Normalized,
                 _stride,
-                new IntPtr(vertexInfo.Offset));
+                vertexInfo.Offset);
         }
     }
 
