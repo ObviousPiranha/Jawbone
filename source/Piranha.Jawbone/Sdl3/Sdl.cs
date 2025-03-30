@@ -30,6 +30,12 @@ public static partial class Sdl
             SdlException.Throw(message);
     }
 
+    public static void ThrowOnSdlFailure(this nint result, string? message)
+    {
+        if (result == default)
+            SdlException.Throw(message);
+    }
+
     public static string GetDefaultLibName()
     {
         if (OperatingSystem.IsWindows())
