@@ -118,6 +118,7 @@ public sealed partial class OpenGlLibrary
         in byte data);
 
     public partial void Uniform1i(int location, int v0);
+    public partial void Uniform1f(int location, float v0);
     public partial void UniformMatrix4fv(
         int location,
         int count,
