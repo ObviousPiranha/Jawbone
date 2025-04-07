@@ -80,14 +80,14 @@ public static class StatisticalReport
     }
 }
 
-public readonly struct StatisticalReport<T>
+public struct StatisticalReport<T>
 {
-    public readonly int SampleCount { get; }
-    public readonly T Min { get; }
-    public readonly T Max { get; }
-    public readonly T Mean { get; }
-    public readonly T Median { get; }
-    public readonly T StandardDeviation { get; }
+    public int SampleCount;
+    public T Min;
+    public T Max;
+    public T Mean;
+    public T Median;
+    public T StandardDeviation;
 
     public StatisticalReport(
         int sampleCount,
@@ -105,12 +105,12 @@ public readonly struct StatisticalReport<T>
         StandardDeviation = standardDeviation;
     }
 
-    public string ToString(Func<T, string?> converter)
+    public readonly string ToString(Func<T, string?> converter)
     {
         return ToString(converter, static (n, state) => state.Invoke(n));
     }
 
-    public string ToString<TState>(TState state, Func<T, TState, string?> converter)
+    public readonly string ToString<TState>(TState state, Func<T, TState, string?> converter)
     {
         var word = SampleCount == 1 ? "sample" : "samples";
 
@@ -132,5 +132,5 @@ public readonly struct StatisticalReport<T>
         return result;
     }
 
-    public override string ToString() => ToString(static v => v?.ToString());
+    public override readonly string ToString() => ToString(static v => v?.ToString());
 }
