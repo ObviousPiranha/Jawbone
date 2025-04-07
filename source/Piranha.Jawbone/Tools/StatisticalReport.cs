@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -8,37 +7,6 @@ namespace Piranha.Jawbone;
 
 public static class StatisticalReport
 {
-    public static StatisticalReport<TOutput> Convert<TInput, TOutput>(
-        this StatisticalReport<TInput> sr,
-        Converter<TInput, TOutput> converter)
-    {
-        return new StatisticalReport<TOutput>(
-            sr.SampleCount,
-            converter(sr.Min),
-            converter(sr.Max),
-            converter(sr.Mean),
-            converter(sr.Median),
-            converter(sr.StandardDeviation));
-    }
-
-    public static StatisticalReport<T> Create<T>(
-        Converter<T, double> toDouble,
-        Converter<double, T> fromDouble,
-        params T[] values)
-    {
-        var doubles = Array.ConvertAll(values, toDouble);
-        return Create(doubles).Convert(fromDouble);
-    }
-
-    public static StatisticalReport<T> Create<T>(
-        Converter<T, double> toDouble,
-        Converter<double, T> fromDouble,
-        List<T> values)
-    {
-        var doubles = values.ConvertAll(toDouble);
-        return Create(doubles).Convert(fromDouble);
-    }
-
     public static StatisticalReport<double> Create(List<double>? values) => Create(CollectionsMarshal.AsSpan(values));
     public static StatisticalReport<double> Create(params Span<double> values)
     {
@@ -48,7 +16,7 @@ public static class StatisticalReport
         if (values.Length == 1)
         {
             var n = values[0];
-            return new StatisticalReport<double>(1, n, n, n, n, default);
+            return new StatisticalReport<double>(1, n, n, n, n, 0d);
         }
 
         values.Sort();
@@ -87,13 +55,6 @@ public static class StatisticalReport
             mean,
             median,
             standardDeviation);
-    }
-
-    public static StatisticalReport<double> CreateAndClear(List<double> values)
-    {
-        var result = Create(values);
-        values.Clear();
-        return result;
     }
 
     private static bool IsOdd(int n) => (n & 1) == 1;
@@ -146,7 +107,7 @@ public readonly struct StatisticalReport<T>
 
     public string ToString(Func<T, string?> converter)
     {
-        return ToString(converter, (n, state) => state.Invoke(n));
+        return ToString(converter, static (n, state) => state.Invoke(n));
     }
 
     public string ToString<TState>(TState state, Func<T, TState, string?> converter)
@@ -171,5 +132,5 @@ public readonly struct StatisticalReport<T>
         return result;
     }
 
-    public override string ToString() => ToString(v => v is null ? string.Empty : v.ToString());
+    public override string ToString() => ToString(static v => v?.ToString());
 }
