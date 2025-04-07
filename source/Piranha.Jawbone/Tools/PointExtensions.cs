@@ -7,8 +7,8 @@ public static class PointExtensions
 {
     public static bool AllPositive(this Point32 p) => 0 < p.X && 0 < p.Y;
     public static bool AnyNegative(this Point32 p) => p.X < 0 || p.Y < 0;
-    public static int Min(this Point32 p) => Math.Min(p.X, p.Y);
-    public static int Max(this Point32 p) => Math.Max(p.X, p.Y);
+    public static int Min(this Point32 p) => int.Min(p.X, p.Y);
+    public static int Max(this Point32 p) => int.Max(p.X, p.Y);
     public static Point32 Moved(this Point32 p, int dx, int dy) => new(p.X + dx, p.Y + dy);
 
     public static Vector2 ToRatio(this Point32 p)

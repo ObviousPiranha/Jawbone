@@ -4,6 +4,6 @@ namespace Piranha.Jawbone;
 
 public static class IntegerMath
 {
-    public static int SquareRoot32(double n) => (int)Math.Floor(Math.Sqrt(n));
-    public static long SquareRoot64(double n) => (long)Math.Floor(Math.Sqrt(n));
+    public static int SquareRoot32(double n) => (int)double.Floor(double.Sqrt(n));
+    public static long SquareRoot64(double n) => (long)double.Floor(double.Sqrt(n));
 }

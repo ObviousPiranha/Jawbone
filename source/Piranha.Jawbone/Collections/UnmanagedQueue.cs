@@ -101,7 +101,8 @@ public sealed class UnmanagedQueue
 
         if (available < size)
         {
-            var bytes = new byte[Math.Max((_length + size) * 4, size * 16)];
+            var count = int.Max((_length + size) * 4, size * 16);
+            var bytes = new byte[count];
 
             if (0 < _length)
             {

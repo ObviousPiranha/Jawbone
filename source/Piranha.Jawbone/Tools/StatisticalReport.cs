@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Piranha.Jawbone;
@@ -38,96 +39,54 @@ public static class StatisticalReport
         return Create(doubles).Convert(fromDouble);
     }
 
-    public static StatisticalReport<double> Create(List<double> values)
+    public static StatisticalReport<double> Create(List<double>? values) => Create(CollectionsMarshal.AsSpan(values));
+    public static StatisticalReport<double> Create(params Span<double> values)
     {
-        if (values is null || values.Count == 0)
-        {
+        if (values.IsEmpty)
             return default;
-        }
-        else if (values.Count == 1)
+
+        if (values.Length == 1)
         {
             var n = values[0];
             return new StatisticalReport<double>(1, n, n, n, n, default);
         }
-        else
+
+        values.Sort();
+        var min = values[0];
+        var max = values[^1];
+        double median;
+
+        if (IsOdd(values.Length))
         {
-            values.Sort();
-            var min = values[0];
-            var max = values[^1];
-            var median = default(double);
-
-            if (IsOdd(values.Count))
-            {
-                median = values[values.Count / 2];
-            }
-            else
-            {
-                int index = values.Count / 2;
-                var high = values[index];
-                var low = values[index - 1];
-                median = (low + high) / 2.0;
-            }
-
-            var mean = values.Average();
-
-            // https://stackoverflow.com/a/3141731
-            var sum = values.Sum(d => Math.Pow(d - mean, 2.0));
-            var standardDeviation = Math.Sqrt(sum / (values.Count - 1));
-
-            return new StatisticalReport<double>(
-                values.Count,
-                min,
-                max,
-                mean,
-                median,
-                standardDeviation);
-        }
-    }
-
-    public static StatisticalReport<double> Create(params double[] values)
-    {
-        if (values is null || values.Length == 0)
-        {
-            return default;
-        }
-        else if (values.Length == 1)
-        {
-            var n = values[0];
-            return new StatisticalReport<double>(1, n, n, n, n, default);
+            median = values[values.Length / 2];
         }
         else
         {
-            Array.Sort(values);
-            var min = values[0];
-            var max = values[^1];
-            var median = default(double);
-
-            if (IsOdd(values.Length))
-            {
-                median = values[values.Length / 2];
-            }
-            else
-            {
-                int index = values.Length / 2;
-                var high = values[index];
-                var low = values[index - 1];
-                median = (low + high) / 2.0;
-            }
-
-            var mean = values.Average();
-
-            // https://stackoverflow.com/a/3141731
-            var sum = values.Sum(d => Math.Pow(d - mean, 2.0));
-            var standardDeviation = Math.Sqrt(sum / (values.Length - 1));
-
-            return new StatisticalReport<double>(
-                values.Length,
-                min,
-                max,
-                mean,
-                median,
-                standardDeviation);
+            int index = values.Length / 2;
+            var high = values[index];
+            var low = values[index - 1];
+            median = (low + high) / 2d;
         }
+
+        var sum = values[0];
+        for (int i = 1; i < values.Length; ++i)
+            sum += values[i];
+        var mean = sum / values.Length;
+
+        // https://stackoverflow.com/a/3141731
+        var sdSum = 0d;
+        foreach (var value in values)
+            sdSum += double.Pow(value - mean, 2d);
+
+        var standardDeviation = double.Sqrt(sdSum / (values.Length - 1));
+
+        return new StatisticalReport<double>(
+            values.Length,
+            min,
+            max,
+            mean,
+            median,
+            standardDeviation);
     }
 
     public static StatisticalReport<double> CreateAndClear(List<double> values)
@@ -199,15 +158,15 @@ public readonly struct StatisticalReport<T>
             " ",
             word,
             ": median ",
-            converter(Median, state),
+            converter.Invoke(Median, state),
             " mean ",
-            converter(Mean, state),
+            converter.Invoke(Mean, state),
             " stddev ",
-            converter(StandardDeviation, state),
+            converter.Invoke(StandardDeviation, state),
             " min ",
-            converter(Min, state),
+            converter.Invoke(Min, state),
             " max ",
-            converter(Max, state));
+            converter.Invoke(Max, state));
 
         return result;
     }
