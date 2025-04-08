@@ -30,6 +30,12 @@ public static partial class Sdl
             SdlException.Throw(message);
     }
 
+    public static void ThrowOnSdlFailure(this nint result, string? message)
+    {
+        if (result == default)
+            SdlException.Throw(message);
+    }
+
     public static string GetDefaultLibName()
     {
         if (OperatingSystem.IsWindows())
@@ -2125,9 +2131,9 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial ulong GetWindowFlags(nint window);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_SetWindowTitle")]
+    [LibraryImport(Lib, EntryPoint = "SDL_SetWindowTitle", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetWindowTitle(nint window, nint title);
+    public static partial CBool SetWindowTitle(nint window, string title);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetWindowTitle")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

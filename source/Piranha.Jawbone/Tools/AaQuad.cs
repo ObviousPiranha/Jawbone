@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 
 namespace Piranha.Jawbone;
@@ -42,6 +43,15 @@ public static class AaQuad
             new(aaq.A.X, aaq.C.Y, z),
             aaq.C,
             new(aaq.C.X, aaq.A.Y, z));
+    }
+
+    public static AaQuad<TResult> Select<T, TResult>(this AaQuad<T> aaQuad, Func<T, TResult> converter)
+    {
+        var result = Create(
+            converter.Invoke(aaQuad.A),
+            converter.Invoke(aaQuad.C));
+
+        return result;
     }
 
     public static Vector2 Size(this AaQuad<Vector2> aaq) => aaq.C - aaq.A;

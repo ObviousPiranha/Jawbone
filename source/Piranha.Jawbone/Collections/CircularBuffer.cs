@@ -16,7 +16,7 @@ public class CircularBuffer<T>
 
     public int Take(Span<T> items)
     {
-        var length = Math.Min(Length, items.Length);
+        var length = int.Min(Length, items.Length);
         var endIndex = _startIndex + length;
         if (Capacity < endIndex)
         {
@@ -38,7 +38,7 @@ public class CircularBuffer<T>
 
     public int Add(ReadOnlySpan<T> items)
     {
-        var length = Math.Min(Available, items.Length);
+        var length = int.Min(Available, items.Length);
         var endIndex = _startIndex + length;
 
         if (Capacity < endIndex)

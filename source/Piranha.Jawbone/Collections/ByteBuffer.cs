@@ -31,7 +31,7 @@ public sealed class ByteBuffer
 
     private void Grow(int minCapacity)
     {
-        var newCapacity = Math.Max(Capacity * 2, _initialCapacity);
+        var newCapacity = int.Max(Capacity * 2, _initialCapacity);
 
         while (newCapacity < minCapacity)
             newCapacity *= 2;

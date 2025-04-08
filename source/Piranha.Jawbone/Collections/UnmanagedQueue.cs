@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Piranha.Jawbone;
 
@@ -28,7 +29,7 @@ file static class UnmanagedQueueExtensions
 
 public sealed class UnmanagedQueue
 {
-    private readonly object _lock = new();
+    private readonly Lock _lock = new();
     private readonly Dictionary<Type, int> _blobHandlerIndicesByType = [];
     private readonly List<BlobHandler> _blobHandlers = [];
     private byte[] _bytes = [];
@@ -100,7 +101,8 @@ public sealed class UnmanagedQueue
 
         if (available < size)
         {
-            var bytes = new byte[Math.Max((_length + size) * 4, size * 16)];
+            var count = int.Max((_length + size) * 4, size * 16);
+            var bytes = new byte[count];
 
             if (0 < _length)
             {

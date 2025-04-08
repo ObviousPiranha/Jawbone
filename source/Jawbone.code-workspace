@@ -26,6 +26,9 @@
 		},
 		{
 			"path": "Piranha.SampleApplication3"
+		},
+		{
+			"path": "Piranha.Toolbox"
 		}
 	],
 	"settings": {

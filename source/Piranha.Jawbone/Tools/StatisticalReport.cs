@@ -1,140 +1,60 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Piranha.Jawbone;
 
 public static class StatisticalReport
 {
-    public static StatisticalReport<TOutput> Convert<TInput, TOutput>(
-        this StatisticalReport<TInput> sr,
-        Converter<TInput, TOutput> converter)
+    public static StatisticalReport<double> Create(List<double>? values) => Create(CollectionsMarshal.AsSpan(values));
+    public static StatisticalReport<double> Create(params Span<double> values)
     {
-        return new StatisticalReport<TOutput>(
-            sr.SampleCount,
-            converter(sr.Min),
-            converter(sr.Max),
-            converter(sr.Mean),
-            converter(sr.Median),
-            converter(sr.StandardDeviation));
-    }
-
-    public static StatisticalReport<T> Create<T>(
-        Converter<T, double> toDouble,
-        Converter<double, T> fromDouble,
-        params T[] values)
-    {
-        var doubles = Array.ConvertAll(values, toDouble);
-        return Create(doubles).Convert(fromDouble);
-    }
-
-    public static StatisticalReport<T> Create<T>(
-        Converter<T, double> toDouble,
-        Converter<double, T> fromDouble,
-        List<T> values)
-    {
-        var doubles = values.ConvertAll(toDouble);
-        return Create(doubles).Convert(fromDouble);
-    }
-
-    public static StatisticalReport<double> Create(List<double> values)
-    {
-        if (values is null || values.Count == 0)
-        {
+        if (values.IsEmpty)
             return default;
-        }
-        else if (values.Count == 1)
+
+        if (values.Length == 1)
         {
             var n = values[0];
-            return new StatisticalReport<double>(1, n, n, n, n, default);
+            return new StatisticalReport<double>(1, n, n, n, n, 0d);
+        }
+
+        values.Sort();
+        var min = values[0];
+        var max = values[^1];
+        double median;
+
+        if (IsOdd(values.Length))
+        {
+            median = values[values.Length / 2];
         }
         else
         {
-            values.Sort();
-            var min = values[0];
-            var max = values[^1];
-            var median = default(double);
-
-            if (IsOdd(values.Count))
-            {
-                median = values[values.Count / 2];
-            }
-            else
-            {
-                int index = values.Count / 2;
-                var high = values[index];
-                var low = values[index - 1];
-                median = (low + high) / 2.0;
-            }
-
-            var mean = values.Average();
-
-            // https://stackoverflow.com/a/3141731
-            var sum = values.Sum(d => Math.Pow(d - mean, 2.0));
-            var standardDeviation = Math.Sqrt(sum / (values.Count - 1));
-
-            return new StatisticalReport<double>(
-                values.Count,
-                min,
-                max,
-                mean,
-                median,
-                standardDeviation);
+            int index = values.Length / 2;
+            var high = values[index];
+            var low = values[index - 1];
+            median = (low + high) / 2d;
         }
-    }
 
-    public static StatisticalReport<double> Create(params double[] values)
-    {
-        if (values is null || values.Length == 0)
-        {
-            return default;
-        }
-        else if (values.Length == 1)
-        {
-            var n = values[0];
-            return new StatisticalReport<double>(1, n, n, n, n, default);
-        }
-        else
-        {
-            Array.Sort(values);
-            var min = values[0];
-            var max = values[^1];
-            var median = default(double);
+        var sum = values[0];
+        for (int i = 1; i < values.Length; ++i)
+            sum += values[i];
+        var mean = sum / values.Length;
 
-            if (IsOdd(values.Length))
-            {
-                median = values[values.Length / 2];
-            }
-            else
-            {
-                int index = values.Length / 2;
-                var high = values[index];
-                var low = values[index - 1];
-                median = (low + high) / 2.0;
-            }
+        // https://stackoverflow.com/a/3141731
+        var sdSum = 0d;
+        foreach (var value in values)
+            sdSum += double.Pow(value - mean, 2d);
 
-            var mean = values.Average();
+        var standardDeviation = double.Sqrt(sdSum / (values.Length - 1));
 
-            // https://stackoverflow.com/a/3141731
-            var sum = values.Sum(d => Math.Pow(d - mean, 2.0));
-            var standardDeviation = Math.Sqrt(sum / (values.Length - 1));
-
-            return new StatisticalReport<double>(
-                values.Length,
-                min,
-                max,
-                mean,
-                median,
-                standardDeviation);
-        }
-    }
-
-    public static StatisticalReport<double> CreateAndClear(List<double> values)
-    {
-        var result = Create(values);
-        values.Clear();
-        return result;
+        return new StatisticalReport<double>(
+            values.Length,
+            min,
+            max,
+            mean,
+            median,
+            standardDeviation);
     }
 
     private static bool IsOdd(int n) => (n & 1) == 1;
@@ -160,14 +80,14 @@ public static class StatisticalReport
     }
 }
 
-public readonly struct StatisticalReport<T>
+public struct StatisticalReport<T>
 {
-    public readonly int SampleCount { get; }
-    public readonly T Min { get; }
-    public readonly T Max { get; }
-    public readonly T Mean { get; }
-    public readonly T Median { get; }
-    public readonly T StandardDeviation { get; }
+    public int SampleCount;
+    public T Min;
+    public T Max;
+    public T Mean;
+    public T Median;
+    public T StandardDeviation;
 
     public StatisticalReport(
         int sampleCount,
@@ -185,12 +105,12 @@ public readonly struct StatisticalReport<T>
         StandardDeviation = standardDeviation;
     }
 
-    public string ToString(Func<T, string?> converter)
+    public readonly string ToString(Func<T, string?> converter)
     {
-        return ToString(converter, (n, state) => state.Invoke(n));
+        return ToString(converter, static (n, state) => state.Invoke(n));
     }
 
-    public string ToString<TState>(TState state, Func<T, TState, string?> converter)
+    public readonly string ToString<TState>(TState state, Func<T, TState, string?> converter)
     {
         var word = SampleCount == 1 ? "sample" : "samples";
 
@@ -199,18 +119,18 @@ public readonly struct StatisticalReport<T>
             " ",
             word,
             ": median ",
-            converter(Median, state),
+            converter.Invoke(Median, state),
             " mean ",
-            converter(Mean, state),
+            converter.Invoke(Mean, state),
             " stddev ",
-            converter(StandardDeviation, state),
+            converter.Invoke(StandardDeviation, state),
             " min ",
-            converter(Min, state),
+            converter.Invoke(Min, state),
             " max ",
-            converter(Max, state));
+            converter.Invoke(Max, state));
 
         return result;
     }
 
-    public override string ToString() => ToString(v => v is null ? string.Empty : v.ToString());
+    public override readonly string ToString() => ToString(static v => v?.ToString());
 }

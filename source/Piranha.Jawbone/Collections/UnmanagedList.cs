@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone;
@@ -10,13 +11,14 @@ namespace Piranha.Jawbone;
 [DebuggerDisplay("Count = {Count}")]
 public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
-    private T[] _items = Array.Empty<T>();
+    private T[] _items = [];
     private int _nextCapacity;
     private readonly bool _pinned;
 
     public bool IsEmpty => Count == 0;
     public int Capacity => _items.Length;
     public int Count { get; private set; }
+    public int Size => Count * Unsafe.SizeOf<T>();
     public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
 
     public ref T this[int index] => ref AsSpan()[index];

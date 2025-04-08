@@ -57,6 +57,16 @@ public sealed partial class OpenGlLibrary
         uint format,
         uint type,
         in byte data);
+    public partial void TexImage2D(
+        uint target,
+        int level,
+        uint internalFormat,
+        int width,
+        int height,
+        int border,
+        uint format,
+        uint type,
+        nint data);
     public partial void TexImage3D(
         uint target,
         int level,
@@ -108,6 +118,7 @@ public sealed partial class OpenGlLibrary
         in byte data);
 
     public partial void Uniform1i(int location, int v0);
+    public partial void Uniform1f(int location, float v0);
     public partial void UniformMatrix4fv(
         int location,
         int count,

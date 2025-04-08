@@ -51,7 +51,7 @@ public sealed class SheetBuilder
         }
     }
     private const int NoIndex = -1;
-    private readonly List<SheetPosition> _available = new();
+    private readonly List<SheetPosition> _available = [];
 
     public Point32 SheetSize { get; }
 
