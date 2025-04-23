@@ -89,6 +89,28 @@ public sealed class CircularList<T>
         Count += items.Length;
     }
 
+    public void CopyTo(Span<T> destination)
+    {
+        var end = (_begin + Count) & Mask;
+        if (end < _begin)
+        {
+            var block = _data.AsSpan(_begin..);
+            block.CopyTo(destination);
+            _data.AsSpan(..end).CopyTo(destination[block.Length..]);
+        }
+        else
+        {
+            _data.AsSpan(_begin..end).CopyTo(destination);
+        }
+    }
+
+    public T[] ToArray()
+    {
+        var result = new T[Count];
+        CopyTo(result);
+        return result;
+    }
+
     private void EnsureCapacity(int minCapacity)
     {
         if (Capacity < minCapacity)
