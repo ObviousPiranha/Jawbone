@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Piranha.Jawbone;
 
-public sealed class CircularList<T>
+public sealed class LoopyList<T> : IEnumerable<T>
 {
     private T[] _data = [];
     private int _begin;
@@ -11,7 +13,7 @@ public sealed class CircularList<T>
     public int Capacity => _data.Length;
     private int Mask => Capacity - 1;
 
-    private int GetPrivateIndex(int index) => (_begin + index) & Mask;
+    private int GetIndex(int offset) => (_begin + offset) & Mask;
 
     public T this[int index]
     {
@@ -19,7 +21,7 @@ public sealed class CircularList<T>
         {
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
-            var privateIndex = GetPrivateIndex(index);
+            var privateIndex = GetIndex(index);
             var result = _data[privateIndex];
             return result;
         }
@@ -28,15 +30,27 @@ public sealed class CircularList<T>
         {
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
-            var privateIndex = GetPrivateIndex(index);
+            var privateIndex = GetIndex(index);
             _data[privateIndex] = value;
         }
     }
 
+    public T this[Index index]
+    {
+        get => this[index.IsFromEnd ? Count - index.Value : index.Value];
+        set => this[index.IsFromEnd ? Count - index.Value : index.Value] = value;
+    }
+
+    public void Clear()
+    {
+        _begin = 0;
+        Count = 0;
+    }
+
     public void PushBack(T item)
     {
-        EnsureCapacity(Count + 1);
-        var privateIndex = GetPrivateIndex(Count++);
+        EnsureCapacity(1);
+        var privateIndex = GetIndex(Count++);
         _data[privateIndex] = item;
     }
 
@@ -44,8 +58,8 @@ public sealed class CircularList<T>
     {
         if (items.IsEmpty)
             return;
-        EnsureCapacity(Count + items.Length);
-        var end = (_begin + Count) & Mask;
+        EnsureCapacity(items.Length);
+        var end = GetIndex(Count);
         var buffer = end < _begin ? _data.AsSpan(end.._begin) : _data.AsSpan(end..);
         if (buffer.Length < items.Length)
         {
@@ -61,8 +75,8 @@ public sealed class CircularList<T>
 
     public void PushFront(T item)
     {
-        EnsureCapacity(Count + 1);
-        var privateIndex = (_begin - 1) & Mask;
+        EnsureCapacity(1);
+        var privateIndex = GetIndex(-1);
         _data[privateIndex] = item;
         _begin = privateIndex;
         ++Count;
@@ -72,8 +86,8 @@ public sealed class CircularList<T>
     {
         if (items.IsEmpty)
             return;
-        EnsureCapacity(Count + items.Length);
-        var end = (_begin + Count) & Mask;
+        EnsureCapacity(items.Length);
+        var end = GetIndex(Count);
         var buffer = end < _begin ? _data.AsSpan(end.._begin) : _data.AsSpan(.._begin);
         if (buffer.Length < items.Length)
         {
@@ -85,13 +99,60 @@ public sealed class CircularList<T>
         {
             items.CopyTo(buffer[^items.Length..]);
         }
-        _begin = (_begin - items.Length) & Mask;
+        _begin = GetIndex(-items.Length);
         Count += items.Length;
+    }
+
+    public T PopBack()
+    {
+        if (Count == 0)
+            throw new InvalidOperationException("Circular list is empty.");
+
+        var last = GetIndex(Count - 1);
+        var result = _data[last];
+        if (--Count == 0)
+            _begin = 0;
+        return result;
+    }
+
+    public void PopBackWhile(Predicate<T> predicate)
+    {
+        var last = GetIndex(Count - 1);
+        while (0 < Count && predicate.Invoke(_data[last]))
+        {
+            last = (last - 1) & Mask;
+            --Count;
+        }
+
+        if (Count == 0)
+            _begin = 0;
+    }
+
+    public T PopFront()
+    {
+        if (Count == 0)
+            throw new InvalidOperationException("Circular list is empty.");
+
+        var result = _data[_begin];
+        _begin = --Count == 0 ? 0 : GetIndex(1);
+        return result;
+    }
+
+    public void PopFrontWhile(Predicate<T> predicate)
+    {
+        while (0 < Count && predicate.Invoke(_data[_begin]))
+        {
+            _begin = GetIndex(1);
+            --Count;
+        }
+
+        if (Count == 0)
+            _begin = 0;
     }
 
     public void CopyTo(Span<T> destination)
     {
-        var end = (_begin + Count) & Mask;
+        var end = GetIndex(Count);
         if (end < _begin)
         {
             var block = _data.AsSpan(_begin..);
@@ -111,8 +172,9 @@ public sealed class CircularList<T>
         return result;
     }
 
-    private void EnsureCapacity(int minCapacity)
+    private void EnsureCapacity(int additionalItemCount)
     {
+        var minCapacity = Count + additionalItemCount;
         if (Capacity < minCapacity)
             Grow(minCapacity);
     }
@@ -139,4 +201,15 @@ public sealed class CircularList<T>
         _data = data;
         _begin = 0;
     }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        for (int i = 0; i < Count; ++i)
+        {
+            var privateIndex = GetIndex(i);
+            yield return _data[privateIndex];
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

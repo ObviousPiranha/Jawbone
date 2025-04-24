@@ -1,7 +1,5 @@
 using Piranha.Jawbone.Net;
 using System;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Piranha.Jawbone.Test;
 

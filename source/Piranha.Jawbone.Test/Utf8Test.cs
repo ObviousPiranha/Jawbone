@@ -2,7 +2,6 @@ using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
-using Xunit;
 
 namespace Piranha.Jawbone.Test;
 
