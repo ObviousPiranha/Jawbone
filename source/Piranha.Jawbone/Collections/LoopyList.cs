@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Piranha.Jawbone;
@@ -37,8 +36,8 @@ public sealed class LoopyList<T>
 
     public T this[Index index]
     {
-        get => this[index.IsFromEnd ? Count - index.Value : index.Value];
-        set => this[index.IsFromEnd ? Count - index.Value : index.Value] = value;
+        get => this[index.GetOffset(Count)];
+        set => this[index.GetOffset(Count)] = value;
     }
 
     public bool IsContiguous
