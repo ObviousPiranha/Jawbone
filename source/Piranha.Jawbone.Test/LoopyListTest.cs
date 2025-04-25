@@ -88,6 +88,7 @@ public class LoopyListTest
         var list = new LoopyList<int>();
         ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6];
         list.PushBack(items);
+        Assert.Equal(items.Length, list.Count);
         var n = 0;
 
         foreach (var item in list)
@@ -102,5 +103,50 @@ public class LoopyListTest
         list.PushBack(items);
         var array = list.AsEnumerable().ToArray();
         Assert.Equal(items, array);
+    }
+
+    [Fact]
+    public void PopFrontWhile_RemovesValues()
+    {
+        var list = new LoopyList<int>();
+        list.PushFront(0, 0, 0, 0);
+        list.PushBack(1, 1, 1, 1);
+        Assert.Equal(8, list.Count);
+        list.PopFrontWhile(static n => n == 0);
+        Assert.Equal(4, list.Count);
+        Assert.True(list.AsEnumerable().All(static n => n == 1));
+    }
+
+    [Fact]
+    public void PopBackWhile_RemovesValues()
+    {
+        var list = new LoopyList<int>();
+        list.PushFront(0, 0, 0, 0);
+        list.PushBack(1, 1, 1, 1);
+        Assert.Equal(8, list.Count);
+        list.PopBackWhile(static n => n == 1);
+        Assert.Equal(4, list.Count);
+        Assert.True(list.AsEnumerable().All(static n => n == 0));
+    }
+
+    [Fact]
+    public void SequenceEqual_SingleBlock()
+    {
+        var list = new LoopyList<int>();
+        ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6, 7, 8];
+        list.PushBack(items);
+        Assert.True(list.IsContiguous);
+        Assert.True(list.SequenceEqual(items));
+    }
+
+    [Fact]
+    public void SequenceEqual_SplitBlock()
+    {
+        var list = new LoopyList<int>();
+        ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6, 7, 8];
+        list.PushBack(items[4..]);
+        list.PushFront(items[..4]);
+        Assert.False(list.IsContiguous);
+        Assert.True(list.SequenceEqual(items));
     }
 }

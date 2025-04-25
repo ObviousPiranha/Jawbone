@@ -41,6 +41,15 @@ public sealed class LoopyList<T>
         set => this[index.IsFromEnd ? Count - index.Value : index.Value] = value;
     }
 
+    public bool IsContiguous
+    {
+        get
+        {
+            var end = _begin + Count;
+            return end <= Capacity;
+        }
+    }
+
     public void Clear()
     {
         _begin = 0;
@@ -170,6 +179,28 @@ public sealed class LoopyList<T>
         var result = new T[Count];
         CopyTo(result);
         return result;
+    }
+
+    public bool SequenceEqual(params ReadOnlySpan<T> items)
+    {
+        var end = _begin + Count;
+
+        if (Capacity < end)
+        {
+            if (Count != items.Length)
+                return false;
+            end &= Mask;
+
+            var first = _data.AsSpan(_begin..);
+
+            return
+                first.SequenceEqual(items[..first.Length]) &&
+                _data.AsSpan(..end).SequenceEqual(items[first.Length..]);
+        }
+        else
+        {
+            return _data.AsSpan(_begin..end).SequenceEqual(items);
+        }
     }
 
     private void EnsureCapacity(int additionalItemCount)
