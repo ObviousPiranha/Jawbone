@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Piranha.Jawbone;
 
-public sealed class LoopyList<T> : IEnumerable<T>
+public sealed class LoopyList<T>
 {
     private T[] _data = [];
     private int _begin;
@@ -202,7 +202,7 @@ public sealed class LoopyList<T> : IEnumerable<T>
         _begin = 0;
     }
 
-    public IEnumerator<T> GetEnumerator()
+    public IEnumerable<T> AsEnumerable()
     {
         for (int i = 0; i < Count; ++i)
         {
@@ -211,5 +211,32 @@ public sealed class LoopyList<T> : IEnumerable<T>
         }
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    public Enumerator GetEnumerator() => new(this);
+
+    public struct Enumerator
+    {
+        private LoopyList<T> _list;
+        private int _index;
+
+        public Enumerator(LoopyList<T> list)
+        {
+            _list = list;
+            Current = default!;
+        }
+
+        public T Current { get; private set; }
+
+        public bool MoveNext()
+        {
+            if (_index < _list.Count)
+            {
+                Current = _list[_index++];
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
 }

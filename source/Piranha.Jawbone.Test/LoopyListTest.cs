@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Piranha.Jawbone.Test;
 
@@ -55,5 +56,51 @@ public class LoopyListTest
         Assert.Equal(count, list.Count);
         list.Clear();
         Assert.Equal(0, list.Count);
+    }
+
+    [Fact]
+    public void PushBack_MultipleItems_IncreasesCount()
+    {
+        ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6];
+        var list = new LoopyList<int>();
+        list.PushBack(items);
+        Assert.Equal(items.Length, list.Count);
+
+        for (int i = 0; i < items.Length; ++i)
+            Assert.Equal(items[i], list[i]);
+    }
+
+    [Fact]
+    public void PushFront_MultipleItems_IncreasesCount()
+    {
+        ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6];
+        var list = new LoopyList<int>();
+        list.PushFront(items);
+        Assert.Equal(items.Length, list.Count);
+
+        for (int i = 0; i < items.Length; ++i)
+            Assert.Equal(items[i], list[i]);
+    }
+
+    [Fact]
+    public void ForEach_YieldsCorrectValues()
+    {
+        var list = new LoopyList<int>();
+        ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6];
+        list.PushBack(items);
+        var n = 0;
+
+        foreach (var item in list)
+            Assert.Equal(items[n++], item);
+    }
+
+    [Fact]
+    public void AsEnumerable_YieldsCorrectValues()
+    {
+        var list = new LoopyList<int>();
+        ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6];
+        list.PushBack(items);
+        var array = list.AsEnumerable().ToArray();
+        Assert.Equal(items, array);
     }
 }
