@@ -130,7 +130,7 @@ public class LoopyListTest
     }
 
     [Fact]
-    public void SequenceEqual_SingleBlock()
+    public void SequenceEqual_ContiguousList()
     {
         var list = new LoopyList<int>();
         ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -140,7 +140,7 @@ public class LoopyListTest
     }
 
     [Fact]
-    public void SequenceEqual_SplitBlock()
+    public void SequenceEqual_NonContiguousList()
     {
         var list = new LoopyList<int>();
         ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6, 7, 8];
