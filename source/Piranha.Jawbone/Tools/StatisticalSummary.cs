@@ -48,6 +48,34 @@ public static class StatisticalSummary
     }
 
     public static StatisticalSummary<T> Create<T>(
+        Func<T, float> toFloat,
+        Func<float, T> fromFloat,
+        LoopyList<T> values)
+    {
+        if (values.IsEmpty)
+            return default;
+
+        if (values.Count == 1)
+            return CreateMono(values[0], fromFloat.Invoke(0f));
+
+        var pool = ArrayPool<float>.Shared;
+        var array = pool.Rent(values.Count);
+
+        try
+        {
+            for (int i = 0; i < values.Count; ++i)
+                array[i] = toFloat.Invoke(values[i]);
+            var summary = Calculate(array.AsSpan(0, values.Count));
+            var result = summary.Select(fromFloat);
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
+    public static StatisticalSummary<T> Create<T>(
         Func<T, double> toDouble,
         Func<double, T> fromDouble,
         List<T>? values)
@@ -86,7 +114,48 @@ public static class StatisticalSummary
         }
     }
 
+    public static StatisticalSummary<T> Create<T>(
+        Func<T, double> toDouble,
+        Func<double, T> fromDouble,
+        LoopyList<T> values)
+    {
+        if (values.IsEmpty)
+            return default;
+
+        if (values.Count == 1)
+            return CreateMono(values[0], fromDouble.Invoke(0d));
+
+        var pool = ArrayPool<double>.Shared;
+        var array = pool.Rent(values.Count);
+
+        try
+        {
+            for (int i = 0; i < values.Count; ++i)
+                array[i] = toDouble.Invoke(values[i]);
+            var summary = Calculate(array.AsSpan(0, values.Count));
+            var result = summary.Select(fromDouble);
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
+    public static StatisticalSummary<TimeSpan> Create(List<TimeSpan>? values)
+    {
+        return Create(CollectionsMarshal.AsSpan(values));
+    }
+
     public static StatisticalSummary<TimeSpan> Create(params ReadOnlySpan<TimeSpan> values)
+    {
+        return Create(
+            static ts => ts.TotalMilliseconds,
+            static d => TimeSpan.FromMilliseconds(d),
+            values);
+    }
+
+    public static StatisticalSummary<TimeSpan> Create(LoopyList<TimeSpan> values)
     {
         return Create(
             static ts => ts.TotalMilliseconds,
