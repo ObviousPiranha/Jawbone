@@ -133,10 +133,11 @@ public sealed class LoopyList<T>
         return result;
     }
 
-    public void PopBackWhile(Predicate<T> predicate)
+    public void PopBackWhile(Predicate<T> predicate) => PopBackWhile(predicate, static (item, state) => state.Invoke(item));
+    public void PopBackWhile<TState>(TState arg, Func<T, TState, bool> predicate)
     {
         var last = GetBegin(Count - 1);
-        while (0 < Count && predicate.Invoke(_data[last]))
+        while (0 < Count && predicate.Invoke(_data[last], arg))
         {
             last = (last - 1) & Mask;
             --Count;
@@ -169,9 +170,10 @@ public sealed class LoopyList<T>
         return result;
     }
 
-    public void PopFrontWhile(Predicate<T> predicate)
+    public void PopFrontWhile(Predicate<T> predicate) => PopFrontWhile(predicate, static (item, state) => state.Invoke(item));
+    public void PopFrontWhile<TState>(TState arg, Func<T, TState, bool> predicate)
     {
-        while (0 < Count && predicate.Invoke(_data[_begin]))
+        while (0 < Count && predicate.Invoke(_data[_begin], arg))
         {
             _begin = GetBegin(1);
             --Count;

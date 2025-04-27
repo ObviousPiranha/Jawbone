@@ -9,17 +9,17 @@ namespace Piranha.Jawbone;
 public static class StatisticalSummary
 {
     public static StatisticalSummary<float> Create<T>(
-        Func<T, float> toFloat,
-        List<T>? values)
+        List<T>? values,
+        Func<T, float> toFloat)
     {
         return Create(
-            toFloat,
-            CollectionsMarshal.AsSpan(values));
+            CollectionsMarshal.AsSpan(values),
+            toFloat);
     }
 
     public static StatisticalSummary<float> Create<T>(
-        Func<T, float> toFloat,
-        params ReadOnlySpan<T> values)
+        ReadOnlySpan<T> values,
+        Func<T, float> toFloat)
     {
         if (values.IsEmpty)
             return default;
@@ -44,8 +44,8 @@ public static class StatisticalSummary
     }
 
     public static StatisticalSummary<float> Create<T>(
-        Func<T, float> toFloat,
-        LoopyList<T>? values)
+        LoopyList<T>? values,
+        Func<T, float> toFloat)
     {
         if (values is null || values.IsEmpty)
             return default;
@@ -70,17 +70,17 @@ public static class StatisticalSummary
     }
 
     public static StatisticalSummary<double> Create<T>(
-        Func<T, double> toDouble,
-        List<T>? values)
+        List<T>? values,
+        Func<T, double> toDouble)
     {
         return Create(
-            toDouble,
-            CollectionsMarshal.AsSpan(values));
+            CollectionsMarshal.AsSpan(values),
+            toDouble);
     }
 
     public static StatisticalSummary<double> Create<T>(
-        Func<T, double> toDouble,
-        params ReadOnlySpan<T> values)
+        ReadOnlySpan<T> values,
+        Func<T, double> toDouble)
     {
         if (values.IsEmpty)
             return default;
@@ -105,8 +105,8 @@ public static class StatisticalSummary
     }
 
     public static StatisticalSummary<double> Create<T>(
-        Func<T, double> toDouble,
-        LoopyList<T>? values)
+        LoopyList<T>? values,
+        Func<T, double> toDouble)
     {
         if (values is null || values.IsEmpty)
             return default;
@@ -137,13 +137,13 @@ public static class StatisticalSummary
 
     public static StatisticalSummary<TimeSpan> Create(params ReadOnlySpan<TimeSpan> values)
     {
-        return Create(static ts => ts.TotalMilliseconds, values)
+        return Create(values, static ts => ts.TotalMilliseconds)
             .Select(static sample => TimeSpan.FromMilliseconds(sample));
     }
 
     public static StatisticalSummary<TimeSpan> Create(LoopyList<TimeSpan>? values)
     {
-        return Create(static ts => ts.TotalMilliseconds, values)
+        return Create(values, static ts => ts.TotalMilliseconds)
             .Select(static sample => TimeSpan.FromMilliseconds(sample));
     }
 
@@ -183,9 +183,9 @@ public static class StatisticalSummary
         }
     }
 
-    public static StatisticalSummary<float> Create(LoopyList<float> values)
+    public static StatisticalSummary<float> Create(LoopyList<float>? values)
     {
-        if (values.IsEmpty)
+        if (values is null || values.IsEmpty)
             return default;
 
         if (values.Count == 1)

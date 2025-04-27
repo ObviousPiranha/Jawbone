@@ -22,6 +22,8 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
 
     public ref T this[int index] => ref AsSpan()[index];
+    public ref T this[Index index] => ref AsSpan()[index];
+    public Span<T> this[Range range] => AsSpan()[range];
 
     public UnmanagedList(bool pinned = false)
     {
@@ -31,8 +33,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public UnmanagedList(int firstCapacity)
     {
-        if (firstCapacity < 1)
-            throw new ArgumentOutOfRangeException(nameof(firstCapacity), "Must be at least 1.");
+        ArgumentOutOfRangeException.ThrowIfLessThan(firstCapacity, 1);
         _nextCapacity = firstCapacity;
     }
 
@@ -50,8 +51,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public Span<T> AcquireUninitialized(int count)
     {
-        if (count < 0)
-            throw new ArgumentException("Count cannot be negative.", nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
 
         if (count == 0)
             return default;
@@ -164,8 +164,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void RemoveAt(int index, int count)
     {
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         AsSpan(index + count).CopyTo(_items.AsSpan(index));
         Count -= count;
     }
@@ -180,6 +179,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public Span<T> AsSpan() => _items.AsSpan(0, Count);
     public Span<T> AsSpan(int start) => _items.AsSpan(start, Count - start);
     public Span<T> AsSpan(int start, int length) => AsSpan().Slice(start, length);
+    public Span<T> AsSpan(Range range) => AsSpan()[range];
 
     private void AddEnumerable(IEnumerable<T> enumerable, int count)
     {
