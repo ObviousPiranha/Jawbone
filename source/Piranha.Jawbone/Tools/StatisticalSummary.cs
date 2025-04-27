@@ -8,27 +8,24 @@ namespace Piranha.Jawbone;
 
 public static class StatisticalSummary
 {
-    public static StatisticalSummary<T> Create<T>(
+    public static StatisticalSummary<float> Create<T>(
         Func<T, float> toFloat,
-        Func<float, T> fromFloat,
         List<T>? values)
     {
         return Create(
             toFloat,
-            fromFloat,
             CollectionsMarshal.AsSpan(values));
     }
 
-    public static StatisticalSummary<T> Create<T>(
+    public static StatisticalSummary<float> Create<T>(
         Func<T, float> toFloat,
-        Func<float, T> fromFloat,
         params ReadOnlySpan<T> values)
     {
         if (values.IsEmpty)
             return default;
 
         if (values.Length == 1)
-            return CreateMono(values[0], fromFloat.Invoke(0f));
+            return CreateMono(toFloat.Invoke(values[0]));
 
         var pool = ArrayPool<float>.Shared;
         var array = pool.Rent(values.Length);
@@ -37,8 +34,7 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Length; ++i)
                 array[i] = toFloat.Invoke(values[i]);
-            var summary = Calculate(array.AsSpan(0, values.Length));
-            var result = summary.Select(fromFloat);
+            var result = Calculate(array.AsSpan(0, values.Length));
             return result;
         }
         finally
@@ -47,16 +43,15 @@ public static class StatisticalSummary
         }
     }
 
-    public static StatisticalSummary<T> Create<T>(
+    public static StatisticalSummary<float> Create<T>(
         Func<T, float> toFloat,
-        Func<float, T> fromFloat,
-        LoopyList<T> values)
+        LoopyList<T>? values)
     {
-        if (values.IsEmpty)
+        if (values is null || values.IsEmpty)
             return default;
 
         if (values.Count == 1)
-            return CreateMono(values[0], fromFloat.Invoke(0f));
+            return CreateMono(toFloat.Invoke(values[0]));
 
         var pool = ArrayPool<float>.Shared;
         var array = pool.Rent(values.Count);
@@ -65,8 +60,7 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Count; ++i)
                 array[i] = toFloat.Invoke(values[i]);
-            var summary = Calculate(array.AsSpan(0, values.Count));
-            var result = summary.Select(fromFloat);
+            var result = Calculate(array.AsSpan(0, values.Count));
             return result;
         }
         finally
@@ -75,27 +69,24 @@ public static class StatisticalSummary
         }
     }
 
-    public static StatisticalSummary<T> Create<T>(
+    public static StatisticalSummary<double> Create<T>(
         Func<T, double> toDouble,
-        Func<double, T> fromDouble,
         List<T>? values)
     {
         return Create(
             toDouble,
-            fromDouble,
             CollectionsMarshal.AsSpan(values));
     }
 
-    public static StatisticalSummary<T> Create<T>(
+    public static StatisticalSummary<double> Create<T>(
         Func<T, double> toDouble,
-        Func<double, T> fromDouble,
         params ReadOnlySpan<T> values)
     {
         if (values.IsEmpty)
             return default;
 
         if (values.Length == 1)
-            return CreateMono(values[0], fromDouble.Invoke(0d));
+            return CreateMono(toDouble.Invoke(values[0]));
 
         var pool = ArrayPool<double>.Shared;
         var array = pool.Rent(values.Length);
@@ -104,8 +95,7 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Length; ++i)
                 array[i] = toDouble.Invoke(values[i]);
-            var summary = Calculate(array.AsSpan(0, values.Length));
-            var result = summary.Select(fromDouble);
+            var result = Calculate(array.AsSpan(0, values.Length));
             return result;
         }
         finally
@@ -114,16 +104,15 @@ public static class StatisticalSummary
         }
     }
 
-    public static StatisticalSummary<T> Create<T>(
+    public static StatisticalSummary<double> Create<T>(
         Func<T, double> toDouble,
-        Func<double, T> fromDouble,
-        LoopyList<T> values)
+        LoopyList<T>? values)
     {
-        if (values.IsEmpty)
+        if (values is null || values.IsEmpty)
             return default;
 
         if (values.Count == 1)
-            return CreateMono(values[0], fromDouble.Invoke(0d));
+            return CreateMono(toDouble.Invoke(values[0]));
 
         var pool = ArrayPool<double>.Shared;
         var array = pool.Rent(values.Count);
@@ -132,8 +121,7 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Count; ++i)
                 array[i] = toDouble.Invoke(values[i]);
-            var summary = Calculate(array.AsSpan(0, values.Count));
-            var result = summary.Select(fromDouble);
+            var result = Calculate(array.AsSpan(0, values.Count));
             return result;
         }
         finally
@@ -149,18 +137,14 @@ public static class StatisticalSummary
 
     public static StatisticalSummary<TimeSpan> Create(params ReadOnlySpan<TimeSpan> values)
     {
-        return Create(
-            static ts => ts.TotalMilliseconds,
-            static d => TimeSpan.FromMilliseconds(d),
-            values);
+        return Create(static ts => ts.TotalMilliseconds, values)
+            .Select(static sample => TimeSpan.FromMilliseconds(sample));
     }
 
-    public static StatisticalSummary<TimeSpan> Create(LoopyList<TimeSpan> values)
+    public static StatisticalSummary<TimeSpan> Create(LoopyList<TimeSpan>? values)
     {
-        return Create(
-            static ts => ts.TotalMilliseconds,
-            static d => TimeSpan.FromMilliseconds(d),
-            values);
+        return Create(static ts => ts.TotalMilliseconds, values)
+            .Select(static sample => TimeSpan.FromMilliseconds(sample));
     }
 
     public static StatisticalSummary<float> CreateWithoutCopy(List<float>? values) => CreateWithoutCopy(CollectionsMarshal.AsSpan(values));
@@ -259,9 +243,9 @@ public static class StatisticalSummary
         }
     }
 
-    public static StatisticalSummary<double> Create(LoopyList<double> values)
+    public static StatisticalSummary<double> Create(LoopyList<double>? values)
     {
-        if (values.IsEmpty)
+        if (values is null || values.IsEmpty)
             return default;
 
         if (values.Count == 1)
@@ -370,7 +354,6 @@ public static class StatisticalSummary
     private static bool IsOdd(int n) => (n & 1) == 1;
     private static StatisticalSummary<float> CreateMono(float n) => new(1, n, n, n, n, 0f);
     private static StatisticalSummary<double> CreateMono(double n) => new(1, n, n, n, n, 0d);
-    private static StatisticalSummary<T> CreateMono<T>(T n, T zero) => new(1, n, n, n, n, zero);
 
     public static StringBuilder AppendSummary<T, TState>(
         this StringBuilder builder,
