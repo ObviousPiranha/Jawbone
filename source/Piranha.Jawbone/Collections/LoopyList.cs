@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone;
@@ -11,13 +12,14 @@ public sealed class LoopyList<T>
 
     public int Count { get; private set; }
     public int Capacity => _data.Length;
+    public bool IsEmpty => Count == 0;
     private int Mask => Capacity - 1;
 
     private int GetBegin(int offset) => (_begin + offset) & Mask;
     private int GetEnd(int offset)
     {
         var result = _begin + offset;
-        if (Capacity < result || result < 0)
+        if (result != Capacity)
             result &= Mask;
         return result;
     }
@@ -122,7 +124,7 @@ public sealed class LoopyList<T>
     public T PopBack()
     {
         if (Count == 0)
-            throw new InvalidOperationException("Circular list is empty.");
+            throw new InvalidOperationException("List is empty.");
 
         var last = GetBegin(Count - 1);
         var result = _data[last];
@@ -144,10 +146,23 @@ public sealed class LoopyList<T>
             _begin = 0;
     }
 
+    public bool TryPopFront([MaybeNullWhen(false)] out T item)
+    {
+        if (Count == 0)
+        {
+            item = default;
+            return false;
+        }
+
+        item = _data[_begin];
+        _begin = GetBegin(1);
+        return true;
+    }
+
     public T PopFront()
     {
         if (Count == 0)
-            throw new InvalidOperationException("Circular list is empty.");
+            throw new InvalidOperationException("List is empty.");
 
         var result = _data[_begin];
         _begin = --Count == 0 ? 0 : GetBegin(1);

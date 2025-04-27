@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Piranha.Jawbone;
 
-public static class StatisticalReport
+public static class StatisticalSummary
 {
-    public static StatisticalReport<T> Create<T>(
+    public static StatisticalSummary<T> Create<T>(
         Func<T, float> toFloat,
         Func<float, T> fromFloat,
         List<T>? values)
@@ -19,7 +19,7 @@ public static class StatisticalReport
             CollectionsMarshal.AsSpan(values));
     }
 
-    public static StatisticalReport<T> Create<T>(
+    public static StatisticalSummary<T> Create<T>(
         Func<T, float> toFloat,
         Func<float, T> fromFloat,
         params ReadOnlySpan<T> values)
@@ -37,8 +37,8 @@ public static class StatisticalReport
         {
             for (int i = 0; i < values.Length; ++i)
                 array[i] = toFloat.Invoke(values[i]);
-            var report = Calculate(array.AsSpan(0, values.Length));
-            var result = report.Select(fromFloat);
+            var summary = Calculate(array.AsSpan(0, values.Length));
+            var result = summary.Select(fromFloat);
             return result;
         }
         finally
@@ -47,7 +47,7 @@ public static class StatisticalReport
         }
     }
 
-    public static StatisticalReport<T> Create<T>(
+    public static StatisticalSummary<T> Create<T>(
         Func<T, double> toDouble,
         Func<double, T> fromDouble,
         List<T>? values)
@@ -58,7 +58,7 @@ public static class StatisticalReport
             CollectionsMarshal.AsSpan(values));
     }
 
-    public static StatisticalReport<T> Create<T>(
+    public static StatisticalSummary<T> Create<T>(
         Func<T, double> toDouble,
         Func<double, T> fromDouble,
         params ReadOnlySpan<T> values)
@@ -76,8 +76,8 @@ public static class StatisticalReport
         {
             for (int i = 0; i < values.Length; ++i)
                 array[i] = toDouble.Invoke(values[i]);
-            var report = Calculate(array.AsSpan(0, values.Length));
-            var result = report.Select(fromDouble);
+            var summary = Calculate(array.AsSpan(0, values.Length));
+            var result = summary.Select(fromDouble);
             return result;
         }
         finally
@@ -86,7 +86,7 @@ public static class StatisticalReport
         }
     }
 
-    public static StatisticalReport<TimeSpan> Create(params ReadOnlySpan<TimeSpan> values)
+    public static StatisticalSummary<TimeSpan> Create(params ReadOnlySpan<TimeSpan> values)
     {
         return Create(
             static ts => ts.TotalMilliseconds,
@@ -94,8 +94,8 @@ public static class StatisticalReport
             values);
     }
 
-    public static StatisticalReport<float> CreateWithoutCopy(List<float>? values) => CreateWithoutCopy(CollectionsMarshal.AsSpan(values));
-    public static StatisticalReport<float> CreateWithoutCopy(params Span<float> values)
+    public static StatisticalSummary<float> CreateWithoutCopy(List<float>? values) => CreateWithoutCopy(CollectionsMarshal.AsSpan(values));
+    public static StatisticalSummary<float> CreateWithoutCopy(params Span<float> values)
     {
         if (values.IsEmpty)
             return default;
@@ -106,8 +106,8 @@ public static class StatisticalReport
         return Calculate(values);
     }
 
-    public static StatisticalReport<float> Create(List<float>? values) => Create(CollectionsMarshal.AsSpan(values));
-    public static StatisticalReport<float> Create(params ReadOnlySpan<float> values)
+    public static StatisticalSummary<float> Create(List<float>? values) => Create(CollectionsMarshal.AsSpan(values));
+    public static StatisticalSummary<float> Create(params ReadOnlySpan<float> values)
     {
         if (values.IsEmpty)
             return default;
@@ -130,8 +130,32 @@ public static class StatisticalReport
         }
     }
 
-    public static StatisticalReport<double> CreateWithoutCopy(List<double>? values) => CreateWithoutCopy(CollectionsMarshal.AsSpan(values));
-    public static StatisticalReport<double> CreateWithoutCopy(params Span<double> values)
+    public static StatisticalSummary<float> Create(LoopyList<float> values)
+    {
+        if (values.IsEmpty)
+            return default;
+
+        if (values.Count == 1)
+            return CreateMono(values[0]);
+
+        var pool = ArrayPool<float>.Shared;
+        var array = pool.Rent(values.Count);
+
+        try
+        {
+            values.CopyTo(array);
+            var span = array.AsSpan(0, values.Count);
+            var result = Calculate(array.AsSpan(0, values.Count));
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
+    public static StatisticalSummary<double> CreateWithoutCopy(List<double>? values) => CreateWithoutCopy(CollectionsMarshal.AsSpan(values));
+    public static StatisticalSummary<double> CreateWithoutCopy(params Span<double> values)
     {
         if (values.IsEmpty)
             return default;
@@ -142,8 +166,8 @@ public static class StatisticalReport
         return Calculate(values);
     }
 
-    public static StatisticalReport<double> Create(List<double>? values) => Create(CollectionsMarshal.AsSpan(values));
-    public static StatisticalReport<double> Create(params ReadOnlySpan<double> values)
+    public static StatisticalSummary<double> Create(List<double>? values) => Create(CollectionsMarshal.AsSpan(values));
+    public static StatisticalSummary<double> Create(params ReadOnlySpan<double> values)
     {
         if (values.IsEmpty)
             return default;
@@ -166,7 +190,31 @@ public static class StatisticalReport
         }
     }
 
-    private static StatisticalReport<float> Calculate(Span<float> values)
+    public static StatisticalSummary<double> Create(LoopyList<double> values)
+    {
+        if (values.IsEmpty)
+            return default;
+
+        if (values.Count == 1)
+            return CreateMono(values[0]);
+
+        var pool = ArrayPool<double>.Shared;
+        var array = pool.Rent(values.Count);
+
+        try
+        {
+            values.CopyTo(array);
+            var span = array.AsSpan(0, values.Count);
+            var result = Calculate(array.AsSpan(0, values.Count));
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
+    private static StatisticalSummary<float> Calculate(Span<float> values)
     {
         values.Sort();
         var min = values[0];
@@ -197,7 +245,7 @@ public static class StatisticalReport
 
         var sd = float.Sqrt(sdSum / (values.Length - 1));
 
-        var result = new StatisticalReport<float>(
+        var result = new StatisticalSummary<float>(
             values.Length,
             min,
             max,
@@ -208,7 +256,7 @@ public static class StatisticalReport
         return result;
     }
 
-    private static StatisticalReport<double> Calculate(Span<double> values)
+    private static StatisticalSummary<double> Calculate(Span<double> values)
     {
         values.Sort();
         var min = values[0];
@@ -239,7 +287,7 @@ public static class StatisticalReport
 
         var sd = double.Sqrt(sdSum / (values.Length - 1));
 
-        var result = new StatisticalReport<double>(
+        var result = new StatisticalSummary<double>(
             values.Length,
             min,
             max,
@@ -251,45 +299,45 @@ public static class StatisticalReport
     }
 
     private static bool IsOdd(int n) => (n & 1) == 1;
-    private static StatisticalReport<float> CreateMono(float n) => new(1, n, n, n, n, 0f);
-    private static StatisticalReport<double> CreateMono(double n) => new(1, n, n, n, n, 0d);
-    private static StatisticalReport<T> CreateMono<T>(T n, T zero) => new(1, n, n, n, n, zero);
+    private static StatisticalSummary<float> CreateMono(float n) => new(1, n, n, n, n, 0f);
+    private static StatisticalSummary<double> CreateMono(double n) => new(1, n, n, n, n, 0d);
+    private static StatisticalSummary<T> CreateMono<T>(T n, T zero) => new(1, n, n, n, n, zero);
 
-    public static StringBuilder AppendReport<T, TState>(
+    public static StringBuilder AppendSummary<T, TState>(
         this StringBuilder builder,
-        in StatisticalReport<T> report,
+        in StatisticalSummary<T> summary,
         TState state,
         Action<StringBuilder, TState, T> append)
     {
-        var word = report.SampleCount == 1 ? "sample" : "samples";
+        var word = summary.SampleCount == 1 ? "sample" : "samples";
         builder
-            .Append(report.SampleCount)
+            .Append(summary.SampleCount)
             .Append(' ')
             .Append(word);
 
-        append.Invoke(builder.Append(": median "), state, report.Median);
-        append.Invoke(builder.Append(" mean "), state, report.Mean);
-        append.Invoke(builder.Append(" stddev "), state, report.StandardDeviation);
-        append.Invoke(builder.Append(" min "), state, report.Min);
-        append.Invoke(builder.Append(" max "), state, report.Max);
+        append.Invoke(builder.Append(": median "), state, summary.Median);
+        append.Invoke(builder.Append(" mean "), state, summary.Mean);
+        append.Invoke(builder.Append(" stddev "), state, summary.StandardDeviation);
+        append.Invoke(builder.Append(" min "), state, summary.Min);
+        append.Invoke(builder.Append(" max "), state, summary.Max);
         return builder;
     }
 
-    public static StatisticalReport<TResult> Select<T, TResult>(
-        in this StatisticalReport<T> statisticalReport,
+    public static StatisticalSummary<TResult> Select<T, TResult>(
+        in this StatisticalSummary<T> summary,
         Func<T, TResult> selector)
     {
-        return new StatisticalReport<TResult>(
-            statisticalReport.SampleCount,
-            selector.Invoke(statisticalReport.Min),
-            selector.Invoke(statisticalReport.Max),
-            selector.Invoke(statisticalReport.Mean),
-            selector.Invoke(statisticalReport.Median),
-            selector.Invoke(statisticalReport.StandardDeviation));
+        return new StatisticalSummary<TResult>(
+            summary.SampleCount,
+            selector.Invoke(summary.Min),
+            selector.Invoke(summary.Max),
+            selector.Invoke(summary.Mean),
+            selector.Invoke(summary.Median),
+            selector.Invoke(summary.StandardDeviation));
     }
 }
 
-public struct StatisticalReport<T>
+public struct StatisticalSummary<T>
 {
     public int SampleCount;
     public T Min;
@@ -298,7 +346,7 @@ public struct StatisticalReport<T>
     public T Median;
     public T StandardDeviation;
 
-    public StatisticalReport(
+    public StatisticalSummary(
         int sampleCount,
         T min,
         T max,
