@@ -198,16 +198,12 @@ public sealed class LoopyList<T>
         }
     }
 
-    public void CopyTo(Range range, Span<T> destination)
+    public void CopyTo(Range sourceRange, Span<T> destination)
     {
-        var rangeStart = range.Start.GetOffset(Count);
-        ArgumentOutOfRangeException.ThrowIfNegative(rangeStart, nameof(range));
-        var rangeEnd = range.End.GetOffset(Count);
-        ArgumentOutOfRangeException.ThrowIfLessThan(rangeEnd, rangeStart, nameof(range));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(rangeEnd, Count, nameof(range));
+        var (start, count) = sourceRange.GetOffsetAndLength(Count);
 
-        var begin = GetBegin(rangeStart);
-        var end = GetEnd(rangeEnd);
+        var begin = GetBegin(start);
+        var end = GetEnd(start + count);
 
         if (end < begin)
         {

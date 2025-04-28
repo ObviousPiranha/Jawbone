@@ -69,6 +69,35 @@ public static class StatisticalSummary
         }
     }
 
+    public static StatisticalSummary<float> Create<T>(
+        LoopyList<T> values,
+        Range range,
+        Func<T, float> toFloat)
+    {
+        var (start, count) = range.GetOffsetAndLength(values.Count);
+
+        if (count == 0)
+            return default;
+
+        if (count == 1)
+            return CreateMono(toFloat.Invoke(values[start]));
+
+        var pool = ArrayPool<float>.Shared;
+        var array = pool.Rent(count);
+
+        try
+        {
+            for (int i = 0; i < count; ++i)
+                array[i] = toFloat.Invoke(values[start + 1]);
+            var result = Calculate(array.AsSpan(0, count));
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
     public static StatisticalSummary<double> Create<T>(
         List<T>? values,
         Func<T, double> toDouble)
@@ -130,6 +159,35 @@ public static class StatisticalSummary
         }
     }
 
+    public static StatisticalSummary<double> Create<T>(
+        LoopyList<T> values,
+        Range range,
+        Func<T, double> toDouble)
+    {
+        var (start, count) = range.GetOffsetAndLength(values.Count);
+
+        if (count == 0)
+            return default;
+
+        if (count == 1)
+            return CreateMono(toDouble.Invoke(values[0]));
+
+        var pool = ArrayPool<double>.Shared;
+        var array = pool.Rent(count);
+
+        try
+        {
+            for (int i = 0; i < count; ++i)
+                array[i] = toDouble.Invoke(values[start + i]);
+            var result = Calculate(array.AsSpan(0, count));
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
     public static StatisticalSummary<TimeSpan> Create(List<TimeSpan>? values)
     {
         return Create(CollectionsMarshal.AsSpan(values));
@@ -174,7 +232,8 @@ public static class StatisticalSummary
         try
         {
             values.CopyTo(array);
-            var result = Calculate(array.AsSpan(0, values.Length));
+            var span = array.AsSpan(0, values.Length);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -198,7 +257,33 @@ public static class StatisticalSummary
         {
             values.CopyTo(array);
             var span = array.AsSpan(0, values.Count);
-            var result = Calculate(array.AsSpan(0, values.Count));
+            var result = Calculate(span);
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
+    public static StatisticalSummary<float> Create(LoopyList<float> values, Range range)
+    {
+        var (start, count) = range.GetOffsetAndLength(values.Count);
+
+        if (count == 0)
+            return default;
+
+        if (count == 1)
+            return CreateMono(values[start]);
+
+        var pool = ArrayPool<float>.Shared;
+        var array = pool.Rent(count);
+
+        try
+        {
+            values.CopyTo(range, array);
+            var span = array.AsSpan(0, count);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -234,7 +319,8 @@ public static class StatisticalSummary
         try
         {
             values.CopyTo(array);
-            var result = Calculate(array.AsSpan(0, values.Length));
+            var span = array.AsSpan(0, values.Length);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -259,6 +345,32 @@ public static class StatisticalSummary
             values.CopyTo(array);
             var span = array.AsSpan(0, values.Count);
             var result = Calculate(array.AsSpan(0, values.Count));
+            return result;
+        }
+        finally
+        {
+            pool.Return(array);
+        }
+    }
+
+    public static StatisticalSummary<double> Create(LoopyList<double> values, Range range)
+    {
+        var (start, count) = range.GetOffsetAndLength(values.Count);
+
+        if (count == 0)
+            return default;
+
+        if (count == 1)
+            return CreateMono(values[start]);
+
+        var pool = ArrayPool<double>.Shared;
+        var array = pool.Rent(count);
+
+        try
+        {
+            values.CopyTo(range, array);
+            var span = array.AsSpan(0, count);
+            var result = Calculate(span);
             return result;
         }
         finally
