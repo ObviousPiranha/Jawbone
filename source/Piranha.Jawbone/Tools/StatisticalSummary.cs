@@ -34,7 +34,8 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Length; ++i)
                 array[i] = toFloat.Invoke(values[i]);
-            var result = Calculate(array.AsSpan(0, values.Length));
+            var span = array.AsSpan(0, values.Length);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -60,7 +61,8 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Count; ++i)
                 array[i] = toFloat.Invoke(values[i]);
-            var result = Calculate(array.AsSpan(0, values.Count));
+            var span = array.AsSpan(0, values.Count);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -89,7 +91,8 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < count; ++i)
                 array[i] = toFloat.Invoke(values[start + 1]);
-            var result = Calculate(array.AsSpan(0, count));
+            var span = array.AsSpan(0, count);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -124,7 +127,8 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Length; ++i)
                 array[i] = toDouble.Invoke(values[i]);
-            var result = Calculate(array.AsSpan(0, values.Length));
+            var span = array.AsSpan(0, values.Length);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -150,7 +154,8 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < values.Count; ++i)
                 array[i] = toDouble.Invoke(values[i]);
-            var result = Calculate(array.AsSpan(0, values.Count));
+            var span = array.AsSpan(0, values.Count);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -179,7 +184,8 @@ public static class StatisticalSummary
         {
             for (int i = 0; i < count; ++i)
                 array[i] = toDouble.Invoke(values[start + i]);
-            var result = Calculate(array.AsSpan(0, count));
+            var span = array.AsSpan(0, count);
+            var result = Calculate(span);
             return result;
         }
         finally
@@ -344,7 +350,7 @@ public static class StatisticalSummary
         {
             values.CopyTo(array);
             var span = array.AsSpan(0, values.Count);
-            var result = Calculate(array.AsSpan(0, values.Count));
+            var result = Calculate(span);
             return result;
         }
         finally
