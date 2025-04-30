@@ -64,12 +64,33 @@ static unsafe partial class Sys
         out SockAddrIn6 address,
         ref uint addressLen);
 
+    // https://man7.org/linux/man-pages/man2/recvmsg.2.html
+    // https://man7.org/linux/man-pages/man2/read.2.html
+    [LibraryImport(Lib, EntryPoint = "read")]
+    public static partial nint Read(int fd, out byte buf, nuint length);
+
+    // https://man7.org/linux/man-pages/man2/write.2.html
+    [LibraryImport(Lib, EntryPoint = "write")]
+    public static partial nint Write(int fd, in byte buf, nuint count);
+
     // https://man7.org/linux/man-pages/man2/getsockname.2.html
     [LibraryImport(Lib, EntryPoint = "getsockname")]
     public static partial int GetSockNameV4(int sockfd, out SockAddrIn addr, ref uint addrlen);
 
     [LibraryImport(Lib, EntryPoint = "getsockname")]
     public static partial int GetSockNameV6(int sockfd, out SockAddrIn6 addr, ref uint addrlen);
+
+    // https://man7.org/linux/man-pages/man2/connect.2.html
+    [LibraryImport(Lib, EntryPoint = "connect")]
+    public static partial int ConnectV4(int sockfd, in SockAddrIn addr, uint addrlen);
+
+    // https://man7.org/linux/man-pages/man2/listen.2.html
+    [LibraryImport(Lib, EntryPoint = "listen")]
+    public static partial int Listen(int sockfd, int backlog);
+
+    // https://man7.org/linux/man-pages/man2/accept.2.html
+    [LibraryImport(Lib, EntryPoint = "accept")]
+    public static partial int AcceptV4(int sockfd, out SockAddrIn addr, ref uint addrLen);
 
     // https://man7.org/linux/man-pages/man2/poll.2.html
     [LibraryImport(Lib, EntryPoint = "poll")]

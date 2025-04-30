@@ -1,0 +1,104 @@
+using System;
+using System.Buffers;
+
+namespace Piranha.Jawbone.Net.Linux;
+
+sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
+{
+    private readonly int _fd;
+
+    public Endpoint<AddressV4> Origin { get; }
+
+    public LinuxTcpSocketV4(int fd, Endpoint<AddressV4> origin)
+    {
+        _fd = fd;
+        Origin = origin;
+    }
+
+    public void Dispose()
+    {
+        var result = Sys.Close(_fd);
+        if (result == -1)
+            Sys.Throw("Unable to close socket.");
+    }
+
+    public int? Receive(Span<byte> buffer, TimeSpan timeout)
+    {
+        int milliseconds;
+        {
+            var ms64 = timeout.Ticks / TimeSpan.TicksPerMillisecond;
+            if (int.MaxValue < ms64)
+                milliseconds = int.MaxValue;
+            else if (ms64 < 0)
+                milliseconds = 0;
+            else
+                milliseconds = unchecked((int)ms64);
+        }
+        var pfd = new PollFd { Fd = _fd, Events = Poll.In };
+        var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
+
+        if (0 < pollResult)
+        {
+            if ((pfd.REvents & Poll.In) != 0)
+            {
+                var readResult = Sys.Read(
+                    _fd,
+                    out buffer.GetPinnableReference(),
+                    (nuint)buffer.Length);
+
+                if (readResult == -1)
+                    Sys.Throw("Unable to receive data.");
+
+                return (int)readResult;
+            }
+            else
+            {
+                throw new InvalidOperationException("Unexpected poll event.");
+            }
+        }
+        else if (pollResult < 0)
+        {
+            Sys.Throw("Error while polling socket.");
+        }
+
+        return null;
+    }
+
+    public int Send(ReadOnlySpan<byte> message)
+    {
+        var writeResult = Sys.Write(
+            _fd,
+            message.GetPinnableReference(),
+            (nuint)message.Length);
+
+        if (writeResult == -1)
+            Sys.Throw("Unable to send data.");
+
+        return (int)writeResult;
+    }
+
+    public static LinuxTcpSocketV4 Connect(Endpoint<AddressV4> endpoint)
+    {
+        int socket = Sys.Socket(Af.INet, Sock.Stream, 0);
+
+        if (socket == -1)
+            Sys.Throw("Unable to open socket.");
+
+        try
+        {
+            var addr = SockAddrIn.FromEndpoint(endpoint);
+            var result = Sys.ConnectV4(socket, addr, AddrLen);
+            if (result == -1)
+                Sys.Throw($"Failed to connect to {endpoint}.");
+
+            return new LinuxTcpSocketV4(socket, endpoint);
+        }
+        catch
+        {
+            _ = Sys.Close(socket);
+            throw;
+        }
+    }
+
+    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
+}
