@@ -84,6 +84,9 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "connect")]
     public static partial int ConnectV4(int sockfd, in SockAddrIn addr, uint addrlen);
 
+    [LibraryImport(Lib, EntryPoint = "connect")]
+    public static partial int ConnectV6(int sockfd, in SockAddrIn6 addr, uint addrlen);
+
     // https://man7.org/linux/man-pages/man2/listen.2.html
     [LibraryImport(Lib, EntryPoint = "listen")]
     public static partial int Listen(int sockfd, int backlog);
@@ -91,6 +94,9 @@ static unsafe partial class Sys
     // https://man7.org/linux/man-pages/man2/accept.2.html
     [LibraryImport(Lib, EntryPoint = "accept")]
     public static partial int AcceptV4(int sockfd, out SockAddrIn addr, ref uint addrLen);
+
+    [LibraryImport(Lib, EntryPoint = "accept")]
+    public static partial int AcceptV6(int sockfd, out SockAddrIn6 addr, ref uint addrLen);
 
     // https://man7.org/linux/man-pages/man2/poll.2.html
     [LibraryImport(Lib, EntryPoint = "poll")]

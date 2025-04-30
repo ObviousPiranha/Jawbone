@@ -2,13 +2,13 @@ using System;
 
 namespace Piranha.Jawbone.Net.Linux;
 
-sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
+sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
 {
     private readonly int _fd;
 
-    public Endpoint<AddressV4> Origin { get; }
+    public Endpoint<AddressV6> Origin { get; }
 
-    public LinuxTcpSocketV4(int fd, Endpoint<AddressV4> origin)
+    public LinuxTcpSocketV6(int fd, Endpoint<AddressV6> origin)
     {
         _fd = fd;
         Origin = origin;
@@ -76,31 +76,31 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
         return (int)writeResult;
     }
 
-    public Endpoint<AddressV4> GetSocketName()
+    public Endpoint<AddressV6> GetSocketName()
     {
         var addressLength = AddrLen;
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
         // AssertAddrLen(addressLength);
         return address.ToEndpoint();
     }
 
-    public static LinuxTcpSocketV4 Connect(Endpoint<AddressV4> endpoint)
+    public static LinuxTcpSocketV6 Connect(Endpoint<AddressV6> endpoint)
     {
-        int socket = Sys.Socket(Af.INet, Sock.Stream, 0);
+        int socket = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
         if (socket == -1)
             Sys.Throw("Unable to open socket.");
 
         try
         {
-            var addr = SockAddrIn.FromEndpoint(endpoint);
-            var result = Sys.ConnectV4(socket, addr, AddrLen);
+            var addr = SockAddrIn6.FromEndpoint(endpoint);
+            var result = Sys.ConnectV6(socket, addr, AddrLen);
             if (result == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");
 
-            return new LinuxTcpSocketV4(socket, endpoint);
+            return new LinuxTcpSocketV6(socket, endpoint);
         }
         catch
         {
@@ -109,5 +109,5 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
         }
     }
 
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
+    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
 }
