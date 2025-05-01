@@ -95,9 +95,19 @@ sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
 
         try
         {
+            var setResult = Sys.SetSockOpt(
+                socket,
+                IpProto.Tcp,
+                Tcp.NoDelay,
+                1,
+                Sys.SockLen<int>());
+
+            if (setResult == -1)
+                Sys.Throw("Unable to enable TCP_NODELAY.");
+
             var addr = SockAddrIn6.FromEndpoint(endpoint);
-            var result = Sys.ConnectV6(socket, addr, AddrLen);
-            if (result == -1)
+            var connectResult = Sys.ConnectV6(socket, addr, AddrLen);
+            if (connectResult == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");
 
             return new LinuxTcpSocketV6(socket, endpoint);

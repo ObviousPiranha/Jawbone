@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Linux;
 
@@ -95,9 +96,19 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
 
         try
         {
+            var setResult = Sys.SetSockOpt(
+                socket,
+                IpProto.Tcp,
+                Tcp.NoDelay,
+                1,
+                Sys.SockLen<int>());
+
+            if (setResult == -1)
+                Sys.Throw("Unable to enable TCP_NODELAY.");
+
             var addr = SockAddrIn.FromEndpoint(endpoint);
-            var result = Sys.ConnectV4(socket, addr, AddrLen);
-            if (result == -1)
+            var connectResult = Sys.ConnectV4(socket, addr, AddrLen);
+            if (connectResult == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");
 
             return new LinuxTcpSocketV4(socket, endpoint);
