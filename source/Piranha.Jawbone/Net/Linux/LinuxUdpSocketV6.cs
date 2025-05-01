@@ -81,7 +81,7 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
         }
     }
 
-    public unsafe Endpoint<AddressV6> GetSocketName()
+    public Endpoint<AddressV6> GetSocketName()
     {
         var addressLength = AddrLen;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);

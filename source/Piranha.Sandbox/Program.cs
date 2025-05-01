@@ -17,8 +17,9 @@ class Program
             // BindTest();
             // PngTest(args[0]);
             // V6Shenanigans();
-            TcpV4Shenanigans();
-            TcpV6Shenanigans();
+            // TcpV4Shenanigans();
+            // TcpV6Shenanigans();
+            TryUdpClientV4();
         }
         catch (Exception ex)
         {
@@ -28,6 +29,19 @@ class Program
             Console.WriteLine(ex);
             Console.WriteLine();
         }
+    }
+
+    static void TryUdpClientV4()
+    {
+        using var server = UdpSocketV4.BindLocalIp();
+        var endpoint = server.GetSocketName();
+        using var client = UdpClientV4.Connect(endpoint);
+        client.Send("YO YO"u8);
+        var buffer = new byte[1024];
+        server.Receive(buffer, TimeSpan.FromSeconds(1), out var result);
+        result.ThrowOnErrorOrTimeout();
+        var text = Encoding.UTF8.GetString(result.Received);
+        Console.WriteLine(text);
     }
 
     static void TcpV4Shenanigans()
