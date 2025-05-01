@@ -1,14 +1,14 @@
 using System;
 
-namespace Piranha.Jawbone.Net.Linux;
+namespace Piranha.Jawbone.Net.Mac;
 
-sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
+sealed class MacTcpListenerV4 : ITcpListener<AddressV4>
 {
     private readonly int _fd;
 
-    private LinuxTcpListenerV6(int fd) => _fd = fd;
+    private MacTcpListenerV4(int fd) => _fd = fd;
 
-    public ITcpSocket<AddressV6>? Accept(TimeSpan timeout)
+    public ITcpSocket<AddressV4>? Accept(TimeSpan timeout)
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
@@ -19,13 +19,23 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             if ((pfd.REvents & Poll.In) != 0)
             {
                 var addrLen = AddrLen;
-                var fd = Sys.AcceptV6(_fd, out var addr, ref addrLen);
+                var fd = Sys.AcceptV4(_fd, out var addr, ref addrLen);
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
-                Tcp.SetNoDelay(fd);
-                var endpoint = addr.ToEndpoint();
-                var result = new LinuxTcpSocketV6(fd, endpoint);
-                return result;
+
+                try
+                {
+                    Tcp.SetNoDelay(fd);
+                    var endpoint = addr.ToEndpoint();
+                    var result = new MacTcpSocketV4(fd, endpoint);
+                    return result;
+                }
+                catch
+                {
+                    _ = Sys.Close(fd);
+                    throw;
+                }
+
             }
             else
             {
@@ -50,17 +60,17 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             Sys.Throw("Unable to close socket.");
     }
 
-    public static LinuxTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog)
+    public static MacTcpListenerV4 Listen(Endpoint<AddressV4> bindEndpoint, int backlog)
     {
-        int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
+        int fd = Sys.Socket(Af.INet, Sock.Stream, 0);
 
         if (fd == -1)
             Sys.Throw("Unable to open socket.");
 
         try
         {
-            var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV6(fd, sa, AddrLen);
+            var sa = SockAddrIn.FromEndpoint(bindEndpoint);
+            var bindResult = Sys.BindV4(fd, sa, AddrLen);
 
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {bindEndpoint}.");
@@ -70,7 +80,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             if (listenResult == -1)
                 Sys.Throw($"Failed to listen on socket bound to {bindEndpoint}.");
 
-            return new LinuxTcpListenerV6(fd);
+            return new MacTcpListenerV4(fd);
         }
         catch
         {
@@ -79,5 +89,5 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
         }
     }
 
-    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
+    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
 }

@@ -9,7 +9,6 @@ static unsafe partial class Sys
 {
     public const string Lib = "c";
 
-
     [LibraryImport(Lib, EntryPoint = "__errno_location")]
     public static partial int* ErrorLocation();
 

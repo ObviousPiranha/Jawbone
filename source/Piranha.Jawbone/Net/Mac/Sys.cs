@@ -7,7 +7,7 @@ namespace Piranha.Jawbone.Net.Mac;
 
 static unsafe partial class Sys
 {
-    public const string Lib = "libc";
+    public const string Lib = "c";
 
     [LibraryImport(Lib, EntryPoint = "__error")]
     public static partial int* ErrorLocation();
@@ -63,12 +63,39 @@ static unsafe partial class Sys
         out SockAddrStorage address,
         ref uint addressLen);
 
+    // https://man7.org/linux/man-pages/man2/recvmsg.2.html
+    // https://man7.org/linux/man-pages/man2/read.2.html
+    [LibraryImport(Lib, EntryPoint = "read")]
+    public static partial nint Read(int fd, out byte buf, nuint length);
+
+    // https://man7.org/linux/man-pages/man2/write.2.html
+    [LibraryImport(Lib, EntryPoint = "write")]
+    public static partial nint Write(int fd, in byte buf, nuint count);
+
     // https://man7.org/linux/man-pages/man2/getsockname.2.html
     [LibraryImport(Lib, EntryPoint = "getsockname")]
     public static partial int GetSockNameV4(int sockfd, out SockAddrIn addr, ref uint addrlen);
 
     [LibraryImport(Lib, EntryPoint = "getsockname")]
     public static partial int GetSockNameV6(int sockfd, out SockAddrStorage addr, ref uint addrlen);
+
+    // https://man7.org/linux/man-pages/man2/connect.2.html
+    [LibraryImport(Lib, EntryPoint = "connect")]
+    public static partial int ConnectV4(int sockfd, in SockAddrIn addr, uint addrlen);
+
+    [LibraryImport(Lib, EntryPoint = "connect")]
+    public static partial int ConnectV6(int sockfd, in SockAddrIn6 addr, uint addrlen);
+
+    // https://man7.org/linux/man-pages/man2/listen.2.html
+    [LibraryImport(Lib, EntryPoint = "listen")]
+    public static partial int Listen(int sockfd, int backlog);
+
+    // https://man7.org/linux/man-pages/man2/accept.2.html
+    [LibraryImport(Lib, EntryPoint = "accept")]
+    public static partial int AcceptV4(int sockfd, out SockAddrIn addr, ref uint addrLen);
+
+    [LibraryImport(Lib, EntryPoint = "accept")]
+    public static partial int AcceptV6(int sockfd, out SockAddrStorage addr, ref uint addrLen);
 
     // https://man7.org/linux/man-pages/man2/poll.2.html
     [LibraryImport(Lib, EntryPoint = "poll")]
@@ -109,15 +136,5 @@ static unsafe partial class Sys
         };
 
         throw exception;
-    }
-
-    public static T Select<T>(T macValue, T linuxValue)
-    {
-        if (OperatingSystem.IsMacOS())
-            return macValue;
-        else if (OperatingSystem.IsLinux())
-            return linuxValue;
-
-        throw new PlatformNotSupportedException();
     }
 }

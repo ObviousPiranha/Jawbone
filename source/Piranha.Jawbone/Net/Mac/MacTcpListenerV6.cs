@@ -1,12 +1,12 @@
 using System;
 
-namespace Piranha.Jawbone.Net.Linux;
+namespace Piranha.Jawbone.Net.Mac;
 
-sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
+sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
 {
     private readonly int _fd;
 
-    private LinuxTcpListenerV6(int fd) => _fd = fd;
+    private MacTcpListenerV6(int fd) => _fd = fd;
 
     public ITcpSocket<AddressV6>? Accept(TimeSpan timeout)
     {
@@ -23,8 +23,8 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
                 Tcp.SetNoDelay(fd);
-                var endpoint = addr.ToEndpoint();
-                var result = new LinuxTcpSocketV6(fd, endpoint);
+                var endpoint = addr.GetV6(addrLen);
+                var result = new MacTcpSocketV6(fd, endpoint);
                 return result;
             }
             else
@@ -50,7 +50,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             Sys.Throw("Unable to close socket.");
     }
 
-    public static LinuxTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog)
+    public static MacTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog)
     {
         int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
@@ -70,7 +70,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             if (listenResult == -1)
                 Sys.Throw($"Failed to listen on socket bound to {bindEndpoint}.");
 
-            return new LinuxTcpListenerV6(fd);
+            return new MacTcpListenerV6(fd);
         }
         catch
         {

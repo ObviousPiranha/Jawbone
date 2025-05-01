@@ -1,15 +1,14 @@
 using System;
-using System.Runtime.CompilerServices;
 
-namespace Piranha.Jawbone.Net.Linux;
+namespace Piranha.Jawbone.Net.Mac;
 
-sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
+sealed class MacTcpSocketV4 : ITcpSocket<AddressV4>
 {
     private readonly int _fd;
 
     public Endpoint<AddressV4> Origin { get; }
 
-    public LinuxTcpSocketV4(int fd, Endpoint<AddressV4> origin)
+    public MacTcpSocketV4(int fd, Endpoint<AddressV4> origin)
     {
         _fd = fd;
         Origin = origin;
@@ -78,7 +77,7 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
         return address.ToEndpoint();
     }
 
-    public static LinuxTcpSocketV4 Connect(Endpoint<AddressV4> endpoint)
+    public static MacTcpSocketV4 Connect(Endpoint<AddressV4> endpoint)
     {
         int fd = Sys.Socket(Af.INet, Sock.Stream, 0);
 
@@ -93,7 +92,7 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
             if (result == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");
 
-            return new LinuxTcpSocketV4(fd, endpoint);
+            return new MacTcpSocketV4(fd, endpoint);
         }
         catch
         {

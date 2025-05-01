@@ -43,16 +43,7 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
         out UdpReceiveResult<Endpoint<AddressV4>> result)
     {
         result = default;
-        int milliseconds;
-        {
-            var ms64 = timeout.Ticks / TimeSpan.TicksPerMillisecond;
-            if (int.MaxValue < ms64)
-                milliseconds = int.MaxValue;
-            else if (ms64 < 0)
-                milliseconds = 0;
-            else
-                milliseconds = unchecked((int)ms64);
-        }
+        var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
 

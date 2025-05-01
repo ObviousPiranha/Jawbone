@@ -1,15 +1,14 @@
 using System;
-using System.Runtime.CompilerServices;
 
-namespace Piranha.Jawbone.Net.Linux;
+namespace Piranha.Jawbone.Net.Mac;
 
-sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
+sealed class MacTcpSocketV6 : ITcpSocket<AddressV6>
 {
     private readonly int _fd;
 
-    public Endpoint<AddressV4> Origin { get; }
+    public Endpoint<AddressV6> Origin { get; }
 
-    public LinuxTcpSocketV4(int fd, Endpoint<AddressV4> origin)
+    public MacTcpSocketV6(int fd, Endpoint<AddressV6> origin)
     {
         _fd = fd;
         Origin = origin;
@@ -68,19 +67,18 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
         return (int)writeResult;
     }
 
-    public Endpoint<AddressV4> GetSocketName()
+    public Endpoint<AddressV6> GetSocketName()
     {
         var addressLength = AddrLen;
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        // AssertAddrLen(addressLength);
-        return address.ToEndpoint();
+        return address.GetV6(addressLength);
     }
 
-    public static LinuxTcpSocketV4 Connect(Endpoint<AddressV4> endpoint)
+    public static MacTcpSocketV6 Connect(Endpoint<AddressV6> endpoint)
     {
-        int fd = Sys.Socket(Af.INet, Sock.Stream, 0);
+        int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
         if (fd == -1)
             Sys.Throw("Unable to open socket.");
@@ -88,12 +86,12 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
         try
         {
             Tcp.SetNoDelay(fd);
-            var addr = SockAddrIn.FromEndpoint(endpoint);
-            var result = Sys.ConnectV4(fd, addr, AddrLen);
-            if (result == -1)
+            var addr = SockAddrIn6.FromEndpoint(endpoint);
+            var connectResult = Sys.ConnectV6(fd, addr, AddrLen);
+            if (connectResult == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");
 
-            return new LinuxTcpSocketV4(fd, endpoint);
+            return new MacTcpSocketV6(fd, endpoint);
         }
         catch
         {
@@ -102,5 +100,5 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
         }
     }
 
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
+    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
 }
