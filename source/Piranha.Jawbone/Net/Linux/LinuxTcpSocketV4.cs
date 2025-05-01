@@ -74,7 +74,6 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
         var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        // AssertAddrLen(addressLength);
         return address.ToEndpoint();
     }
 

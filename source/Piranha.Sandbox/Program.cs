@@ -32,9 +32,9 @@ class Program
 
     static void TcpV4Shenanigans()
     {
-        var endpoint = AddressV4.Local.OnPort(Random.Shared.Next(10000, 20000));
+        using var listener = TcpListenerV4.Listen(AddressV4.Local.OnAnyPort(), 4);
+        var endpoint = listener.GetSocketName();
         Console.WriteLine($"Listening on {endpoint}...");
-        using var listener = TcpListenerV4.Listen(endpoint, 4);
         Console.WriteLine($"Connecting client to {endpoint}...");
         using var client = TcpSocketV4.Connect(endpoint);
         var clientSocketName = client.GetSocketName();
@@ -62,9 +62,9 @@ class Program
 
     static void TcpV6Shenanigans()
     {
-        var endpoint = AddressV6.Local.OnPort(Random.Shared.Next(10000, 20000));
+        using var listener = TcpListenerV6.Listen(AddressV6.Local.OnAnyPort(), 4);
+        var endpoint = listener.GetSocketName();
         Console.WriteLine($"Listening on {endpoint}...");
-        using var listener = TcpListenerV6.Listen(endpoint, 4);
         Console.WriteLine($"Connecting client to {endpoint}...");
         using var client = TcpSocketV6.Connect(endpoint);
         var clientSocketName = client.GetSocketName();

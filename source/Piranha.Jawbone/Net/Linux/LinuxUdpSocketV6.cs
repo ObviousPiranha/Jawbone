@@ -61,13 +61,11 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
                     out var address,
                     ref addressLength);
 
-                AssertAddrLen(addressLength);
-
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
                 result.State = UdpReceiveState.Success;
-                result.Origin = address.ToEndpoint();
+                result.Origin = address.GetV6(addressLength);
                 result.ReceivedByteCount = (int)receiveResult;
                 result.Received = buffer[..(int)receiveResult];
             }
@@ -89,8 +87,7 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        AssertAddrLen(addressLength);
-        return address.ToEndpoint();
+        return address.GetV6(addressLength);
     }
 
     public static LinuxUdpSocketV6 Create(bool allowV4)
@@ -147,13 +144,6 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
             _ = Sys.Close(fd);
             throw;
         }
-    }
-
-    private static void AssertAddrLen(uint addrLen)
-    {
-        Debug.Assert(
-            addrLen == AddrLen,
-            "The returned address length does not match.");
     }
 
     private static uint AddrLen => (uint)Unsafe.SizeOf<SockAddrIn6>();

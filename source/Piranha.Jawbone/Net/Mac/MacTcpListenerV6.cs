@@ -43,6 +43,15 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
         }
     }
 
+    public Endpoint<AddressV6> GetSocketName()
+    {
+        var addressLength = AddrLen;
+        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        if (result == -1)
+            Sys.Throw("Unable to get socket name.");
+        return address.GetV6(addressLength);
+    }
+
     public void Dispose()
     {
         var result = Sys.Close(_fd);

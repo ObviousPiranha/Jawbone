@@ -23,7 +23,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
                 Tcp.SetNoDelay(fd);
-                var endpoint = addr.ToEndpoint();
+                var endpoint = addr.GetV6(addrLen);
                 var result = new LinuxTcpSocketV6(fd, endpoint);
                 return result;
             }
@@ -41,6 +41,15 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
         {
             return null;
         }
+    }
+
+    public Endpoint<AddressV6> GetSocketName()
+    {
+        var addressLength = AddrLen;
+        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        if (result == -1)
+            Sys.Throw("Unable to get socket name.");
+        return address.GetV6(addressLength);
     }
 
     public void Dispose()

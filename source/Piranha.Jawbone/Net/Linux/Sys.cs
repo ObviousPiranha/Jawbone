@@ -60,7 +60,7 @@ static unsafe partial class Sys
         out byte buffer,
         nuint length,
         int flags,
-        out SockAddrIn6 address,
+        out SockAddrStorage address,
         ref uint addressLen);
 
     // https://man7.org/linux/man-pages/man2/recvmsg.2.html
@@ -77,7 +77,7 @@ static unsafe partial class Sys
     public static partial int GetSockNameV4(int sockfd, out SockAddrIn addr, ref uint addrlen);
 
     [LibraryImport(Lib, EntryPoint = "getsockname")]
-    public static partial int GetSockNameV6(int sockfd, out SockAddrIn6 addr, ref uint addrlen);
+    public static partial int GetSockNameV6(int sockfd, out SockAddrStorage addr, ref uint addrlen);
 
     // https://man7.org/linux/man-pages/man2/connect.2.html
     [LibraryImport(Lib, EntryPoint = "connect")]
@@ -95,7 +95,7 @@ static unsafe partial class Sys
     public static partial int AcceptV4(int sockfd, out SockAddrIn addr, ref uint addrLen);
 
     [LibraryImport(Lib, EntryPoint = "accept")]
-    public static partial int AcceptV6(int sockfd, out SockAddrIn6 addr, ref uint addrLen);
+    public static partial int AcceptV6(int sockfd, out SockAddrStorage addr, ref uint addrLen);
 
     // https://man7.org/linux/man-pages/man2/poll.2.html
     [LibraryImport(Lib, EntryPoint = "poll")]

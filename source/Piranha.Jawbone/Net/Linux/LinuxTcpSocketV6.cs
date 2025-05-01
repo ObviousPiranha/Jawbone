@@ -73,8 +73,7 @@ sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        // AssertAddrLen(addressLength);
-        return address.ToEndpoint();
+        return address.GetV6(addressLength);
     }
 
     public static LinuxTcpSocketV6 Connect(Endpoint<AddressV6> endpoint)
