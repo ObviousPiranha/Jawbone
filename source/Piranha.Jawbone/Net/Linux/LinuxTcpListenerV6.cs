@@ -31,6 +31,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
                 var fd = Sys.AcceptV6(_fd, out var addr, ref addrLen);
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
+                Tcp.SetNoDelay(fd);
                 var endpoint = addr.ToEndpoint();
                 var result = new LinuxTcpSocketV6(fd, endpoint);
                 return result;
@@ -60,29 +61,29 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
 
     public static LinuxTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog)
     {
-        int socket = Sys.Socket(Af.INet6, Sock.Stream, 0);
+        int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
-        if (socket == -1)
+        if (fd == -1)
             Sys.Throw("Unable to open socket.");
 
         try
         {
             var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV6(socket, sa, AddrLen);
+            var bindResult = Sys.BindV6(fd, sa, AddrLen);
 
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {bindEndpoint}.");
 
-            var listenResult = Sys.Listen(socket, backlog);
+            var listenResult = Sys.Listen(fd, backlog);
 
             if (listenResult == -1)
                 Sys.Throw($"Failed to listen on socket bound to {bindEndpoint}.");
 
-            return new LinuxTcpListenerV6(socket);
+            return new LinuxTcpListenerV6(fd);
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.Close(fd);
             throw;
         }
     }

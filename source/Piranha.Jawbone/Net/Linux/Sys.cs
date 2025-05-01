@@ -7,7 +7,7 @@ namespace Piranha.Jawbone.Net.Linux;
 
 static unsafe partial class Sys
 {
-    public const string Lib = "libc";
+    public const string Lib = "c";
 
 
     [LibraryImport(Lib, EntryPoint = "__errno_location")]

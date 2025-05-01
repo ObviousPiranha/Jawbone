@@ -103,39 +103,39 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
 
     public static LinuxUdpSocketV4 Create()
     {
-        var socket = CreateSocket();
-        return new LinuxUdpSocketV4(socket);
+        var fd = CreateSocket();
+        return new LinuxUdpSocketV4(fd);
     }
 
     public static LinuxUdpSocketV4 Bind(Endpoint<AddressV4> endpoint)
     {
-        var socket = CreateSocket();
+        var fd = CreateSocket();
 
         try
         {
             var sa = SockAddrIn.FromEndpoint(endpoint);
-            var bindResult = Sys.BindV4(socket, sa, AddrLen);
+            var bindResult = Sys.BindV4(fd, sa, AddrLen);
 
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {endpoint}.");
 
-            return new LinuxUdpSocketV4(socket);
+            return new LinuxUdpSocketV4(fd);
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.Close(fd);
             throw;
         }
     }
 
     private static int CreateSocket()
     {
-        int socket = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
+        int fd = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
 
-        if (socket == -1)
+        if (fd == -1)
             Sys.Throw("Unable to open socket.");
 
-        return socket;
+        return fd;
     }
 
     private static void AssertAddrLen(uint addrLen)

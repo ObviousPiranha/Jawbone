@@ -89,33 +89,24 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
 
     public static LinuxTcpSocketV4 Connect(Endpoint<AddressV4> endpoint)
     {
-        int socket = Sys.Socket(Af.INet, Sock.Stream, 0);
+        int fd = Sys.Socket(Af.INet, Sock.Stream, 0);
 
-        if (socket == -1)
+        if (fd == -1)
             Sys.Throw("Unable to open socket.");
 
         try
         {
-            var setResult = Sys.SetSockOpt(
-                socket,
-                IpProto.Tcp,
-                Tcp.NoDelay,
-                1,
-                Sys.SockLen<int>());
-
-            if (setResult == -1)
-                Sys.Throw("Unable to enable TCP_NODELAY.");
-
+            Tcp.SetNoDelay(fd);
             var addr = SockAddrIn.FromEndpoint(endpoint);
-            var connectResult = Sys.ConnectV4(socket, addr, AddrLen);
-            if (connectResult == -1)
+            var result = Sys.ConnectV4(fd, addr, AddrLen);
+            if (result == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");
 
-            return new LinuxTcpSocketV4(socket, endpoint);
+            return new LinuxTcpSocketV4(fd, endpoint);
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.Close(fd);
             throw;
         }
     }

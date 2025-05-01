@@ -31,9 +31,20 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
                 var fd = Sys.AcceptV4(_fd, out var addr, ref addrLen);
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
-                var endpoint = addr.ToEndpoint();
-                var result = new LinuxTcpSocketV4(fd, endpoint);
-                return result;
+
+                try
+                {
+                    Tcp.SetNoDelay(fd);
+                    var endpoint = addr.ToEndpoint();
+                    var result = new LinuxTcpSocketV4(fd, endpoint);
+                    return result;
+                }
+                catch
+                {
+                    _ = Sys.Close(fd);
+                    throw;
+                }
+
             }
             else
             {
@@ -60,29 +71,29 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
 
     public static LinuxTcpListenerV4 Listen(Endpoint<AddressV4> bindEndpoint, int backlog)
     {
-        int socket = Sys.Socket(Af.INet, Sock.Stream, 0);
+        int fd = Sys.Socket(Af.INet, Sock.Stream, 0);
 
-        if (socket == -1)
+        if (fd == -1)
             Sys.Throw("Unable to open socket.");
 
         try
         {
             var sa = SockAddrIn.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV4(socket, sa, AddrLen);
+            var bindResult = Sys.BindV4(fd, sa, AddrLen);
 
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {bindEndpoint}.");
 
-            var listenResult = Sys.Listen(socket, backlog);
+            var listenResult = Sys.Listen(fd, backlog);
 
             if (listenResult == -1)
                 Sys.Throw($"Failed to listen on socket bound to {bindEndpoint}.");
 
-            return new LinuxTcpListenerV4(socket);
+            return new LinuxTcpListenerV4(fd);
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.Close(fd);
             throw;
         }
     }

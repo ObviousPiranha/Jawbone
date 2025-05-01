@@ -104,43 +104,43 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
 
     public static LinuxUdpSocketV6 Create(bool allowV4)
     {
-        var socket = CreateSocket(allowV4);
-        return new LinuxUdpSocketV6(socket);
+        var fd = CreateSocket(allowV4);
+        return new LinuxUdpSocketV6(fd);
     }
 
     public static LinuxUdpSocketV6 Bind(Endpoint<AddressV6> endpoint, bool allowV4)
     {
-        var socket = CreateSocket(allowV4);
+        var fd = CreateSocket(allowV4);
 
         try
         {
             var sa = SockAddrIn6.FromEndpoint(endpoint);
-            var bindResult = Sys.BindV6(socket, sa, AddrLen);
+            var bindResult = Sys.BindV6(fd, sa, AddrLen);
 
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {endpoint}.");
 
-            return new LinuxUdpSocketV6(socket);
+            return new LinuxUdpSocketV6(fd);
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.Close(fd);
             throw;
         }
     }
 
     private static int CreateSocket(bool allowV4)
     {
-        var socket = Sys.Socket(Af.INet6, Sock.DGram, IpProto.Udp);
+        var fd = Sys.Socket(Af.INet6, Sock.DGram, IpProto.Udp);
 
-        if (socket == -1)
+        if (fd == -1)
             Sys.Throw("Unable to open socket.");
 
         try
         {
             int yes = allowV4 ? 0 : 1;
             var result = Sys.SetSockOpt(
-                socket,
+                fd,
                 IpProto.Ipv6,
                 Ipv6.V6Only,
                 yes,
@@ -149,11 +149,11 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
             if (result == -1)
                 Sys.Throw("Unable to set socket option.");
 
-            return socket;
+            return fd;
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.Close(fd);
             throw;
         }
     }

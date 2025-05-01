@@ -88,33 +88,24 @@ sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
 
     public static LinuxTcpSocketV6 Connect(Endpoint<AddressV6> endpoint)
     {
-        int socket = Sys.Socket(Af.INet6, Sock.Stream, 0);
+        int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
-        if (socket == -1)
+        if (fd == -1)
             Sys.Throw("Unable to open socket.");
 
         try
         {
-            var setResult = Sys.SetSockOpt(
-                socket,
-                IpProto.Tcp,
-                Tcp.NoDelay,
-                1,
-                Sys.SockLen<int>());
-
-            if (setResult == -1)
-                Sys.Throw("Unable to enable TCP_NODELAY.");
-
+            Tcp.SetNoDelay(fd);
             var addr = SockAddrIn6.FromEndpoint(endpoint);
-            var connectResult = Sys.ConnectV6(socket, addr, AddrLen);
+            var connectResult = Sys.ConnectV6(fd, addr, AddrLen);
             if (connectResult == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");
 
-            return new LinuxTcpSocketV6(socket, endpoint);
+            return new LinuxTcpSocketV6(fd, endpoint);
         }
         catch
         {
-            _ = Sys.Close(socket);
+            _ = Sys.Close(fd);
             throw;
         }
     }
