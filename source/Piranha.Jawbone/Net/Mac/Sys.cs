@@ -25,6 +25,10 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "bind")]
     public static partial int BindV6(int sockfd, in SockAddrIn6 addr, uint addrlen);
 
+    // https://man7.org/linux/man-pages/man3/send.3p.html
+    [LibraryImport(Lib, EntryPoint = "send")]
+    public static partial nint Send(int socket, in byte buffer, nuint length, int flags);
+
     // https://man7.org/linux/man-pages/man2/sendto.2.html
     [LibraryImport(Lib, EntryPoint = "sendto")]
     public static partial nint SendToV4(
