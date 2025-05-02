@@ -89,7 +89,10 @@ sealed class MacTcpSocketV6 : ITcpSocket<AddressV6>
             var addr = SockAddrIn6.FromEndpoint(endpoint);
             var connectResult = Sys.ConnectV6(fd, addr, AddrLen);
             if (connectResult == -1)
-                Sys.Throw($"Failed to connect to {endpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+            }
 
             return new MacTcpSocketV6(fd, endpoint);
         }

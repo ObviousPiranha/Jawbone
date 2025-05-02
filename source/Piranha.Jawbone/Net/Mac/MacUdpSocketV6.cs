@@ -115,7 +115,10 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             var bindResult = Sys.BindV6(fd, sa, AddrLen);
 
             if (bindResult == -1)
-                Sys.Throw($"Failed to bind socket to address {endpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to bind socket to address {endpoint}.");
+            }
 
             return new MacUdpSocketV6(fd);
         }

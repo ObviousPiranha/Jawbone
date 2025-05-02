@@ -11,7 +11,7 @@ struct SockAddrIn
         private byte _e0;
     }
 
-    public ushort SinFamily;
+    public byte SinFamily;
     public ushort SinPort;
     public uint SinAddr;
     public Zero SinZero;

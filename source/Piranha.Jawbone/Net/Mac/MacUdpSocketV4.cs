@@ -108,7 +108,10 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
             var bindResult = Sys.BindV4(fd, sa, AddrLen);
 
             if (bindResult == -1)
-                Sys.Throw($"Failed to bind socket to address {endpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to bind socket to address {endpoint}.");
+            }
 
             return new MacUdpSocketV4(fd);
         }

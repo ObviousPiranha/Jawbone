@@ -153,9 +153,8 @@ static unsafe partial class Sys
     public static uint SockLen<T>() => (uint)Unsafe.SizeOf<T>();
 
     [DoesNotReturn]
-    public static void Throw(string message)
+    public static void Throw(int error, string message)
     {
-        var error = ErrNo();
         var errorCode = SocketException.GetErrorCode(error);
         var exception = new SocketException(message + " " + errorCode.ToString())
         {
@@ -163,5 +162,12 @@ static unsafe partial class Sys
         };
 
         throw exception;
+    }
+
+    [DoesNotReturn]
+    public static void Throw(string message)
+    {
+        var error = ErrNo();
+        Throw(error, message);
     }
 }

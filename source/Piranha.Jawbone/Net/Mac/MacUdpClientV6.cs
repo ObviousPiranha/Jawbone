@@ -87,7 +87,10 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
             var sa = SockAddrIn6.FromEndpoint(endpoint);
             var result = Sys.ConnectV6(fd, sa, AddrLen);
             if (result == -1)
-                Sys.Throw($"Failed to connect to {endpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+            }
 
             return new MacUdpClientV6(fd, endpoint);
         }

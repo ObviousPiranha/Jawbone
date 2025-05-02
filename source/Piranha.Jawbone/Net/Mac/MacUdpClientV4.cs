@@ -87,7 +87,11 @@ sealed class MacUdpClientV4 : IUdpClient<AddressV4>
             var sa = SockAddrIn.FromEndpoint(endpoint);
             var result = Sys.ConnectV4(fd, sa, AddrLen);
             if (result == -1)
-                Sys.Throw($"Failed to connect to {endpoint}.");
+            {
+                // Apparently, creating an interpolated string in C# clears `errno`.
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+            }
 
             return new MacUdpClientV4(fd, endpoint);
         }
