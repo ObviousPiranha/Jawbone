@@ -85,11 +85,6 @@ sealed class MacUdpClientV4 : IUdpClient<AddressV4>
         try
         {
             var sa = SockAddrIn.FromEndpoint(endpoint);
-            // var bindResult = Sys.BindV4(fd, sa, AddrLen);
-
-            // if (bindResult == -1)
-            //     Sys.Throw($"Failed to bind socket to address {endpoint}.");
-
             var result = Sys.ConnectV4(fd, sa, AddrLen);
             if (result == -1)
                 Sys.Throw($"Failed to connect to {endpoint}.");

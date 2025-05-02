@@ -40,7 +40,7 @@ public class SocketException : Exception
             throw new PlatformNotSupportedException();
         }
 
-        return ErrorCode.None;
+        return new(error, "UNKNOWN", "Unrecognized error code.");
     }
 
     public int Error { get; init; }
