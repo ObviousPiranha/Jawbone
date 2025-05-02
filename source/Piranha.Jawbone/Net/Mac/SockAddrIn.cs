@@ -11,6 +11,7 @@ struct SockAddrIn
         private byte _e0;
     }
 
+    public byte SinLen;
     public byte SinFamily;
     public ushort SinPort;
     public uint SinAddr;
@@ -27,6 +28,7 @@ struct SockAddrIn
     {
         return new SockAddrIn
         {
+            SinLen = (byte)Unsafe.SizeOf<SockAddrIn>(),
             SinFamily = Af.INet,
             SinPort = endpoint.Port.NetworkValue,
             SinAddr = endpoint.Address.DataU32
