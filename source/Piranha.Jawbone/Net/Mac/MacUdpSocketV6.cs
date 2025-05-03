@@ -81,7 +81,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         else if (pollResult < 0)
         {
             result.State = UdpReceiveState.Failure;
-            result.Error = Sys.ErrNo();
+            result.Error = Error.GetErrorCode(Sys.ErrNo());
         }
         else
         {

@@ -90,7 +90,10 @@ sealed class LinuxTcpSocketV4 : ITcpSocket<AddressV4>
             var addr = SockAddrIn.FromEndpoint(endpoint);
             var result = Sys.ConnectV4(fd, addr, AddrLen);
             if (result == -1)
-                Sys.Throw($"Failed to connect to {endpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+            }
 
             return new LinuxTcpSocketV4(fd, endpoint);
         }

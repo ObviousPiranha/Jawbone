@@ -92,7 +92,10 @@ sealed class LinuxUdpClientV4 : IUdpClient<AddressV4>
 
             var result = Sys.ConnectV4(fd, sa, AddrLen);
             if (result == -1)
-                Sys.Throw($"Failed to connect to {endpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+            }
 
             return new LinuxUdpClientV4(fd, endpoint);
         }

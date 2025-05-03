@@ -18,6 +18,8 @@ struct SockAddrIn
 
     public Endpoint<AddressV4> ToEndpoint()
     {
+        if (SinFamily != Af.INet)
+            Core.ThrowWrongAddressFamily();
         return Endpoint.Create(
             new AddressV4(SinAddr),
             new NetworkPort { NetworkValue = SinPort });

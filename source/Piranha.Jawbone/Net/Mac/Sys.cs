@@ -155,10 +155,10 @@ static unsafe partial class Sys
     [DoesNotReturn]
     public static void Throw(int error, string message)
     {
-        var errorCode = SocketException.GetErrorCode(error);
+        var errorCode = Error.GetErrorCode(error);
         var exception = new SocketException(message + " " + errorCode.ToString())
         {
-            Error = error
+            Code = errorCode
         };
 
         throw exception;

@@ -74,7 +74,7 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
         else if (pollResult < 0)
         {
             result.State = UdpReceiveState.Failure;
-            result.Error = Sys.ErrNo();
+            result.Error = Error.GetErrorCode(Sys.ErrNo());
         }
         else
         {
@@ -108,7 +108,10 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
             var bindResult = Sys.BindV4(fd, sa, AddrLen);
 
             if (bindResult == -1)
-                Sys.Throw($"Failed to bind socket to address {endpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to bind socket to address {endpoint}.");
+            }
 
             return new LinuxUdpSocketV4(fd);
         }

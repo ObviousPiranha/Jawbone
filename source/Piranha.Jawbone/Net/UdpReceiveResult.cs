@@ -6,19 +6,13 @@ public ref struct UdpReceiveResult<T>
 {
     public ReadOnlySpan<byte> Received;
     public UdpReceiveState State;
+    public ErrorCode Error;
     public int ReceivedByteCount;
-    public int Error;
     public T Origin;
 }
 
 public static class UdpReceiveResult
 {
-    public static ErrorCode GetErrorCode<T>(
-        in this UdpReceiveResult<T> udpReceiveResult)
-    {
-        return SocketException.GetErrorCode(udpReceiveResult.Error);
-    }
-
     public static void ThrowOnError<T>(
         in this UdpReceiveResult<T> udpReceiveResult)
     {
@@ -26,7 +20,7 @@ public static class UdpReceiveResult
         {
             throw new SocketException("Error on UDP receive.")
             {
-                Error = udpReceiveResult.Error
+                Code = udpReceiveResult.Error
             };
         }
     }

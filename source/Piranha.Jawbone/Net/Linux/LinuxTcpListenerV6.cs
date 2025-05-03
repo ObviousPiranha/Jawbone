@@ -72,12 +72,18 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             var bindResult = Sys.BindV6(fd, sa, AddrLen);
 
             if (bindResult == -1)
-                Sys.Throw($"Failed to bind socket to address {bindEndpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to bind socket to address {bindEndpoint}.");
+            }
 
             var listenResult = Sys.Listen(fd, backlog);
 
             if (listenResult == -1)
-                Sys.Throw($"Failed to listen on socket bound to {bindEndpoint}.");
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to listen on socket bound to {bindEndpoint}.");
+            }
 
             return new LinuxTcpListenerV6(fd);
         }

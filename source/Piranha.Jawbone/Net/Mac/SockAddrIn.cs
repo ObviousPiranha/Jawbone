@@ -11,6 +11,7 @@ struct SockAddrIn
         private byte _e0;
     }
 
+    // https://stackoverflow.com/a/41580692/264712
     public byte SinLen;
     public byte SinFamily;
     public ushort SinPort;
@@ -19,6 +20,8 @@ struct SockAddrIn
 
     public Endpoint<AddressV4> ToEndpoint()
     {
+        if (SinFamily != Af.INet)
+            Core.ThrowWrongAddressFamily();
         return Endpoint.Create(
             new AddressV4(SinAddr),
             new NetworkPort { NetworkValue = SinPort });

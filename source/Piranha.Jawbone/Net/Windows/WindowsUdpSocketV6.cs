@@ -75,7 +75,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         else if (pollResult < 0)
         {
             result.State = UdpReceiveState.Failure;
-            result.Error = Sys.WsaGetLastError();
+            result.Error = Error.GetErrorCode(Sys.WsaGetLastError());
         }
         else
         {

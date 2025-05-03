@@ -4,9 +4,17 @@ namespace Piranha.Jawbone.Net.Linux;
 
 public static class Error
 {
-    public static readonly ImmutableArray<ErrorCode> Codes =
+    public static ErrorCode GetErrorCode(int error)
+    {
+        if (0 <= error && error < Codes.Length)
+            return Codes[error];
+
+        return new(error);
+    }
+
+    private static readonly ImmutableArray<ErrorCode> Codes =
     [
-        ErrorCode.None,
+        new(0),
         new(1, "EPERM", "Operation not permitted"),
         new(2, "ENOENT", "No such file or directory"),
         new(3, "ESRCH", "No such process"),
