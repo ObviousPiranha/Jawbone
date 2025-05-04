@@ -17,8 +17,8 @@ class Program
             // BindTest();
             // PngTest(args[0]);
             // V6Shenanigans();
-            // TcpV4Shenanigans();
-            // TcpV6Shenanigans();
+            TcpV4Shenanigans();
+            TcpV6Shenanigans();
             TryUdpClientV4();
             TryUdpClientV6();
         }
