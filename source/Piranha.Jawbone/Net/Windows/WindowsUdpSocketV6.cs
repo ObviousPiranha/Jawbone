@@ -67,7 +67,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
                     Sys.Throw("Unable to receive data.");
 
                 result.State = UdpReceiveState.Success;
-                result.Origin = address.ToEndpoint();
+                result.Origin = address.GetV6(addressLength);
                 result.ReceivedByteCount = (int)receiveResult;
                 result.Received = buffer[..(int)receiveResult];
             }
@@ -90,7 +90,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
         AssertAddrLen(addressLength);
-        return address.ToEndpoint();
+        return address.GetV6(addressLength);
     }
 
     public static WindowsUdpSocketV6 Create(bool allowV4)

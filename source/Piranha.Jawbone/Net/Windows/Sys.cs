@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Frozen;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Piranha.Jawbone.Net.Windows;
@@ -9,7 +7,6 @@ namespace Piranha.Jawbone.Net.Windows;
 static unsafe partial class Sys
 {
     public const string Lib = "ws2_32";
-    public const string KernelLib = "kernel32";
     public static nuint InvalidSocket => nuint.MaxValue;
     private static WsaData s_wsaData;
 
@@ -44,6 +41,10 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "bind")]
     public static partial int BindV6(nuint s, in SockAddrIn6 name, int namelen);
 
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-send
+    [LibraryImport(Lib, EntryPoint = "send")]
+    public static partial int Send(nuint s, in byte buf, int len, int flags);
+
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-sendto
     [LibraryImport(Lib, EntryPoint = "sendto")]
     public static partial nint SendToV4(
@@ -63,6 +64,10 @@ static unsafe partial class Sys
         in SockAddrIn6 to,
         int tolen);
 
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-recv
+    [LibraryImport(Lib, EntryPoint = "recv")]
+    public static partial int Recv(nuint s, out byte buf, int len, int flags);
+
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-recvfrom
     [LibraryImport(Lib, EntryPoint = "recvfrom")]
     public static partial nint RecvFromV4(
@@ -79,7 +84,7 @@ static unsafe partial class Sys
         out byte buf,
         int len,
         int flags,
-        out SockAddrIn6 from,
+        out SockAddrStorage from,
         ref int fromlen);
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-getsockname
@@ -87,7 +92,25 @@ static unsafe partial class Sys
     public static partial int GetSockNameV4(nuint s, out SockAddrIn name, ref int namelen);
 
     [LibraryImport(Lib, EntryPoint = "getsockname")]
-    public static partial int GetSockNameV6(nuint s, out SockAddrIn6 name, ref int namelen);
+    public static partial int GetSockNameV6(nuint s, out SockAddrStorage name, ref int namelen);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-connect
+    [LibraryImport(Lib, EntryPoint = "connect")]
+    public static partial int ConnectV4(nuint s, in SockAddrIn name, int namelen);
+
+    [LibraryImport(Lib, EntryPoint = "connect")]
+    public static partial int ConnectV6(nuint s, in SockAddrIn6 name, int namelen);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-listen
+    [LibraryImport(Lib, EntryPoint = "listen")]
+    public static partial int Listen(nuint s, int backlog);
+
+    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-accept
+    [LibraryImport(Lib, EntryPoint = "accept")]
+    public static partial nuint AcceptV4(nuint s, out SockAddrIn addr, ref int namelen);
+
+    [LibraryImport(Lib, EntryPoint = "accept")]
+    public static partial nuint AcceptV6(nuint s, out SockAddrStorage addr, ref int namelen);
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsapoll
     [LibraryImport(Lib, EntryPoint = "WSAPoll")]
@@ -117,12 +140,25 @@ static unsafe partial class Sys
     [DoesNotReturn]
     public static void Throw(string message)
     {
-        var errorCode = Error.GetErrorCode(WsaGetLastError());
+        var error = WsaGetLastError();
+        Throw(error, message);
+    }
+
+    [DoesNotReturn]
+    public static void Throw(int error, string message)
+    {
+        var errorCode = Error.GetErrorCode(error);
         var exception = new SocketException(message + " " + errorCode)
         {
-            Code = Error.GetErrorCode(WsaGetLastError())
+            Code = errorCode
         };
 
         throw exception;
+    }
+
+    [InlineArray(512)] // Actual size is less than this. Just being safe.
+    private struct WsaData
+    {
+        private byte _element0;
     }
 }

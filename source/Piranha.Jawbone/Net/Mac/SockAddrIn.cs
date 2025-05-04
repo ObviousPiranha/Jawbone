@@ -4,10 +4,9 @@ namespace Piranha.Jawbone.Net.Mac;
 
 struct SockAddrIn
 {
-    [InlineArray(Length)]
+    [InlineArray(8)]
     public struct Zero
     {
-        public const int Length = 8;
         private byte _e0;
     }
 
