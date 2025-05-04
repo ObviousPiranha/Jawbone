@@ -6,7 +6,11 @@ public static class UdpClientV4
 {
     public static IUdpClient<AddressV4> Connect(Endpoint<AddressV4> endpoint)
     {
-        if (OperatingSystem.IsMacOS())
+        if (OperatingSystem.IsWindows())
+        {
+            return Windows.WindowsUdpClientV4.Connect(endpoint);
+        }
+        else if (OperatingSystem.IsMacOS())
         {
             return Mac.MacUdpClientV4.Connect(endpoint);
         }

@@ -7,7 +7,11 @@ public static class TcpListenerV4
     public static ITcpListener<AddressV4> Listen(Endpoint<AddressV4> bindEndpoint, int backlog)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(backlog);
-        if (OperatingSystem.IsMacOS())
+        if (OperatingSystem.IsWindows())
+        {
+            return Windows.WindowsTcpListenerV4.Listen(bindEndpoint, backlog);
+        }
+        else if (OperatingSystem.IsMacOS())
         {
             return Mac.MacTcpListenerV4.Listen(bindEndpoint, backlog);
         }
