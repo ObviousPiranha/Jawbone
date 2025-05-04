@@ -66,7 +66,7 @@ class Program
         var endpoint = listener.GetSocketName();
         Console.WriteLine($"Listening on {endpoint}...");
         Console.WriteLine($"Connecting client to {endpoint}...");
-        using var client = TcpSocketV4.Connect(endpoint);
+        using var client = TcpClientV4.Connect(endpoint);
         var clientSocketName = client.GetSocketName();
         Console.WriteLine($"Client listening on {clientSocketName}.");
         Console.WriteLine("Accepting connection...");
@@ -96,7 +96,7 @@ class Program
         var endpoint = listener.GetSocketName();
         Console.WriteLine($"Listening on {endpoint}...");
         Console.WriteLine($"Connecting client to {endpoint}...");
-        using var client = TcpSocketV6.Connect(endpoint);
+        using var client = TcpClientV6.Connect(endpoint);
         var clientSocketName = client.GetSocketName();
         Console.WriteLine($"Client listening on {clientSocketName}.");
         Console.WriteLine("Accepting connection...");

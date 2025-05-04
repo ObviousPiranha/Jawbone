@@ -3,13 +3,13 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Windows;
 
-sealed class WindowsTcpSocketV6 : ITcpSocket<AddressV6>
+sealed class WindowsTcpClientV4 : ITcpClient<AddressV4>
 {
     private readonly nuint _fd;
 
-    public Endpoint<AddressV6> Origin { get; }
+    public Endpoint<AddressV4> Origin { get; }
 
-    public WindowsTcpSocketV6(nuint fd, Endpoint<AddressV6> origin)
+    public WindowsTcpClientV4(nuint fd, Endpoint<AddressV4> origin)
     {
         _fd = fd;
         Origin = origin;
@@ -67,21 +67,21 @@ sealed class WindowsTcpSocketV6 : ITcpSocket<AddressV6>
         if (writeResult == -1)
             Sys.Throw("Unable to send data.");
 
-        return (int)writeResult;
+        return writeResult;
     }
 
-    public Endpoint<AddressV6> GetSocketName()
+    public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrStorage>();
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = Unsafe.SizeOf<SockAddrIn>();
+        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return address.ToEndpoint();
     }
 
-    public static WindowsTcpSocketV6 Connect(Endpoint<AddressV6> endpoint)
+    public static WindowsTcpClientV4 Connect(Endpoint<AddressV4> endpoint)
     {
-        var fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
+        var fd = Sys.Socket(Af.INet, Sock.Stream, 0);
 
         if (fd == Sys.InvalidSocket)
             Sys.Throw("Unable to open socket.");
@@ -89,15 +89,15 @@ sealed class WindowsTcpSocketV6 : ITcpSocket<AddressV6>
         try
         {
             Tcp.SetNoDelay(fd);
-            var addr = SockAddrIn6.FromEndpoint(endpoint);
-            var connectResult = Sys.ConnectV6(fd, addr, Unsafe.SizeOf<SockAddrIn6>());
-            if (connectResult == -1)
+            var addr = SockAddrIn.FromEndpoint(endpoint);
+            var result = Sys.ConnectV4(fd, addr, Unsafe.SizeOf<SockAddrIn>());
+            if (result == -1)
             {
                 var error = Sys.WsaGetLastError();
                 Sys.Throw(error, $"Failed to connect to {endpoint}.");
             }
 
-            return new WindowsTcpSocketV6(fd, endpoint);
+            return new WindowsTcpClientV4(fd, endpoint);
         }
         catch
         {

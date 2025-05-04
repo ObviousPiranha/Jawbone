@@ -8,20 +8,11 @@ public static class TcpListenerV4
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(backlog);
         if (OperatingSystem.IsWindows())
-        {
             return Windows.WindowsTcpListenerV4.Listen(bindEndpoint, backlog);
-        }
-        else if (OperatingSystem.IsMacOS())
-        {
+        if (OperatingSystem.IsMacOS())
             return Mac.MacTcpListenerV4.Listen(bindEndpoint, backlog);
-        }
-        else if (OperatingSystem.IsLinux())
-        {
+        if (OperatingSystem.IsLinux())
             return Linux.LinuxTcpListenerV4.Listen(bindEndpoint, backlog);
-        }
-        else
-        {
-            throw new PlatformNotSupportedException();
-        }
+        throw new PlatformNotSupportedException();
     }
 }

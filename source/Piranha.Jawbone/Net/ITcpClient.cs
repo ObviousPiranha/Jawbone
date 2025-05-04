@@ -2,7 +2,7 @@ using System;
 
 namespace Piranha.Jawbone.Net;
 
-public interface ITcpSocket<TAddress> : IDisposable
+public interface ITcpClient<TAddress> : IDisposable
     where TAddress : unmanaged, IAddress<TAddress>
 {
     Endpoint<TAddress> Origin { get; }

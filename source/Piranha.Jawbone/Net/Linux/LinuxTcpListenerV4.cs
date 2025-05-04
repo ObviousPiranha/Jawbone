@@ -8,7 +8,7 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
 
     private LinuxTcpListenerV4(int fd) => _fd = fd;
 
-    public ITcpSocket<AddressV4>? Accept(TimeSpan timeout)
+    public ITcpClient<AddressV4>? Accept(TimeSpan timeout)
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
@@ -27,7 +27,7 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
                 {
                     Tcp.SetNoDelay(fd);
                     var endpoint = addr.ToEndpoint();
-                    var result = new LinuxTcpSocketV4(fd, endpoint);
+                    var result = new LinuxTcpClientV4(fd, endpoint);
                     return result;
                 }
                 catch

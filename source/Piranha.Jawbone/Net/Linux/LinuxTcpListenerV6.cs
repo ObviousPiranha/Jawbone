@@ -8,7 +8,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
 
     private LinuxTcpListenerV6(int fd) => _fd = fd;
 
-    public ITcpSocket<AddressV6>? Accept(TimeSpan timeout)
+    public ITcpClient<AddressV6>? Accept(TimeSpan timeout)
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
@@ -24,7 +24,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
                     Sys.Throw("Failed to accept socket.");
                 Tcp.SetNoDelay(fd);
                 var endpoint = addr.GetV6(addrLen);
-                var result = new LinuxTcpSocketV6(fd, endpoint);
+                var result = new LinuxTcpClientV6(fd, endpoint);
                 return result;
             }
             else

@@ -9,7 +9,7 @@ sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
 
     private WindowsTcpListenerV6(nuint fd) => _fd = fd;
 
-    public ITcpSocket<AddressV6>? Accept(TimeSpan timeout)
+    public ITcpClient<AddressV6>? Accept(TimeSpan timeout)
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
@@ -25,7 +25,7 @@ sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
                     Sys.Throw("Failed to accept socket.");
                 Tcp.SetNoDelay(fd);
                 var endpoint = addr.GetV6(addrLen);
-                var result = new WindowsTcpSocketV6(fd, endpoint);
+                var result = new WindowsTcpClientV6(fd, endpoint);
                 return result;
             }
             else

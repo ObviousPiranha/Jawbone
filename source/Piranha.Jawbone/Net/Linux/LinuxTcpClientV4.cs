@@ -2,13 +2,13 @@ using System;
 
 namespace Piranha.Jawbone.Net.Linux;
 
-sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
+sealed class LinuxTcpClientV4 : ITcpClient<AddressV4>
 {
     private readonly int _fd;
 
-    public Endpoint<AddressV6> Origin { get; }
+    public Endpoint<AddressV4> Origin { get; }
 
-    public LinuxTcpSocketV6(int fd, Endpoint<AddressV6> origin)
+    public LinuxTcpClientV4(int fd, Endpoint<AddressV4> origin)
     {
         _fd = fd;
         Origin = origin;
@@ -67,18 +67,18 @@ sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
         return (int)writeResult;
     }
 
-    public Endpoint<AddressV6> GetSocketName()
+    public Endpoint<AddressV4> GetSocketName()
     {
         var addressLength = AddrLen;
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return address.ToEndpoint();
     }
 
-    public static LinuxTcpSocketV6 Connect(Endpoint<AddressV6> endpoint)
+    public static LinuxTcpClientV4 Connect(Endpoint<AddressV4> endpoint)
     {
-        int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
+        int fd = Sys.Socket(Af.INet, Sock.Stream, 0);
 
         if (fd == -1)
             Sys.Throw("Unable to open socket.");
@@ -86,15 +86,15 @@ sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
         try
         {
             Tcp.SetNoDelay(fd);
-            var addr = SockAddrIn6.FromEndpoint(endpoint);
-            var connectResult = Sys.ConnectV6(fd, addr, AddrLen);
-            if (connectResult == -1)
+            var addr = SockAddrIn.FromEndpoint(endpoint);
+            var result = Sys.ConnectV4(fd, addr, AddrLen);
+            if (result == -1)
             {
                 var errNo = Sys.ErrNo();
                 Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
             }
 
-            return new LinuxTcpSocketV6(fd, endpoint);
+            return new LinuxTcpClientV4(fd, endpoint);
         }
         catch
         {
@@ -103,5 +103,5 @@ sealed class LinuxTcpSocketV6 : ITcpSocket<AddressV6>
         }
     }
 
-    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
+    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
 }
