@@ -27,19 +27,20 @@ public class NetworkTest
         socketB.Send(sendBuffer, AddressV4.Local.OnPort(endpointA.Port));
         var endpointB = socketB.GetSocketName();
 
-        socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var result);
-        Assert.Equal(UdpReceiveState.Success, result.State);
-        Assert.Equal(endpointB.Port, result.Origin.Port);
-        Assert.Equal(AddressV4.Local, result.Origin.Address);
-        Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
-        Assert.True(receiveBuffer.AsSpan(0, result.ReceivedByteCount).SequenceEqual(sendBuffer));
+        var resultA = socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var originA);
+        Assert.Equal(endpointB.Port, originA.Port);
+        Assert.Equal(AddressV4.Local, originA.Address);
+        Assert.NotNull(resultA);
+        Assert.Equal(sendBuffer.Length, resultA.Value);
+        Assert.Equal(receiveBuffer.AsSpan(0, resultA.Value), sendBuffer.AsSpan());
 
         socketA.Send(sendBuffer, AddressV4.Local.OnPort(endpointB.Port));
-        socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out result);
-        Assert.Equal(UdpReceiveState.Success, result.State);
-        Assert.Equal(endpointA.Port, result.Origin.Port);
-        Assert.Equal(AddressV4.Local, result.Origin.Address);
-        Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
+        var resultB = socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var originB);
+        Assert.Equal(endpointA.Port, originB.Port);
+        Assert.Equal(AddressV4.Local, originB.Address);
+        Assert.NotNull(resultB);
+        Assert.Equal(sendBuffer.Length, resultB.Value);
+        Assert.Equal(receiveBuffer.AsSpan(0, resultB.Value), sendBuffer.AsSpan());
     }
 
     [Fact]
@@ -57,19 +58,20 @@ public class NetworkTest
         socketB.Send(sendBuffer, AddressV6.Local.OnPort(endpointA.Port));
         var endpointB = socketB.GetSocketName();
 
-        socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var result);
-        Assert.Equal(UdpReceiveState.Success, result.State);
-        Assert.Equal(endpointB.Port, result.Origin.Port);
-        Assert.Equal(AddressV6.Local, result.Origin.Address);
-        Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
-        Assert.True(receiveBuffer.AsSpan(0, result.ReceivedByteCount).SequenceEqual(sendBuffer));
+        var resultA = socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var originA);
+        Assert.Equal(endpointB.Port, originA.Port);
+        Assert.Equal(AddressV6.Local, originA.Address);
+        Assert.NotNull(resultA);
+        Assert.Equal(sendBuffer.Length, resultA.Value);
+        Assert.Equal(receiveBuffer.AsSpan(0, resultA.Value), sendBuffer.AsSpan());
 
         socketA.Send(sendBuffer, AddressV6.Local.OnPort(endpointB.Port));
-        socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out result);
-        Assert.Equal(UdpReceiveState.Success, result.State);
-        Assert.Equal(endpointA.Port, result.Origin.Port);
-        Assert.Equal(AddressV6.Local, result.Origin.Address);
-        Assert.Equal(sendBuffer.Length, result.ReceivedByteCount);
+        var resultB = socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var originB);
+        Assert.Equal(endpointA.Port, originB.Port);
+        Assert.Equal(AddressV6.Local, originB.Address);
+        Assert.NotNull(resultB);
+        Assert.Equal(sendBuffer.Length, resultB.Value);
+        Assert.Equal(receiveBuffer.AsSpan(0, resultB.Value), sendBuffer.AsSpan());
     }
 
     [Fact]
@@ -91,24 +93,24 @@ public class NetworkTest
         socketA.Send(sendBuffer, destinationB);
         var endpointA = socketA.GetSocketName();
         var destinationA = v4LocalAsV6.OnPort(endpointA.Port);
-        socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var resultV6);
+        var resultV6 = socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var originV6);
         var debug1 = v4LocalAsV6.ToString();
-        var debug2 = resultV6.Origin.ToString();
+        var debug2 = originV6.ToString();
         var debug3 = endpointB.ToString();
-        Assert.Equal(UdpReceiveState.Success, resultV6.State);
-        Assert.Equal(v4LocalAsV6, resultV6.Origin.Address);
-        Assert.Equal(sendBuffer.Length, resultV6.ReceivedByteCount);
-        Assert.True(receiveBuffer.AsSpan(0, resultV6.ReceivedByteCount).SequenceEqual(sendBuffer));
+        Assert.Equal(v4LocalAsV6, originV6.Address);
+        Assert.NotNull(resultV6);
+        Assert.Equal(sendBuffer.Length, resultV6.Value);
+        Assert.Equal(receiveBuffer.AsSpan(0, resultV6.Value), sendBuffer.AsSpan());
 
         receiveBuffer.AsSpan().Clear();
-        Assert.False(receiveBuffer.AsSpan(0, resultV6.ReceivedByteCount).SequenceEqual(sendBuffer));
+        Assert.False(receiveBuffer.AsSpan(0, resultV6.Value).SequenceEqual(sendBuffer));
 
         socketB.Send(sendBuffer, destinationA);
-        socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var resultV4);
-        Assert.Equal(UdpReceiveState.Success, resultV4.State);
-        Assert.Equal(AddressV4.Local, resultV4.Origin.Address);
-        Assert.Equal(sendBuffer.Length, resultV4.ReceivedByteCount);
-        Assert.True(receiveBuffer.AsSpan(0, resultV4.ReceivedByteCount).SequenceEqual(sendBuffer));
+        var resultV4 = socketA.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var originV4);
+        Assert.Equal(AddressV4.Local, originV4.Address);
+        Assert.NotNull(resultV4);
+        Assert.Equal(sendBuffer.Length, resultV4.Value);
+        Assert.Equal(receiveBuffer.AsSpan(0, resultV4.Value), sendBuffer.AsSpan());
     }
 
     [Fact]
@@ -126,8 +128,8 @@ public class NetworkTest
         var destinationB = AddressV4.Local.OnPort(endpointB.Port);
 
         socketA.Send(sendBuffer, destinationB);
-        socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var result);
-        Assert.Equal(UdpReceiveState.Timeout, result.State);
+        var result = socketB.Receive(receiveBuffer, TimeSpan.FromSeconds(1), out var origin);
+        Assert.Null(result);
     }
 
     [Fact]
