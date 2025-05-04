@@ -68,7 +68,7 @@ class Program
         var buffer = new byte[2048];
         while (!cancellationTokenSource.IsCancellationRequested)
         {
-            using var server = listener.Accept(timeout);
+            using var server = Accept();
 
             if (server is null)
                 continue;
@@ -88,6 +88,21 @@ class Program
             else
             {
                 Console.WriteLine("Connection timed out.");
+            }
+        }
+
+        ITcpClient<AddressV4>? Accept()
+        {
+            try
+            {
+                var result = listener.Accept(timeout);
+                return result;
+            }
+            catch (SocketException ex)
+            {
+                if (!ex.Code.Name.Contains("EINTR"))
+                    throw;
+                return null;
             }
         }
     }
