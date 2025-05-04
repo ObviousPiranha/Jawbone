@@ -3,11 +3,11 @@ using System;
 
 namespace Piranha.Jawbone.Test;
 
-public class NetworkTest
+public class UdpTest
 {
     private readonly ITestOutputHelper _output;
 
-    public NetworkTest(ITestOutputHelper output)
+    public UdpTest(ITestOutputHelper output)
     {
         _output = output;
     }
@@ -202,5 +202,43 @@ public class NetworkTest
                     using var v4 = UdpSocketV4.BindLocalIp(endpointV6.Port);
                 });
         }
+    }
+
+    [Fact]
+    public void UdpClientSendToUdpSocketV4()
+    {
+        using var server = UdpSocketV4.BindLocalIp();
+        var serverEndpoint = server.GetSocketName();
+
+        var message = "greetings"u8;
+        using var client = UdpClientV4.Connect(serverEndpoint);
+        var clientEndpoint = client.GetSocketName();
+        var sendResult = client.Send(message);
+        Assert.Equal(sendResult, message.Length);
+
+        Span<byte> buffer = new byte[64];
+        var receiveResult = server.Receive(buffer, TimeSpan.FromSeconds(1), out var origin);
+        Assert.NotNull(receiveResult);
+        Assert.Equal(origin, clientEndpoint);
+        Assert.Equal(message, buffer[..receiveResult.Value]);
+    }
+
+    [Fact]
+    public void UdpClientSendToUdpSocketV6()
+    {
+        using var server = UdpSocketV6.BindLocalIp();
+        var serverEndpoint = server.GetSocketName();
+
+        var message = "greetings"u8;
+        using var client = UdpClientV6.Connect(serverEndpoint);
+        var clientEndpoint = client.GetSocketName();
+        var sendResult = client.Send(message);
+        Assert.Equal(sendResult, message.Length);
+
+        Span<byte> buffer = new byte[64];
+        var receiveResult = server.Receive(buffer, TimeSpan.FromSeconds(1), out var origin);
+        Assert.NotNull(receiveResult);
+        Assert.Equal(origin, clientEndpoint);
+        Assert.Equal(message, buffer[..receiveResult.Value]);
     }
 }
