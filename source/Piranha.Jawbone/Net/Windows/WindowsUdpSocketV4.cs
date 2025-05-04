@@ -79,7 +79,7 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
 
     public unsafe Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = SockAddrIn6.Len;
+        var addressLength = SockAddrIn.Len;
         var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
