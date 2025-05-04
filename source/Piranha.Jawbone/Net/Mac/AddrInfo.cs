@@ -7,7 +7,7 @@ unsafe struct AddrInfo
     public int AiSockType;
     public int AiProtocol;
     public uint AiAddrLen;
-    public void* AiAddr;
     public nint AiCanonName;
+    public void* AiAddr;
     public AddrInfo* AiNext;
 }
