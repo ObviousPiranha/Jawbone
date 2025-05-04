@@ -1,5 +1,6 @@
 using Piranha.Jawbone.Net;
 using System;
+using System.Reflection;
 
 namespace Piranha.Jawbone.Test;
 
@@ -135,6 +136,7 @@ public class UdpTest
     [Fact]
     public void CannotBindSamePortV4()
     {
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "Windows is super liberal with socket reuse.");
         using var socketA = UdpSocketV4.BindLocalIp();
         var endpointA = socketA.GetSocketName();
 
@@ -150,6 +152,7 @@ public class UdpTest
     [Fact]
     public void CannotBindSamePortV6()
     {
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "Windows is super liberal with socket reuse.");
         using var socketA = UdpSocketV6.BindLocalIp();
         var endpoint = socketA.GetSocketName();
 
@@ -190,6 +193,7 @@ public class UdpTest
     [Fact]
     public void CannotBindSamePortOnV4AndV6InDualMode()
     {
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "Windows is super liberal with socket reuse.");
         var target = ((AddressV6)AddressV4.Local).OnAnyPort();
         for (int i = 0; i < 3; ++i)
         {

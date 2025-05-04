@@ -8,7 +8,6 @@ public static class So
 
     public static void SetReuseAddr(nuint fd)
     {
-        return;
         var result = Sys.SetSockOpt(
             fd,
             Sol.Socket,
