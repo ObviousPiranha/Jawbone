@@ -18,7 +18,7 @@ sealed class MacTcpListenerV4 : ITcpListener<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = AddrLen;
+                var addrLen = SockAddrIn.Len;
                 var fd = Sys.AcceptV4(_fd, out var addr, ref addrLen);
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
@@ -55,7 +55,7 @@ sealed class MacTcpListenerV4 : ITcpListener<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn.Len;
         var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -79,7 +79,7 @@ sealed class MacTcpListenerV4 : ITcpListener<AddressV4>
         try
         {
             var sa = SockAddrIn.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV4(fd, sa, AddrLen);
+            var bindResult = Sys.BindV4(fd, sa, SockAddrIn.Len);
 
             if (bindResult == -1)
             {
@@ -103,6 +103,4 @@ sealed class MacTcpListenerV4 : ITcpListener<AddressV4>
             throw;
         }
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
 }

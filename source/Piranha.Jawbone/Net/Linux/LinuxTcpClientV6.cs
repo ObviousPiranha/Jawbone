@@ -69,7 +69,7 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn6.Len;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -87,7 +87,7 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
         {
             Tcp.SetNoDelay(fd);
             var addr = SockAddrIn6.FromEndpoint(endpoint);
-            var connectResult = Sys.ConnectV6(fd, addr, AddrLen);
+            var connectResult = Sys.ConnectV6(fd, addr, SockAddrIn6.Len);
             if (connectResult == -1)
             {
                 var errNo = Sys.ErrNo();
@@ -102,6 +102,4 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
             throw;
         }
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
 }

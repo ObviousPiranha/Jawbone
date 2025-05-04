@@ -69,7 +69,7 @@ sealed class MacTcpClientV4 : ITcpClient<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn.Len;
         var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -87,7 +87,7 @@ sealed class MacTcpClientV4 : ITcpClient<AddressV4>
         {
             Tcp.SetNoDelay(fd);
             var addr = SockAddrIn.FromEndpoint(endpoint);
-            var result = Sys.ConnectV4(fd, addr, AddrLen);
+            var result = Sys.ConnectV4(fd, addr, SockAddrIn.Len);
             if (result == -1)
             {
                 var errNo = Sys.ErrNo();
@@ -102,6 +102,4 @@ sealed class MacTcpClientV4 : ITcpClient<AddressV4>
             throw;
         }
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
 }

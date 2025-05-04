@@ -24,7 +24,7 @@ sealed class LinuxUdpClientV4 : IUdpClient<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn.Len;
         var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -41,7 +41,7 @@ sealed class LinuxUdpClientV4 : IUdpClient<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = AddrLen;
+                var addressLength = SockAddrIn.Len;
                 var receiveResult = Sys.RecvFromV4(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -86,12 +86,7 @@ sealed class LinuxUdpClientV4 : IUdpClient<AddressV4>
         try
         {
             var sa = SockAddrIn.FromEndpoint(endpoint);
-            // var bindResult = Sys.BindV4(fd, sa, AddrLen);
-
-            // if (bindResult == -1)
-            //     Sys.Throw($"Failed to bind socket to address {endpoint}.");
-
-            var result = Sys.ConnectV4(fd, sa, AddrLen);
+            var result = Sys.ConnectV4(fd, sa, SockAddrIn.Len);
             if (result == -1)
             {
                 var errNo = Sys.ErrNo();
@@ -116,6 +111,4 @@ sealed class LinuxUdpClientV4 : IUdpClient<AddressV4>
 
         return fd;
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
 }

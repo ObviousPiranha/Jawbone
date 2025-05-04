@@ -18,7 +18,7 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = AddrLen;
+                var addrLen = SockAddrIn6.Len;
                 var fd = Sys.AcceptV6(_fd, out var addr, ref addrLen);
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
@@ -45,7 +45,7 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn6.Len;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -70,7 +70,7 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
         {
             Ipv6.SetIpv6Only(fd, allowV4);
             var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV6(fd, sa, AddrLen);
+            var bindResult = Sys.BindV6(fd, sa, SockAddrIn6.Len);
 
             if (bindResult == -1)
             {
@@ -94,6 +94,4 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
             throw;
         }
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
 }

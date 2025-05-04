@@ -1,4 +1,3 @@
-using Piranha.Jawbone.Net.Mac;
 using System;
 
 namespace Piranha.Jawbone.Net.Linux;

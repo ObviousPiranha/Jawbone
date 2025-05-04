@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Windows;
 

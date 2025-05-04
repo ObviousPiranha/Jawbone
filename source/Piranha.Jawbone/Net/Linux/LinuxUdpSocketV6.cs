@@ -30,7 +30,7 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
             (nuint)message.Length,
             0,
             sa,
-            AddrLen);
+            SockAddrIn6.Len);
 
         if (result == -1)
             Sys.Throw("Unable to send datagram.");
@@ -51,7 +51,7 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = AddrLen;
+                var addressLength = SockAddrIn6.Len;
                 var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -83,7 +83,7 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn6.Len;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -103,7 +103,7 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
         try
         {
             var sa = SockAddrIn6.FromEndpoint(endpoint);
-            var bindResult = Sys.BindV6(fd, sa, AddrLen);
+            var bindResult = Sys.BindV6(fd, sa, SockAddrIn6.Len);
 
             if (bindResult == -1)
             {
@@ -138,6 +138,4 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
             throw;
         }
     }
-
-    private static uint AddrLen => (uint)Unsafe.SizeOf<SockAddrIn6>();
 }
