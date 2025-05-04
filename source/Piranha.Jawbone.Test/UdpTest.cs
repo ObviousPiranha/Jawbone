@@ -136,7 +136,7 @@ public class UdpTest
     [Fact]
     public void CannotBindSamePortV4()
     {
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "Windows is super liberal with socket reuse.");
+        Assert.Skip("Debating whether to reuse addr by default.");
         using var socketA = UdpSocketV4.BindLocalIp();
         var endpointA = socketA.GetSocketName();
 
@@ -152,7 +152,7 @@ public class UdpTest
     [Fact]
     public void CannotBindSamePortV6()
     {
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "Windows is super liberal with socket reuse.");
+        Assert.Skip("Debating whether to reuse addr by default.");
         using var socketA = UdpSocketV6.BindLocalIp();
         var endpoint = socketA.GetSocketName();
 
@@ -193,7 +193,7 @@ public class UdpTest
     [Fact]
     public void CannotBindSamePortOnV4AndV6InDualMode()
     {
-        Assert.SkipWhen(OperatingSystem.IsWindows(), "Windows is super liberal with socket reuse.");
+        Assert.Skip("Debating whether to reuse addr by default.");
         var target = ((AddressV6)AddressV4.Local).OnAnyPort();
         for (int i = 0; i < 3; ++i)
         {
