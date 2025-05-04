@@ -60,7 +60,7 @@ sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
             Sys.Throw("Unable to close socket.");
     }
 
-    public static WindowsTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog)
+    public static WindowsTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog, bool allowV4)
     {
         var fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
@@ -69,6 +69,7 @@ sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
 
         try
         {
+            Ipv6.SetIpv6Only(fd, allowV4);
             var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
             var bindResult = Sys.BindV6(fd, sa, Unsafe.SizeOf<SockAddrIn6>());
 

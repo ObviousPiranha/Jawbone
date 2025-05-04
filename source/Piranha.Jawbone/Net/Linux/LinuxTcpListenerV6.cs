@@ -1,3 +1,4 @@
+using Piranha.Jawbone.Net.Mac;
 using System;
 
 namespace Piranha.Jawbone.Net.Linux;
@@ -18,7 +19,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = AddrLen;
+                var addrLen = SockAddrIn6.Len;
                 var fd = Sys.AcceptV6(_fd, out var addr, ref addrLen);
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
@@ -45,7 +46,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn6.Len;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -59,7 +60,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             Sys.Throw("Unable to close socket.");
     }
 
-    public static LinuxTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog)
+    public static LinuxTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog, bool allowV4)
     {
         int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
@@ -68,8 +69,9 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
 
         try
         {
+            Ipv6.SetIpv6Only(fd, allowV4);
             var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV6(fd, sa, AddrLen);
+            var bindResult = Sys.BindV6(fd, sa, SockAddrIn6.Len);
 
             if (bindResult == -1)
             {
@@ -93,6 +95,4 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
             throw;
         }
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Windows;
@@ -126,17 +125,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
 
         try
         {
-            uint yes = allowV4 ? 0u : 1u;
-            var result = Sys.SetSockOpt(
-                socket,
-                IpProto.Ipv6,
-                Ipv6.V6Only,
-                yes,
-                Unsafe.SizeOf<uint>());
-
-            if (result == -1)
-                Sys.Throw("Unable to set socket option.");
-
+            Ipv6.SetIpv6Only(socket, allowV4);
             return socket;
         }
         catch

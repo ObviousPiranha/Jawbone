@@ -59,7 +59,7 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
             Sys.Throw("Unable to close socket.");
     }
 
-    public static MacTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog)
+    public static MacTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog, bool allowV4)
     {
         int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
@@ -68,6 +68,7 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
 
         try
         {
+            Ipv6.SetIpv6Only(fd, allowV4);
             var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
             var bindResult = Sys.BindV6(fd, sa, AddrLen);
 
