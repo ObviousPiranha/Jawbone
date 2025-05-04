@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 
 namespace Piranha.Jawbone.Net.Mac;
 
@@ -29,7 +28,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
             (nuint)message.Length,
             0,
             sa,
-            AddrLen);
+            SockAddrIn.Len);
 
         if (result == -1)
             Sys.Throw("Unable to send datagram.");
@@ -37,12 +36,11 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
         return (int)result;
     }
 
-    public unsafe void Receive(
+    public unsafe int? Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<Endpoint<AddressV4>> result)
+        out Endpoint<AddressV4> origin)
     {
-        result = default;
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
@@ -51,7 +49,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = AddrLen;
+                var addressLength = SockAddrIn.Len;
                 var receiveResult = Sys.RecvFromV4(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -60,36 +58,34 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
                     out var address,
                     ref addressLength);
 
-                AssertAddrLen(addressLength);
-
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                result.State = UdpReceiveState.Success;
-                result.Origin = address.ToEndpoint();
-                result.ReceivedByteCount = (int)receiveResult;
-                result.Received = buffer[..(int)receiveResult];
+                origin = address.ToEndpoint(addressLength);
+                return (int)receiveResult;
+            }
+            else
+            {
+                throw Core.CreateBadPollException();
             }
         }
         else if (pollResult < 0)
         {
-            result.State = UdpReceiveState.Failure;
-            result.Error = Error.GetErrorCode(Sys.ErrNo());
+            var errNo = Sys.ErrNo();
+            Sys.Throw(errNo, "Unable to poll socket.");
         }
-        else
-        {
-            result.State = UdpReceiveState.Timeout;
-        }
+
+        origin = default;
+        return null;
     }
 
     public unsafe Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn.Len;
         var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        AssertAddrLen(addressLength);
-        return address.ToEndpoint();
+        return address.ToEndpoint(addressLength);
     }
 
     public static MacUdpSocketV4 Create()
@@ -105,7 +101,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
         try
         {
             var sa = SockAddrIn.FromEndpoint(endpoint);
-            var bindResult = Sys.BindV4(fd, sa, AddrLen);
+            var bindResult = Sys.BindV4(fd, sa, SockAddrIn.Len);
 
             if (bindResult == -1)
             {
@@ -131,13 +127,4 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
 
         return fd;
     }
-
-    private static void AssertAddrLen(uint addrLen)
-    {
-        Debug.Assert(
-            addrLen == AddrLen,
-            "The returned address length does not match.");
-    }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
 }

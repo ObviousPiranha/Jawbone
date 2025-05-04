@@ -20,4 +20,6 @@ struct SockAddrStorage
         else
             throw new SocketException("Unsupported address size: " + addrLen);
     }
+
+    public static int Len => Unsafe.SizeOf<SockAddrStorage>();
 }

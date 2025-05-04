@@ -8,8 +8,6 @@ namespace Piranha.Jawbone.Net;
 
 public readonly struct AddressInfo
 {
-    private const int BufferSize = 64;
-
     public DateTimeOffset CreatedAt { get; init; }
     public readonly string? Node { get; init; }
     public readonly string? Service { get; init; }
@@ -24,20 +22,11 @@ public readonly struct AddressInfo
         TimeProvider? timeProvider = null)
     {
         if (OperatingSystem.IsWindows())
-        {
             return WindowsAddressInfo.Get(node, service, timeProvider);
-        }
-        else if (OperatingSystem.IsMacOS())
-        {
+        if (OperatingSystem.IsMacOS())
             return MacAddressInfo.Get(node, service, timeProvider);
-        }
-        else if (OperatingSystem.IsLinux())
-        {
+        if (OperatingSystem.IsLinux())
             return LinuxAddressInfo.Get(node, service, timeProvider);
-        }
-        else
-        {
-            throw new PlatformNotSupportedException();
-        }
+        throw new PlatformNotSupportedException();
     }
 }

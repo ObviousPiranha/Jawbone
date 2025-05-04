@@ -17,6 +17,8 @@ struct SockAddrIn6
             new NetworkPort { NetworkValue = Sin6Port });
     }
 
+    public static uint Len => Sys.SockLen<SockAddrIn6>();
+
     public static SockAddrIn6 FromEndpoint(Endpoint<AddressV6> endpoint)
     {
         return new SockAddrIn6

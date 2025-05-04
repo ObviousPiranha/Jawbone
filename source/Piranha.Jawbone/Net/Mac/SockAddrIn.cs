@@ -17,6 +17,13 @@ struct SockAddrIn
     public uint SinAddr;
     public Zero SinZero;
 
+    public Endpoint<AddressV4> ToEndpoint(uint len)
+    {
+        if (len != Len)
+            Core.ThrowBadAddressLength();
+        return ToEndpoint();
+    }
+
     public Endpoint<AddressV4> ToEndpoint()
     {
         if (SinFamily != Af.INet)
@@ -25,6 +32,8 @@ struct SockAddrIn
             new AddressV4(SinAddr),
             new NetworkPort { NetworkValue = SinPort });
     }
+
+    public static uint Len => Sys.SockLen<SockAddrIn>();
 
     public static SockAddrIn FromEndpoint(Endpoint<AddressV4> endpoint)
     {

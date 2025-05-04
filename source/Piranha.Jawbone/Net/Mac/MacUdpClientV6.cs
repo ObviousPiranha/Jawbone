@@ -24,7 +24,7 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn6.Len;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -41,7 +41,7 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = AddrLen;
+                var addressLength = SockAddrIn6.Len;
                 var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -53,8 +53,13 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                Debug.Assert(address.GetV6(addressLength) == Origin);
+                var origin = address.GetV6(addressLength);
+                Debug.Assert(origin == Origin);
                 return (int)receiveResult;
+            }
+            else
+            {
+                throw Core.CreateBadPollException();
             }
         }
         else if (pollResult < 0)
@@ -85,7 +90,7 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
         try
         {
             var sa = SockAddrIn6.FromEndpoint(endpoint);
-            var result = Sys.ConnectV6(fd, sa, AddrLen);
+            var result = Sys.ConnectV6(fd, sa, SockAddrIn6.Len);
             if (result == -1)
             {
                 var errNo = Sys.ErrNo();
@@ -110,6 +115,4 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
 
         return fd;
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
 }

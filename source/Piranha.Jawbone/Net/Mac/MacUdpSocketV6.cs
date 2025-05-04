@@ -31,7 +31,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             (nuint)message.Length,
             0,
             sa,
-            AddrLen);
+            SockAddrIn6.Len);
 
         if (result == -1)
             Sys.Throw("Unable to send datagram.");
@@ -39,12 +39,11 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         return (int)result;
     }
 
-    public unsafe void Receive(
+    public unsafe int? Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<Endpoint<AddressV6>> result)
+        out Endpoint<AddressV6> origin)
     {
-        result = default;
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
@@ -53,7 +52,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = AddrLen;
+                var addressLength = SockAddrIn6.Len;
                 var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -62,41 +61,34 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
                     out var address,
                     ref addressLength);
 
-                Endpoint<AddressV6> endpoint;
-                if (addressLength == (uint)sizeof(SockAddrIn))
-                    endpoint = address.V4.ToEndpoint().MapToV6();
-                else if (addressLength == (uint)sizeof(SockAddrIn6))
-                    endpoint = address.V6.ToEndpoint();
-                else
-                    throw new SocketException("Unsupported address size: " + addressLength);
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                result.State = UdpReceiveState.Success;
-                result.Origin = endpoint;
-                result.ReceivedByteCount = (int)receiveResult;
-                result.Received = buffer[..(int)receiveResult];
+                origin = address.GetV6(addressLength);
+                return (int)receiveResult;
+            }
+            else
+            {
+                throw Core.CreateBadPollException();
             }
         }
         else if (pollResult < 0)
         {
-            result.State = UdpReceiveState.Failure;
-            result.Error = Error.GetErrorCode(Sys.ErrNo());
+            var errNo = Sys.ErrNo();
+            Sys.Throw(errNo, "Unable to poll socket.");
         }
-        else
-        {
-            result.State = UdpReceiveState.Timeout;
-        }
+
+        origin = default;
+        return null;
     }
 
     public unsafe Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrIn6.Len;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        AssertAddrLen(addressLength);
-        return address.V6.ToEndpoint();
+        return address.GetV6(addressLength);
     }
 
     public static MacUdpSocketV6 Create(bool allowV4)
@@ -112,7 +104,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         try
         {
             var sa = SockAddrIn6.FromEndpoint(endpoint);
-            var bindResult = Sys.BindV6(fd, sa, AddrLen);
+            var bindResult = Sys.BindV6(fd, sa, SockAddrIn6.Len);
 
             if (bindResult == -1)
             {
@@ -157,13 +149,4 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             throw;
         }
     }
-
-    private static void AssertAddrLen(uint addrLen)
-    {
-        Debug.Assert(
-            addrLen == AddrLen,
-            "The returned address length does not match.");
-    }
-
-    private static uint AddrLen => (uint)Unsafe.SizeOf<SockAddrStorage>();
 }

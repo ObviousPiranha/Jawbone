@@ -30,7 +30,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
             (nuint)message.Length,
             0,
             sa,
-            AddrLen);
+            SockAddrIn6.Len);
 
         if (result == -1)
             Sys.Throw("Unable to send datagram.");
@@ -38,12 +38,11 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         return (int)result;
     }
 
-    public unsafe void Receive(
+    public unsafe int? Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<Endpoint<AddressV6>> result)
+        out Endpoint<AddressV6> origin)
     {
-        result = default;
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
         var pollResult = Sys.WsaPoll(ref pfd, 1, milliseconds);
@@ -52,7 +51,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = AddrLen;
+                var addressLength = SockAddrStorage.Len;
                 var receiveResult = Sys.RecvFromV6(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -61,35 +60,33 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
                     out var address,
                     ref addressLength);
 
-                AssertAddrLen(addressLength);
-
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                result.State = UdpReceiveState.Success;
-                result.Origin = address.GetV6(addressLength);
-                result.ReceivedByteCount = (int)receiveResult;
-                result.Received = buffer[..(int)receiveResult];
+                origin = address.GetV6(addressLength);
+                return (int)receiveResult;
+            }
+            else
+            {
+                throw Core.CreateBadPollException();
             }
         }
         else if (pollResult < 0)
         {
-            result.State = UdpReceiveState.Failure;
-            result.Error = Error.GetErrorCode(Sys.WsaGetLastError());
+            var error = Sys.WsaGetLastError();
+            Sys.Throw(error, "Unable to poll socket.");
         }
-        else
-        {
-            result.State = UdpReceiveState.Timeout;
-        }
+
+        origin = default;
+        return null;
     }
 
     public unsafe Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
+        var addressLength = SockAddrStorage.Len;
         var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        AssertAddrLen(addressLength);
         return address.GetV6(addressLength);
     }
 
@@ -106,7 +103,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         try
         {
             var sa = SockAddrIn6.FromEndpoint(endpoint);
-            var bindResult = Sys.BindV6(socket, sa, AddrLen);
+            var bindResult = Sys.BindV6(socket, sa, SockAddrIn6.Len);
 
             if (bindResult == -1)
                 Sys.Throw($"Failed to bind socket to address {endpoint}.");
@@ -135,7 +132,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
                 IpProto.Ipv6,
                 Ipv6.V6Only,
                 yes,
-                Unsafe.SizeOf<int>());
+                Unsafe.SizeOf<uint>());
 
             if (result == -1)
                 Sys.Throw("Unable to set socket option.");
@@ -148,13 +145,4 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
             throw;
         }
     }
-
-    private static void AssertAddrLen(int addrLen)
-    {
-        Debug.Assert(
-            addrLen == AddrLen,
-            "The returned address length does not match.");
-    }
-
-    private static int AddrLen => Unsafe.SizeOf<SockAddrIn6>();
 }

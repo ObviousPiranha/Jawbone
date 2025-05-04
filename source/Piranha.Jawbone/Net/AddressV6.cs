@@ -8,7 +8,7 @@ using System.Text;
 namespace Piranha.Jawbone.Net;
 
 // https://en.wikipedia.org/wiki/IPv6_address
-[StructLayout(LayoutKind.Explicit, Size = 20)]
+[StructLayout(LayoutKind.Explicit, Size = 20, Pack = 4)]
 public struct AddressV6 : IAddress<AddressV6>
 {
     [StructLayout(LayoutKind.Sequential)]

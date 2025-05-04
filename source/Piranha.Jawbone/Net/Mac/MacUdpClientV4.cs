@@ -53,8 +53,13 @@ sealed class MacUdpClientV4 : IUdpClient<AddressV4>
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                Debug.Assert(address.ToEndpoint() == Origin);
+                var origin = address.ToEndpoint(addressLength);
+                Debug.Assert(origin == Origin);
                 return (int)receiveResult;
+            }
+            else
+            {
+                throw Core.CreateBadPollException();
             }
         }
         else if (pollResult < 0)
@@ -88,7 +93,6 @@ sealed class MacUdpClientV4 : IUdpClient<AddressV4>
             var result = Sys.ConnectV4(fd, sa, AddrLen);
             if (result == -1)
             {
-                // Apparently, creating an interpolated string in C# clears `errno`.
                 var errNo = Sys.ErrNo();
                 Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
             }

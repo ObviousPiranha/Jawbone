@@ -53,7 +53,8 @@ sealed class LinuxUdpClientV4 : IUdpClient<AddressV4>
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                Debug.Assert(address.ToEndpoint() == Origin);
+                var origin = address.ToEndpoint(addressLength);
+                Debug.Assert(origin == Origin);
                 return (int)receiveResult;
             }
         }

@@ -25,7 +25,7 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrIn>();
+        var addressLength = SockAddrIn.Len;
         var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
@@ -42,7 +42,7 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = Unsafe.SizeOf<SockAddrIn>();
+                var addressLength = SockAddrIn.Len;
                 var receiveResult = Sys.RecvFromV4(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -54,8 +54,13 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                Debug.Assert(address.ToEndpoint() == Origin);
+                var origin = address.ToEndpoint(addressLength);
+                Debug.Assert(origin == Origin);
                 return (int)receiveResult;
+            }
+            else
+            {
+                throw Core.CreateBadPollException();
             }
         }
         else if (pollResult < 0)
@@ -76,7 +81,7 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
         if (result == -1)
             Sys.Throw("Unable to send data.");
 
-        return (int)result;
+        return result;
     }
 
     public static WindowsUdpClientV4 Connect(Endpoint<AddressV4> endpoint)
@@ -89,8 +94,8 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
             var result = Sys.ConnectV4(fd, sa, Unsafe.SizeOf<SockAddrIn>());
             if (result == -1)
             {
-                var errNo = Sys.WsaGetLastError();
-                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+                var error = Sys.WsaGetLastError();
+                Sys.Throw(error, $"Failed to connect to {endpoint}.");
             }
 
             return new WindowsUdpClientV4(fd, endpoint);

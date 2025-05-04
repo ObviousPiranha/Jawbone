@@ -17,4 +17,12 @@ static class Core
     {
         throw new InvalidOperationException("Incorrect address family.");
     }
+
+    [DoesNotReturn]
+    public static void ThrowBadAddressLength()
+    {
+        throw new InvalidOperationException("Address length does not match.");
+    }
+
+    public static InvalidOperationException CreateBadPollException() => new("Unexpected poll response.");
 }

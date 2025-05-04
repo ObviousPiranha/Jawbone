@@ -38,12 +38,11 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
         return (int)result;
     }
 
-    public unsafe void Receive(
+    public unsafe int? Receive(
         Span<byte> buffer,
         TimeSpan timeout,
-        out UdpReceiveResult<Endpoint<AddressV6>> result)
+        out Endpoint<AddressV6> origin)
     {
-        result = default;
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
@@ -64,21 +63,22 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                result.State = UdpReceiveState.Success;
-                result.Origin = address.GetV6(addressLength);
-                result.ReceivedByteCount = (int)receiveResult;
-                result.Received = buffer[..(int)receiveResult];
+                origin = address.GetV6(addressLength);
+                return (int)receiveResult;
+            }
+            else
+            {
+                throw Core.CreateBadPollException();
             }
         }
         else if (pollResult < 0)
         {
-            result.State = UdpReceiveState.Failure;
-            result.Error = Error.GetErrorCode(Sys.ErrNo());
+            var errNo = Sys.ErrNo();
+            Sys.Throw(errNo, "Unable to poll socket.");
         }
-        else
-        {
-            result.State = UdpReceiveState.Timeout;
-        }
+
+        origin = default;
+        return null;
     }
 
     public Endpoint<AddressV6> GetSocketName()

@@ -13,10 +13,10 @@ class Program
     {
         try
         {
-            // NetworkTest();
-            // BindTest();
+            NetworkTest();
+            BindTest();
             // PngTest(args[0]);
-            // V6Shenanigans();
+            V6Shenanigans();
             TcpV4Shenanigans();
             TcpV6Shenanigans();
             TryUdpClientV4();
@@ -39,10 +39,9 @@ class Program
         using var client = UdpClientV4.Connect(endpoint);
         Console.WriteLine($"Client: {client.GetSocketName()}");
         client.Send("YO YO"u8);
-        var buffer = new byte[1024];
-        server.Receive(buffer, TimeSpan.FromSeconds(1), out var result);
-        result.ThrowOnErrorOrTimeout();
-        var text = Encoding.UTF8.GetString(result.Received);
+        Span<byte> buffer = new byte[1024];
+        server.Receive(ref buffer, TimeSpan.FromSeconds(1));
+        var text = Encoding.UTF8.GetString(buffer);
         Console.WriteLine(text);
     }
 
@@ -53,10 +52,9 @@ class Program
         using var client = UdpClientV6.Connect(endpoint);
         Console.WriteLine($"Client: {client.GetSocketName()}");
         client.Send("YO YO"u8);
-        var buffer = new byte[1024];
-        server.Receive(buffer, TimeSpan.FromSeconds(1), out var result);
-        result.ThrowOnErrorOrTimeout();
-        var text = Encoding.UTF8.GetString(result.Received);
+        Span<byte> buffer = new byte[1024];
+        server.Receive(ref buffer, TimeSpan.FromSeconds(1));
+        var text = Encoding.UTF8.GetString(buffer);
         Console.WriteLine(text);
     }
 
@@ -125,14 +123,13 @@ class Program
         using var v4 = UdpSocketV4.BindLocalIp();
         var endpoint = v4.GetSocketName();
         Console.WriteLine("Server: " + endpoint);
-        using var v6 = UdpSocketV6.Create(allowV4: false);
+        using var v6 = UdpSocketV6.Create(allowV4: true);
         v6.Send("Hello, IPv4!"u8, endpoint.MapToV6());
         Console.WriteLine("Client: " + v6.GetSocketName());
-        var buffer = new byte[2048];
-        v4.Receive(buffer, TimeSpan.FromSeconds(2), out var result);
-        result.ThrowOnErrorOrTimeout();
-        var message = Encoding.UTF8.GetString(result.Received);
-        Console.WriteLine($"Received from {result.Origin}: {message}");
+        Span<byte> buffer = new byte[2048];
+        v4.Receive(ref buffer, TimeSpan.FromSeconds(2), out var origin);
+        var message = Encoding.UTF8.GetString(buffer);
+        Console.WriteLine($"Received from {origin}: {message}");
     }
 
     static void PngTest(string path)
@@ -155,13 +152,13 @@ class Program
 
         var buffer = new byte[64];
         var timeout = TimeSpan.FromSeconds(1);
-        socket6A.Receive(buffer, timeout, out var result6);
-        result6.ThrowOnErrorOrTimeout();
-        Console.WriteLine(Encoding.UTF8.GetString(buffer.AsSpan(0, result6.ReceivedByteCount)));
+        Span<byte> span = buffer;
+        socket6A.Receive(ref span, timeout);
+        Console.WriteLine(Encoding.UTF8.GetString(span));
 
-        socket4A.Receive(buffer, timeout, out var result4);
-        result4.ThrowOnErrorOrTimeout();
-        Console.WriteLine(Encoding.UTF8.GetString(buffer.AsSpan(0, result4.ReceivedByteCount)));
+        span = buffer;
+        socket4A.Receive(ref span, timeout);
+        Console.WriteLine(Encoding.UTF8.GetString(span));
 
         Console.WriteLine("Huh. Wow.");
     }
@@ -188,17 +185,16 @@ class Program
 
         var buffer = new byte[2048];
         Console.WriteLine("Begin receive...");
-        server.Receive(buffer, TimeSpan.FromSeconds(2), out var result);
-        result.ThrowOnError();
+        var result = server.Receive(buffer, TimeSpan.FromSeconds(2), out var origin);
 
-        if (result.State == UdpReceiveState.Timeout)
+        if (!result.HasValue)
         {
             Console.WriteLine("Timed out.");
         }
         else
         {
-            var text = Encoding.UTF8.GetString(buffer.AsSpan(0, result.ReceivedByteCount));
-            Console.WriteLine($"Received from {result.Origin}: {text}");
+            var text = Encoding.UTF8.GetString(buffer.AsSpan(0, result.Value));
+            Console.WriteLine($"Received from {origin}: {text}");
         }
     }
 }

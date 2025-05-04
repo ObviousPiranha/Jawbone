@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Piranha.Jawbone.Net.Windows;
 
 struct SockAddrIn6
@@ -16,6 +18,8 @@ struct SockAddrIn6
             new AddressV6(Sin6Addr.U6Addr32, Sin6ScopeId),
             new NetworkPort { NetworkValue = Sin6Port });
     }
+
+    public static int Len => Unsafe.SizeOf<SockAddrIn6>();
 
     public static SockAddrIn6 FromEndpoint(Endpoint<AddressV6> endpoint)
     {
