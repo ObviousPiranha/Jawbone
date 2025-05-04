@@ -24,6 +24,8 @@ static class MacAddressInfo
         {
             for (var ai = res; ai != null; ai = ai->AiNext)
             {
+                if (ai->AiAddr == null)
+                    continue;
                 if (ai->AiFamily == Af.INet)
                 {
                     var addr = (SockAddrIn*)ai->AiAddr;
