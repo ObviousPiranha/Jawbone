@@ -32,7 +32,7 @@ static class MacAddressInfo
                     var endpoint = addr->ToEndpoint();
                     v4.Add(endpoint);
                 }
-                if (ai->AiFamily == Af.INet6)
+                else if (ai->AiFamily == Af.INet6)
                 {
                     var addr = (SockAddrIn6*)ai->AiAddr;
                     var endpoint = addr->ToEndpoint();
