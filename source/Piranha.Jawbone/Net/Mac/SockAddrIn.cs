@@ -4,20 +4,23 @@ namespace Piranha.Jawbone.Net.Mac;
 
 struct SockAddrIn
 {
-    [InlineArray(Length)]
+    [InlineArray(8)]
     public struct Zero
     {
-        public const int Length = 8;
         private byte _e0;
     }
 
-    public ushort SinFamily;
+    // https://stackoverflow.com/a/41580692/264712
+    public byte SinLen;
+    public byte SinFamily;
     public ushort SinPort;
     public uint SinAddr;
     public Zero SinZero;
 
     public Endpoint<AddressV4> ToEndpoint()
     {
+        if (SinFamily != Af.INet)
+            Core.ThrowWrongAddressFamily();
         return Endpoint.Create(
             new AddressV4(SinAddr),
             new NetworkPort { NetworkValue = SinPort });
@@ -27,6 +30,7 @@ struct SockAddrIn
     {
         return new SockAddrIn
         {
+            SinLen = (byte)Unsafe.SizeOf<SockAddrIn>(),
             SinFamily = Af.INet,
             SinPort = endpoint.Port.NetworkValue,
             SinAddr = endpoint.Address.DataU32

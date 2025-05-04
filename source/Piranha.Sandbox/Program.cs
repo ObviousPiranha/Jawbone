@@ -1,4 +1,5 @@
-﻿using Piranha.Jawbone.Net;
+﻿using Piranha.Jawbone;
+using Piranha.Jawbone.Net;
 using Piranha.Jawbone.Png;
 using System;
 using System.IO;
@@ -15,7 +16,11 @@ class Program
             // NetworkTest();
             // BindTest();
             // PngTest(args[0]);
-            V6Shenanigans();
+            // V6Shenanigans();
+            TcpV4Shenanigans();
+            TcpV6Shenanigans();
+            TryUdpClientV4();
+            TryUdpClientV6();
         }
         catch (Exception ex)
         {
@@ -25,6 +30,94 @@ class Program
             Console.WriteLine(ex);
             Console.WriteLine();
         }
+    }
+
+    static void TryUdpClientV4()
+    {
+        using var server = UdpSocketV4.BindLocalIp();
+        var endpoint = server.GetSocketName();
+        using var client = UdpClientV4.Connect(endpoint);
+        Console.WriteLine($"Client: {client.GetSocketName()}");
+        client.Send("YO YO"u8);
+        var buffer = new byte[1024];
+        server.Receive(buffer, TimeSpan.FromSeconds(1), out var result);
+        result.ThrowOnErrorOrTimeout();
+        var text = Encoding.UTF8.GetString(result.Received);
+        Console.WriteLine(text);
+    }
+
+    static void TryUdpClientV6()
+    {
+        using var server = UdpSocketV6.BindLocalIp();
+        var endpoint = server.GetSocketName();
+        using var client = UdpClientV6.Connect(endpoint);
+        Console.WriteLine($"Client: {client.GetSocketName()}");
+        client.Send("YO YO"u8);
+        var buffer = new byte[1024];
+        server.Receive(buffer, TimeSpan.FromSeconds(1), out var result);
+        result.ThrowOnErrorOrTimeout();
+        var text = Encoding.UTF8.GetString(result.Received);
+        Console.WriteLine(text);
+    }
+
+    static void TcpV4Shenanigans()
+    {
+        using var listener = TcpListenerV4.Listen(AddressV4.Local.OnAnyPort(), 4);
+        var endpoint = listener.GetSocketName();
+        Console.WriteLine($"Listening on {endpoint}...");
+        Console.WriteLine($"Connecting client to {endpoint}...");
+        using var client = TcpClientV4.Connect(endpoint);
+        var clientSocketName = client.GetSocketName();
+        Console.WriteLine($"Client listening on {clientSocketName}.");
+        Console.WriteLine("Accepting connection...");
+        using var server = listener.Accept(TimeSpan.FromSeconds(2));
+        if (server is null)
+        {
+            Console.WriteLine("Failed to accept connection.");
+            return;
+        }
+        Console.WriteLine("Client sending message...");
+        client.Send("HERRO"u8);
+        Console.WriteLine("Server receiving message...");
+        var buffer = new byte[1024];
+        var n = server.Receive(buffer, TimeSpan.FromSeconds(1));
+        if (!n.HasValue)
+        {
+            Console.WriteLine("Failed to receive message.");
+            return;
+        }
+        ReadOnlyUtf8Span message = buffer.AsSpan(0, n.Value);
+        Console.WriteLine("Server received message: " + message.ToString());
+    }
+
+    static void TcpV6Shenanigans()
+    {
+        using var listener = TcpListenerV6.Listen(AddressV6.Local.OnAnyPort(), 4);
+        var endpoint = listener.GetSocketName();
+        Console.WriteLine($"Listening on {endpoint}...");
+        Console.WriteLine($"Connecting client to {endpoint}...");
+        using var client = TcpClientV6.Connect(endpoint);
+        var clientSocketName = client.GetSocketName();
+        Console.WriteLine($"Client listening on {clientSocketName}.");
+        Console.WriteLine("Accepting connection...");
+        using var server = listener.Accept(TimeSpan.FromSeconds(2));
+        if (server is null)
+        {
+            Console.WriteLine("Failed to accept connection.");
+            return;
+        }
+        Console.WriteLine("Client sending message...");
+        client.Send("HERRO"u8);
+        Console.WriteLine("Server receiving message...");
+        var buffer = new byte[1024];
+        var n = server.Receive(buffer, TimeSpan.FromSeconds(1));
+        if (!n.HasValue)
+        {
+            Console.WriteLine("Failed to receive message.");
+            return;
+        }
+        ReadOnlyUtf8Span message = buffer.AsSpan(0, n.Value);
+        Console.WriteLine("Server received message: " + message.ToString());
     }
 
     static void V6Shenanigans()

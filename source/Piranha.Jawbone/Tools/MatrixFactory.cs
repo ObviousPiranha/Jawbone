@@ -4,6 +4,15 @@ namespace Piranha.Jawbone;
 
 public static class MatrixFactory
 {
+    public static Matrix4x4 CreateUnitOrthographic(float aspectRatio)
+    {
+        var result = aspectRatio < 1f ?
+            Matrix4x4.CreateOrthographic(1f, 1f / aspectRatio, 1f, -1f) :
+            Matrix4x4.CreateOrthographic(aspectRatio, 1f, 1f, -1f);
+
+        return result;
+    }
+
     public static Matrix4x4 CreateSepia()
     {
         // https://stackoverflow.com/a/41994089/264712

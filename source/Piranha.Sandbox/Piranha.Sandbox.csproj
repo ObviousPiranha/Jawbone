@@ -4,10 +4,6 @@
     <ProjectReference Include="..\Piranha.Jawbone\Piranha.Jawbone.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- <None Include="PiranhaNative.dll" CopyToOutputDirectory="Always"/> -->
-  </ItemGroup>
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
   </PropertyGroup>

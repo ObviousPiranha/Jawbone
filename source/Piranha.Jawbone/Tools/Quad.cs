@@ -34,13 +34,47 @@ public static class Quad
     public static Quad<T> Create<T>(T abcd) => new(abcd);
     public static Quad<T> Create<T>(T a, T b, T c, T d) => new(a, b, c, d);
 
-    public static Quad<Vector2> Create(Vector2 a, Vector2 c)
+    // [Obsolete("Use CreateAxCy instead.")]
+    public static Quad<Vector2> Create(Vector2 a, Vector2 c) => CreateAxCy(a, c);
+
+    public static Quad<Vector2> CreateAxCy(Vector2 a, Vector2 c)
     {
-        return new Quad<Vector2>(
-            a,
-            new Vector2(a.X, c.Y),
-            c,
-            new Vector2(c.X, a.Y));
+        var axcy = new Vector2(a.X, c.Y);
+        var cxay = new Vector2(c.X, a.Y);
+        return new Quad<Vector2>(a, axcy, c, cxay);
+    }
+
+    public static Quad<Vector2> CreateCxAy(Vector2 a, Vector2 c)
+    {
+        var axcy = new Vector2(a.X, c.Y);
+        var cxay = new Vector2(c.X, a.Y);
+        return new Quad<Vector2>(a, cxay, c, axcy);
+    }
+
+    public static Quad<Vector2> CreateLhr(Vector2 a, Vector2 c)
+    {
+        // Rotate coordinates using left-handed coordinate system.
+        if (a.X < c.X ^ a.Y < c.Y)
+        {
+            return CreateCxAy(a, c);
+        }
+        else
+        {
+            return CreateAxCy(a, c);
+        }
+    }
+
+    public static Quad<Vector2> CreateRhr(Vector2 a, Vector2 c)
+    {
+        // Rotate coordinates using right-handed coordinate system.
+        if (a.X < c.X ^ a.Y < c.Y)
+        {
+            return CreateAxCy(a, c);
+        }
+        else
+        {
+            return CreateCxAy(a, c);
+        }
     }
 
     public static Quad<T3> Combine<T1, T2, T3>(
@@ -129,14 +163,6 @@ public static class Quad
             Vector2.Transform(q.D, matrix));
     }
 
-    public static Quad<Vector2> Rotated(
-        in this Quad<Vector2> q,
-        float radians)
-    {
-        var matrix = Matrix3x2.CreateRotation(radians);
-        return q.Transformed(matrix);
-    }
-
     public static Quad<Vector2> Negated(in this Quad<Vector2> q)
     {
         return new Quad<Vector2>(
@@ -218,21 +244,18 @@ public static class Quad
     public static Quad<Vector2> RotatedClockwiseAboutOrigin(in this Quad<Vector2> q)
     {
         return new Quad<Vector2>(
-            RotatedClockwise(q.A),
-            RotatedClockwise(q.B),
-            RotatedClockwise(q.C),
-            RotatedClockwise(q.D));
+            Rotated.Clockwise(q.A),
+            Rotated.Clockwise(q.B),
+            Rotated.Clockwise(q.C),
+            Rotated.Clockwise(q.D));
     }
 
     public static Quad<Vector2> RotatedCounterclockwiseAboutOrigin(in this Quad<Vector2> q)
     {
         return new Quad<Vector2>(
-            RotatedCounterclockwise(q.A),
-            RotatedCounterclockwise(q.B),
-            RotatedCounterclockwise(q.C),
-            RotatedCounterclockwise(q.D));
+            Rotated.Counterclockwise(q.A),
+            Rotated.Counterclockwise(q.B),
+            Rotated.Counterclockwise(q.C),
+            Rotated.Counterclockwise(q.D));
     }
-
-    private static Vector2 RotatedClockwise(Vector2 vector) => new(vector.Y, -vector.X);
-    private static Vector2 RotatedCounterclockwise(Vector2 vector) => new(-vector.Y, vector.X);
 }

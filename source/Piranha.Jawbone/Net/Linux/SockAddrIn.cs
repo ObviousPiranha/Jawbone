@@ -4,10 +4,9 @@ namespace Piranha.Jawbone.Net.Linux;
 
 struct SockAddrIn
 {
-    [InlineArray(Length)]
+    [InlineArray(8)]
     public struct Zero
     {
-        public const int Length = 8;
         private byte _e0;
     }
 
@@ -18,6 +17,8 @@ struct SockAddrIn
 
     public Endpoint<AddressV4> ToEndpoint()
     {
+        if (SinFamily != Af.INet)
+            Core.ThrowWrongAddressFamily();
         return Endpoint.Create(
             new AddressV4(SinAddr),
             new NetworkPort { NetworkValue = SinPort });

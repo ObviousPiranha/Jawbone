@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using Xunit;
 
 namespace Piranha.Jawbone.Test;
 

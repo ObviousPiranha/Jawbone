@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Piranha.Jawbone.Test;
 
@@ -16,7 +16,7 @@ public class Serializable<T> : IXunitSerializable where T : unmanaged, IParsable
 
     public void Deserialize(IXunitSerializationInfo info)
     {
-        var text = info.GetValue<string>(nameof(Value));
+        var text = info.GetValue<string>(nameof(Value)) ?? "";
         Value = T.Parse(text, null);
     }
 

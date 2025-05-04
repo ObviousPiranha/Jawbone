@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
-using Xunit;
 
 namespace Piranha.Jawbone.Test;
 

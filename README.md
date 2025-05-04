@@ -1,2 +1,2 @@
 # Jawbone
-Native library foundations for game dev using .NET 8.
+Native library foundations for game dev using .NET 9.

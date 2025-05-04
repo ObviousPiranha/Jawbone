@@ -1,0 +1,120 @@
+using System;
+using System.Diagnostics;
+
+namespace Piranha.Jawbone.Net.Linux;
+
+sealed class LinuxUdpClientV4 : IUdpClient<AddressV4>
+{
+    private readonly int _fd;
+
+    public Endpoint<AddressV4> Origin { get; }
+
+    public LinuxUdpClientV4(int fd, Endpoint<AddressV4> origin)
+    {
+        _fd = fd;
+        Origin = origin;
+    }
+
+    public void Dispose()
+    {
+        var result = Sys.Close(_fd);
+        if (result == -1)
+            Sys.Throw("Unable to close socket.");
+    }
+
+    public Endpoint<AddressV4> GetSocketName()
+    {
+        var addressLength = AddrLen;
+        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        if (result == -1)
+            Sys.Throw("Unable to get socket name.");
+        return address.ToEndpoint();
+    }
+
+    public int? Receive(Span<byte> buffer, TimeSpan timeout)
+    {
+        var milliseconds = Core.GetMilliseconds(timeout);
+        var pfd = new PollFd { Fd = _fd, Events = Poll.In };
+        var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
+
+        if (0 < pollResult)
+        {
+            if ((pfd.REvents & Poll.In) != 0)
+            {
+                var addressLength = AddrLen;
+                var receiveResult = Sys.RecvFromV4(
+                    _fd,
+                    out buffer.GetPinnableReference(),
+                    (nuint)buffer.Length,
+                    0,
+                    out var address,
+                    ref addressLength);
+
+                if (receiveResult == -1)
+                    Sys.Throw("Unable to receive data.");
+
+                Debug.Assert(address.ToEndpoint() == Origin);
+                return (int)receiveResult;
+            }
+        }
+        else if (pollResult < 0)
+        {
+            Sys.Throw("Unable to poll socket.");
+        }
+        return null;
+    }
+
+    public int Send(ReadOnlySpan<byte> message)
+    {
+        var result = Sys.Send(
+            _fd,
+            message.GetPinnableReference(),
+            (nuint)message.Length,
+            0);
+
+        if (result == -1)
+            Sys.Throw("Unable to send data.");
+
+        return (int)result;
+    }
+
+    public static LinuxUdpClientV4 Connect(Endpoint<AddressV4> endpoint)
+    {
+        var fd = CreateSocket();
+
+        try
+        {
+            var sa = SockAddrIn.FromEndpoint(endpoint);
+            // var bindResult = Sys.BindV4(fd, sa, AddrLen);
+
+            // if (bindResult == -1)
+            //     Sys.Throw($"Failed to bind socket to address {endpoint}.");
+
+            var result = Sys.ConnectV4(fd, sa, AddrLen);
+            if (result == -1)
+            {
+                var errNo = Sys.ErrNo();
+                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+            }
+
+            return new LinuxUdpClientV4(fd, endpoint);
+        }
+        catch
+        {
+            _ = Sys.Close(fd);
+            throw;
+        }
+    }
+
+    private static int CreateSocket()
+    {
+        int fd = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
+
+        if (fd == -1)
+            Sys.Throw("Unable to open socket.");
+
+        return fd;
+    }
+
+    private static uint AddrLen => Sys.SockLen<SockAddrIn>();
+}

@@ -26,14 +26,13 @@ public struct AaQuad<T> // axis-aligned quad
 public static class AaQuad
 {
     public static AaQuad<T> Create<T>(T a, T c) => new(a, c);
-    public static Quad<Vector2> ToQuad(this AaQuad<Vector2> aaq)
-    {
-        return new Quad<Vector2>(
-            aaq.A,
-            new(aaq.A.X, aaq.C.Y),
-            aaq.C,
-            new(aaq.C.X, aaq.A.Y));
-    }
+
+    // [Obsolete("Use ToQuadAxCy instead.")]
+    public static Quad<Vector2> ToQuad(this AaQuad<Vector2> aaq) => Quad.Create(aaq.A, aaq.C);
+    public static Quad<Vector2> ToQuadAxCy(this AaQuad<Vector2> aaq) => Quad.CreateAxCy(aaq.A, aaq.C);
+    public static Quad<Vector2> ToQuadCxAy(this AaQuad<Vector2> aaq) => Quad.CreateCxAy(aaq.A, aaq.C);
+    public static Quad<Vector2> ToQuadLhr(this AaQuad<Vector2> aaq) => Quad.CreateLhr(aaq.A, aaq.C);
+    public static Quad<Vector2> ToQuadRhr(this AaQuad<Vector2> aaq) => Quad.CreateRhr(aaq.A, aaq.C);
 
     public static Quad<Vector3> ToQuad(this AaQuad<Vector3> aaq)
     {

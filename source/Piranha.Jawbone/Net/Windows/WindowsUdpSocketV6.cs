@@ -44,16 +44,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         out UdpReceiveResult<Endpoint<AddressV6>> result)
     {
         result = default;
-        int milliseconds;
-        {
-            var ms64 = timeout.Ticks / TimeSpan.TicksPerMillisecond;
-            if (int.MaxValue < ms64)
-                milliseconds = int.MaxValue;
-            else if (ms64 < 0)
-                milliseconds = 0;
-            else
-                milliseconds = unchecked((int)ms64);
-        }
+        var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
         var pollResult = Sys.WsaPoll(ref pfd, 1, milliseconds);
 
@@ -76,7 +67,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
                     Sys.Throw("Unable to receive data.");
 
                 result.State = UdpReceiveState.Success;
-                result.Origin = address.ToEndpoint();
+                result.Origin = address.GetV6(addressLength);
                 result.ReceivedByteCount = (int)receiveResult;
                 result.Received = buffer[..(int)receiveResult];
             }
@@ -84,7 +75,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         else if (pollResult < 0)
         {
             result.State = UdpReceiveState.Failure;
-            result.Error = Sys.WsaGetLastError();
+            result.Error = Error.GetErrorCode(Sys.WsaGetLastError());
         }
         else
         {
@@ -99,7 +90,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
         AssertAddrLen(addressLength);
-        return address.ToEndpoint();
+        return address.GetV6(addressLength);
     }
 
     public static WindowsUdpSocketV6 Create(bool allowV4)

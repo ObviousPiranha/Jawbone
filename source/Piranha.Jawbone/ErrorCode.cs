@@ -2,17 +2,22 @@ namespace Piranha.Jawbone;
 
 public readonly struct ErrorCode
 {
-    public static readonly ErrorCode None = new(0, "", "No error");
+    private readonly string? _name;
+    private readonly string? _description;
 
-    public readonly int Id { get; init; }
-    public readonly string Name { get; init; }
-    public readonly string Description { get; init; }
+    public readonly int Id { get; }
+    public readonly string Name => _name ?? "";
+    public readonly string Description => _description ?? "";
+
+    public ErrorCode(int id) : this(id, "UNKNOWN", "Unrecognized error")
+    {
+    }
 
     public ErrorCode(int id, string name, string description)
     {
         Id = id;
-        Name = name;
-        Description = description;
+        _name = name;
+        _description = description;
     }
 
     public override string ToString() => $"{Name}({Id}) {Description}";

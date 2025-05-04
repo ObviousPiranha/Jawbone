@@ -1,5 +1,4 @@
 using Piranha.Jawbone.Hexagon;
-using Xunit;
 
 namespace Piranha.Jawbone.Test;
 

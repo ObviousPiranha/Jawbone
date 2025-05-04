@@ -3,7 +3,6 @@ using Piranha.Jawbone.Sqlite;
 using System;
 using System.IO;
 using System.Linq;
-using Xunit;
 
 namespace Piranha.Jawbone.Test.Native;
 

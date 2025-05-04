@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Piranha.Jawbone.Net.Mac;
 
 struct SockAddrIn6
@@ -11,6 +13,8 @@ struct SockAddrIn6
 
     public Endpoint<AddressV6> ToEndpoint()
     {
+        if (Sin6Family != Af.INet6)
+            Core.ThrowWrongAddressFamily();
         return Endpoint.Create(
             new AddressV6(Sin6Addr.U6Addr32, Sin6ScopeId),
             new NetworkPort { NetworkValue = Sin6Port });
@@ -20,6 +24,7 @@ struct SockAddrIn6
     {
         return new SockAddrIn6
         {
+            Sin6Len = (byte)Unsafe.SizeOf<SockAddrIn6>(),
             Sin6Family = Af.INet6,
             Sin6Port = endpoint.Port.NetworkValue,
             Sin6Addr = new(endpoint.Address.DataU32),
