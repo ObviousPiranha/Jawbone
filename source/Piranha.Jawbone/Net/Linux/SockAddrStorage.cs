@@ -7,8 +7,6 @@ namespace Piranha.Jawbone.Net.Linux;
 struct SockAddrStorage
 {
     [FieldOffset(0)]
-    public ushort Family;
-    [FieldOffset(0)]
     public SockAddrIn V4;
     [FieldOffset(0)]
     public SockAddrIn6 V6;

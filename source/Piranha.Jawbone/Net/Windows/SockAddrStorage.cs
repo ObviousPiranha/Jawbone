@@ -13,10 +13,10 @@ struct SockAddrStorage
 
     public Endpoint<AddressV6> GetV6(int addrLen)
     {
-        if (addrLen == Unsafe.SizeOf<SockAddrIn>())
-            return V4.ToEndpoint().MapToV6();
-        else if (addrLen == Unsafe.SizeOf<SockAddrIn6>())
+        if (addrLen == SockAddrIn6.Len)
             return V6.ToEndpoint();
+        else if (addrLen == SockAddrIn.Len)
+            return V4.ToEndpoint().MapToV6();
         else
             throw new SocketException("Unsupported address size: " + addrLen);
     }
