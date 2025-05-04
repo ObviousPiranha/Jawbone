@@ -48,6 +48,7 @@ public struct AddressV6 : IAddress<AddressV6>
         return result;
     }
 
+    public static AddressV6 Any => default;
     public static AddressV6 Local { get; } = CreateLocal();
 
     private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;
