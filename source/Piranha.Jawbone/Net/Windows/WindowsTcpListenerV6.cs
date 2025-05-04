@@ -69,6 +69,7 @@ sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
 
         try
         {
+            So.SetReuseAddr(fd);
             Ipv6.SetIpv6Only(fd, allowV4);
             var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
             var bindResult = Sys.BindV6(fd, sa, Unsafe.SizeOf<SockAddrIn6>());

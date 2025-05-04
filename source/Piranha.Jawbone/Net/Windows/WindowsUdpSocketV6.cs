@@ -100,6 +100,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
 
         try
         {
+            So.SetReuseAddr(socket);
             var sa = SockAddrIn6.FromEndpoint(endpoint);
             var bindResult = Sys.BindV6(socket, sa, SockAddrIn6.Len);
 

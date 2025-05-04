@@ -98,6 +98,7 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
 
         try
         {
+            So.SetReuseAddr(socket);
             var sa = SockAddrIn.FromEndpoint(endpoint);
             var bindResult = Sys.BindV4(socket, sa, SockAddrIn.Len);
 
