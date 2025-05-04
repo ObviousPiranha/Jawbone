@@ -103,6 +103,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
 
         try
         {
+            So.SetReuseAddr(fd);
             var sa = SockAddrIn6.FromEndpoint(endpoint);
             var bindResult = Sys.BindV6(fd, sa, SockAddrIn6.Len);
 

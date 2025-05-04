@@ -78,6 +78,7 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
 
         try
         {
+            So.SetReuseAddr(fd);
             var sa = SockAddrIn.FromEndpoint(bindEndpoint);
             var bindResult = Sys.BindV4(fd, sa, SockAddrIn.Len);
 

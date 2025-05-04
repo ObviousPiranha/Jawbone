@@ -69,6 +69,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
         try
         {
             Ipv6.SetIpv6Only(fd, allowV4);
+            So.SetReuseAddr(fd);
             var sa = SockAddrIn6.FromEndpoint(bindEndpoint);
             var bindResult = Sys.BindV6(fd, sa, SockAddrIn6.Len);
 

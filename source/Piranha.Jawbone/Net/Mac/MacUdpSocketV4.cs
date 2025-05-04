@@ -100,6 +100,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
 
         try
         {
+            So.SetReuseAddr(fd);
             var sa = SockAddrIn.FromEndpoint(endpoint);
             var bindResult = Sys.BindV4(fd, sa, SockAddrIn.Len);
 
