@@ -177,10 +177,8 @@ class Program
 
         var serverSocketName = server.GetSocketName();
         Console.WriteLine("Server socket name: " + serverSocketName);
-        var clientSocketName = client.GetSocketName();
-        Console.WriteLine("Client socket name: " + clientSocketName);
         client.Send("Hello, IPv6!"u8, AddressV4.Local.OnPort(port));
-        clientSocketName = client.GetSocketName();
+        var clientSocketName = client.GetSocketName();
         Console.WriteLine("Client socket name: " + clientSocketName);
 
         var buffer = new byte[2048];
