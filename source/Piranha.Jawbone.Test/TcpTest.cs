@@ -12,7 +12,7 @@ public class TcpTest
     {
         using var listener = TcpListenerV4.Listen(default, 1);
         var endpoint = listener.GetSocketName();
-        using var client = TcpClientV4.Connect(endpoint);
+        using var client = TcpClientV4.Connect(AddressV4.Local.OnPort(endpoint.Port));
         using var server = listener.Accept(Timeout);
         Assert.NotNull(server);
 
@@ -32,7 +32,7 @@ public class TcpTest
     {
         using var listener = TcpListenerV6.Listen(default, 1);
         var endpoint = listener.GetSocketName();
-        using var client = TcpClientV6.Connect(endpoint);
+        using var client = TcpClientV6.Connect(AddressV6.Local.OnPort(endpoint.Port));
         using var server = listener.Accept(Timeout);
         Assert.NotNull(server);
 
