@@ -7,7 +7,7 @@ public readonly struct ErrorCode
 
     public readonly int Id { get; }
     public readonly string Name => _name ?? "";
-    public readonly string Description  => _description ?? "";
+    public readonly string Description => _description ?? "";
 
     public ErrorCode(int id) : this(id, "UNKNOWN", "Unrecognized error")
     {
