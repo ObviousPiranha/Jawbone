@@ -91,7 +91,7 @@ else
 }
 ```
 
-If you know that your socket is a client connection that will only speak to one other endpoint, There is another option.
+If you know that your socket is a client connection that will only speak to one other endpoint, there is another option: `IUdpClient<T>`.
 
 ```csharp
 using var client = UdpClientV4.Connect(endpoint);
@@ -100,24 +100,28 @@ var bytesSent = client.Send("Hello!"u8);
 
 // We already know the origin. So just receive data!
 var bytesReceived = client.Receive(buffer, timeout);
+if (bytesReceived.HasValue)
+{
+    // You know the drill!
+}
 ```
 
 ### TCP Sockets
 
-Create a TCP listener to get started.
+Create a TCP listener to get started. Its type is `ITcpListener<T>`.
 
 ```csharp
 var bindEndpoint = AddressV4.Local.OnPort(5555);
 using var listener = TcpListenerV4.Listen(bindEndpoint, 4); // Backlog of 4 pending connections.
 ```
 
-Connect with a client.
+Connect with a client. Its type is `ITcpClient<T>`.
 
 ```csharp
 using var client = TcpClientV4.Connect(endpoint);
 ```
 
-Accept the connection.
+Accept the connection into another `ITcpClient<T>` on the server side.
 
 ```csharp
 var timeout = TimeSpan.FromSeconds(1);
