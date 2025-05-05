@@ -69,8 +69,8 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = SockAddrIn6.Len;
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
         return address.GetV6(addressLength);

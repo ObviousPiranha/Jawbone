@@ -20,14 +20,14 @@ struct SockAddrIn
     public Endpoint<AddressV4> ToEndpoint(uint len)
     {
         if (len != Len)
-            Core.ThrowBadAddressLength();
+            ThrowExceptionFor.WrongAddressLength();
         return ToEndpoint();
     }
 
     public Endpoint<AddressV4> ToEndpoint()
     {
         if (SinFamily != Af.INet)
-            Core.ThrowWrongAddressFamily();
+            ThrowExceptionFor.WrongAddressFamily();
         return Endpoint.Create(
             new AddressV4(SinAddr),
             new NetworkPort { NetworkValue = SinPort });

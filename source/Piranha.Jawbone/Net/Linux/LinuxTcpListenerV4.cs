@@ -5,6 +5,7 @@ namespace Piranha.Jawbone.Net.Linux;
 sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
 {
     private readonly int _fd;
+    private SockAddrStorage _address;
 
     private LinuxTcpListenerV4(int fd) => _fd = fd;
 
@@ -18,15 +19,15 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = SockAddrIn.Len;
-                var fd = Sys.AcceptV4(_fd, out var addr, ref addrLen);
-                if (fd < 0)
+                var addressLength = SockAddrStorage.Len;
+                var fd = Sys.Accept(_fd, out _address, ref addressLength);
+                if (fd == -1)
                     Sys.Throw("Failed to accept socket.");
 
                 try
                 {
                     Tcp.SetNoDelay(fd);
-                    var endpoint = addr.ToEndpoint();
+                    var endpoint = _address.GetV4(addressLength);
                     var result = new LinuxTcpClientV4(fd, endpoint);
                     return result;
                 }
@@ -39,7 +40,7 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
             }
             else
             {
-                throw new InvalidOperationException("Unexpected poll event.");
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)
@@ -55,11 +56,11 @@ sealed class LinuxTcpListenerV4 : ITcpListener<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = SockAddrIn.Len;
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.ToEndpoint();
+        return _address.GetV4(addressLength);
     }
 
     public void Dispose()

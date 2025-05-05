@@ -8,10 +8,10 @@ struct SockAddrIn6
     public In6Addr Sin6Addr;
     public uint Sin6ScopeId;
 
-    public Endpoint<AddressV6> ToEndpoint()
+    public readonly Endpoint<AddressV6> ToEndpoint()
     {
         if (Sin6Family != Af.INet6)
-            Core.ThrowWrongAddressFamily();
+            ThrowExceptionFor.WrongAddressFamily();
         return Endpoint.Create(
             new AddressV6(Sin6Addr.U6Addr32, Sin6ScopeId),
             new NetworkPort { NetworkValue = Sin6Port });

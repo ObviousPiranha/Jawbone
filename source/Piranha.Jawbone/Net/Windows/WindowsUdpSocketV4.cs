@@ -66,6 +66,10 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
                 origin = address.ToEndpoint(addressLength);
                 return (int)receiveResult;
             }
+            else
+            {
+                throw CreateExceptionFor.BadPoll();
+            }
         }
         else if (pollResult < 0)
         {

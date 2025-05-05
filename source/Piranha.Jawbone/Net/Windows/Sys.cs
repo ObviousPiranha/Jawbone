@@ -12,7 +12,7 @@ static unsafe partial class Sys
 
     static Sys()
     {
-        var result = WsaStartup(0x0202, out s_wsaData[0]);
+        var result = WsaStartup(0x0202, out s_wsaData);
         if (result != 0)
         {
             throw new SocketException("Unable to initialize Windows networking.")
@@ -24,7 +24,7 @@ static unsafe partial class Sys
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsastartup
     [LibraryImport(Lib, EntryPoint = "WSAStartup")]
-    public static partial int WsaStartup(ushort versionRequired, out byte wsaData);
+    public static partial int WsaStartup(ushort versionRequired, out WsaData wsaData);
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsagetlasterror
     [LibraryImport(Lib, EntryPoint = "WSAGetLastError")]
@@ -157,7 +157,7 @@ static unsafe partial class Sys
     }
 
     [InlineArray(512)] // Actual size is less than this. Just being safe.
-    private struct WsaData
+    public struct WsaData
     {
         private byte _element0;
     }

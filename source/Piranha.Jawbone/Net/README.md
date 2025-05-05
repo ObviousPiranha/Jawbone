@@ -135,7 +135,7 @@ if (server is null)
 Communicate back and forth with TCP goodness. All TCP sockets enable `TCP_NODELAY` automatically.
 
 ```csharp
-client.Send("HTTP goodness?");
+client.Send("HTTP shenanigans"u8);
 
 var bytesReceived = server.Receive(buffer, timeout);
 ```

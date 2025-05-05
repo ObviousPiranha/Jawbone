@@ -1,12 +1,11 @@
 using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Linux;
 
 sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
 {
     private readonly int _fd;
+    private SockAddrStorage _address;
 
     private LinuxUdpSocketV6(int fd)
     {
@@ -51,24 +50,24 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = SockAddrIn6.Len;
-                var receiveResult = Sys.RecvFromV6(
+                var addressLength = SockAddrStorage.Len;
+                var receiveResult = Sys.RecvFrom(
                     _fd,
                     out buffer.GetPinnableReference(),
                     (nuint)buffer.Length,
                     0,
-                    out var address,
+                    out _address,
                     ref addressLength);
 
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                origin = address.GetV6(addressLength);
+                origin = _address.GetV6(addressLength);
                 return (int)receiveResult;
             }
             else
             {
-                throw Core.CreateBadPollException();
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)
@@ -83,11 +82,11 @@ sealed class LinuxUdpSocketV6 : IUdpSocket<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = SockAddrIn6.Len;
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return _address.GetV6(addressLength);
     }
 
     public static LinuxUdpSocketV6 Create(bool allowV4)

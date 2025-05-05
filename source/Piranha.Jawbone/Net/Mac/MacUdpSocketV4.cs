@@ -66,7 +66,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
             }
             else
             {
-                throw Core.CreateBadPollException();
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)

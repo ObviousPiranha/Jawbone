@@ -59,7 +59,7 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
             }
             else
             {
-                throw Core.CreateBadPollException();
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)

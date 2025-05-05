@@ -60,7 +60,7 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
             }
             else
             {
-                throw Core.CreateBadPollException();
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)
