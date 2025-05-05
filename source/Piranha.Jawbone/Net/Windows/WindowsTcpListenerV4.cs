@@ -6,6 +6,7 @@ namespace Piranha.Jawbone.Net.Windows;
 sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
 {
     private readonly nuint _fd;
+    private SockAddrStorage _address;
 
     private WindowsTcpListenerV4(nuint fd) => _fd = fd;
 
@@ -19,15 +20,15 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = Unsafe.SizeOf<SockAddrIn>();
-                var fd = Sys.AcceptV4(_fd, out var addr, ref addrLen);
-                if (fd < 0)
+                var addressLength = SockAddrStorage.Len;
+                var fd = Sys.Accept(_fd, out _address, ref addressLength);
+                if (fd == Sys.InvalidSocket)
                     Sys.Throw("Failed to accept socket.");
 
                 try
                 {
                     Tcp.SetNoDelay(fd);
-                    var endpoint = addr.ToEndpoint();
+                    var endpoint = _address.GetV4(addressLength);
                     var result = new WindowsTcpClientV4(fd, endpoint);
                     return result;
                 }
@@ -55,11 +56,11 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrIn>();
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.ToEndpoint();
+        return _address.GetV4(addressLength);
     }
 
     public void Dispose()

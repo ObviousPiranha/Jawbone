@@ -5,6 +5,7 @@ namespace Piranha.Jawbone.Net.Windows;
 sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
 {
     private readonly nuint _fd;
+    private SockAddrStorage _address;
 
     private WindowsUdpSocketV6(nuint fd)
     {
@@ -50,18 +51,18 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
             if ((pfd.REvents & Poll.In) != 0)
             {
                 var addressLength = SockAddrStorage.Len;
-                var receiveResult = Sys.RecvFromV6(
+                var receiveResult = Sys.RecvFrom(
                     _fd,
                     out buffer.GetPinnableReference(),
                     buffer.Length,
                     0,
-                    out var address,
+                    out _address,
                     ref addressLength);
 
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                origin = address.GetV6(addressLength);
+                origin = _address.GetV6(addressLength);
                 return (int)receiveResult;
             }
             else
@@ -82,10 +83,10 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
     public unsafe Endpoint<AddressV6> GetSocketName()
     {
         var addressLength = SockAddrStorage.Len;
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return _address.GetV6(addressLength);
     }
 
     public static WindowsUdpSocketV6 Create(bool allowV4)

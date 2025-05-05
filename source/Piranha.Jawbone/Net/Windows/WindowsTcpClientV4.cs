@@ -72,11 +72,11 @@ sealed class WindowsTcpClientV4 : ITcpClient<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrIn>();
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.ToEndpoint();
+        return address.GetV4(addressLength);
     }
 
     public static WindowsTcpClientV4 Connect(Endpoint<AddressV4> endpoint)

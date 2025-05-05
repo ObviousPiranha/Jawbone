@@ -6,6 +6,7 @@ namespace Piranha.Jawbone.Net.Windows;
 sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
 {
     private readonly nuint _fd;
+    private SockAddrStorage _address;
 
     private WindowsTcpListenerV6(nuint fd) => _fd = fd;
 
@@ -19,12 +20,12 @@ sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = Unsafe.SizeOf<SockAddrStorage>();
-                var fd = Sys.AcceptV6(_fd, out var addr, ref addrLen);
+                var addressLength = SockAddrStorage.Len;
+                var fd = Sys.Accept(_fd, out _address, ref addressLength);
                 if (fd < 0)
                     Sys.Throw("Failed to accept socket.");
                 Tcp.SetNoDelay(fd);
-                var endpoint = addr.GetV6(addrLen);
+                var endpoint = _address.GetV6(addressLength);
                 var result = new WindowsTcpClientV6(fd, endpoint);
                 return result;
             }
@@ -46,11 +47,11 @@ sealed class WindowsTcpListenerV6 : ITcpListener<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrStorage>();
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return _address.GetV6(addressLength);
     }
 
     public void Dispose()

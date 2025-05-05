@@ -7,6 +7,7 @@ namespace Piranha.Jawbone.Net.Windows;
 sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
 {
     private readonly nuint _fd;
+    private SockAddrStorage _address;
 
     public Endpoint<AddressV4> Origin { get; }
 
@@ -25,11 +26,11 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = SockAddrIn.Len;
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.ToEndpoint();
+        return _address.GetV4(addressLength);
     }
 
     public int? Receive(Span<byte> buffer, TimeSpan timeout)
@@ -42,19 +43,19 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = SockAddrIn.Len;
-                var receiveResult = Sys.RecvFromV4(
+                var addressLength = SockAddrStorage.Len;
+                var receiveResult = Sys.RecvFrom(
                     _fd,
                     out buffer.GetPinnableReference(),
                     buffer.Length,
                     0,
-                    out var address,
+                    out _address,
                     ref addressLength);
 
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                var origin = address.ToEndpoint(addressLength);
+                var origin = _address.GetV4(addressLength);
                 Debug.Assert(origin == Origin);
                 return (int)receiveResult;
             }
