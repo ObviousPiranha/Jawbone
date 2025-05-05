@@ -5,6 +5,7 @@ namespace Piranha.Jawbone.Net.Mac;
 sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
 {
     private readonly int _fd;
+    private SockAddrStorage _address;
 
     private MacTcpListenerV6(int fd) => _fd = fd;
 
@@ -18,18 +19,18 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = SockAddrIn6.Len;
-                var fd = Sys.AcceptV6(_fd, out var addr, ref addrLen);
-                if (fd < 0)
+                var addressLength = SockAddrStorage.Len;
+                var fd = Sys.Accept(_fd, out _address, ref addressLength);
+                if (fd == -1)
                     Sys.Throw("Failed to accept socket.");
                 Tcp.SetNoDelay(fd);
-                var endpoint = addr.GetV6(addrLen);
+                var endpoint = _address.GetV6(addressLength);
                 var result = new MacTcpClientV6(fd, endpoint);
                 return result;
             }
             else
             {
-                throw new InvalidOperationException("Unexpected poll event.");
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)
@@ -45,11 +46,11 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = SockAddrIn6.Len;
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return _address.GetV6(addressLength);
     }
 
     public void Dispose()

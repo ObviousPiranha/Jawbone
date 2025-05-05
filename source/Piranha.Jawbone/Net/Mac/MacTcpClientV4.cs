@@ -43,7 +43,7 @@ sealed class MacTcpClientV4 : ITcpClient<AddressV4>
             }
             else
             {
-                throw new InvalidOperationException("Unexpected poll event.");
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)
@@ -69,11 +69,11 @@ sealed class MacTcpClientV4 : ITcpClient<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = SockAddrIn.Len;
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out var address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.ToEndpoint();
+        return address.GetV4(addressLength);
     }
 
     public static MacTcpClientV4 Connect(Endpoint<AddressV4> endpoint)

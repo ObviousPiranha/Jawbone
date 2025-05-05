@@ -1,13 +1,11 @@
 using System;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Mac;
 
 sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
 {
     private readonly int _fd;
+    private SockAddrStorage _address;
 
     private MacUdpSocketV6(int fd)
     {
@@ -52,19 +50,19 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = SockAddrIn6.Len;
-                var receiveResult = Sys.RecvFromV6(
+                var addressLength = SockAddrStorage.Len;
+                var receiveResult = Sys.RecvFrom(
                     _fd,
                     out buffer.GetPinnableReference(),
                     (nuint)buffer.Length,
                     0,
-                    out var address,
+                    out _address,
                     ref addressLength);
 
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                origin = address.GetV6(addressLength);
+                origin = _address.GetV6(addressLength);
                 return (int)receiveResult;
             }
             else
@@ -84,11 +82,11 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
 
     public unsafe Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = SockAddrIn6.Len;
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return _address.GetV6(addressLength);
     }
 
     public static MacUdpSocketV6 Create(bool allowV4)
