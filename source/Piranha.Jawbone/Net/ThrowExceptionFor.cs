@@ -10,10 +10,4 @@ static class ThrowExceptionFor
     {
         throw new InvalidOperationException("Incorrect address family.");
     }
-
-    [DoesNotReturn]
-    public static void WrongAddressLength()
-    {
-        throw new InvalidOperationException("Address length does not match.");
-    }
 }

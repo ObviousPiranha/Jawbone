@@ -15,13 +15,6 @@ struct SockAddrIn
     public uint SinAddr;
     public Zero SinZero;
 
-    public readonly Endpoint<AddressV4> ToEndpoint(int len)
-    {
-        if (len != Len)
-            ThrowExceptionFor.WrongAddressLength();
-        return ToEndpoint();
-    }
-
     public readonly Endpoint<AddressV4> ToEndpoint()
     {
         if (SinFamily != Af.INet)
