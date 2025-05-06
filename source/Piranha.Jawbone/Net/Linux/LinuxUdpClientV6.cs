@@ -42,7 +42,7 @@ sealed class LinuxUdpClientV6 : IUdpClient<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = SockAddrIn6.Len;
+                var addressLength = SockAddrStorage.Len;
                 var receiveResult = Sys.RecvFrom(
                     _fd,
                     out buffer.GetPinnableReference(),
