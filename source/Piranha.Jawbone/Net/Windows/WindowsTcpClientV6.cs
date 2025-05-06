@@ -90,7 +90,7 @@ sealed class WindowsTcpClientV6 : ITcpClient<AddressV6>
         {
             Tcp.SetNoDelay(fd);
             var addr = SockAddrIn6.FromEndpoint(endpoint);
-            var connectResult = Sys.ConnectV6(fd, addr, Unsafe.SizeOf<SockAddrIn6>());
+            var connectResult = Sys.ConnectV6(fd, addr, SockAddrIn6.Len);
             if (connectResult == -1)
             {
                 var error = Sys.WsaGetLastError();

@@ -81,7 +81,7 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
         {
             So.SetReuseAddr(fd);
             var sa = SockAddrIn.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV4(fd, sa, Unsafe.SizeOf<SockAddrIn>());
+            var bindResult = Sys.BindV4(fd, sa, SockAddrIn.Len);
 
             if (bindResult == -1)
             {

@@ -90,7 +90,7 @@ sealed class WindowsTcpClientV4 : ITcpClient<AddressV4>
         {
             Tcp.SetNoDelay(fd);
             var addr = SockAddrIn.FromEndpoint(endpoint);
-            var result = Sys.ConnectV4(fd, addr, Unsafe.SizeOf<SockAddrIn>());
+            var result = Sys.ConnectV4(fd, addr, SockAddrIn.Len);
             if (result == -1)
             {
                 var error = Sys.WsaGetLastError();

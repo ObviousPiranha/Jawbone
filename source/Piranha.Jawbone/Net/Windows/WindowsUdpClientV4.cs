@@ -92,7 +92,7 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
         try
         {
             var sa = SockAddrIn.FromEndpoint(endpoint);
-            var result = Sys.ConnectV4(fd, sa, Unsafe.SizeOf<SockAddrIn>());
+            var result = Sys.ConnectV4(fd, sa, SockAddrIn.Len);
             if (result == -1)
             {
                 var error = Sys.WsaGetLastError();
