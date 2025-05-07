@@ -8,4 +8,6 @@ static class ExceptionMessages
     public const string ReceiveData = "Unable to receive data.";
     public const string Poll = "Unable to poll socket.";
     public const string GetSocketName = "Unable to get socket name.";
+    public const string Accept = "Unable to accept socket.";
+    public const string TcpNoDelay = "Unable to enable TCP_NODELAY.";
 }

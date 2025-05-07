@@ -16,6 +16,6 @@ static class Tcp
             Unsafe.SizeOf<int>());
 
         if (result == -1)
-            Sys.Throw("Unable to enable TCP_NODELAY.");
+            Sys.Throw(ExceptionMessages.TcpNoDelay);
     }
 }

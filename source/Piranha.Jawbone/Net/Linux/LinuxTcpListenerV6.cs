@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace Piranha.Jawbone.Net.Linux;
 
@@ -7,41 +8,68 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
     private readonly int _fd;
     private SockAddrStorage _address;
 
+    public InterruptHandling HandleInterruptOnAccept { get; set; }
+
     private LinuxTcpListenerV6(int fd) => _fd = fd;
 
     public ITcpClient<AddressV6>? Accept(TimeSpan timeout)
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
+
+    retry:
+        var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
 
         if (0 < pollResult)
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
+            retryAccept:
                 var addressLength = SockAddrStorage.Len;
                 var fd = Sys.Accept(_fd, out _address, ref addressLength);
                 if (fd == -1)
-                    Sys.Throw("Failed to accept socket.");
-                Tcp.SetNoDelay(fd);
-                var endpoint = _address.GetV6(addressLength);
-                var result = new LinuxTcpClientV6(fd, endpoint);
-                return result;
+                {
+                    var errNo = Sys.ErrNo();
+                    if (!Error.IsInterrupt(errNo) || HandleInterruptOnAccept == InterruptHandling.Error)
+                        Sys.Throw(errNo, ExceptionMessages.Accept);
+                    goto retryAccept;
+                }
+
+                try
+                {
+                    Tcp.SetNoDelay(fd);
+                    var endpoint = _address.GetV6(addressLength);
+                    var result = new LinuxTcpClientV6(fd, endpoint);
+                    return result;
+                }
+                catch
+                {
+                    _ = Sys.Close(fd);
+                    throw;
+                }
             }
             else
             {
                 throw CreateExceptionFor.BadPoll();
             }
         }
-        else if (pollResult < 0)
+        else if (pollResult == -1)
         {
-            Sys.Throw("Error while polling socket.");
-            return null;
+            var errNo = Sys.ErrNo();
+            if (!Error.IsInterrupt(errNo) || HandleInterruptOnAccept == InterruptHandling.Error)
+            {
+                Sys.Throw(ExceptionMessages.Poll);
+            }
+            else if (HandleInterruptOnAccept != InterruptHandling.Timeout)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+                milliseconds = Core.GetMilliseconds(timeout - elapsed);
+                goto retry;
+            }
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     public Endpoint<AddressV6> GetSocketName()
@@ -49,7 +77,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
         var addressLength = SockAddrStorage.Len;
         var result = Sys.GetSockName(_fd, out var address, ref addressLength);
         if (result == -1)
-            Sys.Throw("Unable to get socket name.");
+            Sys.Throw(ExceptionMessages.GetSocketName);
         return address.GetV6(addressLength);
     }
 
@@ -57,7 +85,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
     {
         var result = Sys.Close(_fd);
         if (result == -1)
-            Sys.Throw("Unable to close socket.");
+            Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
     public static LinuxTcpListenerV6 Listen(Endpoint<AddressV6> bindEndpoint, int backlog, bool allowV4)
@@ -65,7 +93,7 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
         int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
         if (fd == -1)
-            Sys.Throw("Unable to open socket.");
+            Sys.Throw(ExceptionMessages.OpenSocket);
 
         try
         {
