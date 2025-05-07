@@ -5,13 +5,13 @@ namespace Piranha.Jawbone.Net;
 public interface IUdpSocket<TAddress> : IDisposable
     where TAddress : unmanaged, IAddress<TAddress>
 {
-    bool ThrowOnInterruptSend { get; set; }
+    InterruptHandling HandleInterruptOnSend { get; set; }
     InterruptHandling HandleInterruptOnReceive { get; set; }
 
-    int Send(
+    TransferResult Send(
         ReadOnlySpan<byte> message,
         Endpoint<TAddress> destination);
-    int? Receive(
+    TransferResult Receive(
         Span<byte> buffer,
         TimeSpan timeout,
         out Endpoint<TAddress> origin);
@@ -28,9 +28,9 @@ public static class UdpSocketExtensions
         where TAddress : unmanaged, IAddress<TAddress>
     {
         var result = udpSocket.Receive(buffer, timeout, out origin);
-        if (!result.HasValue)
+        if (result.Result == SocketResult.Timeout)
             throw new TimeoutException();
-        buffer = buffer[..result.Value];
+        buffer = buffer[..result.Count];
     }
 
     public static void Receive<TAddress>(
@@ -40,8 +40,8 @@ public static class UdpSocketExtensions
         where TAddress : unmanaged, IAddress<TAddress>
     {
         var result = udpSocket.Receive(buffer, timeout, out _);
-        if (!result.HasValue)
+        if (result.Result == SocketResult.Timeout)
             throw new TimeoutException();
-        buffer = buffer[..result.Value];
+        buffer = buffer[..result.Count];
     }
 }

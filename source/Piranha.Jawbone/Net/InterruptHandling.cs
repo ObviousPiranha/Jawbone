@@ -3,6 +3,6 @@ namespace Piranha.Jawbone.Net;
 public enum InterruptHandling
 {
     None,
-    Timeout,
+    Abort,
     Error
 }

@@ -22,7 +22,10 @@ class Program
                 }
                 else
                 {
-                    RunServer(int.Parse(args[0]));
+                    using var semaphore = new SemaphoreSlim(0);
+                    RunServer(
+                        semaphore,
+                        int.Parse(args[0]));
                 }
             }
             else
@@ -47,7 +50,7 @@ class Program
         }
     }
 
-    static void RunServer(int port)
+    static void RunServer(SemaphoreSlim semaphore, int port)
     {
         using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -62,13 +65,14 @@ class Program
                 Console.WriteLine("Stopping server...");
                 e.Cancel = true;
                 cancellationTokenSource.Cancel();
+                semaphore.Release();
             }
         };
 
         using var listener = TcpListenerV4.Listen(AddressV4.Any.OnPort(port), 1);
-        listener.HandleInterruptOnAccept = InterruptHandling.Timeout;
+        listener.HandleInterruptOnAccept = InterruptHandling.Abort;
         Console.WriteLine("Listening on port " + port);
-        var timeout = TimeSpan.FromSeconds(8);
+        var timeout = TimeSpan.FromSeconds(16);
 
         var buffer = new byte[2048];
         while (!cancellationTokenSource.IsCancellationRequested && !listener.WasInterrupted)
@@ -97,7 +101,8 @@ class Program
             }
         }
 
-        Thread.Sleep(1000);
+        Console.WriteLine("Server has shut down.");
+        semaphore.Wait();
     }
 
     static void RunClient(string port, string host, string message)
@@ -278,13 +283,13 @@ class Program
         Console.WriteLine("Begin receive...");
         var result = server.Receive(buffer, TimeSpan.FromSeconds(2), out var origin);
 
-        if (!result.HasValue)
+        if (result.Count == 0)
         {
             Console.WriteLine("Timed out.");
         }
         else
         {
-            var text = Encoding.UTF8.GetString(buffer.AsSpan(0, result.Value));
+            var text = Encoding.UTF8.GetString(buffer.AsSpan(0, result.Count));
             Console.WriteLine($"Received from {origin}: {text}");
         }
     }

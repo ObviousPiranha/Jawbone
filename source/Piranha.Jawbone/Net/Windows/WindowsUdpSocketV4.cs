@@ -8,7 +8,7 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
     private readonly nuint _fd;
     private SockAddrStorage _address;
 
-    public bool ThrowOnInterruptSend { get; set; }
+    public InterruptHandling HandleInterruptOnSend { get; set; }
     public InterruptHandling HandleInterruptOnReceive { get; set; }
 
     private WindowsUdpSocketV4(nuint fd)
@@ -23,7 +23,7 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
             Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
-    public unsafe int Send(ReadOnlySpan<byte> message, Endpoint<AddressV4> destination)
+    public unsafe TransferResult Send(ReadOnlySpan<byte> message, Endpoint<AddressV4> destination)
     {
         var sa = SockAddrIn.FromEndpoint(destination);
 
@@ -39,15 +39,17 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
         if (result == -1)
         {
             var error = Sys.WsaGetLastError();
-            if (Error.IsInterrupt(error) && !ThrowOnInterruptSend)
+            if (!Error.IsInterrupt(error) || HandleInterruptOnSend == InterruptHandling.Error)
+                Sys.Throw(error, ExceptionMessages.SendDatagram);
+            if (HandleInterruptOnSend != InterruptHandling.Abort)
                 goto retry;
-            Sys.Throw(error, ExceptionMessages.SendDatagram);
+            return new(SocketResult.Interrupt);
         }
 
-        return (int)result;
+        return new((int)result);
     }
 
-    public unsafe int? Receive(
+    public unsafe TransferResult Receive(
         Span<byte> buffer,
         TimeSpan timeout,
         out Endpoint<AddressV4> origin)
@@ -76,7 +78,7 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
                     Sys.Throw(ExceptionMessages.ReceiveData);
 
                 origin = _address.GetV4(addressLength);
-                return (int)receiveResult;
+                return new((int)receiveResult);
             }
             else
             {
@@ -90,16 +92,21 @@ sealed class WindowsUdpSocketV4 : IUdpSocket<AddressV4>
             {
                 Sys.Throw(error, ExceptionMessages.Poll);
             }
-            else if (HandleInterruptOnReceive != InterruptHandling.Timeout)
+            else if (HandleInterruptOnReceive != InterruptHandling.Abort)
             {
                 var elapsed = Stopwatch.GetElapsedTime(start);
                 milliseconds = Core.GetMilliseconds(timeout - elapsed);
                 goto retry;
             }
+            else
+            {
+                origin = default;
+                return new(SocketResult.Interrupt);
+            }
         }
 
         origin = default;
-        return null;
+        return new(SocketResult.Timeout);
     }
 
     public unsafe Endpoint<AddressV4> GetSocketName()

@@ -6,5 +6,5 @@ public enum SocketResult
     Success,
     Timeout,
     Interrupt,
-    Error
+    TcpHangUp
 }

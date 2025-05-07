@@ -67,7 +67,7 @@ sealed class MacTcpListenerV6 : ITcpListener<AddressV6>
             {
                 Sys.Throw(ExceptionMessages.Poll);
             }
-            else if (HandleInterruptOnAccept != InterruptHandling.Timeout)
+            else if (HandleInterruptOnAccept != InterruptHandling.Abort)
             {
                 var elapsed = Stopwatch.GetElapsedTime(start);
                 milliseconds = Core.GetMilliseconds(timeout - elapsed);

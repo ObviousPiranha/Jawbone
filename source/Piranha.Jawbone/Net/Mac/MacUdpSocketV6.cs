@@ -8,7 +8,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
     private readonly int _fd;
     private SockAddrStorage _address;
 
-    public bool ThrowOnInterruptSend { get; set; }
+    public InterruptHandling HandleInterruptOnSend { get; set; }
     public InterruptHandling HandleInterruptOnReceive { get; set; }
 
     private MacUdpSocketV6(int fd)
@@ -23,7 +23,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
-    public unsafe int Send(ReadOnlySpan<byte> message, Endpoint<AddressV6> destination)
+    public unsafe TransferResult Send(ReadOnlySpan<byte> message, Endpoint<AddressV6> destination)
     {
         var sa = SockAddrIn6.FromEndpoint(destination);
 
@@ -39,15 +39,17 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
         if (result == -1)
         {
             var errNo = Sys.ErrNo();
-            if (Error.IsInterrupt(errNo) && !ThrowOnInterruptSend)
+            if (!Error.IsInterrupt(errNo) || HandleInterruptOnSend == InterruptHandling.Error)
+                Sys.Throw(errNo, ExceptionMessages.SendDatagram);
+            if (HandleInterruptOnSend != InterruptHandling.Abort)
                 goto retry;
-            Sys.Throw(errNo, ExceptionMessages.SendDatagram);
+            return new(SocketResult.Interrupt);
         }
 
-        return (int)result;
+        return new((int)result);
     }
 
-    public unsafe int? Receive(
+    public unsafe TransferResult Receive(
         Span<byte> buffer,
         TimeSpan timeout,
         out Endpoint<AddressV6> origin)
@@ -76,7 +78,7 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
                     Sys.Throw(ExceptionMessages.ReceiveData);
 
                 origin = _address.GetV6(addressLength);
-                return (int)receiveResult;
+                return new((int)receiveResult);
             }
             else
             {
@@ -90,16 +92,21 @@ sealed class MacUdpSocketV6 : IUdpSocket<AddressV6>
             {
                 Sys.Throw(errNo, ExceptionMessages.Poll);
             }
-            else if (HandleInterruptOnReceive != InterruptHandling.Timeout)
+            else if (HandleInterruptOnReceive != InterruptHandling.Abort)
             {
                 var elapsed = Stopwatch.GetElapsedTime(start);
                 milliseconds = Core.GetMilliseconds(timeout - elapsed);
                 goto retry;
             }
+            else
+            {
+                origin = default;
+                return new(SocketResult.Interrupt);
+            }
         }
 
         origin = default;
-        return null;
+        return new(SocketResult.Timeout);
     }
 
     public unsafe Endpoint<AddressV6> GetSocketName()
