@@ -9,11 +9,13 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
     private SockAddrStorage _address;
 
     public InterruptHandling HandleInterruptOnAccept { get; set; }
+    public bool WasInterrupted { get; private set; }
 
     private WindowsTcpListenerV4(nuint fd) => _fd = fd;
 
     public ITcpClient<AddressV4>? Accept(TimeSpan timeout)
     {
+        WasInterrupted = false;
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
 
@@ -31,6 +33,8 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
                 if (fd == Sys.InvalidSocket)
                 {
                     var error = Sys.WsaGetLastError();
+                    if (Error.IsInterrupt(error))
+                        WasInterrupted = true;
                     if (!Error.IsInterrupt(error) || HandleInterruptOnAccept == InterruptHandling.Error)
                         Sys.Throw(error, ExceptionMessages.Accept);
                     goto retryAccept;
@@ -57,6 +61,8 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
         else if (pollResult == -1)
         {
             var error = Sys.WsaGetLastError();
+            if (Error.IsInterrupt(error))
+                WasInterrupted = true;
             if (!Error.IsInterrupt(error) || HandleInterruptOnAccept == InterruptHandling.Error)
             {
                 Sys.Throw(ExceptionMessages.Poll);

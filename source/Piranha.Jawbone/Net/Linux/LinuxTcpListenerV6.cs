@@ -9,11 +9,13 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
     private SockAddrStorage _address;
 
     public InterruptHandling HandleInterruptOnAccept { get; set; }
+    public bool WasInterrupted { get; private set; }
 
     private LinuxTcpListenerV6(int fd) => _fd = fd;
 
     public ITcpClient<AddressV6>? Accept(TimeSpan timeout)
     {
+        WasInterrupted = false;
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
 
@@ -31,6 +33,8 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
                 if (fd == -1)
                 {
                     var errNo = Sys.ErrNo();
+                    if (Error.IsInterrupt(errNo))
+                        WasInterrupted = true;
                     if (!Error.IsInterrupt(errNo) || HandleInterruptOnAccept == InterruptHandling.Error)
                         Sys.Throw(errNo, ExceptionMessages.Accept);
                     goto retryAccept;
@@ -57,6 +61,8 @@ sealed class LinuxTcpListenerV6 : ITcpListener<AddressV6>
         else if (pollResult == -1)
         {
             var errNo = Sys.ErrNo();
+            if (Error.IsInterrupt(errNo))
+                WasInterrupted = true;
             if (!Error.IsInterrupt(errNo) || HandleInterruptOnAccept == InterruptHandling.Error)
             {
                 Sys.Throw(ExceptionMessages.Poll);

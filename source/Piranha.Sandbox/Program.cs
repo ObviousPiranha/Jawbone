@@ -53,7 +53,11 @@ class Program
 
         Console.CancelKeyPress += (_, e) =>
         {
-            if (!cancellationTokenSource.IsCancellationRequested)
+            if (cancellationTokenSource.IsCancellationRequested)
+            {
+                Console.WriteLine("Terminating server...");
+            }
+            else
             {
                 Console.WriteLine("Stopping server...");
                 e.Cancel = true;
@@ -62,13 +66,15 @@ class Program
         };
 
         using var listener = TcpListenerV4.Listen(AddressV4.Any.OnPort(port), 1);
+        listener.HandleInterruptOnAccept = InterruptHandling.Timeout;
         Console.WriteLine("Listening on port " + port);
-        var timeout = TimeSpan.FromSeconds(1);
+        var timeout = TimeSpan.FromSeconds(8);
 
         var buffer = new byte[2048];
-        while (!cancellationTokenSource.IsCancellationRequested)
+        while (!cancellationTokenSource.IsCancellationRequested && !listener.WasInterrupted)
         {
-            using var server = Accept();
+            Console.WriteLine("Accept...");
+            using var server = listener.Accept(timeout);
 
             if (server is null)
                 continue;
@@ -91,20 +97,7 @@ class Program
             }
         }
 
-        ITcpClient<AddressV4>? Accept()
-        {
-            try
-            {
-                var result = listener.Accept(timeout);
-                return result;
-            }
-            catch (SocketException ex)
-            {
-                if (!ex.Code.Name.Contains("EINTR"))
-                    throw;
-                return null;
-            }
-        }
+        Thread.Sleep(1000);
     }
 
     static void RunClient(string port, string host, string message)
