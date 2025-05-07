@@ -12,6 +12,8 @@ public static class Error
         return new(error);
     }
 
+    public static bool IsInterrupt(int error) => error == 4;
+
     private static readonly ImmutableArray<ErrorCode> Codes =
     [
         new(0),

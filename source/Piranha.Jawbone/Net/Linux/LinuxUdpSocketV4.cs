@@ -8,6 +8,9 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
     private readonly int _fd;
     private SockAddrStorage _address;
 
+    public bool ThrowOnInterruptSend { get; set; }
+    public bool ThrowOnInterruptReceive { get; set; }
+
     private LinuxUdpSocketV4(int fd)
     {
         _fd = fd;
@@ -17,13 +20,14 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
     {
         var result = Sys.Close(_fd);
         if (result == -1)
-            Sys.Throw("Unable to close socket.");
+            Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
     public unsafe int Send(ReadOnlySpan<byte> message, Endpoint<AddressV4> destination)
     {
         var sa = SockAddrIn.FromEndpoint(destination);
 
+        retry:
         var result = Sys.SendToV4(
             _fd,
             message.GetPinnableReference(),
@@ -33,7 +37,12 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
             SockAddrIn.Len);
 
         if (result == -1)
-            Sys.Throw("Unable to send datagram.");
+        {
+            var errNo = Sys.ErrNo();
+            if (Error.IsInterrupt(errNo) && !ThrowOnInterruptSend)
+                goto retry;
+            Sys.Throw(errNo, ExceptionMessages.SendDatagram);
+        }
 
         return (int)result;
     }
@@ -45,6 +54,9 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
+
+        retry:
+        var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
 
         if (0 < pollResult)
@@ -61,7 +73,7 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
                     ref addressLength);
 
                 if (receiveResult == -1)
-                    Sys.Throw("Unable to receive data.");
+                    Sys.Throw(ExceptionMessages.ReceiveData);
 
                 origin = _address.GetV4(addressLength);
                 return (int)receiveResult;
@@ -71,10 +83,16 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
                 throw CreateExceptionFor.BadPoll();
             }
         }
-        else if (pollResult < 0)
+        else if (pollResult == -1)
         {
             var errNo = Sys.ErrNo();
-            Sys.Throw(errNo, "Unable to poll socket.");
+            if (Error.IsInterrupt(errNo) && !ThrowOnInterruptReceive)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+                milliseconds = Core.GetMilliseconds(timeout - elapsed);
+                goto retry;
+            }
+            Sys.Throw(errNo, ExceptionMessages.Poll);
         }
 
         origin = default;
@@ -86,7 +104,7 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
         var addressLength = SockAddrStorage.Len;
         var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
-            Sys.Throw("Unable to get socket name.");
+            Sys.Throw(ExceptionMessages.GetSocketName);
         return _address.GetV4(addressLength);
     }
 
@@ -126,7 +144,7 @@ sealed class LinuxUdpSocketV4 : IUdpSocket<AddressV4>
         int fd = Sys.Socket(Af.INet, Sock.DGram, IpProto.Udp);
 
         if (fd == -1)
-            Sys.Throw("Unable to open socket.");
+            Sys.Throw(ExceptionMessages.OpenSocket);
 
         return fd;
     }

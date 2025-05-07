@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace Piranha.Jawbone.Net.Windows;
 
@@ -6,6 +7,9 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
 {
     private readonly nuint _fd;
     private SockAddrStorage _address;
+
+    public bool ThrowOnInterruptSend { get; set; }
+    public bool ThrowOnInterruptReceive { get; set; }
 
     private WindowsUdpSocketV6(nuint fd)
     {
@@ -16,13 +20,14 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
     {
         var result = Sys.CloseSocket(_fd);
         if (result == -1)
-            Sys.Throw("Unable to close socket.");
+            Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
     public unsafe int Send(ReadOnlySpan<byte> message, Endpoint<AddressV6> destination)
     {
         var sa = SockAddrIn6.FromEndpoint(destination);
 
+        retry:
         var result = Sys.SendToV6(
             _fd,
             message.GetPinnableReference(),
@@ -32,7 +37,12 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
             SockAddrIn6.Len);
 
         if (result == -1)
-            Sys.Throw("Unable to send datagram.");
+        {
+            var error = Sys.WsaGetLastError();
+            if (Error.IsInterrupt(error) && !ThrowOnInterruptSend)
+                goto retry;
+            Sys.Throw(error, ExceptionMessages.SendDatagram);
+        }
 
         return (int)result;
     }
@@ -44,6 +54,9 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
+
+        retry:
+        var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.WsaPoll(ref pfd, 1, milliseconds);
 
         if (0 < pollResult)
@@ -60,7 +73,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
                     ref addressLength);
 
                 if (receiveResult == -1)
-                    Sys.Throw("Unable to receive data.");
+                    Sys.Throw(ExceptionMessages.ReceiveData);
 
                 origin = _address.GetV6(addressLength);
                 return (int)receiveResult;
@@ -70,10 +83,16 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
                 throw CreateExceptionFor.BadPoll();
             }
         }
-        else if (pollResult < 0)
+        else if (pollResult == -1)
         {
             var error = Sys.WsaGetLastError();
-            Sys.Throw(error, "Unable to poll socket.");
+            if (Error.IsInterrupt(error) && !ThrowOnInterruptReceive)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+                milliseconds = Core.GetMilliseconds(timeout - elapsed);
+                goto retry;
+            }
+            Sys.Throw(error, ExceptionMessages.Poll);
         }
 
         origin = default;
@@ -85,7 +104,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         var addressLength = SockAddrStorage.Len;
         var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
-            Sys.Throw("Unable to get socket name.");
+            Sys.Throw(ExceptionMessages.GetSocketName);
         return _address.GetV6(addressLength);
     }
 
@@ -122,7 +141,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         var socket = Sys.Socket(Af.INet6, Sock.DGram, IpProto.Udp);
 
         if (socket == Sys.InvalidSocket)
-            Sys.Throw("Unable to open socket.");
+            Sys.Throw(ExceptionMessages.OpenSocket);
 
         try
         {

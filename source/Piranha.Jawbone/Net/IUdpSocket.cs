@@ -5,6 +5,9 @@ namespace Piranha.Jawbone.Net;
 public interface IUdpSocket<TAddress> : IDisposable
     where TAddress : unmanaged, IAddress<TAddress>
 {
+    bool ThrowOnInterruptSend { get; set; }
+    bool ThrowOnInterruptReceive { get; set; }
+
     int Send(
         ReadOnlySpan<byte> message,
         Endpoint<TAddress> destination);
