@@ -6,7 +6,7 @@ public interface IUdpSocket<TAddress> : IDisposable
     where TAddress : unmanaged, IAddress<TAddress>
 {
     bool ThrowOnInterruptSend { get; set; }
-    bool ThrowOnInterruptReceive { get; set; }
+    InterruptHandling HandleInterruptOnReceive { get; set; }
 
     int Send(
         ReadOnlySpan<byte> message,

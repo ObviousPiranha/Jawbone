@@ -9,7 +9,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
     private SockAddrStorage _address;
 
     public bool ThrowOnInterruptSend { get; set; }
-    public bool ThrowOnInterruptReceive { get; set; }
+    public InterruptHandling HandleInterruptOnReceive { get; set; }
 
     private MacUdpSocketV4(int fd)
     {
@@ -27,7 +27,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
     {
         var sa = SockAddrIn.FromEndpoint(destination);
 
-        retry:
+    retry:
         var result = Sys.SendToV4(
             _fd,
             message.GetPinnableReference(),
@@ -55,7 +55,7 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
 
-        retry:
+    retry:
         var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
 
@@ -86,13 +86,16 @@ sealed class MacUdpSocketV4 : IUdpSocket<AddressV4>
         else if (pollResult == -1)
         {
             var errNo = Sys.ErrNo();
-            if (Error.IsInterrupt(errNo) && !ThrowOnInterruptReceive)
+            if (!Error.IsInterrupt(errNo) || HandleInterruptOnReceive == InterruptHandling.Error)
+            {
+                Sys.Throw(errNo, ExceptionMessages.Poll);
+            }
+            else if (HandleInterruptOnReceive != InterruptHandling.Timeout)
             {
                 var elapsed = Stopwatch.GetElapsedTime(start);
                 milliseconds = Core.GetMilliseconds(timeout - elapsed);
                 goto retry;
             }
-            Sys.Throw(errNo, ExceptionMessages.Poll);
         }
 
         origin = default;

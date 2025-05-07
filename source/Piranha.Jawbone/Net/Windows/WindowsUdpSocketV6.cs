@@ -9,7 +9,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
     private SockAddrStorage _address;
 
     public bool ThrowOnInterruptSend { get; set; }
-    public bool ThrowOnInterruptReceive { get; set; }
+    public InterruptHandling HandleInterruptOnReceive { get; set; }
 
     private WindowsUdpSocketV6(nuint fd)
     {
@@ -27,7 +27,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
     {
         var sa = SockAddrIn6.FromEndpoint(destination);
 
-        retry:
+    retry:
         var result = Sys.SendToV6(
             _fd,
             message.GetPinnableReference(),
@@ -55,7 +55,7 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
 
-        retry:
+    retry:
         var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.WsaPoll(ref pfd, 1, milliseconds);
 
@@ -86,13 +86,16 @@ sealed class WindowsUdpSocketV6 : IUdpSocket<AddressV6>
         else if (pollResult == -1)
         {
             var error = Sys.WsaGetLastError();
-            if (Error.IsInterrupt(error) && !ThrowOnInterruptReceive)
+            if (!Error.IsInterrupt(error) || HandleInterruptOnReceive == InterruptHandling.Error)
+            {
+                Sys.Throw(error, ExceptionMessages.Poll);
+            }
+            else if (HandleInterruptOnReceive != InterruptHandling.Timeout)
             {
                 var elapsed = Stopwatch.GetElapsedTime(start);
                 milliseconds = Core.GetMilliseconds(timeout - elapsed);
                 goto retry;
             }
-            Sys.Throw(error, ExceptionMessages.Poll);
         }
 
         origin = default;
