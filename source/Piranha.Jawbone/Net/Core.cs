@@ -11,10 +11,4 @@ static class Core
         var clamped = long.Clamp(ms64, 0, int.MaxValue);
         return (int)clamped;
     }
-
-    [DoesNotReturn]
-    public static void ThrowWrongAddressFamily()
-    {
-        throw new InvalidOperationException("Incorrect address family.");
-    }
 }

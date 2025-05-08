@@ -6,6 +6,7 @@ namespace Piranha.Jawbone.Net.Mac;
 sealed class MacUdpClientV6 : IUdpClient<AddressV6>
 {
     private readonly int _fd;
+    private SockAddrStorage _address;
 
     public Endpoint<AddressV6> Origin { get; }
 
@@ -24,11 +25,11 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = AddrLen;
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.GetV6(addressLength);
+        return _address.GetV6(addressLength);
     }
 
     public int? Receive(Span<byte> buffer, TimeSpan timeout)
@@ -41,20 +42,25 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = AddrLen;
-                var receiveResult = Sys.RecvFromV6(
+                var addressLength = SockAddrStorage.Len;
+                var receiveResult = Sys.RecvFrom(
                     _fd,
                     out buffer.GetPinnableReference(),
                     (nuint)buffer.Length,
                     0,
-                    out var address,
+                    out _address,
                     ref addressLength);
 
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                Debug.Assert(address.GetV6(addressLength) == Origin);
+                var origin = _address.GetV6(addressLength);
+                Debug.Assert(origin == Origin);
                 return (int)receiveResult;
+            }
+            else
+            {
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)
@@ -85,7 +91,7 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
         try
         {
             var sa = SockAddrIn6.FromEndpoint(endpoint);
-            var result = Sys.ConnectV6(fd, sa, AddrLen);
+            var result = Sys.ConnectV6(fd, sa, SockAddrIn6.Len);
             if (result == -1)
             {
                 var errNo = Sys.ErrNo();
@@ -110,6 +116,4 @@ sealed class MacUdpClientV6 : IUdpClient<AddressV6>
 
         return fd;
     }
-
-    private static uint AddrLen => Sys.SockLen<SockAddrIn6>();
 }

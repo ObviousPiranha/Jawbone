@@ -8,7 +8,7 @@ using System.Text;
 namespace Piranha.Jawbone.Net;
 
 // https://en.wikipedia.org/wiki/IPv6_address
-[StructLayout(LayoutKind.Explicit, Size = 20)]
+[StructLayout(LayoutKind.Explicit, Size = 20, Pack = 4)]
 public struct AddressV6 : IAddress<AddressV6>
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -48,6 +48,7 @@ public struct AddressV6 : IAddress<AddressV6>
         return result;
     }
 
+    public static AddressV6 Any => default;
     public static AddressV6 Local { get; } = CreateLocal();
 
     private static readonly uint PrefixV4 = BitConverter.IsLittleEndian ? 0xffff0000 : 0x0000ffff;

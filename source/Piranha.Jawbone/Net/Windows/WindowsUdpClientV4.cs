@@ -7,6 +7,7 @@ namespace Piranha.Jawbone.Net.Windows;
 sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
 {
     private readonly nuint _fd;
+    private SockAddrStorage _address;
 
     public Endpoint<AddressV4> Origin { get; }
 
@@ -25,11 +26,11 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrIn>();
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
             Sys.Throw("Unable to get socket name.");
-        return address.ToEndpoint();
+        return _address.GetV4(addressLength);
     }
 
     public int? Receive(Span<byte> buffer, TimeSpan timeout)
@@ -42,20 +43,25 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addressLength = Unsafe.SizeOf<SockAddrIn>();
-                var receiveResult = Sys.RecvFromV4(
+                var addressLength = SockAddrStorage.Len;
+                var receiveResult = Sys.RecvFrom(
                     _fd,
                     out buffer.GetPinnableReference(),
                     buffer.Length,
                     0,
-                    out var address,
+                    out _address,
                     ref addressLength);
 
                 if (receiveResult == -1)
                     Sys.Throw("Unable to receive data.");
 
-                Debug.Assert(address.ToEndpoint() == Origin);
+                var origin = _address.GetV4(addressLength);
+                Debug.Assert(origin == Origin);
                 return (int)receiveResult;
+            }
+            else
+            {
+                throw CreateExceptionFor.BadPoll();
             }
         }
         else if (pollResult < 0)
@@ -76,7 +82,7 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
         if (result == -1)
             Sys.Throw("Unable to send data.");
 
-        return (int)result;
+        return result;
     }
 
     public static WindowsUdpClientV4 Connect(Endpoint<AddressV4> endpoint)
@@ -86,11 +92,11 @@ sealed class WindowsUdpClientV4 : IUdpClient<AddressV4>
         try
         {
             var sa = SockAddrIn.FromEndpoint(endpoint);
-            var result = Sys.ConnectV4(fd, sa, Unsafe.SizeOf<SockAddrIn>());
+            var result = Sys.ConnectV4(fd, sa, SockAddrIn.Len);
             if (result == -1)
             {
-                var errNo = Sys.WsaGetLastError();
-                Sys.Throw(errNo, $"Failed to connect to {endpoint}.");
+                var error = Sys.WsaGetLastError();
+                Sys.Throw(error, $"Failed to connect to {endpoint}.");
             }
 
             return new WindowsUdpClientV4(fd, endpoint);

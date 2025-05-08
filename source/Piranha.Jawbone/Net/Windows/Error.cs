@@ -13,6 +13,8 @@ static class Error
         return new(error);
     }
 
+    public static bool IsInterrupt(int error) => error == 10004;
+
     private static readonly ImmutableArray<ErrorCode> ErrorCodes =
     [
         new(10004, "WSAEINTR", "A blocking operation was interrupted by a call to WSACancelBlockingCall."),

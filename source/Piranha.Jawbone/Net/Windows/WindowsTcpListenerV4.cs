@@ -1,33 +1,49 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace Piranha.Jawbone.Net.Windows;
 
 sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
 {
     private readonly nuint _fd;
+    private SockAddrStorage _address;
+
+    public InterruptHandling HandleInterruptOnAccept { get; set; }
+    public bool WasInterrupted { get; private set; }
 
     private WindowsTcpListenerV4(nuint fd) => _fd = fd;
 
     public ITcpClient<AddressV4>? Accept(TimeSpan timeout)
     {
+        WasInterrupted = false;
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
+
+    retry:
+        var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.WsaPoll(ref pfd, 1, milliseconds);
 
         if (0 < pollResult)
         {
             if ((pfd.REvents & Poll.In) != 0)
             {
-                var addrLen = Unsafe.SizeOf<SockAddrIn>();
-                var fd = Sys.AcceptV4(_fd, out var addr, ref addrLen);
-                if (fd < 0)
-                    Sys.Throw("Failed to accept socket.");
+            retryAccept:
+                var addressLength = SockAddrStorage.Len;
+                var fd = Sys.Accept(_fd, out _address, ref addressLength);
+                if (fd == Sys.InvalidSocket)
+                {
+                    var error = Sys.WsaGetLastError();
+                    if (Error.IsInterrupt(error))
+                        WasInterrupted = true;
+                    if (!Error.IsInterrupt(error) || HandleInterruptOnAccept == InterruptHandling.Error)
+                        Sys.Throw(error, ExceptionMessages.Accept);
+                    goto retryAccept;
+                }
 
                 try
                 {
                     Tcp.SetNoDelay(fd);
-                    var endpoint = addr.ToEndpoint();
+                    var endpoint = _address.GetV4(addressLength);
                     var result = new WindowsTcpClientV4(fd, endpoint);
                     return result;
                 }
@@ -39,34 +55,43 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
             }
             else
             {
-                throw new InvalidOperationException("Unexpected poll event.");
+                throw CreateExceptionFor.BadPoll();
             }
         }
-        else if (pollResult < 0)
+        else if (pollResult == -1)
         {
-            Sys.Throw("Error while polling socket.");
-            return null;
+            var error = Sys.WsaGetLastError();
+            if (Error.IsInterrupt(error))
+                WasInterrupted = true;
+            if (!Error.IsInterrupt(error) || HandleInterruptOnAccept == InterruptHandling.Error)
+            {
+                Sys.Throw(ExceptionMessages.Poll);
+            }
+            else if (HandleInterruptOnAccept != InterruptHandling.Abort)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+                milliseconds = Core.GetMilliseconds(timeout - elapsed);
+                goto retry;
+            }
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     public Endpoint<AddressV4> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrIn>();
-        var result = Sys.GetSockNameV4(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out _address, ref addressLength);
         if (result == -1)
-            Sys.Throw("Unable to get socket name.");
-        return address.ToEndpoint();
+            Sys.Throw(ExceptionMessages.GetSocketName);
+        return _address.GetV4(addressLength);
     }
 
     public void Dispose()
     {
         var result = Sys.CloseSocket(_fd);
         if (result == -1)
-            Sys.Throw("Unable to close socket.");
+            Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
     public static WindowsTcpListenerV4 Listen(Endpoint<AddressV4> bindEndpoint, int backlog)
@@ -74,12 +99,13 @@ sealed class WindowsTcpListenerV4 : ITcpListener<AddressV4>
         var fd = Sys.Socket(Af.INet, Sock.Stream, 0);
 
         if (fd == Sys.InvalidSocket)
-            Sys.Throw("Unable to open socket.");
+            Sys.Throw(ExceptionMessages.OpenSocket);
 
         try
         {
+            So.SetReuseAddr(fd);
             var sa = SockAddrIn.FromEndpoint(bindEndpoint);
-            var bindResult = Sys.BindV4(fd, sa, Unsafe.SizeOf<SockAddrIn>());
+            var bindResult = Sys.BindV4(fd, sa, SockAddrIn.Len);
 
             if (bindResult == -1)
             {

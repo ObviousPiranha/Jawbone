@@ -15,6 +15,6 @@ static class Tcp
             Sys.SockLen<int>());
 
         if (result == -1)
-            Sys.Throw("Unable to enable TCP_NODELAY.");
+            Sys.Throw(ExceptionMessages.TcpNoDelay);
     }
 }

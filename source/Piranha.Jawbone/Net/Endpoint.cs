@@ -44,6 +44,11 @@ public struct Endpoint : IEquatable<Endpoint>
     {
         return new(address, port);
     }
+
+    public static Endpoint<AddressV4> ConvertToV4(Endpoint<AddressV6> endpoint)
+    {
+        return Create((AddressV4)endpoint.Address, endpoint.Port);
+    }
 }
 
 [StructLayout(LayoutKind.Sequential)]

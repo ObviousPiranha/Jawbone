@@ -24,13 +24,15 @@ static class LinuxAddressInfo
         {
             for (var ai = res; ai != null; ai = ai->AiNext)
             {
+                if (ai->AiAddr == null)
+                    continue;
                 if (ai->AiFamily == Af.INet)
                 {
                     var addr = (SockAddrIn*)ai->AiAddr;
                     var endpoint = addr->ToEndpoint();
                     v4.Add(endpoint);
                 }
-                if (ai->AiFamily == Af.INet6)
+                else if (ai->AiFamily == Af.INet6)
                 {
                     var addr = (SockAddrIn6*)ai->AiAddr;
                     var endpoint = addr->ToEndpoint();

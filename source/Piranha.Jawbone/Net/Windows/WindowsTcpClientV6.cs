@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Piranha.Jawbone.Net.Windows;
@@ -8,6 +9,10 @@ sealed class WindowsTcpClientV6 : ITcpClient<AddressV6>
     private readonly nuint _fd;
 
     public Endpoint<AddressV6> Origin { get; }
+
+    public InterruptHandling HandleInterruptOnSend { get; set; }
+    public InterruptHandling HandleInterruptOnReceive { get; set; }
+    public bool HungUp { get; private set; }
 
     public WindowsTcpClientV6(nuint fd, Endpoint<AddressV6> origin)
     {
@@ -19,19 +24,30 @@ sealed class WindowsTcpClientV6 : ITcpClient<AddressV6>
     {
         var result = Sys.CloseSocket(_fd);
         if (result == -1)
-            Sys.Throw("Unable to close socket.");
+            Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
-    public int? Receive(Span<byte> buffer, TimeSpan timeout)
+    public TransferResult Receive(Span<byte> buffer, TimeSpan timeout)
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new WsaPollFd { Fd = _fd, Events = Poll.In };
+
+    retry:
+        var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.WsaPoll(ref pfd, 1, milliseconds);
 
         if (0 < pollResult)
         {
+            ObjectDisposedException.ThrowIf((pfd.REvents & Poll.Nval) != 0, this);
+
+            if ((pfd.REvents & Poll.Hup) != 0)
+            {
+                HungUp = true;
+            }
+
             if ((pfd.REvents & Poll.In) != 0)
             {
+            retryReceive:
                 var readResult = Sys.Recv(
                     _fd,
                     out buffer.GetPinnableReference(),
@@ -39,25 +55,50 @@ sealed class WindowsTcpClientV6 : ITcpClient<AddressV6>
                     0);
 
                 if (readResult == -1)
-                    Sys.Throw("Unable to receive data.");
+                {
+                    var error = Sys.WsaGetLastError();
+                    if (!Error.IsInterrupt(error) || HandleInterruptOnReceive == InterruptHandling.Error)
+                        Sys.Throw(ExceptionMessages.ReceiveData);
+                    if (HandleInterruptOnReceive == InterruptHandling.Abort)
+                        return new(SocketResult.Interrupt);
+                    goto retryReceive;
+                }
 
-                return readResult;
+                return new(readResult);
             }
-            else
+
+            if ((pfd.REvents & Poll.Err) != 0)
             {
-                throw new InvalidOperationException("Unexpected poll event.");
+                ThrowExceptionFor.PollSocketError();
             }
+
+            return new(0);
         }
         else if (pollResult < 0)
         {
-            Sys.Throw("Error while polling socket.");
+            var error = Sys.WsaGetLastError();
+            if (!Error.IsInterrupt(error) || HandleInterruptOnReceive == InterruptHandling.Error)
+            {
+                Sys.Throw(ExceptionMessages.Poll);
+            }
+            else if (HandleInterruptOnReceive != InterruptHandling.Abort)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+                milliseconds = Core.GetMilliseconds(timeout - elapsed);
+                goto retry;
+            }
+            else
+            {
+                return new(SocketResult.Interrupt);
+            }
         }
 
-        return null;
+        return new(SocketResult.Timeout);
     }
 
-    public int Send(ReadOnlySpan<byte> message)
+    public TransferResult Send(ReadOnlySpan<byte> message)
     {
+    retry:
         var writeResult = Sys.Send(
             _fd,
             message.GetPinnableReference(),
@@ -65,17 +106,24 @@ sealed class WindowsTcpClientV6 : ITcpClient<AddressV6>
             0);
 
         if (writeResult == -1)
-            Sys.Throw("Unable to send data.");
+        {
+            var error = Sys.WsaGetLastError();
+            if (!Error.IsInterrupt(error) || HandleInterruptOnSend == InterruptHandling.Error)
+                Sys.Throw(ExceptionMessages.SendStream);
+            if (HandleInterruptOnSend == InterruptHandling.Abort)
+                return new(SocketResult.Interrupt);
+            goto retry;
+        }
 
-        return (int)writeResult;
+        return new(writeResult);
     }
 
     public Endpoint<AddressV6> GetSocketName()
     {
-        var addressLength = Unsafe.SizeOf<SockAddrStorage>();
-        var result = Sys.GetSockNameV6(_fd, out var address, ref addressLength);
+        var addressLength = SockAddrStorage.Len;
+        var result = Sys.GetSockName(_fd, out var address, ref addressLength);
         if (result == -1)
-            Sys.Throw("Unable to get socket name.");
+            Sys.Throw(ExceptionMessages.GetSocketName);
         return address.GetV6(addressLength);
     }
 
@@ -84,13 +132,13 @@ sealed class WindowsTcpClientV6 : ITcpClient<AddressV6>
         var fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
         if (fd == Sys.InvalidSocket)
-            Sys.Throw("Unable to open socket.");
+            Sys.Throw(ExceptionMessages.OpenSocket);
 
         try
         {
             Tcp.SetNoDelay(fd);
             var addr = SockAddrIn6.FromEndpoint(endpoint);
-            var connectResult = Sys.ConnectV6(fd, addr, Unsafe.SizeOf<SockAddrIn6>());
+            var connectResult = Sys.ConnectV6(fd, addr, SockAddrIn6.Len);
             if (connectResult == -1)
             {
                 var error = Sys.WsaGetLastError();

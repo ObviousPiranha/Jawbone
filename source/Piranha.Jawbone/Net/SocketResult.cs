@@ -1,9 +1,9 @@
 namespace Piranha.Jawbone.Net;
 
-public enum UdpReceiveState
+public enum SocketResult
 {
     None,
     Success,
     Timeout,
-    Failure
+    Interrupt
 }

@@ -12,7 +12,7 @@ static unsafe partial class Sys
 
     static Sys()
     {
-        var result = WsaStartup(0x0202, out s_wsaData[0]);
+        var result = WsaStartup(0x0202, out s_wsaData);
         if (result != 0)
         {
             throw new SocketException("Unable to initialize Windows networking.")
@@ -24,7 +24,7 @@ static unsafe partial class Sys
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsastartup
     [LibraryImport(Lib, EntryPoint = "WSAStartup")]
-    public static partial int WsaStartup(ushort versionRequired, out byte wsaData);
+    public static partial int WsaStartup(ushort versionRequired, out WsaData wsaData);
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsagetlasterror
     [LibraryImport(Lib, EntryPoint = "WSAGetLastError")]
@@ -70,16 +70,7 @@ static unsafe partial class Sys
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-recvfrom
     [LibraryImport(Lib, EntryPoint = "recvfrom")]
-    public static partial nint RecvFromV4(
-        nuint s,
-        out byte buf,
-        int len,
-        int flags,
-        out SockAddrIn from,
-        ref int fromlen);
-
-    [LibraryImport(Lib, EntryPoint = "recvfrom")]
-    public static partial nint RecvFromV6(
+    public static partial nint RecvFrom(
         nuint s,
         out byte buf,
         int len,
@@ -89,10 +80,7 @@ static unsafe partial class Sys
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-getsockname
     [LibraryImport(Lib, EntryPoint = "getsockname")]
-    public static partial int GetSockNameV4(nuint s, out SockAddrIn name, ref int namelen);
-
-    [LibraryImport(Lib, EntryPoint = "getsockname")]
-    public static partial int GetSockNameV6(nuint s, out SockAddrStorage name, ref int namelen);
+    public static partial int GetSockName(nuint s, out SockAddrStorage name, ref int namelen);
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-connect
     [LibraryImport(Lib, EntryPoint = "connect")]
@@ -107,10 +95,7 @@ static unsafe partial class Sys
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-accept
     [LibraryImport(Lib, EntryPoint = "accept")]
-    public static partial nuint AcceptV4(nuint s, out SockAddrIn addr, ref int namelen);
-
-    [LibraryImport(Lib, EntryPoint = "accept")]
-    public static partial nuint AcceptV6(nuint s, out SockAddrStorage addr, ref int namelen);
+    public static partial nuint Accept(nuint s, out SockAddrStorage addr, ref int namelen);
 
     // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsapoll
     [LibraryImport(Lib, EntryPoint = "WSAPoll")]
@@ -157,7 +142,7 @@ static unsafe partial class Sys
     }
 
     [InlineArray(512)] // Actual size is less than this. Just being safe.
-    private struct WsaData
+    public struct WsaData
     {
         private byte _element0;
     }

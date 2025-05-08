@@ -58,17 +58,7 @@ static unsafe partial class Sys
     // https://man7.org/linux/man-pages/man3/recvfrom.3p.html
     [LibraryImport(Lib, EntryPoint = "recvfrom")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint RecvFromV4(
-        int socket,
-        out byte buffer,
-        nuint length,
-        int flags,
-        out SockAddrIn address,
-        ref uint addressLen);
-
-    [LibraryImport(Lib, EntryPoint = "recvfrom")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint RecvFromV6(
+    public static partial nint RecvFrom(
         int socket,
         out byte buffer,
         nuint length,
@@ -90,11 +80,7 @@ static unsafe partial class Sys
     // https://man7.org/linux/man-pages/man2/getsockname.2.html
     [LibraryImport(Lib, EntryPoint = "getsockname")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetSockNameV4(int sockfd, out SockAddrIn addr, ref uint addrlen);
-
-    [LibraryImport(Lib, EntryPoint = "getsockname")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetSockNameV6(int sockfd, out SockAddrStorage addr, ref uint addrlen);
+    public static partial int GetSockName(int sockfd, out SockAddrStorage addr, ref uint addrlen);
 
     // https://man7.org/linux/man-pages/man2/connect.2.html
     [LibraryImport(Lib, EntryPoint = "connect")]
@@ -113,11 +99,7 @@ static unsafe partial class Sys
     // https://man7.org/linux/man-pages/man2/accept.2.html
     [LibraryImport(Lib, EntryPoint = "accept")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int AcceptV4(int sockfd, out SockAddrIn addr, ref uint addrLen);
-
-    [LibraryImport(Lib, EntryPoint = "accept")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int AcceptV6(int sockfd, out SockAddrStorage addr, ref uint addrLen);
+    public static partial int Accept(int sockfd, out SockAddrStorage addr, ref uint addrLen);
 
     // https://man7.org/linux/man-pages/man2/poll.2.html
     [LibraryImport(Lib, EntryPoint = "poll")]
@@ -147,6 +129,11 @@ static unsafe partial class Sys
     [LibraryImport(Lib, EntryPoint = "close")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial int Close(int fd);
+
+    // https://man7.org/linux/man-pages/man2/shutdown.2.html
+    [LibraryImport(Lib, EntryPoint = "shutdown")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial int Shutdown(int sockfd, int how);
 
     public static int ErrNo() => *ErrorLocation();
 

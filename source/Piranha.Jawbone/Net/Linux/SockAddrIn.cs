@@ -15,14 +15,16 @@ struct SockAddrIn
     public uint SinAddr;
     public Zero SinZero;
 
-    public Endpoint<AddressV4> ToEndpoint()
+    public readonly Endpoint<AddressV4> ToEndpoint()
     {
         if (SinFamily != Af.INet)
-            Core.ThrowWrongAddressFamily();
+            ThrowExceptionFor.WrongAddressFamily();
         return Endpoint.Create(
             new AddressV4(SinAddr),
             new NetworkPort { NetworkValue = SinPort });
     }
+
+    public static uint Len => Sys.SockLen<SockAddrIn>();
 
     public static SockAddrIn FromEndpoint(Endpoint<AddressV4> endpoint)
     {

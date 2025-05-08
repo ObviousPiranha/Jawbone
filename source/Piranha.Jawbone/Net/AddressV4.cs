@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Piranha.Jawbone.Net;
 
-[StructLayout(LayoutKind.Explicit, Size = 4)]
+[StructLayout(LayoutKind.Explicit, Size = 4, Pack = 4)]
 public struct AddressV4 : IAddress<AddressV4>
 {
     [StructLayout(LayoutKind.Sequential)]
@@ -37,6 +37,7 @@ public struct AddressV4 : IAddress<AddressV4>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint LoopbackSubnet() => BitConverter.IsLittleEndian ? 0x0000007f : (uint)0x7f000000;
 
+    public static AddressV4 Any => default;
     public static AddressV4 Local { get; } = new(127, 0, 0, 1);
     public static AddressV4 Broadcast { get; } = new(255, 255, 255, 255);
 
@@ -198,4 +199,3 @@ public struct AddressV4 : IAddress<AddressV4>
     public static bool operator ==(AddressV4 a, AddressV4 b) => a.Equals(b);
     public static bool operator !=(AddressV4 a, AddressV4 b) => !a.Equals(b);
 }
-
