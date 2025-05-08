@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace Piranha.Jawbone.Net.Linux;
 
@@ -7,6 +8,10 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
     private readonly int _fd;
 
     public Endpoint<AddressV6> Origin { get; }
+
+    public InterruptHandling HandleInterruptOnSend { get; set; }
+    public InterruptHandling HandleInterruptOnReceive { get; set; }
+    public bool HungUp { get; private set; }
 
     public LinuxTcpClientV6(int fd, Endpoint<AddressV6> origin)
     {
@@ -18,53 +23,96 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
     {
         var result = Sys.Close(_fd);
         if (result == -1)
-            Sys.Throw("Unable to close socket.");
+            Sys.Throw(ExceptionMessages.CloseSocket);
     }
 
-    public int? Receive(Span<byte> buffer, TimeSpan timeout)
+    public TransferResult Receive(Span<byte> buffer, TimeSpan timeout)
     {
         var milliseconds = Core.GetMilliseconds(timeout);
         var pfd = new PollFd { Fd = _fd, Events = Poll.In };
+
+    retry:
+        var start = Stopwatch.GetTimestamp();
         var pollResult = Sys.Poll(ref pfd, 1, milliseconds);
 
         if (0 < pollResult)
         {
+            ObjectDisposedException.ThrowIf((pfd.REvents & Poll.Nval) != 0, this);
+
+            if ((pfd.REvents & Poll.Hup) != 0)
+            {
+                HungUp = true;
+            }
+
             if ((pfd.REvents & Poll.In) != 0)
             {
+            retryReceive:
                 var readResult = Sys.Read(
                     _fd,
                     out buffer.GetPinnableReference(),
                     (nuint)buffer.Length);
 
                 if (readResult == -1)
-                    Sys.Throw("Unable to receive data.");
+                {
+                    var errNo = Sys.ErrNo();
+                    if (!Error.IsInterrupt(errNo) || HandleInterruptOnReceive == InterruptHandling.Error)
+                        Sys.Throw(ExceptionMessages.ReceiveData);
+                    if (HandleInterruptOnReceive == InterruptHandling.Abort)
+                        return new(SocketResult.Interrupt);
+                    goto retryReceive;
+                }
 
-                return (int)readResult;
+                return new((int)readResult);
+            }
+
+            if ((pfd.REvents & Poll.Err) != 0)
+            {
+                ThrowExceptionFor.PollSocketError();
+            }
+
+            return new(0);
+        }
+        else if (pollResult == -1)
+        {
+            var errNo = Sys.ErrNo();
+            if (!Error.IsInterrupt(errNo) || HandleInterruptOnReceive == InterruptHandling.Error)
+            {
+                Sys.Throw(ExceptionMessages.Poll);
+            }
+            else if (HandleInterruptOnReceive != InterruptHandling.Abort)
+            {
+                var elapsed = Stopwatch.GetElapsedTime(start);
+                milliseconds = Core.GetMilliseconds(timeout - elapsed);
+                goto retry;
             }
             else
             {
-                throw new InvalidOperationException("Unexpected poll event.");
+                return new(SocketResult.Interrupt);
             }
         }
-        else if (pollResult < 0)
-        {
-            Sys.Throw("Error while polling socket.");
-        }
 
-        return null;
+        return new(SocketResult.Timeout);
     }
 
-    public int Send(ReadOnlySpan<byte> message)
+    public TransferResult Send(ReadOnlySpan<byte> message)
     {
+    retry:
         var writeResult = Sys.Write(
             _fd,
             message.GetPinnableReference(),
             (nuint)message.Length);
 
         if (writeResult == -1)
-            Sys.Throw("Unable to send data.");
+        {
+            var errNo = Sys.ErrNo();
+            if (!Error.IsInterrupt(errNo) || HandleInterruptOnSend == InterruptHandling.Error)
+                Sys.Throw(ExceptionMessages.SendStream);
+            if (HandleInterruptOnSend == InterruptHandling.Abort)
+                return new(SocketResult.Interrupt);
+            goto retry;
+        }
 
-        return (int)writeResult;
+        return new((int)writeResult);
     }
 
     public Endpoint<AddressV6> GetSocketName()
@@ -72,7 +120,7 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
         var addressLength = SockAddrStorage.Len;
         var result = Sys.GetSockName(_fd, out var address, ref addressLength);
         if (result == -1)
-            Sys.Throw("Unable to get socket name.");
+            Sys.Throw(ExceptionMessages.GetSocketName);
         return address.GetV6(addressLength);
     }
 
@@ -81,7 +129,7 @@ sealed class LinuxTcpClientV6 : ITcpClient<AddressV6>
         int fd = Sys.Socket(Af.INet6, Sock.Stream, 0);
 
         if (fd == -1)
-            Sys.Throw("Unable to open socket.");
+            Sys.Throw(ExceptionMessages.OpenSocket);
 
         try
         {

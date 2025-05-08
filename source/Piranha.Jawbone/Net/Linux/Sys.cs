@@ -130,6 +130,11 @@ static unsafe partial class Sys
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial int Close(int fd);
 
+    // https://man7.org/linux/man-pages/man2/shutdown.2.html
+    [LibraryImport(Lib, EntryPoint = "shutdown")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial int Shutdown(int sockfd, int how);
+
     public static int ErrNo() => *ErrorLocation();
 
     public static uint SockLen<T>() => (uint)Unsafe.SizeOf<T>();

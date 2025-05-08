@@ -10,4 +10,10 @@ static class ThrowExceptionFor
     {
         throw new InvalidOperationException("Incorrect address family.");
     }
+
+    [DoesNotReturn]
+    public static void PollSocketError()
+    {
+        throw new InvalidOperationException("Socket reported error state.");
+    }
 }

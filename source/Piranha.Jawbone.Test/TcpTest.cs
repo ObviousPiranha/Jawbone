@@ -1,5 +1,6 @@
 using Piranha.Jawbone.Net;
 using System;
+using System.Threading;
 
 namespace Piranha.Jawbone.Test;
 
@@ -18,13 +19,14 @@ public class TcpTest
 
         var message = "greetings"u8;
         var sendResult = client.Send(message);
-        Assert.Equal(message.Length, sendResult);
+        Assert.Equal(message.Length, sendResult.Count);
 
         Span<byte> buffer = new byte[64];
         var receiveResult = server.Receive(buffer, Timeout);
-        Assert.NotNull(receiveResult);
-        Assert.Equal(message.Length, receiveResult);
-        Assert.Equal(message, buffer[..receiveResult.Value]);
+        Assert.Equal(SocketResult.Success, receiveResult.Result);
+        Assert.Equal(message.Length, receiveResult.Count);
+        Assert.Equal(message, buffer[..receiveResult.Count]);
+        Assert.False(client.HungUp);
     }
 
     [Fact]
@@ -38,13 +40,13 @@ public class TcpTest
 
         var message = "greetings"u8;
         var sendResult = client.Send(message);
-        Assert.Equal(message.Length, sendResult);
+        Assert.Equal(message.Length, sendResult.Count);
 
         Span<byte> buffer = new byte[64];
         var receiveResult = server.Receive(buffer, Timeout);
-        Assert.NotNull(receiveResult);
-        Assert.Equal(message.Length, receiveResult);
-        Assert.Equal(message, buffer[..receiveResult.Value]);
+        Assert.Equal(SocketResult.Success, receiveResult.Result);
+        Assert.Equal(message.Length, receiveResult.Count);
+        Assert.Equal(message, buffer[..receiveResult.Count]);
     }
 
     [Fact]
@@ -60,12 +62,12 @@ public class TcpTest
 
         var message = "greetings"u8;
         var sendResult = client.Send(message);
-        Assert.Equal(message.Length, sendResult);
+        Assert.Equal(message.Length, sendResult.Count);
 
         Span<byte> buffer = new byte[64];
         var receiveResult = server.Receive(buffer, Timeout);
-        Assert.NotNull(receiveResult);
-        Assert.Equal(message.Length, receiveResult);
-        Assert.Equal(message, buffer[..receiveResult.Value]);
+        Assert.Equal(SocketResult.Success, receiveResult.Result);
+        Assert.Equal(message.Length, receiveResult.Count);
+        Assert.Equal(message, buffer[..receiveResult.Count]);
     }
 }

@@ -11,5 +11,5 @@ static class Poll
     public const short WrBand = 1 << 5;
     public const short Err = 1 << 0;
     public const short Hup = 1 << 1;
-    public const short NVal = 1 << 2;
+    public const short Nval = 1 << 2;
 }

@@ -5,8 +5,12 @@ namespace Piranha.Jawbone.Net;
 public interface ITcpClient<TAddress> : IDisposable
     where TAddress : unmanaged, IAddress<TAddress>
 {
+    InterruptHandling HandleInterruptOnSend { get; set; }
+    InterruptHandling HandleInterruptOnReceive { get; set; }
+    bool HungUp { get; }
+
     Endpoint<TAddress> Origin { get; }
-    int Send(ReadOnlySpan<byte> message);
-    int? Receive(Span<byte> buffer, TimeSpan timeout);
+    TransferResult Send(ReadOnlySpan<byte> message);
+    TransferResult Receive(Span<byte> buffer, TimeSpan timeout);
     Endpoint<TAddress> GetSocketName();
 }

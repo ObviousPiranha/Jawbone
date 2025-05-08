@@ -1,6 +1,5 @@
 using Piranha.Jawbone.Net;
 using System;
-using System.Reflection;
 
 namespace Piranha.Jawbone.Test;
 
