@@ -19,12 +19,12 @@ public ref struct SpanReader<T>
     public SpanReader(ReadOnlySpan<T> span) => Span = span;
 }
 
-public static class SpanReaderExtensions
+public static class SpanReader
 {
-    public static SpanReader<T> ToReader<T>(this ReadOnlySpan<T> span) => new(span);
-    public static SpanReader<T> ToReader<T>(this Span<T> span) => new(span);
-    public static SpanReader<T> ToReader<T>(this T[] array) => new(array);
-    public static SpanReader<char> ToReader(this string? text) => new(text);
+    public static SpanReader<T> Create<T>(ReadOnlySpan<T> span) => new(span);
+    public static SpanReader<T> Create<T>(Span<T> span) => new(span);
+    public static SpanReader<T> Create<T>(T[] array) => new(array);
+    public static SpanReader<char> Create(string? text) => new(text);
 
     public static ReadOnlySpan<char> ReadWord(ref this SpanReader<char> reader)
     {

@@ -33,7 +33,7 @@ public static class Png
 
     public static void DebugWalk(ReadOnlySpan<byte> pngData)
     {
-        var reader = pngData.ToReader();
+        var reader = SpanReader.Create(pngData);
 
         if (!reader.TryBlit(out ulong signature))
         {
