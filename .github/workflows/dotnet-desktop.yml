@@ -31,8 +31,8 @@ jobs:
 
     # Do Linting
     - name: Check Formatting
-      run: dotnet format source/Piranha.Jawbone/Piranha.Jawbone.csproj --verify-no-changes
+      run: dotnet format source/Jawbone/Jawbone.csproj --verify-no-changes
 
     # Execute tests
     - name: Execute unit tests
-      run: dotnet test source/Piranha.Jawbone.Test/Piranha.Jawbone.Test.csproj
+      run: dotnet test source/Jawbone.Test/Jawbone.Test.csproj

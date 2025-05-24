@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Logging;
 using Jawbone.Extensions;
 using Jawbone.OpenGl;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
