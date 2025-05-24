@@ -1,4 +1,4 @@
-using Piranha.Jawbone;
+using Jawbone;
 using System.Numerics;
 
 namespace Piranha.SampleApplication3;

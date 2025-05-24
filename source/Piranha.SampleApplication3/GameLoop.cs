@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone;
-using Piranha.Jawbone.Sdl3;
+using Jawbone;
+using Jawbone.Sdl3;
 using System;
 using System.Numerics;
 

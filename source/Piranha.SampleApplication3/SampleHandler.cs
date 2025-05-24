@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone;
-using Piranha.Jawbone.Extensions;
-using Piranha.Jawbone.OpenGl;
-using Piranha.Jawbone.Sdl3;
-using Piranha.Jawbone.Stb;
+using Jawbone;
+using Jawbone.Extensions;
+using Jawbone.OpenGl;
+using Jawbone.Sdl3;
+using Jawbone.Stb;
 using System;
 using System.IO;
 using System.Numerics;

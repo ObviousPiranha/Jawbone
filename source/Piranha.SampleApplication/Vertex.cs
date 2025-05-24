@@ -1,4 +1,4 @@
-using Piranha.Jawbone.OpenGl;
+using Jawbone.OpenGl;
 using System.Numerics;
 
 namespace Piranha.SampleApplication;

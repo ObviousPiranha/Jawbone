@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Piranha.Jawbone.Extensions;
-using Piranha.Jawbone.Opus;
-using Piranha.Jawbone.Sdl2;
-using Piranha.Jawbone.Stb;
+using Jawbone.Extensions;
+using Jawbone.Opus;
+using Jawbone.Sdl2;
+using Jawbone.Stb;
 using System;
 using System.IO;
 

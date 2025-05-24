@@ -8,7 +8,7 @@
     <None Include="SDL2.dll" CopyToOutputDirectory="Always" Condition="Exists('SDL2.dll')"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Piranha.Jawbone\Piranha.Jawbone.csproj"/>
+    <ProjectReference Include="..\Jawbone\Jawbone.csproj"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Console"/>

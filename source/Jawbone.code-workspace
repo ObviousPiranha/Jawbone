@@ -1,10 +1,19 @@
 {
 	"folders": [
 		{
-			"path": "Piranha.Jawbone"
+			"path": "Jawbone"
 		},
 		{
-			"path": "Piranha.Jawbone.Test"
+			"path": "Jawbone.SourceGenerator"
+		},
+		{
+			"path": "Jawbone.Test"
+		},
+		{
+			"path": "Jawbone.Test.Native"
+		},
+		{
+			"path": "Jawbone.Benchmark"
 		},
 		{
 			"path": "Piranha.SampleApplication"
@@ -13,16 +22,7 @@
 			"path": "Piranha.Sample.OpusEncoding"
 		},
 		{
-			"path": "Piranha.Jawbone.Benchmark"
-		},
-		{
 			"path": "Piranha.Sandbox"
-		},
-		{
-			"path": "Piranha.Jawbone.Test.Native"
-		},
-		{
-			"path": "Piranha.Jawbone.SourceGenerator"
 		},
 		{
 			"path": "Piranha.SampleApplication3"
