@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Logging;
 using Jawbone.Extensions;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

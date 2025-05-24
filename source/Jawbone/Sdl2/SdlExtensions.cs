@@ -1,5 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
 using Jawbone.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Runtime.CompilerServices;
 
