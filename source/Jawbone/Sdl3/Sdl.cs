@@ -30,10 +30,11 @@ public static partial class Sdl
             SdlException.Throw(message);
     }
 
-    public static void ThrowOnSdlFailure(this nint result, string? message)
+    public static nint ThrowOnSdlFailure(this nint result, string? message)
     {
         if (result == default)
             SdlException.Throw(message);
+        return result;
     }
 
     public static string GetDefaultLibName()
