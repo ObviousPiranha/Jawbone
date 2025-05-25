@@ -24,10 +24,11 @@ public static partial class Sdl
 {
     public const string Lib = "SDL3";
 
-    public static void ThrowOnSdlFailure(this CBool result, string? message)
+    public static CBool ThrowOnSdlFailure(this CBool result, string? message)
     {
         if (!result)
             SdlException.Throw(message);
+        return result;
     }
 
     public static nint ThrowOnSdlFailure(this nint result, string? message)
