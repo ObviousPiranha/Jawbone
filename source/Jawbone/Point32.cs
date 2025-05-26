@@ -10,6 +10,12 @@ public struct Point32 : IEquatable<Point32>
     public int X;
     public int Y;
 
+    public Point32(int xy)
+    {
+        X = xy;
+        Y = xy;
+    }
+
     public Point32(int x, int y)
     {
         X = x;
