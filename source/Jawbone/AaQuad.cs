@@ -53,6 +53,16 @@ public static class AaQuad
         return result;
     }
 
+    public static AaQuad<Vector2> ToAaTextureCoordinates(this Rectangle32 r, Point32 textureSize)
+    {
+        var w = (float)textureSize.X;
+        var h = (float)textureSize.Y;
+
+        return Create(
+            new Vector2(r.Position.X / w, r.Position.Y / h),
+            new Vector2(r.HighX() / w, r.HighY() / h));
+    }
+
     public static Vector2 Size(this AaQuad<Vector2> aaq) => aaq.C - aaq.A;
     public static float Width(this AaQuad<Vector2> aaq) => aaq.C.X - aaq.A.X;
     public static float Width(this AaQuad<Vector3> aaq) => aaq.C.X - aaq.A.X;

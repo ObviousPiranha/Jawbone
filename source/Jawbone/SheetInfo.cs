@@ -35,7 +35,7 @@ public sealed class SheetInfo
                 foreach (var innerFolder in Directory.EnumerateDirectories(folder))
                     pendingFolders.Push(innerFolder);
                 
-                foreach (var file in Directory.EnumerateFiles(folder))
+                foreach (var file in Directory.EnumerateFiles(folder, "*.png"))
                 {
                     var imageSize = Png.Png.GetImageSize(file);
                     var pixelCount = imageSize.X * imageSize.Y;
@@ -51,7 +51,6 @@ public sealed class SheetInfo
 
         foreach (var image in imageSizes)
         {
-            Console.WriteLine(image.file);
             var bytes = File.ReadAllBytes(image.file);
             var imageData = StbImage.LoadFromMemory(
                 bytes[0],
