@@ -63,7 +63,7 @@ public static class AaQuad
             new Vector2(r.HighX() / w, r.HighY() / h));
     }
 
-    public static Vector2 Size(this AaQuad<Vector2> aaq) => aaq.C - aaq.A;
+    public static Vector2 Size(this AaQuad<Vector2> aaq) => Vector2.Abs(aaq.C - aaq.A);
     public static float Width(this AaQuad<Vector2> aaq) => aaq.C.X - aaq.A.X;
     public static float Width(this AaQuad<Vector3> aaq) => aaq.C.X - aaq.A.X;
     public static float Height(this AaQuad<Vector2> aaq) => aaq.C.Y - aaq.A.Y;
