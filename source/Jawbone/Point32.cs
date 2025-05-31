@@ -45,6 +45,7 @@ public struct Point32 : IEquatable<Point32>
     public static bool operator !=(Point32 a, Point32 b) => a.X != b.X || a.Y != b.Y;
     public static implicit operator Point64(Point32 p) => new(p.X, p.Y);
     public static explicit operator Vector2(Point32 p) => new(p.X, p.Y);
+    public static explicit operator Point32(Vector2 v) => new((int)v.X, (int)v.Y);
 
     public static int CrossProduct(Point32 a, Point32 b) => a.X * b.Y - b.X * a.Y;
 }
