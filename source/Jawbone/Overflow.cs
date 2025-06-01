@@ -12,8 +12,8 @@ public static class Overflow
     public static Point32 Add(Point32 a, Point32 b)
     {
         return new Point32(
-            Overflow.Add(a.X, b.X),
-            Overflow.Add(a.Y, b.Y));
+            Add(a.X, b.X),
+            Add(a.Y, b.Y));
     }
 
     public static void Add(ref Point32 a, Point32 b) => a = Add(a, b);

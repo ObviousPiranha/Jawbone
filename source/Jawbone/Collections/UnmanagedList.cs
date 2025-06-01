@@ -156,10 +156,18 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         Count += items.Length;
     }
 
-    public void RemoveAt(int index)
+    public void RemoveAt(Index index)
     {
-        AsSpan(index + 1).CopyTo(_items.AsSpan(index));
+        var offset = index.GetOffset(Count);
+        AsSpan(offset + 1).CopyTo(_items.AsSpan(offset));
         --Count;
+    }
+
+    public void RemoteAt(Range range)
+    {
+        var (start, count) = range.GetOffsetAndLength(Count);
+        AsSpan(start + count).CopyTo(_items.AsSpan(start));
+        Count -= count;
     }
 
     public void RemoveAt(int index, int count)
