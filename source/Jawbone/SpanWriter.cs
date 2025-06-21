@@ -16,7 +16,7 @@ public ref struct SpanWriter<T>
     public SpanWriter(Span<T> span) => Span = span;
 }
 
-public static class SpanWriterExtensions
+public static class SpanWriter
 {
     public static SpanWriter<T> Create<T>(Span<T> span) => new(span);
     public static SpanWriter<T> Create<T>(Memory<T> memory) => new(memory.Span);
