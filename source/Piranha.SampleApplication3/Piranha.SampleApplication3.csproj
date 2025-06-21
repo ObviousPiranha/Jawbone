@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <GameNativeFolder>..\..\native</GameNativeFolder>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="vertex.shader" CopyToOutputDirectory="Always"/>
     <None Include="fragment.shader" CopyToOutputDirectory="Always"/>
@@ -13,9 +17,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\native\$(RuntimeIdentifier)\**" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)"/>
+    <None Include="$(GameNativeFolder)\$(RuntimeIdentifier)\**" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)"/>
   </ItemGroup>
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
 </Project>
