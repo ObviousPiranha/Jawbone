@@ -33,24 +33,6 @@ class Program
 
     static void RunApplication()
     {
-        NativeLibrary.SetDllImportResolver(
-            typeof(Sdl).Assembly,
-            (libraryName, assembly, searchPath) =>
-            {
-                if (C.SystemLibs.Contains(libraryName))
-                {
-                    return NativeLibrary.Load(libraryName, assembly, searchPath);
-                }
-                else if (libraryName == C.Library)
-                {
-                    return NativeLibrary.Load("./" + C.GetLibraryName(), assembly, searchPath);
-                }
-                else
-                {
-                    return NativeLibrary.Load("./" + Sdl.GetDefaultLibName(), assembly, searchPath);
-                }
-            });
-
         Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera).ThrowOnSdlFailure("Unable to initialize SDL.");
         Sdl.SetAppMetadata("Jawbone SDL3 Sample", "1.0").ThrowOnSdlFailure("Unable to set app metadata.");
 

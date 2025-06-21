@@ -12,6 +12,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console"/>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\native\$(RuntimeIdentifier)\**" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)"/>
+  </ItemGroup>
   <PropertyGroup>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
