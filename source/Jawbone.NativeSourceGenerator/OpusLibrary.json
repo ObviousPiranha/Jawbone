@@ -1,0 +1,90 @@
+{
+  "Namespace": "Jawbone.Opus",
+  "ClassName": "OpusLibrary",
+  "Methods": [
+    [
+      "int Decode",
+      "nint st",
+      "in byte data",
+      "int len",
+      "out short pcm",
+      "int frameSize",
+      "int decodeFec"
+    ],
+    [
+      "int DecodeFloat",
+      "nint st",
+      "in byte data",
+      "int len",
+      "out float pcm",
+      "int frameSize",
+      "int decodeFec"
+    ],
+    [
+      "nint DecoderCreate",
+      "int fs",
+      "int channels",
+      "out int error"
+    ],
+    [
+      "void DecoderDestroy",
+      "nint st"
+    ],
+    [
+      "int DecoderInit",
+      "nint st",
+      "int fs",
+      "int channels"
+    ],
+    [
+      "int Encode",
+      "nint st",
+      "in short pcm",
+      "int frameSize",
+      "out byte data",
+      "int maxDataBytes"
+    ],
+    [
+      "int EncodeFloat",
+      "nint st",
+      "in float pcm",
+      "int frameSize",
+      "out byte data",
+      "int maxDataBytes"
+    ],
+    [
+      "nint EncoderCreate",
+      "int fs",
+      "int channels",
+      "int application",
+      "out int error"
+    ],
+    [
+      "int EncoderCtl",
+      "nint st",
+      "int request",
+      "out int value"
+    ],
+    [
+      "int EncoderCtl",
+      "nint st",
+      "int request",
+      "int value"
+    ],
+    [
+      "void EncoderDestroy",
+      "nint st"
+    ],
+    [
+      "int EncoderGetSize",
+      "int channels"
+    ],
+    [
+      "int EncoderInit",
+      "nint st",
+      "int fs",
+      "int channels",
+      "int application"
+    ]
+  ]
+}

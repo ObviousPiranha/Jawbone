@@ -16,7 +16,7 @@ sealed class Sdl2Provider : IDisposable
         _handle = NativeLibrary.Load(library);
         Library = new Sdl2Library(
             methodName => NativeLibrary.GetExport(
-                _handle, Sdl2Library.GetFunctionName(methodName)));
+                _handle, GetFunctionName(methodName)));
 
         if (OperatingSystem.IsLinux())
             Library.SetHint("SDL_VIDEODRIVER", "wayland,x11");
@@ -51,5 +51,18 @@ sealed class Sdl2Provider : IDisposable
             path = Path.Combine(folder, path);
 
         return path;
+    }
+
+    public static string GetFunctionName(string methodName)
+    {
+        if (methodName.StartsWith("Gl"))
+            return string.Concat("SDL_GL_", methodName.AsSpan(2));
+
+        return methodName switch
+        {
+            nameof(Sdl2Library.BlitSurface) => "SDL_UpperBlit",
+            nameof(Sdl2Library.Free) => "SDL_free",
+            _ => "SDL_" + methodName
+        };
     }
 }

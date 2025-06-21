@@ -1,0 +1,197 @@
+{
+  "Namespace": "Jawbone.Sqlite",
+  "ClassName": "Sqlite3Library",
+  "Methods": [
+    [
+      "int BindBlob",
+      "nint statement",
+      "int index",
+      "in byte data",
+      "int byteCount",
+      "nint parameter"
+    ],
+    [
+      "int BindDouble",
+      "nint statement",
+      "int index",
+      "double value"
+    ],
+    [
+      "int BindInt64",
+      "nint statement",
+      "int index",
+      "long value"
+    ],
+    [
+      "int BindNull",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "int BindText",
+      "nint statement",
+      "int index",
+      "string data",
+      "int byteCount",
+      "nint parameter"
+    ],
+    [
+      "int BindText",
+      "nint statement",
+      "int index",
+      "in byte data",
+      "int byteCount",
+      "nint parameter"
+    ],
+    [
+      "int Changes",
+      "nint database"
+    ],
+    [
+      "int ClearBindings",
+      "nint statement"
+    ],
+    [
+      "int Close",
+      "nint database"
+    ],
+    [
+      "nint ColumnBlob",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "int ColumnBytes",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "int ColumnBytes16",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "int ColumnCount",
+      "nint statement"
+    ],
+    [
+      "double ColumnDouble",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "int ColumnInt",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "long ColumnInt64",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "CString ColumnName",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "nint ColumnText",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "nint ColumnText16",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "int ColumnType",
+      "nint statement",
+      "int index"
+    ],
+    [
+      "nint DbHandle",
+      "nint statement"
+    ],
+    [
+      "int Errcode",
+      "nint database"
+    ],
+    [
+      "CString Errmsg",
+      "nint database"
+    ],
+    [
+      "CString Errstr",
+      "int errorCode"
+    ],
+    [
+      "int Exec",
+      "nint database",
+      "string sql",
+      "nint callback",
+      "nint argument",
+      "nint errorMessage"
+    ],
+    [
+      "int Finalize",
+      "nint statement"
+    ],
+    [
+      "int Initialize"
+    ],
+    [
+      "CString Libversion"
+    ],
+    [
+      "int Limit",
+      "nint database",
+      "int id",
+      "int newVal"
+    ],
+    [
+      "int Open",
+      "string filename",
+      "out nint database"
+    ],
+    [
+      "int OpenV2",
+      "string filename",
+      "out nint database",
+      "int flags",
+      "string? zVfs"
+    ],
+    [
+      "int PrepareV2",
+      "nint database",
+      "string sql",
+      "int byteCount",
+      "out nint statement",
+      "nint tail"
+    ],
+    [
+      "int PrepareV3",
+      "nint database",
+      "string sql",
+      "int byteCount",
+      "uint prepFlags",
+      "out nint statement",
+      "nint tail"
+    ],
+    [
+      "int Reset",
+      "nint statement"
+    ],
+    [
+      "int Shutdown"
+    ],
+    [
+      "int Step",
+      "nint statement"
+    ],
+    [
+      "int TotalChanges",
+      "nint database"
+    ]
+  ]
+}
