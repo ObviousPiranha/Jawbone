@@ -177,6 +177,32 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         Count -= count;
     }
 
+    public void RemoveAll<TState>(TState state, Func<T, TState, bool> predicate)
+    {
+        var free = 0;
+        while (free < Count && !predicate.Invoke(_items[free], state))
+            ++free;
+        for (int i = free + 1; i < Count; ++i)
+        {
+            if (!predicate.Invoke(_items[i], state))
+                _items[free++] = _items[i];
+        }
+        Count = free;
+    }
+
+    public void RemoveAll(Predicate<T> predicate)
+    {
+        var free = 0;
+        while (free < Count && !predicate.Invoke(_items[free]))
+            ++free;
+        for (int i = free + 1; i < Count; ++i)
+        {
+            if (!predicate.Invoke(_items[i]))
+                _items[free++] = _items[i];
+        }
+        Count = free;
+    }
+
     public T Pop()
     {
         var item = _items[Count - 1]; // Ensure throw happens without altering count.
