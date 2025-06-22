@@ -3,14 +3,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Jawbone.Sdl3;
 
-public class SdlException : Exception
+public sealed class SdlException : Exception
 {
-    public SdlException(string message) : base(message)
-    {
-    }
-
-    public SdlException(string message, Exception innerException)
-        : base(message, innerException)
+    public SdlException(
+        string? message = null,
+        Exception? innerException = null
+        ) : base(message, innerException)
     {
     }
 

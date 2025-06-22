@@ -7,6 +7,13 @@ namespace Jawbone.Stb;
 
 public static partial class StbTrueType
 {
+    public static int ThrowOnStbFailure(this int result, string? message = null)
+    {
+        if (result == 0)
+            StbException.Throw(message);
+        return result;
+    }
+
     [LibraryImport(C.Library, EntryPoint = "stbtt_GetFontOffsetForIndex")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial int GetFontOffsetForIndex(
