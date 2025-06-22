@@ -123,10 +123,13 @@ public static class Quad
             FindMax(quad.A.X, quad.B.X, quad.C.X, quad.D.X),
             FindMax(quad.A.Y, quad.B.Y, quad.C.Y, quad.D.Y));
         return (min, max);
-
-        static float FindMin(float a, float b, float c, float d) => float.Min(a, float.Min(b, float.Min(c, d)));
-        static float FindMax(float a, float b, float c, float d) => float.Max(a, float.Max(b, float.Max(c, d)));
     }
+
+    public static float MinX(this Quad<Vector2> quad) => FindMin(quad.A.X, quad.B.X, quad.C.X, quad.D.X);
+    public static float MaxX(this Quad<Vector2> quad) => FindMax(quad.A.X, quad.B.X, quad.C.X, quad.D.X);
+
+    private static float FindMin(float a, float b, float c, float d) => float.Min(a, float.Min(b, float.Min(c, d)));
+    private static float FindMax(float a, float b, float c, float d) => float.Max(a, float.Max(b, float.Max(c, d)));
 
     public static Quad<TResult> Select<T, TResult>(
         this Quad<T> q,

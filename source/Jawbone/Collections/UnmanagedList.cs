@@ -23,7 +23,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public ref T this[int index] => ref AsSpan()[index];
     public ref T this[Index index] => ref AsSpan()[index];
-    public Span<T> this[Range range] => AsSpan()[range];
+    public Span<T> this[Range range] => AsSpan(range);
 
     public UnmanagedList(bool pinned = false)
     {
