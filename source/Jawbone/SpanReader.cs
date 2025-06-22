@@ -316,4 +316,36 @@ public static class SpanReader
             bigEndianValue;
         return result;
     }
+
+    public static bool TryReadUtf32(ref this SpanReader<char> reader, out int utf32)
+    {
+        if (reader.Span.Length <= reader.Position)
+        {
+            utf32 = 0;
+            return false;
+        }
+
+        if (char.IsHighSurrogate(reader.Span[reader.Position]))
+        {
+            if (reader.Position + 1 < reader.Span.Length &&
+                char.IsLowSurrogate(reader.Span[reader.Position + 1]))
+            {
+                utf32 = char.ConvertToUtf32(
+                    reader.Span[reader.Position],
+                    reader.Span[reader.Position + 1]);
+                reader.Position += 2;
+                return true;
+            }
+            else
+            {
+                utf32 = 0;
+                return false;
+            }
+        }
+        else
+        {
+            utf32 = reader.Span[reader.Position++];
+            return true;
+        }
+    }
 }

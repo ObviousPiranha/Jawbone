@@ -9,11 +9,11 @@ using System.Runtime.CompilerServices;
 
 namespace Jawbone;
 
-public sealed class SheetInfo
+public sealed class SheetInfo : IDisposable
 {
     public Point32 SheetSize { get; set; }
     public required ReadOnlyDictionary<string, SheetPosition> SheetPositionByFile { get; init; }
-    public required ImmutableArray<nint> SdlSurfaces { get; init; }
+    public required Outbox<ImmutableArray<nint>> SdlSurfaces { get; init; }
 
     public static SheetInfo Create(Point32 sheetSize, string imageFolder)
     {
@@ -216,9 +216,18 @@ public sealed class SheetInfo
         {
             SheetSize = sheetSize,
             SheetPositionByFile = new(sheetPositionByFile),
-            SdlSurfaces = sdlSurfaces.DrainToImmutable()
+            SdlSurfaces = new(sdlSurfaces.DrainToImmutable())
         };
 
         return result;
+    }
+
+    public void Dispose()
+    {
+        if (SdlSurfaces.TryTake(out var sdlSurfaces) && !sdlSurfaces.IsDefaultOrEmpty)
+        {
+            foreach (var sdlSurface in sdlSurfaces)
+                Sdl.DestroySurface(sdlSurface);
+        }
     }
 }
