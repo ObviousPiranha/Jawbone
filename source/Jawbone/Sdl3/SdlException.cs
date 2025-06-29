@@ -12,16 +12,11 @@ public sealed class SdlException : Exception
     {
     }
 
-    public static SdlException Create(string? message = null)
+    [DoesNotReturn]
+    public static void Throw(string? message = null, Exception? innerException = null)
     {
         message ??= "SDL error.";
         var sdlError = Sdl.GetError().ToString() ?? "Unknown SDL error";
-        return new SdlException((message + " " + sdlError).Trim());
-    }
-
-    [DoesNotReturn]
-    public static void Throw(string? message = null)
-    {
-        throw Create(message);
+        throw new SdlException((message + " " + sdlError).Trim(), innerException);
     }
 }
