@@ -23,7 +23,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public ref T this[int index] => ref AsSpan()[index];
     public ref T this[Index index] => ref AsSpan()[index];
-    public Span<T> this[Range range] => AsSpan()[range];
+    public Span<T> this[Range range] => AsSpan(range);
 
     public UnmanagedList(bool pinned = false)
     {
@@ -156,10 +156,18 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         Count += items.Length;
     }
 
-    public void RemoveAt(int index)
+    public void RemoveAt(Index index)
     {
-        AsSpan(index + 1).CopyTo(_items.AsSpan(index));
+        var offset = index.GetOffset(Count);
+        AsSpan(offset + 1).CopyTo(_items.AsSpan(offset));
         --Count;
+    }
+
+    public void RemoteAt(Range range)
+    {
+        var (start, count) = range.GetOffsetAndLength(Count);
+        AsSpan(start + count).CopyTo(_items.AsSpan(start));
+        Count -= count;
     }
 
     public void RemoveAt(int index, int count)
@@ -167,6 +175,32 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         AsSpan(index + count).CopyTo(_items.AsSpan(index));
         Count -= count;
+    }
+
+    public void RemoveAll<TState>(TState state, Func<T, TState, bool> predicate)
+    {
+        var free = 0;
+        while (free < Count && !predicate.Invoke(_items[free], state))
+            ++free;
+        for (int i = free + 1; i < Count; ++i)
+        {
+            if (!predicate.Invoke(_items[i], state))
+                _items[free++] = _items[i];
+        }
+        Count = free;
+    }
+
+    public void RemoveAll(Predicate<T> predicate)
+    {
+        var free = 0;
+        while (free < Count && !predicate.Invoke(_items[free]))
+            ++free;
+        for (int i = free + 1; i < Count; ++i)
+        {
+            if (!predicate.Invoke(_items[i]))
+                _items[free++] = _items[i];
+        }
+        Count = free;
     }
 
     public T Pop()

@@ -3,27 +3,20 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Jawbone.Sdl3;
 
-public class SdlException : Exception
+public sealed class SdlException : Exception
 {
-    public SdlException(string message) : base(message)
+    public SdlException(
+        string? message = null,
+        Exception? innerException = null
+        ) : base(message, innerException)
     {
-    }
-
-    public SdlException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
-
-    public static SdlException Create(string? message = null)
-    {
-        message ??= "SDL error.";
-        var sdlError = Sdl.GetError().ToString() ?? "Unknown SDL error";
-        return new SdlException((message + " " + sdlError).Trim());
     }
 
     [DoesNotReturn]
-    public static void Throw(string? message = null)
+    public static void Throw(string? message = null, Exception? innerException = null)
     {
-        throw Create(message);
+        message ??= "SDL error.";
+        var sdlError = Sdl.GetError().ToString() ?? "Unknown SDL error";
+        throw new SdlException((message + " " + sdlError).Trim(), innerException);
     }
 }

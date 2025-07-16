@@ -1,0 +1,907 @@
+{
+  "Namespace": "Jawbone.Sdl2",
+  "ClassName": "Sdl2Library",
+  "Methods": [
+    [
+      "int AudioStreamAvailable",
+      "nint stream"
+    ],
+    [
+      "int AudioStreamFlush",
+      "nint stream"
+    ],
+    [
+      "int AudioStreamGet",
+      "nint stream",
+      "out float buffer",
+      "int length"
+    ],
+    [
+      "int AudioStreamGet",
+      "nint stream",
+      "out byte buffer",
+      "int length"
+    ],
+    [
+      "int AudioStreamGet",
+      "nint stream",
+      "out short buffer",
+      "int length"
+    ],
+    [
+      "int AudioStreamPut",
+      "nint stream",
+      "in short buffer",
+      "int length"
+    ],
+    [
+      "int AudioStreamPut",
+      "nint stream",
+      "in byte buffer",
+      "int length"
+    ],
+    [
+      "int BlitSurface",
+      "nint source",
+      "in SdlRect sourceRectangle",
+      "nint destination",
+      "ref SdlRect destinationRectangle"
+    ],
+    [
+      "void ClearQueuedAudio",
+      "uint dev"
+    ],
+    [
+      "void CloseAudioDevice",
+      "uint dev"
+    ],
+    [
+      "nint CreateRGBSurface",
+      "uint flags",
+      "int width",
+      "int height",
+      "int depth",
+      "uint rmask",
+      "uint gmask",
+      "uint bmask",
+      "uint amask"
+    ],
+    [
+      "nint CreateRGBSurfaceFrom",
+      "nint pixels",
+      "int width",
+      "int height",
+      "int depth",
+      "int pitch",
+      "uint rmask",
+      "uint gmask",
+      "uint bmask",
+      "uint amask"
+    ],
+    [
+      "nint CreateRenderer",
+      "nint window",
+      "int index",
+      "SdlRendererFlags flags"
+    ],
+    [
+      "nint CreateSoftwareRenderer",
+      "nint surface"
+    ],
+    [
+      "nint CreateWindow",
+      "string title",
+      "int x",
+      "int y",
+      "int w",
+      "int h",
+      "uint flags"
+    ],
+    [
+      "void DestroyRenderer",
+      "nint renderer"
+    ],
+    [
+      "void DestroyWindow",
+      "nint window"
+    ],
+    [
+      "int FillRect",
+      "nint surface",
+      "ref readonly SdlRect rect",
+      "uint color"
+    ],
+    [
+      "void Free",
+      "nint mem"
+    ],
+    [
+      "void FreeAudioStream",
+      "nint stream"
+    ],
+    [
+      "void FreeSurface",
+      "nint surface"
+    ],
+    [
+      "int GameControllerAddMapping",
+      "string mappingString"
+    ],
+    [
+      "void GameControllerClose",
+      "nint gameController"
+    ],
+    [
+      "int GameControllerEventState",
+      "int state"
+    ],
+    [
+      "nint GameControllerFromInstanceID",
+      "int joyid"
+    ],
+    [
+      "nint GameControllerFromPlayerIndex",
+      "int playerIndex"
+    ],
+    [
+      "SdlBool GameControllerGetAttached",
+      "nint gamecontroller"
+    ],
+    [
+      "short GameControllerGetAxis",
+      "nint gamecontroller",
+      "SdlControllerAxis axis"
+    ],
+    [
+      "SdlControllerAxis GameControllerGetAxisFromString",
+      "string str"
+    ],
+    [
+      "SdlGameControllerButtonBind GameControllerGetBindForAxis",
+      "nint gamecontroller",
+      "SdlControllerAxis axis"
+    ],
+    [
+      "SdlGameControllerButtonBind GameControllerGetBindForButton",
+      "nint gamecontroller",
+      "SdlControllerButton button"
+    ],
+    [
+      "byte GameControllerGetButton",
+      "nint gamecontroller",
+      "SdlControllerButton button"
+    ],
+    [
+      "SdlControllerButton GameControllerGetButtonFromString",
+      "string str"
+    ],
+    [
+      "ushort GameControllerGetFirmwareVersion",
+      "nint gamecontroller"
+    ],
+    [
+      "nint GameControllerGetJoystick",
+      "nint gamecontroller"
+    ],
+    [
+      "int GameControllerGetNumTouchpadFingers",
+      "nint gamecontroller",
+      "int touchpad"
+    ],
+    [
+      "int GameControllerGetNumTouchpads",
+      "nint gamecontroller"
+    ],
+    [
+      "int GameControllerGetPlayerIndex",
+      "nint gamecontroller"
+    ],
+    [
+      "ushort GameControllerGetProduct",
+      "nint gamecontroller"
+    ],
+    [
+      "ushort GameControllerGetProductVersion",
+      "nint gamecontroller"
+    ],
+    [
+      "int GameControllerGetSensorData",
+      "nint gamecontroller",
+      "SdlSensorType type",
+      "out float data",
+      "int numValues"
+    ],
+    [
+      "float GameControllerGetSensorDataRate",
+      "nint gamecontroller",
+      "SdlSensorType type"
+    ],
+    [
+      "int GameControllerGetSensorDataWithTimestamp",
+      "nint gamecontroller",
+      "SdlSensorType type",
+      "out ulong timestamp",
+      "out float data",
+      "int numValues"
+    ],
+    [
+      "CString GameControllerGetSerial",
+      "nint gamecontroller"
+    ],
+    [
+      "ulong GameControllerGetSteamHandle",
+      "nint gamecontroller"
+    ],
+    [
+      "CString GameControllerGetStringForAxis",
+      "SdlControllerAxis axis"
+    ],
+    [
+      "CString GameControllerGetStringForButton",
+      "SdlControllerButton button"
+    ],
+    [
+      "int GameControllerGetTouchpadFinger",
+      "nint gamecontroller",
+      "int touchpad",
+      "int finger",
+      "out byte state",
+      "out float x",
+      "out float y",
+      "out float pressure"
+    ],
+    [
+      "SdlControllerType GameControllerGetType",
+      "nint gamecontroller"
+    ],
+    [
+      "ushort GameControllerGetVendor",
+      "nint gamecontroller"
+    ],
+    [
+      "SdlBool GameControllerHasAxis",
+      "nint gamecontroller",
+      "SdlControllerAxis axis"
+    ],
+    [
+      "SdlBool GameControllerHasButton",
+      "nint gamecontroller",
+      "SdlControllerButton button"
+    ],
+    [
+      "SdlBool GameControllerHasLED",
+      "nint gamecontroller"
+    ],
+    [
+      "SdlBool GameControllerHasRumble",
+      "nint gamecontroller"
+    ],
+    [
+      "SdlBool GameControllerHasRumbleTriggers",
+      "nint gamecontroller"
+    ],
+    [
+      "SdlBool GameControllerHasSensor",
+      "nint gamecontroller",
+      "SdlSensorType type"
+    ],
+    [
+      "SdlBool GameControllerIsSensorEnabled",
+      "nint gamecontroller",
+      "SdlSensorType type"
+    ],
+    [
+      "CString GameControllerMapping",
+      "nint gamecontroller"
+    ],
+    [
+      "CString GameControllerMappingForDeviceIndex",
+      "int joystickIndex"
+    ],
+    [
+      "CString GameControllerMappingForGUID",
+      "System.Guid guid"
+    ],
+    [
+      "CString GameControllerMappingForIndex",
+      "int mappingIndex"
+    ],
+    [
+      "CString GameControllerName",
+      "nint gameController"
+    ],
+    [
+      "int GameControllerNumMappings"
+    ],
+    [
+      "nint GameControllerOpen",
+      "int index"
+    ],
+    [
+      "CString GameControllerPath",
+      "nint gamecontroller"
+    ],
+    [
+      "CString GameControllerPathForIndex",
+      "int joystickIndex"
+    ],
+    [
+      "int GameControllerRumble",
+      "nint gameController",
+      "ushort lowFrequencyRumble",
+      "ushort highFrequencyRumble",
+      "uint durationMs"
+    ],
+    [
+      "int GameControllerRumbleTriggers",
+      "nint gamecontroller",
+      "ushort leftRumble",
+      "ushort rightRumble",
+      "uint durationMs"
+    ],
+    [
+      "int GameControllerSendEffect",
+      "nint gamecontroller",
+      "ref readonly byte data",
+      "int size"
+    ],
+    [
+      "int GameControllerSetLED",
+      "nint gamecontroller",
+      "byte red",
+      "byte green",
+      "byte blue"
+    ],
+    [
+      "void GameControllerSetPlayerIndex",
+      "nint gamecontroller",
+      "int playerIndex"
+    ],
+    [
+      "int GameControllerSetSensorEnabled",
+      "nint gamecontroller",
+      "SdlSensorType type",
+      "SdlBool enabled"
+    ],
+    [
+      "SdlControllerType GameControllerTypeForIndex",
+      "int joystickIndex"
+    ],
+    [
+      "void GameControllerUpdate"
+    ],
+    [
+      "CString GetAudioDeviceName",
+      "int index",
+      "int isCapture"
+    ],
+    [
+      "SdlAudioStatus GetAudioDeviceStatus",
+      "uint dev"
+    ],
+    [
+      "int GetCurrentDisplayMode",
+      "int displayIndex",
+      "out SdlDisplayMode mode"
+    ],
+    [
+      "CString GetCurrentVideoDriver"
+    ],
+    [
+      "int GetDesktopDisplayMode",
+      "int displayIndex",
+      "out SdlDisplayMode mode"
+    ],
+    [
+      "int GetDisplayBounds",
+      "int displayIndex",
+      "out SdlRect rect"
+    ],
+    [
+      "int GetDisplayUsableBounds",
+      "int displayIndex",
+      "out SdlRect rect"
+    ],
+    [
+      "CString GetError"
+    ],
+    [
+      "CString GetHint",
+      "string name"
+    ],
+    [
+      "CString GetKeyName",
+      "int scanCode"
+    ],
+    [
+      "int GetNumAudioDevices",
+      "int isCapture"
+    ],
+    [
+      "int GetNumVideoDisplays"
+    ],
+    [
+      "int GetNumVideoDrivers"
+    ],
+    [
+      "ulong GetPerformanceCounter"
+    ],
+    [
+      "ulong GetPerformanceFrequency"
+    ],
+    [
+      "int GetRendererOutputSize",
+      "nint renderer",
+      "out int w",
+      "out int h"
+    ],
+    [
+      "uint GetTicks"
+    ],
+    [
+      "void GetVersion",
+      "out byte v"
+    ],
+    [
+      "CString GetVideoDriver",
+      "int index"
+    ],
+    [
+      "int GetWindowDisplayIndex",
+      "nint window"
+    ],
+    [
+      "uint GetWindowFlags",
+      "nint window"
+    ],
+    [
+      "nint GetWindowFromID",
+      "uint windowId"
+    ],
+    [
+      "uint GetWindowID",
+      "nint window"
+    ],
+    [
+      "void GetWindowSize",
+      "nint window",
+      "out int width",
+      "out int height"
+    ],
+    [
+      "nint GetWindowSurface",
+      "nint window"
+    ],
+    [
+      "nint GlCreateContext",
+      "nint window"
+    ],
+    [
+      "void GlDeleteContext",
+      "nint context"
+    ],
+    [
+      "nint GlGetProcAddress",
+      "string proc"
+    ],
+    [
+      "int GlLoadLibrary",
+      "string? path"
+    ],
+    [
+      "int GlMakeCurrent",
+      "nint window",
+      "nint context"
+    ],
+    [
+      "int GlSetAttribute",
+      "int attribute",
+      "int value"
+    ],
+    [
+      "int GlSetSwapInterval",
+      "int interval"
+    ],
+    [
+      "void GlSwapWindow",
+      "nint window"
+    ],
+    [
+      "void GlUnloadLibrary"
+    ],
+    [
+      "int Init",
+      "SdlInit flags"
+    ],
+    [
+      "int IsGameController",
+      "int index"
+    ],
+    [
+      "int JoystickAttachVirtual",
+      "SdlJoystickType type",
+      "int naxes",
+      "int nbuttons",
+      "int nhats"
+    ],
+    [
+      "void JoystickClose",
+      "nint joystick"
+    ],
+    [
+      "int JoystickDetachVirtual",
+      "int deviceIndex"
+    ],
+    [
+      "int JoystickEventState",
+      "int state"
+    ],
+    [
+      "nint JoystickFromInstanceID",
+      "uint instanceId"
+    ],
+    [
+      "nint JoystickFromPlayerIndex",
+      "int playerIndex"
+    ],
+    [
+      "SdlBool JoystickGetAttached",
+      "nint joystick"
+    ],
+    [
+      "short JoystickGetAxis",
+      "nint joystick",
+      "int axis"
+    ],
+    [
+      "SdlBool JoystickGetAxisInitialState",
+      "nint joystick",
+      "int axis",
+      "out short state"
+    ],
+    [
+      "int JoystickGetBall",
+      "nint joystick",
+      "int ball",
+      "out int dx",
+      "out int dy"
+    ],
+    [
+      "byte JoystickGetButton",
+      "nint joystick",
+      "int button"
+    ],
+    [
+      "System.Guid JoystickGetDeviceGUID",
+      "int deviceIndex"
+    ],
+    [
+      "uint JoystickGetDeviceInstanceID",
+      "int deviceIndex"
+    ],
+    [
+      "int JoystickGetDevicePlayerIndex",
+      "int deviceIndex"
+    ],
+    [
+      "ushort JoystickGetDeviceProduct",
+      "int deviceIndex"
+    ],
+    [
+      "ushort JoystickGetDeviceProductVersion",
+      "int deviceIndex"
+    ],
+    [
+      "SdlJoystickType JoystickGetDeviceType",
+      "int deviceIndex"
+    ],
+    [
+      "ushort JoystickGetDeviceVendor",
+      "int deviceIndex"
+    ],
+    [
+      "ushort JoystickGetFirmwareVersion",
+      "nint joystick"
+    ],
+    [
+      "System.Guid JoystickGetGUID",
+      "nint joystick"
+    ],
+    [
+      "System.Guid JoystickGetGUIDFromString",
+      "string pchGuid"
+    ],
+    [
+      "void JoystickGetGUIDString",
+      "System.Guid guid",
+      "out byte guidBuffer",
+      "int byteCount"
+    ],
+    [
+      "byte JoystickGetHat",
+      "nint joystick",
+      "int hat"
+    ],
+    [
+      "int JoystickGetPlayerIndex",
+      "nint joystick"
+    ],
+    [
+      "ushort JoystickGetProduct",
+      "nint joystick"
+    ],
+    [
+      "ushort JoystickGetProductVersion",
+      "nint joystick"
+    ],
+    [
+      "CString JoystickGetSerial",
+      "nint joystick"
+    ],
+    [
+      "SdlJoystickType JoystickGetType",
+      "nint joystick"
+    ],
+    [
+      "ushort JoystickGetVendor",
+      "nint joystick"
+    ],
+    [
+      "SdlBool JoystickHasLED",
+      "nint joystick"
+    ],
+    [
+      "SdlBool JoystickHasRumble",
+      "nint joystick"
+    ],
+    [
+      "SdlBool JoystickHasRumbleTriggers",
+      "nint joystick"
+    ],
+    [
+      "uint JoystickInstanceID",
+      "nint joystick"
+    ],
+    [
+      "int JoystickIsHaptic",
+      "nint joystick"
+    ],
+    [
+      "SdlBool JoystickIsVirtual",
+      "int deviceIndex"
+    ],
+    [
+      "CString JoystickName",
+      "nint joystick"
+    ],
+    [
+      "CString JoystickNameForIndex",
+      "int deviceIndex"
+    ],
+    [
+      "int JoystickNumAxes",
+      "nint joystick"
+    ],
+    [
+      "int JoystickNumBalls",
+      "nint joystick"
+    ],
+    [
+      "int JoystickNumButtons",
+      "nint joystick"
+    ],
+    [
+      "int JoystickNumHats",
+      "nint joystick"
+    ],
+    [
+      "nint JoystickOpen",
+      "int index"
+    ],
+    [
+      "CString JoystickPath",
+      "nint joystick"
+    ],
+    [
+      "CString JoystickPathForIndex",
+      "int deviceIndex"
+    ],
+    [
+      "int JoystickRumble",
+      "nint joystick",
+      "ushort lowFrequencyRumble",
+      "ushort highFrequencyRumble",
+      "uint durationMs"
+    ],
+    [
+      "int JoystickRumbleTriggers",
+      "nint joystick",
+      "ushort leftRumble",
+      "ushort rightRumble",
+      "uint durationMs"
+    ],
+    [
+      "int JoystickSendEffect",
+      "nint joystick",
+      "ref readonly byte data",
+      "int size"
+    ],
+    [
+      "int JoystickSetLED",
+      "nint joystick",
+      "byte red",
+      "byte green",
+      "byte blue"
+    ],
+    [
+      "void JoystickSetPlayerIndex",
+      "nint joystick",
+      "int playerIndex"
+    ],
+    [
+      "int JoystickSetVirtualAxis",
+      "nint joystick",
+      "int axis",
+      "short value"
+    ],
+    [
+      "int JoystickSetVirtualButton",
+      "nint joystick",
+      "int button",
+      "byte value"
+    ],
+    [
+      "int JoystickSetVirtualHat",
+      "nint joystick",
+      "int hat",
+      "byte value"
+    ],
+    [
+      "void JoystickUpdate"
+    ],
+    [
+      "void LockAudioDevice",
+      "uint dev"
+    ],
+    [
+      "void MaximizeWindow",
+      "nint window"
+    ],
+    [
+      "nint NewAudioStream",
+      "SdlAudioFormat sourceFormat",
+      "byte sourceChannels",
+      "int sourceRate",
+      "SdlAudioFormat destinationFormat",
+      "byte destinationChannels",
+      "int destinationRate"
+    ],
+    [
+      "int NumJoysticks"
+    ],
+    [
+      "uint OpenAudioDevice",
+      "string? device",
+      "int isCapture",
+      "in SdlAudioSpec desired",
+      "out SdlAudioSpec obtained",
+      "SdlAudioAllowChange allowedChanges"
+    ],
+    [
+      "void PauseAudioDevice",
+      "uint dev",
+      "int pauseOn"
+    ],
+    [
+      "int PollEvent",
+      "out SdlEvent eventData"
+    ],
+    [
+      "int PushEvent",
+      "in byte eventData"
+    ],
+    [
+      "int QueueAudio",
+      "uint dev",
+      "ref readonly float data",
+      "uint len"
+    ],
+    [
+      "int QueueAudio",
+      "uint dev",
+      "ref readonly byte data",
+      "uint len"
+    ],
+    [
+      "void Quit"
+    ],
+    [
+      "uint RegisterEvents",
+      "int numEvents"
+    ],
+    [
+      "int RenderClear",
+      "nint renderer"
+    ],
+    [
+      "int RenderFillRect",
+      "nint renderer",
+      "ref readonly SdlRect rect"
+    ],
+    [
+      "void RenderPresent",
+      "nint renderer"
+    ],
+    [
+      "void RestoreWindow",
+      "nint window"
+    ],
+    [
+      "int SetHint",
+      "string name",
+      "string value"
+    ],
+    [
+      "int SetRenderDrawColor",
+      "nint renderer",
+      "byte r",
+      "byte g",
+      "byte b",
+      "byte a"
+    ],
+    [
+      "void SetWindowBordered",
+      "nint window",
+      "int bordered"
+    ],
+    [
+      "int SetWindowFullscreen",
+      "nint window",
+      "uint flags"
+    ],
+    [
+      "void SetWindowPosition",
+      "nint window",
+      "int x",
+      "int y"
+    ],
+    [
+      "void SetWindowResizable",
+      "nint window",
+      "int resizable"
+    ],
+    [
+      "void SetWindowSize",
+      "nint window",
+      "int width",
+      "int height"
+    ],
+    [
+      "void SetWindowTitle",
+      "nint window",
+      "string title"
+    ],
+    [
+      "int ShowCursor",
+      "int toggle"
+    ],
+    [
+      "void StartTextInput"
+    ],
+    [
+      "void StopTextInput"
+    ],
+    [
+      "void UnlockAudioDevice",
+      "uint dev"
+    ],
+    [
+      "int UpdateWindowSurface",
+      "nint window"
+    ],
+    [
+      "int WaitEvent",
+      "out byte eventData"
+    ]
+  ]
+}

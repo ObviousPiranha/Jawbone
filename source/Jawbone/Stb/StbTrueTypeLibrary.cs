@@ -1,128 +1,170 @@
-using Jawbone.Generation;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+// Code generated at 2025-06-21T19:20:39.
 
 namespace Jawbone.Stb;
 
-[MapNativeFunctions]
-public sealed partial class StbTrueTypeLibrary
+public sealed unsafe class StbTrueTypeLibrary
 {
-    public partial int GetFontOffsetForIndex(
-        ref readonly byte data,
-        int index);
+    private readonly nint _fp_FindGlyphIndex;
+    private readonly nint _fp_GetCodepointKernAdvance;
+    private readonly nint _fp_GetFontOffsetForIndex;
+    private readonly nint _fp_InitFont;
+    private readonly nint _fp_PackBegin;
+    private readonly nint _fp_PackEnd;
+    private readonly nint _fp_PackFontRange;
+    private readonly nint _fp_PackSetOversampling;
+    private readonly nint _fp_ScaleForPixelHeight;
 
-    public partial int InitFont(
+    public StbTrueTypeLibrary(
+        System.Func<string, nint> loader)
+    {
+        _fp_FindGlyphIndex = loader.Invoke(nameof(FindGlyphIndex));
+        _fp_GetCodepointKernAdvance = loader.Invoke(nameof(GetCodepointKernAdvance));
+        _fp_GetFontOffsetForIndex = loader.Invoke(nameof(GetFontOffsetForIndex));
+        _fp_InitFont = loader.Invoke(nameof(InitFont));
+        _fp_PackBegin = loader.Invoke(nameof(PackBegin));
+        _fp_PackEnd = loader.Invoke(nameof(PackEnd));
+        _fp_PackFontRange = loader.Invoke(nameof(PackFontRange));
+        _fp_PackSetOversampling = loader.Invoke(nameof(PackSetOversampling));
+        _fp_ScaleForPixelHeight = loader.Invoke(nameof(ScaleForPixelHeight));
+    }
+
+    public int FindGlyphIndex(
+        ref readonly StbttFontInfo fontInfo,
+        int unicodeCodepoint)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, int, int
+            >)_fp_FindGlyphIndex;
+        fixed (void* __p_fontInfo = &fontInfo)
+        {
+            var __result = __fp(__p_fontInfo, unicodeCodepoint);
+            return __result;
+        }
+    }
+
+    public int GetCodepointKernAdvance(
+        ref readonly StbttFontInfo fontInfo,
+        int ch1,
+        int ch2)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, int, int, int
+            >)_fp_GetCodepointKernAdvance;
+        fixed (void* __p_fontInfo = &fontInfo)
+        {
+            var __result = __fp(__p_fontInfo, ch1, ch2);
+            return __result;
+        }
+    }
+
+    public int GetFontOffsetForIndex(
+        ref readonly byte data,
+        int index)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, int, int
+            >)_fp_GetFontOffsetForIndex;
+        fixed (void* __p_data = &data)
+        {
+            var __result = __fp(__p_data, index);
+            return __result;
+        }
+    }
+
+    public int InitFont(
         out StbttFontInfo fontInfo,
         ref readonly byte data,
-        int offset);
+        int offset)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, void*, int, int
+            >)_fp_InitFont;
+        fixed (void* __p_fontInfo = &fontInfo)
+        fixed (void* __p_data = &data)
+        {
+            var __result = __fp(__p_fontInfo, __p_data, offset);
+            return __result;
+        }
+    }
 
-    public partial int PackBegin(
+    public int PackBegin(
         out StbttPackContext packContext,
         out byte pixels,
         int pw,
         int ph,
         int strideInBytes,
         int padding,
-        nint allocContext);
+        nint allocContext)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, void*, int, int, int, int, nint, int
+            >)_fp_PackBegin;
+        fixed (void* __p_packContext = &packContext)
+        fixed (void* __p_pixels = &pixels)
+        {
+            var __result = __fp(__p_packContext, __p_pixels, pw, ph, strideInBytes, padding, allocContext);
+            return __result;
+        }
+    }
 
-    public partial void PackSetOversampling(
-        ref StbttPackContext packContext,
-        uint hOversample,
-        uint vOversample);
+    public void PackEnd(
+        ref StbttPackContext packContext)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, void
+            >)_fp_PackEnd;
+        fixed (void* __p_packContext = &packContext)
+        {
+            __fp(__p_packContext);
+        }
+    }
 
-    public partial int PackFontRange(
+    public int PackFontRange(
         ref StbttPackContext packContext,
         ref readonly byte fontData,
         int fontIndex,
         float fontSize,
         int firstUnicodeCharInRange,
         int numCharsInRange,
-        out StbttPackedChar charDataForRange);
+        out StbttPackedChar charDataForRange)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, void*, int, float, int, int, void*, int
+            >)_fp_PackFontRange;
+        fixed (void* __p_packContext = &packContext)
+        fixed (void* __p_fontData = &fontData)
+        fixed (void* __p_charDataForRange = &charDataForRange)
+        {
+            var __result = __fp(__p_packContext, __p_fontData, fontIndex, fontSize, firstUnicodeCharInRange, numCharsInRange, __p_charDataForRange);
+            return __result;
+        }
+    }
 
-    public partial float ScaleForPixelHeight(
-        ref readonly StbttFontInfo fontInfo,
-        float height);
-    public partial int GetCodepointKernAdvance(
-        ref readonly StbttFontInfo fontInfo,
-        int ch1,
-        int ch2);
-    public partial int FindGlyphIndex(
-        ref readonly StbttFontInfo fontInfo,
-        int unicodeCodepoint);
-
-    public partial void PackEnd(
-        ref StbttPackContext packContext);
-}
-
-#pragma warning disable CA1401
-
-public static partial class StbTrueType
-{
-    [LibraryImport(C.Library, EntryPoint = "stbtt_GetFontOffsetForIndex")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetFontOffsetForIndex(
-        in byte data,
-        int index);
-
-    [LibraryImport(C.Library, EntryPoint = "stbtt_InitFont")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int InitFont(
-        out StbttFontInfo fontInfo,
-        in byte data,
-        int offset);
-
-    [LibraryImport(C.Library, EntryPoint = "stbtt_PackBegin")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int PackBegin(
-        out StbttPackContext packContext,
-        out byte pixels,
-        int pw,
-        int ph,
-        int strideInBytes,
-        int padding,
-        nint allocContext);
-
-    [LibraryImport(C.Library, EntryPoint = "stbtt_PackSetOversampling")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void PackSetOversampling(
+    public void PackSetOversampling(
         ref StbttPackContext packContext,
         uint hOversample,
-        uint vOversample);
+        uint vOversample)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, uint, uint, void
+            >)_fp_PackSetOversampling;
+        fixed (void* __p_packContext = &packContext)
+        {
+            __fp(__p_packContext, hOversample, vOversample);
+        }
+    }
 
-    [LibraryImport(C.Library, EntryPoint = "stbtt_PackFontRange")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int PackFontRange(
-        ref StbttPackContext packContext,
-        in byte fontData,
-        int fontIndex,
-        float fontSize,
-        int firstUnicodeCharInRange,
-        int numCharsInRange,
-        out StbttPackedChar charDataForRange);
-
-    [LibraryImport(C.Library, EntryPoint = "stbtt_ScaleForPixelHeight")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial float ScaleForPixelHeight(
-        in StbttFontInfo fontInfo,
-        float height);
-
-    [LibraryImport(C.Library, EntryPoint = "stbtt_GetCodepointKernAdvance")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int GetCodepointKernAdvance(
-        in StbttFontInfo fontInfo,
-        int ch1,
-        int ch2);
-
-    [LibraryImport(C.Library, EntryPoint = "stbtt_FindGlyphIndex")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int FindGlyphIndex(
-        in StbttFontInfo fontInfo,
-        int unicodeCodepoint);
-
-    [LibraryImport(C.Library, EntryPoint = "stbtt_PackEnd")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void PackEnd(
-        ref StbttPackContext packContext);
+    public float ScaleForPixelHeight(
+        ref readonly StbttFontInfo fontInfo,
+        float height)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            void*, float, float
+            >)_fp_ScaleForPixelHeight;
+        fixed (void* __p_fontInfo = &fontInfo)
+        {
+            var __result = __fp(__p_fontInfo, height);
+            return __result;
+        }
+    }
 }
-
-#pragma warning restore CA1401

@@ -1,0 +1,27 @@
+{
+  "Namespace": "Jawbone.Stb",
+  "ClassName": "StbImageLibrary",
+  "Methods": [
+    [
+      "void ImageFree",
+      "nint imageData"
+    ],
+    [
+      "nint Load",
+      "string filename",
+      "out int x",
+      "out int y",
+      "out int comp",
+      "int reqComp"
+    ],
+    [
+      "nint LoadFromMemory",
+      "ref readonly byte buffer",
+      "int len",
+      "out int x",
+      "out int y",
+      "out int comp",
+      "int reqComp"
+    ]
+  ]
+}

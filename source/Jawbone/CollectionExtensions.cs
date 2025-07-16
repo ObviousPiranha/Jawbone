@@ -109,6 +109,12 @@ public static class CollectionExtensions
         return result;
     }
 
+    public unsafe static Span<T> ToSpan<T>(this nint ptr, int length) where T : unmanaged
+    {
+        var result = new Span<T>(ptr.ToPointer(), length);
+        return result;
+    }
+
     public static Span<byte> NullTerminated(this Span<byte> span)
     {
         var index = span.IndexOf(default(byte));

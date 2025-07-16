@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="Jawbone.Benchmark/Jawbone.Benchmark.csproj" />
-  <Project Path="Jawbone.SourceGenerator/Jawbone.SourceGenerator.csproj" />
+  <Project Path="Jawbone.NativeSourceGenerator/Jawbone.NativeSourceGenerator.csproj" />
   <Project Path="Jawbone.Test.Native/Jawbone.Test.Native.csproj" />
   <Project Path="Jawbone.Test/Jawbone.Test.csproj" />
   <Project Path="Jawbone/Jawbone.csproj" />

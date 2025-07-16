@@ -1,0 +1,24 @@
+{
+  "Namespace": "Jawbone.Stb",
+  "ClassName": "StbImageWriteLibrary",
+  "Methods": [
+    [
+      "int WritePng",
+      "string filename",
+      "int x",
+      "int y",
+      "int comp",
+      "nint data",
+      "int strideBytes"
+    ],
+    [
+      "int WritePng",
+      "string filename",
+      "int x",
+      "int y",
+      "int comp",
+      "ref readonly byte data",
+      "int strideBytes"
+    ]
+  ]
+}

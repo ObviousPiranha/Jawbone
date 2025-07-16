@@ -48,7 +48,7 @@ public readonly struct OpenGlContext
 
         try
         {
-            if (sdl.GlLoadLibrary() != 0)
+            if (sdl.GlLoadLibrary(null) != 0)
             {
                 throw new SdlException(
                     "Unable to load GL library: " + sdl.GetError());

@@ -1,0 +1,9 @@
+{
+  "Namespace": "Jawbone",
+  "ClassName": "NativePiranha",
+  "Methods": [
+    [
+      "nint GetNull"
+    ]
+  ]
+}

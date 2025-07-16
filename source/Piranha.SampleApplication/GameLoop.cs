@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Logging;
 using Jawbone;
 using Jawbone.Sdl2;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Numerics;
 

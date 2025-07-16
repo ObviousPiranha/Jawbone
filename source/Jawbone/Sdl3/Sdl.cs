@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -22,30 +21,20 @@ public unsafe delegate void SdlAudioPostmixCallback(
 
 public static partial class Sdl
 {
-    public const string Lib = "SDL3";
+    private const string Lib = "SDL3";
 
-    public static void ThrowOnSdlFailure(this CBool result, string? message)
+    public static CBool ThrowOnSdlFailure(this CBool result, string? message)
     {
         if (!result)
             SdlException.Throw(message);
+        return result;
     }
 
-    public static void ThrowOnSdlFailure(this nint result, string? message)
+    public static nint ThrowOnSdlFailure(this nint result, string? message)
     {
         if (result == default)
             SdlException.Throw(message);
-    }
-
-    public static string GetDefaultLibName()
-    {
-        if (OperatingSystem.IsWindows())
-            return "SDL3.dll";
-        else if (OperatingSystem.IsLinux())
-            return "libSDL3.so";
-        else if (OperatingSystem.IsMacOS())
-            return "libSDL3.dylib";
-        else
-            throw new PlatformNotSupportedException();
+        return result;
     }
 
     [LibraryImport(Lib, EntryPoint = "SDL_malloc")]

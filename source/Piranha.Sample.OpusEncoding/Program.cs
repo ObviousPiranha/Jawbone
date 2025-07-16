@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Jawbone.Extensions;
+﻿using Jawbone.Extensions;
 using Jawbone.Opus;
 using Jawbone.Sdl2;
 using Jawbone.Stb;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 

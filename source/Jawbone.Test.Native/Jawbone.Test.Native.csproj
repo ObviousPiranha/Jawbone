@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <None Include="PiranhaNative.dll" CopyToOutputDirectory="Always"/>
+    <None Include="libJawboneNative.so" CopyToOutputDirectory="Always"/>
   </ItemGroup>
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />

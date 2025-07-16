@@ -45,7 +45,7 @@ struct PngHeader
 
     public static PngHeader FromChunk(ReadOnlySpan<byte> chunk)
     {
-        var reader = chunk.ToReader();
+        var reader = SpanReader.Create(chunk);
         var result = new PngHeader
         {
             Width = reader.ReadBigEndianInt32(),

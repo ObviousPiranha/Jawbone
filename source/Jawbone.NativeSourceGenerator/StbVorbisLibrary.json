@@ -1,0 +1,21 @@
+{
+  "Namespace": "Jawbone.Stb",
+  "ClassName": "StbVorbisLibrary",
+  "Methods": [
+    [
+      "int DecodeFilename",
+      "string filename",
+      "out int channels",
+      "out int sampleRate",
+      "out nint output"
+    ],
+    [
+      "int DecodeMemory",
+      "ref readonly byte mem",
+      "int length",
+      "out int channels",
+      "out int sampleRate",
+      "out nint output"
+    ]
+  ]
+}

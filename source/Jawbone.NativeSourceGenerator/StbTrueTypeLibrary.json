@@ -1,0 +1,63 @@
+{
+  "Namespace": "Jawbone.Stb",
+  "ClassName": "StbTrueTypeLibrary",
+  "Methods": [
+    [
+      "int FindGlyphIndex",
+      "ref readonly StbttFontInfo fontInfo",
+      "int unicodeCodepoint"
+    ],
+    [
+      "int GetCodepointKernAdvance",
+      "ref readonly StbttFontInfo fontInfo",
+      "int ch1",
+      "int ch2"
+    ],
+    [
+      "int GetFontOffsetForIndex",
+      "ref readonly byte data",
+      "int index"
+    ],
+    [
+      "int InitFont",
+      "out StbttFontInfo fontInfo",
+      "ref readonly byte data",
+      "int offset"
+    ],
+    [
+      "int PackBegin",
+      "out StbttPackContext packContext",
+      "out byte pixels",
+      "int pw",
+      "int ph",
+      "int strideInBytes",
+      "int padding",
+      "nint allocContext"
+    ],
+    [
+      "void PackEnd",
+      "ref StbttPackContext packContext"
+    ],
+    [
+      "int PackFontRange",
+      "ref StbttPackContext packContext",
+      "ref readonly byte fontData",
+      "int fontIndex",
+      "float fontSize",
+      "int firstUnicodeCharInRange",
+      "int numCharsInRange",
+      "out StbttPackedChar charDataForRange"
+    ],
+    [
+      "void PackSetOversampling",
+      "ref StbttPackContext packContext",
+      "uint hOversample",
+      "uint vOversample"
+    ],
+    [
+      "float ScaleForPixelHeight",
+      "ref readonly StbttFontInfo fontInfo",
+      "float height"
+    ]
+  ]
+}

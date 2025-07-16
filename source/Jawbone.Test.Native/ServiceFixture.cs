@@ -1,5 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
 using Jawbone.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace Jawbone.Test.Native;

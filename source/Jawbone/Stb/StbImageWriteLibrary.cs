@@ -1,52 +1,47 @@
-using Jawbone.Generation;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+// Code generated at 2025-06-21T19:19:00.
 
 namespace Jawbone.Stb;
 
-[MapNativeFunctions]
-public sealed partial class StbImageWriteLibrary
+public sealed unsafe class StbImageWriteLibrary
 {
-    public partial int WritePng(
+    private readonly nint _fp_WritePng;
+
+    public StbImageWriteLibrary(
+        System.Func<string, nint> loader)
+    {
+        _fp_WritePng = loader.Invoke(nameof(WritePng));
+    }
+
+    public int WritePng(
         string filename,
         int x,
         int y,
         int comp,
         nint data,
-        int strideBytes);
+        int strideBytes)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            string, int, int, int, nint, int, int
+            >)_fp_WritePng;
+        var __result = __fp(filename, x, y, comp, data, strideBytes);
+        return __result;
+    }
 
-    public partial int WritePng(
+    public int WritePng(
         string filename,
         int x,
         int y,
         int comp,
         ref readonly byte data,
-        int strideBytes);
+        int strideBytes)
+    {
+        var __fp = (delegate* unmanaged[Cdecl]<
+            string, int, int, int, void*, int, int
+            >)_fp_WritePng;
+        fixed (void* __p_data = &data)
+        {
+            var __result = __fp(filename, x, y, comp, __p_data, strideBytes);
+            return __result;
+        }
+    }
 }
-
-#pragma warning disable CA1401
-
-public static partial class StbImageWrite
-{
-    [LibraryImport(C.Library, EntryPoint = "stbi_write_png", StringMarshalling = StringMarshalling.Utf8)]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int WritePng(
-        string filename,
-        int x,
-        int y,
-        int comp,
-        nint data,
-        int strideBytes);
-
-    [LibraryImport(C.Library, EntryPoint = "stbi_write_png", StringMarshalling = StringMarshalling.Utf8)]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial int WritePng(
-        string filename,
-        int x,
-        int y,
-        int comp,
-        in byte data,
-        int strideBytes);
-}
-
-#pragma warning restore CA1401

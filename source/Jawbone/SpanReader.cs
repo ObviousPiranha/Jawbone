@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -8,7 +9,7 @@ namespace Jawbone;
 
 public ref struct SpanReader<T>
 {
-    public ReadOnlySpan<T> Span;
+    public readonly ReadOnlySpan<T> Span;
     public int Position;
 
     public readonly ReadOnlySpan<T> Pending => Span.Slice(Position);
@@ -19,12 +20,16 @@ public ref struct SpanReader<T>
     public SpanReader(ReadOnlySpan<T> span) => Span = span;
 }
 
-public static class SpanReaderExtensions
+public static class SpanReader
 {
-    public static SpanReader<T> ToReader<T>(this ReadOnlySpan<T> span) => new(span);
-    public static SpanReader<T> ToReader<T>(this Span<T> span) => new(span);
-    public static SpanReader<T> ToReader<T>(this T[] array) => new(array);
-    public static SpanReader<char> ToReader(this string? text) => new(text);
+    public static SpanReader<T> Create<T>(ReadOnlySpan<T> span) => new(span);
+    public static SpanReader<T> Create<T>(Span<T> span) => new(span);
+    public static SpanReader<T> Create<T>(ReadOnlyMemory<T> memory) => new(memory.Span);
+    public static SpanReader<T> Create<T>(Memory<T> memory) => new(memory.Span);
+    public static SpanReader<T> Create<T>(T[]? array) => new(array);
+    public static SpanReader<T> Create<T>(ArraySegment<T> segment) => new(segment);
+    public static SpanReader<T> Create<T>(List<T>? list) => new(CollectionsMarshal.AsSpan(list));
+    public static SpanReader<char> Create(string? text) => new(text);
 
     public static ReadOnlySpan<char> ReadWord(ref this SpanReader<char> reader)
     {
@@ -45,7 +50,7 @@ public static class SpanReaderExtensions
         }
     }
 
-    public static ref SpanReader<T> SkipAll<T>(
+    public static void SkipAll<T>(
         ref this SpanReader<T> reader,
         T item
     ) where T : IEquatable<T>
@@ -55,10 +60,9 @@ public static class SpanReaderExtensions
             reader.Position = reader.Span.Length;
         else
             reader.Position += index;
-        return ref reader;
     }
 
-    public static ref SpanReader<T> SkipAll<T>(
+    public static void SkipAll<T>(
         ref this SpanReader<T> reader,
         ReadOnlySpan<T> items
     ) where T : IEquatable<T>
@@ -68,10 +72,9 @@ public static class SpanReaderExtensions
             reader.Position = reader.Span.Length;
         else
             reader.Position += index;
-        return ref reader;
     }
 
-    public static ref SpanReader<T> SkipAll<T>(
+    public static void SkipAll<T>(
         ref this SpanReader<T> reader,
         SearchValues<T> items
     ) where T : IEquatable<T>
@@ -81,7 +84,6 @@ public static class SpanReaderExtensions
             reader.Position = reader.Span.Length;
         else
             reader.Position += index;
-        return ref reader;
     }
 
     public static bool TryMatch<T>(
@@ -212,11 +214,10 @@ public static class SpanReaderExtensions
         return result;
     }
 
-    public static ref SpanReader<T> Take<T>(ref this SpanReader<T> reader, Span<T> items)
+    public static void Take<T>(ref this SpanReader<T> reader, Span<T> items)
     {
         reader.Span.Slice(reader.Position, items.Length).CopyTo(items);
         reader.Position += items.Length;
-        return ref reader;
     }
 
     public static T Blit<T>(ref this SpanReader<byte> reader) where T : unmanaged
@@ -314,5 +315,37 @@ public static class SpanReaderExtensions
             BinaryPrimitives.ReverseEndianness(bigEndianValue) :
             bigEndianValue;
         return result;
+    }
+
+    public static bool TryReadUtf32(ref this SpanReader<char> reader, out int utf32)
+    {
+        if (reader.Span.Length <= reader.Position)
+        {
+            utf32 = 0;
+            return false;
+        }
+
+        if (char.IsHighSurrogate(reader.Span[reader.Position]))
+        {
+            if (reader.Position + 1 < reader.Span.Length &&
+                char.IsLowSurrogate(reader.Span[reader.Position + 1]))
+            {
+                utf32 = char.ConvertToUtf32(
+                    reader.Span[reader.Position],
+                    reader.Span[reader.Position + 1]);
+                reader.Position += 2;
+                return true;
+            }
+            else
+            {
+                utf32 = 0;
+                return false;
+            }
+        }
+        else
+        {
+            utf32 = reader.Span[reader.Position++];
+            return true;
+        }
     }
 }

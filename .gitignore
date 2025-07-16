@@ -1,4 +1,5 @@
 .vscode/
+.idea/
 .vs/
 bin/
 obj/
@@ -15,3 +16,6 @@ BenchmarkDotNet.Artifacts/
 
 .DS_Store
 *.swp
+
+/native/
+
