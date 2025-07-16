@@ -34,7 +34,7 @@ public sealed class SheetInfo : IDisposable
             {
                 foreach (var innerFolder in Directory.EnumerateDirectories(folder))
                     pendingFolders.Push(innerFolder);
-                
+
                 foreach (var file in Directory.EnumerateFiles(folder, "*.png"))
                 {
                     var imageSize = Png.Png.GetImageSize(file);

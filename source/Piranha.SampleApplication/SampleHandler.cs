@@ -1,9 +1,9 @@
-using Microsoft.Extensions.Logging;
 using Jawbone;
 using Jawbone.Extensions;
 using Jawbone.OpenGl;
 using Jawbone.Sdl2;
 using Jawbone.Stb;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
