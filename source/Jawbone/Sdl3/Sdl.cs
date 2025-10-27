@@ -3364,7 +3364,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPUDeviceDriver")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetGpuDeviceDriver(nint device);
+    public static partial CString GetGpuDeviceDriver(nint device);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPUShaderFormats")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -3376,27 +3376,27 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUGraphicsPipeline")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGpuGraphicsPipeline(nint device, nint createinfo);
+    public static partial nint CreateGpuGraphicsPipeline(nint device, in SdlGpuGraphicsPipelineCreateInfo createinfo);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUSampler")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGpuSampler(nint device, nint createinfo);
+    public static partial nint CreateGpuSampler(nint device, in SdlGpuSamplerCreateInfo createinfo);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUShader")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGpuShader(nint device, nint createinfo);
+    public static partial nint CreateGpuShader(nint device, in SdlGpuShaderCreateInfo createinfo);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGpuTexture(nint device, nint createinfo);
+    public static partial nint CreateGpuTexture(nint device, in SdlGpuTextureCreateInfo createinfo);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUBuffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGpuBuffer(nint device, nint createinfo);
+    public static partial nint CreateGpuBuffer(nint device, in SdlGpuBufferCreateInfo createinfo);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUTransferBuffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGpuTransferBuffer(nint device, nint createinfo);
+    public static partial nint CreateGpuTransferBuffer(nint device, in SdlGpuTransferBufferCreateInfo createinfo);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetGPUBufferName")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -3464,7 +3464,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_BeginGPURenderPass")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint BeginGpuRenderPass(nint command_buffer, nint color_target_infos, uint num_color_targets, nint depth_stencil_target_info);
+    public static partial nint BeginGpuRenderPass(nint command_buffer, in SdlGpuColorTargetInfo color_target_infos, uint num_color_targets, nint depth_stencil_target_info);
 
     [LibraryImport(Lib, EntryPoint = "SDL_BindGPUGraphicsPipeline")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -3488,11 +3488,11 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_BindGPUVertexBuffers")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void BindGpuVertexBuffers(nint render_pass, uint first_slot, nint bindings, uint num_bindings);
+    public static partial void BindGpuVertexBuffers(nint render_pass, uint first_slot, in SdlGpuBufferBinding bindings, uint num_bindings);
 
     [LibraryImport(Lib, EntryPoint = "SDL_BindGPUIndexBuffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void BindGpuIndexBuffer(nint render_pass, nint binding, SdlGpuIndexElementSize index_element_size);
+    public static partial void BindGpuIndexBuffer(nint render_pass, in SdlGpuBufferBinding binding, SdlGpuIndexElementSize index_element_size);
 
     [LibraryImport(Lib, EntryPoint = "SDL_BindGPUVertexSamplers")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -3508,7 +3508,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_BindGPUFragmentSamplers")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void BindGpuFragmentSamplers(nint render_pass, uint first_slot, nint texture_sampler_bindings, uint num_bindings);
+    public static partial void BindGpuFragmentSamplers(nint render_pass, uint first_slot, in SdlGpuTextureSamplerBinding texture_sampler_bindings, uint num_bindings);
 
     [LibraryImport(Lib, EntryPoint = "SDL_BindGPUFragmentStorageTextures")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -3584,11 +3584,11 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_UploadToGPUTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void UploadToGpuTexture(nint copy_pass, nint source, nint destination, CBool cycle);
+    public static partial void UploadToGpuTexture(nint copy_pass, in SdlGpuTextureTransferInfo source, in SdlGpuTextureRegion destination, CBool cycle);
 
     [LibraryImport(Lib, EntryPoint = "SDL_UploadToGPUBuffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void UploadToGpuBuffer(nint copy_pass, nint source, nint destination, CBool cycle);
+    public static partial void UploadToGpuBuffer(nint copy_pass, in SdlGpuTransferBufferLocation source, in SdlGpuBufferRegion destination, CBool cycle);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CopyGPUTextureToTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4635,6 +4635,10 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_GetRevision")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint GetRevision();
+
+    [LibraryImport(Lib, EntryPoint = "SDL_WaitAndAcquireGPUSwapchainTexture")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial nint WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, nint swapchain_texture_width, nint swapchain_texture_height);
 }
 
 #pragma warning restore CA1401

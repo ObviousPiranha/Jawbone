@@ -50,7 +50,7 @@ public static class SpanWriter
 
     public static void Blit<T>(
         ref this SpanWriter<byte> writer,
-        ReadOnlySpan<T> values
+        scoped ReadOnlySpan<T> values
     ) where T : unmanaged
     {
         var bytes = MemoryMarshal.AsBytes(values);

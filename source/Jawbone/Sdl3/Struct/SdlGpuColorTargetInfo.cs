@@ -5,7 +5,7 @@ public struct SdlGpuColorTargetInfo // SDL_GPUColorTargetInfo
     public nint Texture; // SDL_GPUTexture * texture
     public uint MipLevel; // Uint32 mip_level
     public uint LayerOrDepthPlane; // Uint32 layer_or_depth_plane
-    public nint ClearColor; // SDL_FColor clear_color
+    public SdlFColor ClearColor; // SDL_FColor clear_color
     public SdlGpuLoadOp LoadOp; // SDL_GPULoadOp load_op
     public SdlGpuStoreOp StoreOp; // SDL_GPUStoreOp store_op
     public nint ResolveTexture; // SDL_GPUTexture * resolve_texture
