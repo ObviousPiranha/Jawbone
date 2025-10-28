@@ -57,15 +57,9 @@ internal partial class Program
             ThrowIfNull(fragmentShader, "Unable to create fragment shader.");
         }
 
-
         var colorTargetDescription = new SdlGpuColorTargetDescription
         {
             Format = Sdl.GetGpuSwapchainTextureFormat(device, window)
-        };
-        var targetInfo = new SdlGpuGraphicsPipelineTargetInfo
-        {
-            NumColorTargets = 1,
-            ColorTargetDescriptions = new(&colorTargetDescription)
         };
         var vertexBufferDescription = new SdlGpuVertexBufferDescription
         {
@@ -91,7 +85,11 @@ internal partial class Program
         };
         var pipelineCreateInfo = new SdlGpuGraphicsPipelineCreateInfo
         {
-            TargetInfo = new(&targetInfo),
+            TargetInfo = new SdlGpuGraphicsPipelineTargetInfo
+            {
+                NumColorTargets = 1,
+                ColorTargetDescriptions = new(&colorTargetDescription)
+            },
             VertexInputState = new SdlGpuVertexInputState
             {
                 NumVertexBuffers = 1,
@@ -138,7 +136,7 @@ internal partial class Program
                 Size = (uint)(Unsafe.SizeOf<ushort>() * 6)
             });
 
-        var imageFileBytes = File.ReadAllBytes("sheet.png");
+        var imageFileBytes = File.ReadAllBytes("ravioli.png");
         var imageData = StbImage.LoadFromMemory(
             imageFileBytes[0],
             imageFileBytes.Length,
