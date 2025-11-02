@@ -16,16 +16,24 @@ internal partial class Program
         Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera).ThrowOnSdlFailure("Unable to initialize SDL.");
         Sdl.SetAppMetadata("Jawbone SDL3 GPU Sample", "1.0").ThrowOnSdlFailure("Unable to set app metadata.");
 
+        var shaderFormat = OperatingSystem.IsWindows() ? SdlGpuShaderFormat.Msl : SdlGpuShaderFormat.Spirv;
+
         var window = Sdl.CreateWindow("Jawbone SDL GPU Sample", 1024, 768, SdlWindowFlags.Resizable);
         ThrowIfNull(window, "Unable to create window.");
-        var device = Sdl.CreateGpuDevice(SdlGpuShaderFormat.Spirv, true, default);
+        var device = Sdl.CreateGpuDevice(shaderFormat, true, default);
         ThrowIfNull(device, "Unable to create device.");
         Sdl.ClaimWindowForGpuDevice(device, window).ThrowOnSdlFailure("Unable to claim window for GPU device.");
 
         nint vertexShader;
         nint fragmentShader;
 
-        var vertexShaderSource = File.ReadAllBytes("TexturedQuad.vert.spv");
+        var extension = shaderFormat switch
+        {
+            SdlGpuShaderFormat.Msl => ".msl",
+            SdlGpuShaderFormat.Spirv => ".spv",
+            _ => throw new InvalidOperationException("Unrecognized shader format: " + shaderFormat)
+        };
+        var vertexShaderSource = File.ReadAllBytes("TexturedQuad.vert" + extension);
         var entrypoint = "main\0"u8;
         fixed (void* v = entrypoint, code = vertexShaderSource)
         {
@@ -34,14 +42,14 @@ internal partial class Program
                 Code = new(code),
                 CodeSize = (nuint)vertexShaderSource.Length,
                 Entrypoint = new(v),
-                Format = SdlGpuShaderFormat.Spirv,
+                Format = shaderFormat,
                 Stage = SdlGpuShaderStage.Vertex
             };
             vertexShader = Sdl.CreateGpuShader(device, shaderCreateInfo);
             ThrowIfNull(vertexShader, "Unable to create vertex shader.");
         }
 
-        var fragmentShaderSource = File.ReadAllBytes("TexturedQuad.frag.spv");
+        var fragmentShaderSource = File.ReadAllBytes("TexturedQuad.frag" + extension);
         fixed (void* v = entrypoint, code = fragmentShaderSource)
         {
             var shaderCreateInfo = new SdlGpuShaderCreateInfo
@@ -49,7 +57,7 @@ internal partial class Program
                 Code = new(code),
                 CodeSize = (nuint)fragmentShaderSource.Length,
                 Entrypoint = new(v),
-                Format = SdlGpuShaderFormat.Spirv,
+                Format = shaderFormat,
                 Stage = SdlGpuShaderStage.Fragment,
                 NumSamplers = 1
             };
