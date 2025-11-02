@@ -16,7 +16,10 @@ internal partial class Program
         Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera).ThrowOnSdlFailure("Unable to initialize SDL.");
         Sdl.SetAppMetadata("Jawbone SDL3 GPU Sample", "1.0").ThrowOnSdlFailure("Unable to set app metadata.");
 
-        var shaderFormat = OperatingSystem.IsWindows() ? SdlGpuShaderFormat.Msl : SdlGpuShaderFormat.Spirv;
+        var shaderFormat =
+            OperatingSystem.IsWindows() ? SdlGpuShaderFormat.Dxil :
+            OperatingSystem.IsMacOS() ? SdlGpuShaderFormat.Msl :
+            SdlGpuShaderFormat.Spirv;
 
         var window = Sdl.CreateWindow("Jawbone SDL GPU Sample", 1024, 768, SdlWindowFlags.Resizable);
         ThrowIfNull(window, "Unable to create window.");
@@ -29,6 +32,7 @@ internal partial class Program
 
         var extension = shaderFormat switch
         {
+            SdlGpuShaderFormat.Dxil => ".dxil",
             SdlGpuShaderFormat.Msl => ".msl",
             SdlGpuShaderFormat.Spirv => ".spv",
             _ => throw new InvalidOperationException("Unrecognized shader format: " + shaderFormat)
