@@ -276,7 +276,13 @@ internal partial class Program
             var gpuShaderFormats = Sdl.GetGpuShaderFormats(device);
             var formats = string.Join(", ", SdlGpuShaderFormat.EnumerateFormatNames(gpuShaderFormats));
 
+            var gpuDriverCount = Sdl.GetNumGpuDrivers();
+            var gpuDrivers = new string[gpuDriverCount];
+            for (int i = 0; i < gpuDriverCount; ++i)
+                gpuDrivers[i] = Sdl.GetGpuDriver(i).ToString() ?? "";
+
             Console.WriteLine($"SDL version: {major}.{minor}.{micro}");
+            Console.WriteLine($"Available GPU device driver: {string.Join(", ", gpuDrivers)}");
             Console.WriteLine($"SDL video driver: {Sdl.GetCurrentVideoDriver()}");
             Console.WriteLine($"SDL GPU device driver: {Sdl.GetGpuDeviceDriver(device)}");
             Console.WriteLine($"Available GPU shader formats: {formats}");

@@ -3360,7 +3360,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPUDriver")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetGpuDriver(int index);
+    public static partial CString GetGpuDriver(int index);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPUDeviceDriver")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
