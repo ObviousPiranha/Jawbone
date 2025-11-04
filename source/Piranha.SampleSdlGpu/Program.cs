@@ -273,9 +273,13 @@ internal partial class Program
             var minor = version / 1000 % 1000;
             var micro = version % 1000;
 
+            var gpuShaderFormats = Sdl.GetGpuShaderFormats(device);
+            var formats = string.Join(", ", SdlGpuShaderFormat.EnumerateFormatNames(gpuShaderFormats));
+
             Console.WriteLine($"SDL version: {major}.{minor}.{micro}");
             Console.WriteLine($"SDL video driver: {Sdl.GetCurrentVideoDriver()}");
             Console.WriteLine($"SDL GPU device driver: {Sdl.GetGpuDeviceDriver(device)}");
+            Console.WriteLine($"Available GPU shader formats: {formats}");
         }
 
         var now = Stopwatch.GetTimestamp();
@@ -322,8 +326,8 @@ internal partial class Program
                 commandBuffer,
                 window,
                 out var swapchainTexture,
-                default,
-                default).ThrowOnSdlFailure("Failed to acquire swapchain texture.");
+                out var width,
+                out var height).ThrowOnSdlFailure("Failed to acquire swapchain texture.");
 
             if (swapchainTexture != default)
             {

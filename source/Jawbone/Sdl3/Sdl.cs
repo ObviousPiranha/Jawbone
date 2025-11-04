@@ -3372,7 +3372,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUComputePipeline")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint CreateGpuComputePipeline(nint device, nint createinfo);
+    public static partial nint CreateGpuComputePipeline(nint device, in SdlGpuComputePipelineCreateInfo createinfo);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateGPUGraphicsPipeline")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4638,7 +4638,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_WaitAndAcquireGPUSwapchainTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, nint swapchain_texture_width, nint swapchain_texture_height);
+    public static partial nint WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, out uint swapchain_texture_width, out uint swapchain_texture_height);
 }
 
 #pragma warning restore CA1401
