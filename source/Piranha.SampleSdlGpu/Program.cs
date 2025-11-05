@@ -16,6 +16,20 @@ internal partial class Program
     {
         Sdl.Init(SdlInit.Video | SdlInit.Audio | SdlInit.Events | SdlInit.Camera).ThrowOnSdlFailure("Unable to initialize SDL.");
         Sdl.SetAppMetadata("Jawbone SDL3 GPU Sample", "1.0").ThrowOnSdlFailure("Unable to set app metadata.");
+        {
+            var version = Sdl.GetVersion();
+            var major = version / 1000000;
+            var minor = version / 1000 % 1000;
+            var micro = version % 1000;
+
+            var gpuDriverCount = Sdl.GetNumGpuDrivers();
+            var gpuDrivers = new string[gpuDriverCount];
+            for (int i = 0; i < gpuDriverCount; ++i)
+                gpuDrivers[i] = Sdl.GetGpuDriver(i).ToString() ?? "";
+
+            Console.WriteLine($"SDL version: {major}.{minor}.{micro}");
+            Console.WriteLine($"Available GPU device drivers: {string.Join(", ", gpuDrivers)}");
+        }
 
         var shaderFormat =
             OperatingSystem.IsWindows() ? SdlGpuShaderFormat.Dxil :
@@ -270,21 +284,9 @@ internal partial class Program
 
         Console.WriteLine("Initialization complete!");
         {
-            var version = Sdl.GetVersion();
-            var major = version / 1000000;
-            var minor = version / 1000 % 1000;
-            var micro = version % 1000;
-
             var gpuShaderFormats = Sdl.GetGpuShaderFormats(device);
             var formats = string.Join(", ", SdlGpuShaderFormat.EnumerateFormatNames(gpuShaderFormats));
 
-            var gpuDriverCount = Sdl.GetNumGpuDrivers();
-            var gpuDrivers = new string[gpuDriverCount];
-            for (int i = 0; i < gpuDriverCount; ++i)
-                gpuDrivers[i] = Sdl.GetGpuDriver(i).ToString() ?? "";
-
-            Console.WriteLine($"SDL version: {major}.{minor}.{micro}");
-            Console.WriteLine($"Available GPU device drivers: {string.Join(", ", gpuDrivers)}");
             Console.WriteLine($"SDL video driver: {Sdl.GetCurrentVideoDriver()}");
             Console.WriteLine($"SDL GPU device driver: {Sdl.GetGpuDeviceDriver(device)}");
             Console.WriteLine($"Available GPU shader formats: {formats}");
