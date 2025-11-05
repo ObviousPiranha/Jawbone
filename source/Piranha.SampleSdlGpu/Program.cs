@@ -2,6 +2,7 @@
 using Jawbone.Sdl3;
 using Jawbone.Stb;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -21,13 +22,12 @@ internal partial class Program
             OperatingSystem.IsMacOS() ? SdlGpuShaderFormat.Msl :
             SdlGpuShaderFormat.Spirv;
 
-        var window = Sdl.CreateWindow("Jawbone SDL GPU Sample", 1024, 768, SdlWindowFlags.Resizable);
-        window.ThrowOnSdlFailure("Unable to create window.");
         var device = Sdl.CreateGpuDevice(shaderFormat, true, default);
         device.ThrowOnSdlFailure("Unable to create device.");
-        Sdl.ClaimWindowForGpuDevice(device, window).ThrowOnSdlFailure("Unable to claim window for GPU device.");
 
-        Sdl.SetGpuSwapchainParameters(device, window, SdlGpuSwapchainComposition.Sdr, SdlGpuPresentMode.Mailbox).ThrowOnSdlFailure("Failed to set present mode.");
+        var windows = new List<Window> { new(device) };
+
+        // Sdl.SetGpuSwapchainParameters(device, window, SdlGpuSwapchainComposition.Sdr, SdlGpuPresentMode.Mailbox).ThrowOnSdlFailure("Failed to set present mode.");
 
         nint vertexShader;
         nint fragmentShader;
@@ -73,7 +73,7 @@ internal partial class Program
 
         var colorTargetDescription = new SdlGpuColorTargetDescription
         {
-            Format = Sdl.GetGpuSwapchainTextureFormat(device, window)
+            Format = Sdl.GetGpuSwapchainTextureFormat(device, windows[0].SdlWindow)
         };
         var vertexBufferDescription = new SdlGpuVertexBufferDescription
         {
@@ -309,10 +309,32 @@ internal partial class Program
                     case SdlEventType.Quit:
                         quit = true;
                         break;
+                    case SdlEventType.KeyDown:
+                        if (sdlEvent.Key.Scancode == SdlScancode.Space)
+                        {
+                            // Console.WriteLine("Create window");
+                            windows.Add(new(device));
+                        }
+                        break;
+                    case SdlEventType.WindowCloseRequested:
+                        var ptr = Sdl.GetWindowFromID(sdlEvent.Window.WindowID);
+                        if (ptr != default)
+                        {
+                            for (int i = 0; i < windows.Count; ++i)
+                            {
+                                if (windows[i].SdlWindow == ptr)
+                                {
+                                    windows[i].Dispose();
+                                    windows.RemoveAt(i);
+                                    break;
+                                }
+                            }
+                        }
+                        break;
                 }
             }
 
-            Draw();
+            DrawWindows();
             ++frameCount;
 
             var now = Stopwatch.GetTimestamp();
@@ -334,17 +356,25 @@ internal partial class Program
         Sdl.ReleaseGpuBuffer(device, indexBuffer);
         Sdl.ReleaseGpuTexture(device, texture);
         Sdl.ReleaseGpuSampler(device, sampler);
-        Sdl.ReleaseWindowFromGpuDevice(device, window);
-        Sdl.DestroyWindow(window);
+
+        foreach (var window in windows)
+            window.Dispose();
+        
         Sdl.DestroyGpuDevice(device);
 
-        void Draw()
+        void DrawWindows()
+        {
+            foreach (var window in windows)
+                DrawWindow(window);
+        }
+
+        void DrawWindow(Window window)
         {
             var commandBuffer = Sdl.AcquireGpuCommandBuffer(device);
             commandBuffer.ThrowOnSdlFailure("Unable to acquire command buffer.");
             Sdl.WaitAndAcquireGpuSwapchainTexture(
                 commandBuffer,
-                window,
+                window.SdlWindow,
                 out var swapchainTexture,
                 out var width,
                 out var height).ThrowOnSdlFailure("Failed to acquire swapchain texture.");
@@ -355,7 +385,7 @@ internal partial class Program
                 var colorTargetInfo = new SdlGpuColorTargetInfo
                 {
                     Texture = swapchainTexture,
-                    ClearColor = new SdlFColor { R = r.NextSingle(), G = r.NextSingle(), B = r.NextSingle(), A = 1f },
+                    ClearColor = window.ClearColor,
                     LoadOp = SdlGpuLoadOp.Clear,
                     StoreOp = SdlGpuStoreOp.Store
                 };

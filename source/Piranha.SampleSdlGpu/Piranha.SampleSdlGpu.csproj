@@ -2,8 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <GameNativeFolder>..\..\native</GameNativeFolder>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GameNativeFolder>..\..\native</GameNativeFolder>
+    <RidFolder Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RidFolder>
+    <RidFolder Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</RidFolder>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jawbone\Jawbone.csproj"/>
@@ -13,6 +15,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(GameNativeFolder)\$(RuntimeIdentifier)\**" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)"/>
+    <None Include="$(GameNativeFolder)\$(RidFolder)\**" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)"/>
   </ItemGroup>
 </Project>
