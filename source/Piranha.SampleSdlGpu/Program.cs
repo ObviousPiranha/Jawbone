@@ -54,7 +54,7 @@ internal partial class Program
             _ => throw new InvalidOperationException("Unrecognized shader format: " + shaderFormat)
         };
         var vertexShaderSource = File.ReadAllBytes("TexturedQuad.vert" + extension);
-        var entrypoint = "main\0"u8;
+        var entrypoint = OperatingSystem.IsMacOS() ? "main0\0"u8 : "main\0"u8;
         fixed (void* v = entrypoint, code = vertexShaderSource)
         {
             var shaderCreateInfo = new SdlGpuShaderCreateInfo
