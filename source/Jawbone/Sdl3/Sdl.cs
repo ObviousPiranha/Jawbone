@@ -23,20 +23,6 @@ public static partial class Sdl
 {
     private const string Lib = "SDL3";
 
-    public static CBool ThrowOnSdlFailure(this CBool result, string? message)
-    {
-        if (!result)
-            SdlException.Throw(message);
-        return result;
-    }
-
-    public static nint ThrowOnSdlFailure(this nint result, string? message)
-    {
-        if (result == default)
-            SdlException.Throw(message);
-        return result;
-    }
-
     [LibraryImport(Lib, EntryPoint = "SDL_malloc")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint Malloc(nuint size);
@@ -4638,7 +4624,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_WaitAndAcquireGPUSwapchainTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, out uint swapchain_texture_width, out uint swapchain_texture_height);
+    public static partial CBool WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, out uint swapchain_texture_width, out uint swapchain_texture_height);
 }
 
 #pragma warning restore CA1401

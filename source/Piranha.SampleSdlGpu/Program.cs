@@ -22,10 +22,12 @@ internal partial class Program
             SdlGpuShaderFormat.Spirv;
 
         var window = Sdl.CreateWindow("Jawbone SDL GPU Sample", 1024, 768, SdlWindowFlags.Resizable);
-        ThrowIfNull(window, "Unable to create window.");
+        window.ThrowOnSdlFailure("Unable to create window.");
         var device = Sdl.CreateGpuDevice(shaderFormat, true, default);
-        ThrowIfNull(device, "Unable to create device.");
+        device.ThrowOnSdlFailure("Unable to create device.");
         Sdl.ClaimWindowForGpuDevice(device, window).ThrowOnSdlFailure("Unable to claim window for GPU device.");
+
+        Sdl.SetGpuSwapchainParameters(device, window, SdlGpuSwapchainComposition.Sdr, SdlGpuPresentMode.Mailbox).ThrowOnSdlFailure("Failed to set present mode.");
 
         nint vertexShader;
         nint fragmentShader;
@@ -50,7 +52,7 @@ internal partial class Program
                 Stage = SdlGpuShaderStage.Vertex
             };
             vertexShader = Sdl.CreateGpuShader(device, shaderCreateInfo);
-            ThrowIfNull(vertexShader, "Unable to create vertex shader.");
+            vertexShader.ThrowOnSdlFailure("Unable to create vertex shader.");
         }
 
         var fragmentShaderSource = File.ReadAllBytes("TexturedQuad.frag" + extension);
@@ -66,7 +68,7 @@ internal partial class Program
                 NumSamplers = 1
             };
             fragmentShader = Sdl.CreateGpuShader(device, shaderCreateInfo);
-            ThrowIfNull(fragmentShader, "Unable to create fragment shader.");
+            fragmentShader.ThrowOnSdlFailure("Unable to create fragment shader.");
         }
 
         var colorTargetDescription = new SdlGpuColorTargetDescription
@@ -116,7 +118,7 @@ internal partial class Program
 
         Console.WriteLine("Creating pipeline");
         var pipeline = Sdl.CreateGpuGraphicsPipeline(device, pipelineCreateInfo);
-        ThrowIfNull(pipeline, "Unable to create pipeline.");
+        pipeline.ThrowOnSdlFailure("Unable to create pipeline.");
 
         Sdl.ReleaseGpuShader(device, vertexShader);
         Sdl.ReleaseGpuShader(device, fragmentShader);
@@ -188,10 +190,10 @@ internal partial class Program
             var transferBytes = mapped.ToSpan<byte>(transferBufferSize);
             var writer = SpanWriter.Create(transferBytes);
             writer.Blit<PositionTextureVertex>([
-                new(-1, 1, 0, 0, 0),
-                new(1, 1, 0, 4, 0),
-                new(1, -1, 0, 4, 4),
-                new(-1, -1, 0, 0, 4)]);
+                new(-1, 0, 0, 0, 0),
+                new(0, 0, 0, 1, 0),
+                new(0, -1, 0, 1, 1),
+                new(-1, -1, 0, 0, 1)]);
             sizeOfPositions = writer.Position;
             writer.Blit<ushort>([0, 1, 2, 0, 2, 3]);
             sizeOfIndices = writer.Position - sizeOfPositions;
@@ -282,13 +284,14 @@ internal partial class Program
                 gpuDrivers[i] = Sdl.GetGpuDriver(i).ToString() ?? "";
 
             Console.WriteLine($"SDL version: {major}.{minor}.{micro}");
-            Console.WriteLine($"Available GPU device driver: {string.Join(", ", gpuDrivers)}");
+            Console.WriteLine($"Available GPU device drivers: {string.Join(", ", gpuDrivers)}");
             Console.WriteLine($"SDL video driver: {Sdl.GetCurrentVideoDriver()}");
             Console.WriteLine($"SDL GPU device driver: {Sdl.GetGpuDeviceDriver(device)}");
             Console.WriteLine($"Available GPU shader formats: {formats}");
         }
 
-        var now = Stopwatch.GetTimestamp();
+        var frameCount = 0;
+        var start = Stopwatch.GetTimestamp();
         var sdlEvent = default(SdlEvent);
         var quit = false;
         while (!quit)
@@ -310,6 +313,17 @@ internal partial class Program
             }
 
             Draw();
+            ++frameCount;
+
+            var now = Stopwatch.GetTimestamp();
+            var delta = now - start;
+            if (Stopwatch.Frequency <= delta)
+            {
+                Console.WriteLine($"{frameCount} FPS");
+                frameCount = 0;
+                start += Stopwatch.Frequency;
+                delta -= Stopwatch.Frequency;
+            }
             Thread.Sleep(1);
         }
 
@@ -327,7 +341,7 @@ internal partial class Program
         void Draw()
         {
             var commandBuffer = Sdl.AcquireGpuCommandBuffer(device);
-            ThrowIfNull(commandBuffer, "Unable to acquire command buffer.");
+            commandBuffer.ThrowOnSdlFailure("Unable to acquire command buffer.");
             Sdl.WaitAndAcquireGpuSwapchainTexture(
                 commandBuffer,
                 window,
@@ -337,10 +351,11 @@ internal partial class Program
 
             if (swapchainTexture != default)
             {
+                var r = Random.Shared;
                 var colorTargetInfo = new SdlGpuColorTargetInfo
                 {
                     Texture = swapchainTexture,
-                    ClearColor = new SdlFColor { B = 0.5f, A = 1f },
+                    ClearColor = new SdlFColor { R = r.NextSingle(), G = r.NextSingle(), B = r.NextSingle(), A = 1f },
                     LoadOp = SdlGpuLoadOp.Clear,
                     StoreOp = SdlGpuStoreOp.Store
                 };
@@ -379,15 +394,6 @@ internal partial class Program
             
             Sdl.SubmitGpuCommandBuffer(commandBuffer);
         }
-    }
-
-    static void ThrowIfNull(nint ptr, string message)
-    {
-        if (ptr != 0)
-            return;
-
-        var error = Sdl.GetError().ToString();
-        throw new SdlException(message + " - " + error);
     }
 
     private static void Main(string[] args)
