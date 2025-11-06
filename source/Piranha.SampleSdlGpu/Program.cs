@@ -317,21 +317,12 @@ internal partial class Program
                             // Console.WriteLine("Create window");
                             windows.Add(new(device));
                         }
+
+                        if (sdlEvent.Key.Scancode == SdlScancode.Escape)
+                            RemoveWindowById(sdlEvent.Key.WindowID);
                         break;
                     case SdlEventType.WindowCloseRequested:
-                        var ptr = Sdl.GetWindowFromID(sdlEvent.Window.WindowID);
-                        if (ptr != default)
-                        {
-                            for (int i = 0; i < windows.Count; ++i)
-                            {
-                                if (windows[i].SdlWindow == ptr)
-                                {
-                                    windows[i].Dispose();
-                                    windows.RemoveAt(i);
-                                    break;
-                                }
-                            }
-                        }
+                        RemoveWindowById(sdlEvent.Window.WindowID);
                         break;
                 }
             }
@@ -346,7 +337,6 @@ internal partial class Program
                 Console.WriteLine($"{frameCount} FPS");
                 frameCount = 0;
                 start += Stopwatch.Frequency;
-                delta -= Stopwatch.Frequency;
             }
             Thread.Sleep(1);
         }
@@ -363,6 +353,22 @@ internal partial class Program
             window.Dispose();
         
         Sdl.DestroyGpuDevice(device);
+
+        void RemoveWindowById(uint windowId)
+        {
+            var window = Sdl.GetWindowFromID(windowId);
+            for (int i = 0; i < windows.Count; ++i)
+            {
+                if (windows[i].SdlWindow == window)
+                {
+                    windows[i].Dispose();
+                    windows.RemoveAt(i);
+                    break;
+                }
+            }
+
+            quit |= windows.Count == 0;
+        }
 
         void DrawWindows()
         {

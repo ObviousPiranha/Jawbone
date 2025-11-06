@@ -3278,7 +3278,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetWindowFromEvent")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetWindowFromEvent(nint @event);
+    public static partial nint GetWindowFromEvent(in SdlEvent @event);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetBasePath")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
