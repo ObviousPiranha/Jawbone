@@ -36,8 +36,8 @@ internal partial class Program
             OperatingSystem.IsMacOS() ? SdlGpuShaderFormat.Msl :
             SdlGpuShaderFormat.Spirv;
 
-        var device = Sdl.CreateGpuDevice(shaderFormat, true, default);
-        device.ThrowOnSdlFailure("Unable to create device.");
+        Console.WriteLine($"Shader Format: {shaderFormat}");
+        var device = Sdl.CreateGpuDevice(shaderFormat, true, default).ThrowOnSdlFailure("Unable to create device.");
 
         var windows = new List<Window> { new(device) };
 
