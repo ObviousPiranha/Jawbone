@@ -829,7 +829,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetBooleanProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetBooleanProperty(uint props, nint name, CBool value);
+    public static partial CBool SetBooleanProperty(uint props, in byte name, CBool value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_HasProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

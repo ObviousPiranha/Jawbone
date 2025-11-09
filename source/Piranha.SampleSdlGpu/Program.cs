@@ -37,7 +37,25 @@ internal partial class Program
             SdlGpuShaderFormat.Spirv;
 
         Console.WriteLine($"Shader Format: {shaderFormat}");
-        var device = Sdl.CreateGpuDevice(shaderFormat, true, default).ThrowOnSdlFailure("Unable to create device.");
+        // var device = Sdl.CreateGpuDevice(shaderFormat, true, default).ThrowOnSdlFailure("Unable to create device.");
+        var properties = Sdl.CreateProperties();
+        {
+            var pName = shaderFormat switch
+            {
+                SdlGpuShaderFormat.Dxil => SdlPropGpuDeviceCreate.Boolean.ShadersDxil,
+                SdlGpuShaderFormat.Msl => SdlPropGpuDeviceCreate.Boolean.ShadersMsl,
+                SdlGpuShaderFormat.Spirv => SdlPropGpuDeviceCreate.Boolean.ShadersSpirv,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            Sdl.SetBooleanProperty(properties, pName[0], true);
+
+            // Fix Pi?
+            // Sdl.SetBooleanProperty(properties, SdlPropGpuDeviceCreate.Boolean.FeatureClipDistance[0], false);
+            Sdl.SetBooleanProperty(properties, SdlPropGpuDeviceCreate.Boolean.FeatureDepthClamping[0], false);
+        }
+        var device = Sdl.CreateGpuDeviceWithProperties(properties).ThrowOnSdlFailure("Unable to create device.");
+        Sdl.DestroyProperties(properties);
 
         var windows = new List<Window> { new(device) };
 
@@ -126,6 +144,10 @@ internal partial class Program
                 VertexAttributes = new(&vertexAttributes)
             },
             PrimitiveType = SdlGpuPrimitiveType.Trianglelist,
+            RasterizerState = new SdlGpuRasterizerState
+            {
+                EnableDepthClip = 1
+            },
             VertexShader = vertexShader,
             FragmentShader = fragmentShader
         };
