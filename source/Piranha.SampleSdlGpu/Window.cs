@@ -3,18 +3,18 @@ using System;
 
 namespace Jawbone.SampleSdlGpu;
 
-struct Window : IDisposable
+readonly struct Window : IDisposable
 {
-    public nint SdlWindow;
-    public nint SdlDevice;
-    public SdlFColor ClearColor;
+    public readonly nint SdlWindow;
+    public readonly nint SdlDevice;
+    public readonly SdlFColor ClearColor;
 
     public Window(nint device)
     {
         SdlDevice = device;
         SdlWindow = Sdl.CreateWindow("Jawbone SDL GPU Sample", 1024, 768, SdlWindowFlags.Resizable)
             .ThrowOnSdlFailure("Unable to create window.");
-        Sdl.ClaimWindowForGpuDevice(SdlDevice, SdlWindow).ThrowOnSdlFailure("Unable to claim window for GPU device.")
+        Sdl.ClaimWindowForGpuDevice(SdlDevice, SdlWindow)
             .ThrowOnSdlFailure("Unable to claim window for GPU device.");
 
         var r = Random.Shared;

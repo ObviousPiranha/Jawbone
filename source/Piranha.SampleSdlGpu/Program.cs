@@ -339,6 +339,21 @@ internal partial class Program
                             // Console.WriteLine("Create window");
                             windows.Add(new(device));
                         }
+                        else if (sdlEvent.Key.Scancode == SdlScancode.F11)
+                        {
+                            var window = Sdl.GetWindowFromID(sdlEvent.Key.WindowID)
+                                .ThrowOnSdlFailure("Unable to get window from ID.");
+                            var flags = Sdl.GetWindowFlags(window);
+                            var isFullscreen = (flags & SdlWindowFlags.Fullscreen) == SdlWindowFlags.Fullscreen;
+                            Sdl.SetWindowFullscreen(window, !isFullscreen);
+                        }
+                        else if (sdlEvent.Key.Scancode == SdlScancode.M)
+                        {
+                            var window = Sdl.GetWindowFromID(sdlEvent.Key.WindowID)
+                                .ThrowOnSdlFailure("Unable to get window from ID.");
+                            var result = Sdl.SetWindowPosition(window, 0, 0);
+                            Console.WriteLine($"Move: {result}");
+                        }
 
                         if (sdlEvent.Key.Scancode == SdlScancode.Escape)
                             RemoveWindowById(sdlEvent.Key.WindowID);
