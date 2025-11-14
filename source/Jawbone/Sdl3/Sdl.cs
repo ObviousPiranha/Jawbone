@@ -3458,7 +3458,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetGPUViewport")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void SetGpuViewport(nint render_pass, nint viewport);
+    public static partial void SetGpuViewport(nint render_pass, in SdlGpuViewport viewport);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetGPUScissor")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4625,6 +4625,10 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_WaitAndAcquireGPUSwapchainTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, out uint swapchain_texture_width, out uint swapchain_texture_height);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_CancelGPUCommandBuffer")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool CancelGpuCommandBuffer(nint commandBuffer);
 }
 
 #pragma warning restore CA1401

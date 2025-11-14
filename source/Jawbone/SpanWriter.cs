@@ -12,6 +12,7 @@ public ref struct SpanWriter<T>
 
     public readonly Span<T> Free => Span.Slice(Position);
     public readonly ReadOnlySpan<T> Written => Span.Slice(0, Position);
+    public readonly bool IsFull => Position == Span.Length;
 
     public SpanWriter(Span<T> span) => Span = span;
 }
@@ -22,6 +23,8 @@ public static class SpanWriter
     public static SpanWriter<T> Create<T>(Memory<T> memory) => new(memory.Span);
     public static SpanWriter<T> Create<T>(T[]? array) => new(array);
     public static SpanWriter<T> Create<T>(List<T>? list) => new(CollectionsMarshal.AsSpan(list));
+    public static SpanWriter<T> Create<T>(ArraySegment<T> segment) => new(segment);
+    public static unsafe SpanWriter<T> Create<T>(nint ptr, int length) => new(new(ptr.ToPointer(), length));
 
     public static void Write<T>(
         ref this SpanWriter<T> writer,
@@ -33,7 +36,7 @@ public static class SpanWriter
 
     public static void Write<T>(
         ref this SpanWriter<T> writer,
-        ReadOnlySpan<T> values)
+        scoped ReadOnlySpan<T> values)
     {
         values.CopyTo(writer.Free);
         writer.Position += values.Length;
@@ -51,6 +54,16 @@ public static class SpanWriter
     public static void Blit<T>(
         ref this SpanWriter<byte> writer,
         scoped ReadOnlySpan<T> values
+    ) where T : unmanaged
+    {
+        var bytes = MemoryMarshal.AsBytes(values);
+        bytes.CopyTo(writer.Free);
+        writer.Position += bytes.Length;
+    }
+
+    public static void Blit<T>(
+        ref this SpanWriter<byte> writer,
+        scoped Span<T> values
     ) where T : unmanaged
     {
         var bytes = MemoryMarshal.AsBytes(values);
