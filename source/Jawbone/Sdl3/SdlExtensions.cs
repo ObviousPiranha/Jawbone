@@ -33,33 +33,33 @@ public static class SdlExtensions
         return result;
     }
 
-    public static unsafe void PushVertexUniformMatrix(
+    public static unsafe void PushVertexUniform<T>(
         nint commandBuffer,
         uint slotIndex,
-        in Matrix4x4 matrix)
+        in T value) where T : unmanaged
     {
-        fixed (void* m = &matrix)
+        fixed (void* p = &value)
         {
             Sdl.PushGpuVertexUniformData(
                 commandBuffer,
                 slotIndex,
-                new(m),
-                (uint)sizeof(Matrix4x4));
+                new(p),
+                (uint)sizeof(T));
         }
     }
 
-    public static unsafe void PushFragmentUniformMatrix(
+    public static unsafe void PushFragmentUniform<T>(
         nint commandBuffer,
         uint slotIndex,
-        in Matrix4x4 matrix)
+        in T value) where T : unmanaged
     {
-        fixed (void* m = &matrix)
+        fixed (void* p = &value)
         {
             Sdl.PushGpuFragmentUniformData(
                 commandBuffer,
                 slotIndex,
-                new(m),
-                (uint)sizeof(Matrix4x4));
+                new(p),
+                (uint)sizeof(T));
         }
     }
 
@@ -91,6 +91,7 @@ public static class SdlExtensions
             new(typeof(Vector2), SdlGpuVertexElementFormat.Float2),
             new(typeof(Vector3), SdlGpuVertexElementFormat.Float3),
             new(typeof(Vector4), SdlGpuVertexElementFormat.Float4),
+            new(typeof(ColorRgba32), SdlGpuVertexElementFormat.Ubyte4Norm)
         ];
 
         var result = pairs.ToFrozenDictionary();
