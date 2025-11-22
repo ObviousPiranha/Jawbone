@@ -63,6 +63,24 @@ public static class SdlExtensions
         }
     }
 
+    public static void BindGpuVertexBuffers(
+        nint renderPass,
+        uint firstSlot,
+        params ReadOnlySpan<SdlGpuBufferBinding> bindings)
+    {
+        Sdl.BindGpuVertexBuffers(
+            renderPass, firstSlot, bindings[0], (uint)bindings.Length);
+    }
+
+    public static void BindGpuFragmentSamplers(
+        nint renderPass,
+        uint firstSlot,
+        params ReadOnlySpan<SdlGpuTextureSamplerBinding> bindings)
+    {
+        Sdl.BindGpuFragmentSamplers(
+            renderPass, firstSlot, bindings[0], (uint)bindings.Length);
+    }
+
     public static SdlGpuVertexAttribute[] GetGpuVertexAttributes<T>(uint bufferSlot = 0) where T : unmanaged
     {
         var fields = typeof(T).GetFields();
