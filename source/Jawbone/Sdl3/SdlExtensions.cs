@@ -33,6 +33,26 @@ public static class SdlExtensions
         return result;
     }
 
+    public static (int major, int minor, int micro) GetVersion()
+    {
+        var version = Sdl.GetVersion();
+        return (
+            version / 1000000,
+            version / 1000 % 1000,
+            version % 1000);
+    }
+
+    public static IEnumerable<string> EnumerateGpuDrivers()
+    {
+        var gpuDriverCount = Sdl.GetNumGpuDrivers();
+        for (int i = 0; i < gpuDriverCount; ++i)
+        {
+            var gpuDriver = Sdl.GetGpuDriver(i).ToString();
+            if (!string.IsNullOrWhiteSpace(gpuDriver))
+                yield return gpuDriver;
+        }
+    }
+
     public static unsafe void PushVertexUniform<T>(
         nint commandBuffer,
         uint slotIndex,
