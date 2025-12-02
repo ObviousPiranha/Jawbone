@@ -156,7 +156,7 @@ public sealed class LoopyList<T>
         }
 
         item = _data[_begin];
-        _begin = GetBegin(1);
+        _begin = --Count == 0 ? 0 : GetBegin(1);
         return true;
     }
 
