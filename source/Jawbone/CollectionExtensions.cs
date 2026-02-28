@@ -35,32 +35,29 @@ public static class CollectionExtensions
         return new ArrayWithIndexEnumerable<T>(array);
     }
 
-    public static bool TryPop<T>(this List<T> list, [MaybeNullWhen(false)] out T item)
+    public static T PopOrCreate<T>(this Stack<T> stack, Func<T> factory)
     {
-        if (list.Count == 0)
-        {
-            item = default;
-            return false;
-        }
-
-        var index = list.Count - 1;
-        item = list[index];
-        list.RemoveAt(index);
-        return true;
-    }
-
-    public static T PopOrCreate<T>(this List<T> list, Func<T> factory)
-    {
-        if (!list.TryPop(out var result))
+        if (!stack.TryPop(out var result))
             result = factory.Invoke();
         return result;
     }
 
-    public static T PopOrCreate<T>(this List<T> list) where T : new()
+    public static T PopOrCreate<T>(this Stack<T> stack) where T : new()
     {
-        if (!list.TryPop(out var result))
+        if (!stack.TryPop(out var result))
             result = new();
         return result;
+    }
+
+    public static void PushRange<T>(this Stack<T> stack, List<T>? items)
+    {
+        stack.PushRange(CollectionsMarshal.AsSpan(items));
+    }
+
+    public static void PushRange<T>(this Stack<T> stack, params ReadOnlySpan<T> items)
+    {
+        foreach (var item in items)
+            stack.Push(item);
     }
 
     public static TValue AlwaysGet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)

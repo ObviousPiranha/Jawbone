@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <Description>Jawbone</Description>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 </Project>

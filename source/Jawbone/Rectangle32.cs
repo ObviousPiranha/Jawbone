@@ -20,6 +20,8 @@ public struct Rectangle32 : IEquatable<Rectangle32>
     public override readonly string ToString() => $"position {Position} size {Size.X}x{Size.Y}";
     public readonly bool Equals(Rectangle32 other) => Position.Equals(other.Position) && Size.Equals(other.Size);
 
+    public static Rectangle32 FromCorners(Point32 low, Point32 high) => new(low, high - low);
+
     public static bool operator ==(Rectangle32 a, Rectangle32 b) => a.Equals(b);
     public static bool operator !=(Rectangle32 a, Rectangle32 b) => !a.Equals(b);
 }
