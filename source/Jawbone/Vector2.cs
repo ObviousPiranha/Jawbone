@@ -10,6 +10,12 @@ public struct Vector2<T> : IEquatable<Vector2<T>> where T : unmanaged, IEquatabl
     public T X;
     public T Y;
 
+    public Vector2(T xy)
+    {
+        X = xy;
+        Y = xy;
+    }
+
     public Vector2(T x, T y)
     {
         X = x;

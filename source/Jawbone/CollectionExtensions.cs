@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -32,6 +33,31 @@ public static class CollectionExtensions
     public static ArrayWithIndexEnumerable<T> WithIndex<T>(this T[] array)
     {
         return new ArrayWithIndexEnumerable<T>(array);
+    }
+
+    public static T PopOrCreate<T>(this Stack<T> stack, Func<T> factory)
+    {
+        if (!stack.TryPop(out var result))
+            result = factory.Invoke();
+        return result;
+    }
+
+    public static T PopOrCreate<T>(this Stack<T> stack) where T : new()
+    {
+        if (!stack.TryPop(out var result))
+            result = new();
+        return result;
+    }
+
+    public static void PushRange<T>(this Stack<T> stack, List<T>? items)
+    {
+        stack.PushRange(CollectionsMarshal.AsSpan(items));
+    }
+
+    public static void PushRange<T>(this Stack<T> stack, params ReadOnlySpan<T> items)
+    {
+        foreach (var item in items)
+            stack.Push(item);
     }
 
     public static TValue AlwaysGet<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
