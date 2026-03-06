@@ -26,6 +26,13 @@ public static class SpanWriter
     public static SpanWriter<T> Create<T>(ArraySegment<T> segment) => new(segment);
     public static unsafe SpanWriter<T> Create<T>(nint ptr, int length) => new(new(ptr.ToPointer(), length));
 
+    public static SpanWriter<T> FromBytes<T>(Span<byte> bytes) where T : unmanaged
+    {
+        // Workaround for .NET 10 issue.
+        var span = MemoryMarshal.Cast<byte, T>(bytes);
+        return new(span);
+    }
+
     public static void Write<T>(
         ref this SpanWriter<T> writer,
         T value)
