@@ -845,7 +845,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetStringProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetStringProperty(uint props, nint name, nint default_value);
+    public static partial CString GetStringProperty(uint props, in byte name, CString default_value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetNumberProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -3351,6 +3351,10 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPUDeviceDriver")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CString GetGpuDeviceDriver(nint device);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_GetGPUDeviceProperties")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial uint GetGpuDeviceProperties(nint device);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPUShaderFormats")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
