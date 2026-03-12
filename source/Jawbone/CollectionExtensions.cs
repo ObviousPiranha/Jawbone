@@ -1,38 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Jawbone.Extensions;
-
-public struct ArrayWithIndexEnumerator<T>
-{
-    private readonly T[] _array;
-    private int _index;
-    public ArrayWithIndexEnumerator(T[] array)
-    {
-        _array = array;
-        _index = -1;
-    }
-
-    public bool MoveNext() => ++_index < _array.Length;
-    public readonly KeyValuePair<int, T> Current => new(_index, _array[_index]);
-}
-
-public readonly struct ArrayWithIndexEnumerable<T>
-{
-    private readonly T[] _array;
-    public ArrayWithIndexEnumerable(T[] array) => _array = array;
-    public ArrayWithIndexEnumerator<T> GetEnumerator() => new(_array);
-}
 
 public static class CollectionExtensions
 {
     public static ArrayWithIndexEnumerable<T> WithIndex<T>(this T[] array)
     {
         return new ArrayWithIndexEnumerable<T>(array);
+    }
+
+    public static IndexEnumerable<T> EnumerateIndicesOf<T>(this ReadOnlySpan<T> span, T needle)
+    {
+        return new(span, needle);
+    }
+
+    public static IndexEnumerable<T> EnumerateIndicesOf<T>(this Span<T> span, T needle)
+    {
+        return new(span, needle);
+    }
+
+    public static IndexEnumerable<char> EnumerateIndicesOf(this string? s, char needle)
+    {
+        return new(s, needle);
     }
 
     public static T PopOrCreate<T>(this Stack<T> stack, Func<T> factory)
@@ -279,5 +272,60 @@ public static class CollectionExtensions
     ) where T : unmanaged
     {
         return array.AsSpan().ByteSize();
+    }
+}
+
+public readonly struct ArrayWithIndexEnumerable<T>
+{
+    private readonly T[] _array;
+    public ArrayWithIndexEnumerable(T[] array) => _array = array;
+    public ArrayWithIndexEnumerator<T> GetEnumerator() => new(_array);
+}
+
+public struct ArrayWithIndexEnumerator<T>
+{
+    private readonly T[] _array;
+    private int _index;
+    public ArrayWithIndexEnumerator(T[] array)
+    {
+        _array = array;
+        _index = -1;
+    }
+
+    public bool MoveNext() => ++_index < _array.Length;
+    public readonly KeyValuePair<int, T> Current => new(_index, _array[_index]);
+}
+
+public readonly ref struct IndexEnumerable<T>
+{
+    private readonly ReadOnlySpan<T> _span;
+    private readonly T _needle;
+    public IndexEnumerable(ReadOnlySpan<T> span, T needle)
+    {
+        _span = span;
+        _needle = needle;
+    }
+    public IndexEnumerator<T> GetEnumerator() => new(_span, _needle);
+}
+
+public ref struct IndexEnumerator<T>
+{
+    private readonly ReadOnlySpan<T> _span;
+    private readonly T _needle;
+    private int _next;
+    public IndexEnumerator(ReadOnlySpan<T> span, T needle)
+    {
+        _span = span;
+        _needle = needle;
+    }
+    public readonly int Current => _next - 1;
+    public bool MoveNext()
+    {
+        var haystack = _span.Slice(_next);
+        var index = haystack.IndexOf(_needle);
+        if (index == -1)
+            return false;
+        _next += index + 1;
+        return true;
     }
 }

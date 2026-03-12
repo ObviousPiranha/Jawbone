@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace Jawbone;
 
+public delegate int ValueStream<T>(Span<T> buffer);
+
 public sealed class LoopyList<T>
 {
     private T[] _data = [];
@@ -12,6 +14,7 @@ public sealed class LoopyList<T>
 
     public int Count { get; private set; }
     public int Capacity => _data.Length;
+    public int Free => Capacity - Count;
     public bool IsEmpty => Count == 0;
     private int Mask => Capacity - 1;
 
@@ -50,14 +53,7 @@ public sealed class LoopyList<T>
         set => this[index.GetOffset(Count)] = value;
     }
 
-    public bool IsContiguous
-    {
-        get
-        {
-            var end = _begin + Count;
-            return end <= Capacity;
-        }
-    }
+    public bool IsContiguous => (_begin + Count) <= Capacity;
 
     public void Clear()
     {
@@ -198,6 +194,31 @@ public sealed class LoopyList<T>
         }
     }
 
+    public void TrimFront(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(count, Count);
+        if (count == Count)
+        {
+            Clear();
+        }
+        else
+        {
+            _begin = GetBegin(count);
+            Count -= count;
+        }
+    }
+
+    public void TrimBack(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(count, Count);
+        if (count == Count)
+            Clear();
+        else
+            Count -= count;
+    }
+
     public void CopyTo(Range sourceRange, Span<T> destination)
     {
         var (start, count) = sourceRange.GetOffsetAndLength(Count);
@@ -215,6 +236,49 @@ public sealed class LoopyList<T>
         {
             _data.AsSpan(begin..end).CopyTo(destination);
         }
+    }
+
+    public int ReadFrom(ValueStream<T> valueStream)
+    {
+        if (Count == Capacity)
+            Grow(0);
+        
+        var end = GetEnd(Count);
+        if (end < _begin)
+        {
+            var first = _data.AsSpan(_begin);
+            var n0 = ReadFrom(valueStream, first);
+            Count += n0;
+
+            if (n0 == first.Length)
+            {
+                var second = _data.AsSpan(0, end);
+                var n1 = ReadFrom(valueStream, second);
+                Count += n1;
+                return n0 + n1;
+            }
+            else
+            {
+                return n0;
+            }
+        }
+        else
+        {
+            var free = _data.AsSpan(_begin..end);
+            var n = ReadFrom(valueStream, free);
+            Count += n;
+            return n;
+        }
+    }
+
+    private static int ReadFrom(ValueStream<T> valueStream, Span<T> buffer)
+    {
+        var n = valueStream.Invoke(buffer);
+        if (n < 0)
+            throw new InvalidOperationException("Value stream cannot return a negative value.");
+        if (buffer.Length < n)
+            throw new InvalidOperationException("Value stream cannot return a value larger than the buffer.");
+        return n;
     }
 
     public T[] ToArray()
@@ -244,6 +308,8 @@ public sealed class LoopyList<T>
             return _data.AsSpan(_begin..end).SequenceEqual(items);
         }
     }
+
+    public void ExpandCapacity() => Grow(0);
 
     private void EnsureCapacityFor(int additionalItemCount)
     {
