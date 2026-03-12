@@ -28,6 +28,19 @@ public static class CollectionExtensions
         return new(s, needle);
     }
 
+    public static int SkipAndIndexOf<T>(this ReadOnlySpan<T> span, int skip, T needle)
+    {
+        var haystack = span.Slice(skip);
+        var localIndex = haystack.IndexOf(needle);
+        var result = localIndex == -1 ? -1 : skip + localIndex;
+        return result;
+    }
+
+    public static int SkipAndIndexOf<T>(this Span<T> span, int skip, T needle)
+    {
+        return SkipAndIndexOf((ReadOnlySpan<T>)span, skip, needle);
+    }
+
     public static T PopOrCreate<T>(this Stack<T> stack, Func<T> factory)
     {
         if (!stack.TryPop(out var result))

@@ -9,12 +9,16 @@ namespace Jawbone;
 
 public sealed class CsvReader
 {
+    private const byte NewLine = (byte)'\n';
+    private const byte Comma = (byte)',';
+
     private readonly ValueStream<byte> _byteReader;
     private readonly Dictionary<string, int> _columnIndexByName = [];
     private readonly List<int> _dividers = [];
     private byte[] _buffer = new byte[2048];
-    private int _byteCount = 0;
-    private int _nextRow = 0;
+    private int _bufferBegin = 0;
+    private int _bufferEnd = 0;
+    private int _nextRowBegin = 0;
     private int _rowEnd = 0;
     private bool _eof;
 
@@ -45,37 +49,51 @@ public sealed class CsvReader
 
     public bool TryReadRow()
     {
-        _buffer.AsSpan(_nextRow.._byteCount).CopyTo(_buffer);
-        _byteCount -= _nextRow;
+        _bufferBegin = _nextRowBegin;
 
-        _rowEnd = _buffer.AsSpan(0, _byteCount).IndexOf((byte)'\n');
+        _rowEnd = _buffer
+            .AsSpan(0, _bufferEnd)
+            .SkipAndIndexOf(_bufferBegin, NewLine);
 
-        while (_rowEnd == -1 && !_eof)
+        if (_rowEnd == -1 && !_eof)
         {
-            if (_byteCount == _buffer.Length)
-                Array.Resize(ref _buffer, _buffer.Length * 2);
-            var available = _buffer.Length - _byteCount;
-            var n = _byteReader.Invoke(_buffer.AsSpan(_byteCount));
-            _eof = n < available;
-            var lineEnding = _buffer.AsSpan(_byteCount, n).IndexOf((byte)'\n');
-            if (0 <= lineEnding)
-                _rowEnd = _byteCount + lineEnding;
-            _byteCount += n;
+            if (0 < _bufferBegin)
+            {
+                _buffer
+                    .AsSpan(_bufferBegin.._bufferEnd)
+                    .CopyTo(_buffer);
+                _bufferEnd -= _bufferBegin;
+                _bufferBegin = 0;
+            }
+
+            do
+            {
+                if (_bufferEnd == _buffer.Length)
+                    Array.Resize(ref _buffer, _buffer.Length * 2);
+                var available = _buffer.Length - _bufferEnd;
+                var n = _byteReader.Invoke(_buffer.AsSpan(_bufferEnd));
+                _eof = n < available;
+                var lineEnding = _buffer.AsSpan(_bufferEnd, n).IndexOf(NewLine);
+                if (0 <= lineEnding)
+                    _rowEnd = _bufferEnd + lineEnding;
+                _bufferEnd += n;
+            }
+            while (_rowEnd == -1 && !_eof);
         }
 
         if (_rowEnd == -1)
-            _rowEnd = _nextRow = _byteCount;
+            _rowEnd = _nextRowBegin = _bufferEnd;
         else
-            _nextRow = _rowEnd + 1;
+            _nextRowBegin = _rowEnd + 1;
         
-        if (_nextRow == 0)
+        if (_bufferBegin == _bufferEnd)
             return false;
         
         _dividers.Clear();
-        _dividers.Add(-1);
-        var row = _buffer.AsSpan(0, _rowEnd);
-        foreach (var index in row.EnumerateIndicesOf((byte)','))
-            _dividers.Add(index);
+        _dividers.Add(_bufferBegin - 1);
+        var row = _buffer.AsSpan(_bufferBegin.._rowEnd);
+        foreach (var index in row.EnumerateIndicesOf(Comma))
+            _dividers.Add(_bufferBegin + index);
         _dividers.Add(_rowEnd);
         
         return true;
