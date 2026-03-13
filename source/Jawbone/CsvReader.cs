@@ -2,7 +2,7 @@ using Jawbone.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Jawbone;
@@ -14,6 +14,7 @@ public sealed class CsvReader
 
     private readonly ValueStream<byte> _byteReader;
     private readonly Dictionary<string, int> _columnIndexByName = [];
+    private readonly List<string> _columnNames = [];
     private readonly List<int> _dividers = [];
     private byte[] _buffer = new byte[2048];
     private int _bufferBegin = 0;
@@ -24,6 +25,7 @@ public sealed class CsvReader
 
     public int FieldCount => _dividers.Count - 1;
     public int ColumnCount => _columnIndexByName.Count;
+    public ReadOnlySpan<string> ColumnNames => CollectionsMarshal.AsSpan(_columnNames);
 
     public ReadOnlySpan<byte> this[int index] => GetFieldUtf8(index);
 
@@ -43,6 +45,7 @@ public sealed class CsvReader
                 {
                     var name = Encoding.UTF8.GetString(data);
                     _columnIndexByName.Add(name, i);
+                    _columnNames.Add(name);
                 }
             }
         }
@@ -101,7 +104,7 @@ public sealed class CsvReader
     }
 
     /// <summary>
-    /// Gets span containing the field contents as UTF-8.
+    /// Gets span referencing the field contents as UTF-8.
     /// </summary>
     public ReadOnlySpan<byte> GetFieldUtf8(int index)
     {
@@ -117,5 +120,7 @@ public sealed class CsvReader
     /// </summary>
     public string GetFieldUtf16(int index) => Encoding.UTF8.GetString(GetFieldUtf8(index));
 
-    public string[] GetColumnNames() => _columnIndexByName.Keys.ToArray();
+    public int GetIndex(string columnName) => _columnIndexByName[columnName];
+    public bool TryGetIndex(string columnName, out int index) => _columnIndexByName.TryGetValue(columnName, out index);
+    public bool HasColumn(string columnName) => _columnIndexByName.ContainsKey(columnName);
 }

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
+public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>, IUtf8SpanParsable<ColorRgb24>
 {
     public byte R;
     public byte G;
@@ -69,7 +69,7 @@ public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
     public static bool TryParse(
         [NotNullWhen(true)] string? s,
         IFormatProvider? provider,
-        [MaybeNullWhen(false)] out ColorRgb24 result)
+        out ColorRgb24 result)
     {
         return TryParse(s.AsSpan(), provider, out result);
     }
@@ -104,6 +104,49 @@ public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
         var r = Hex.MaybeParseDigits(s[offset + 0], s[offset + 1]);
         var g = Hex.MaybeParseDigits(s[offset + 2], s[offset + 3]);
         var b = Hex.MaybeParseDigits(s[offset + 4], s[offset + 5]);
+
+        if (r == Hex.InvalidDigit || g == Hex.InvalidDigit || b == Hex.InvalidDigit)
+        {
+            result = default;
+            return false;
+        }
+
+        result = new ColorRgb24((byte)r, (byte)g, (byte)b);
+        return true;
+    }
+
+    public static ColorRgb24 Parse(
+        ReadOnlySpan<byte> utf8Text,
+        IFormatProvider? provider)
+    {
+        var offset = Convert.ToInt32(utf8Text[0] == '#');
+        var r = Hex.ParseDigits(utf8Text[offset + 0], utf8Text[offset + 1]);
+        var g = Hex.ParseDigits(utf8Text[offset + 2], utf8Text[offset + 3]);
+        var b = Hex.ParseDigits(utf8Text[offset + 4], utf8Text[offset + 5]);
+        return new ColorRgb24((byte)r, (byte)g, (byte)b);
+    }
+
+    public static bool TryParse(
+        ReadOnlySpan<byte> utf8Text,
+        IFormatProvider? provider,
+        out ColorRgb24 result)
+    {
+        if (utf8Text.IsEmpty)
+        {
+            result = default;
+            return false;
+        }
+
+        var offset = Convert.ToInt32(utf8Text[0] == '#');
+        if (utf8Text.Length < 6 + offset)
+        {
+            result = default;
+            return false;
+        }
+
+        var r = Hex.MaybeParseDigits(utf8Text[offset + 0], utf8Text[offset + 1]);
+        var g = Hex.MaybeParseDigits(utf8Text[offset + 2], utf8Text[offset + 3]);
+        var b = Hex.MaybeParseDigits(utf8Text[offset + 4], utf8Text[offset + 5]);
 
         if (r == Hex.InvalidDigit || g == Hex.InvalidDigit || b == Hex.InvalidDigit)
         {

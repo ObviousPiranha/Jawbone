@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>
+public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>, IUtf8SpanParsable<ColorRgba32>
 {
     public byte R;
     public byte G;
@@ -85,12 +85,21 @@ public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>
         return Parse(s.AsSpan(), provider);
     }
 
+    public static ColorRgba32 Parse(string s) => Parse(s, null);
+
     public static bool TryParse(
         [NotNullWhen(true)] string? s,
         IFormatProvider? provider,
-        [MaybeNullWhen(false)] out ColorRgba32 result)
+        out ColorRgba32 result)
     {
         return TryParse(s.AsSpan(), provider, out result);
+    }
+
+    public static bool TryParse(
+        [NotNullWhen(true)] string? s,
+        out ColorRgba32 result)
+    {
+        return TryParse(s, null, out result);
     }
 
     public static ColorRgba32 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
@@ -103,10 +112,12 @@ public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>
         return new ColorRgba32((byte)r, (byte)g, (byte)b, (byte)a);
     }
 
+    public static ColorRgba32 Parse(ReadOnlySpan<char> s) => Parse(s, null);
+
     public static bool TryParse(
         ReadOnlySpan<char> s,
         IFormatProvider? provider,
-        [MaybeNullWhen(false)] out ColorRgba32 result)
+        out ColorRgba32 result)
     {
         if (s.IsEmpty)
         {
@@ -143,7 +154,76 @@ public struct ColorRgba32 : IEquatable<ColorRgba32>, ISpanParsable<ColorRgba32>
         return true;
     }
 
+    public static bool TryParse(
+        ReadOnlySpan<char> s,
+        out ColorRgba32 result)
+    {
+        return TryParse(s, null, out result);
+    }
+
+    public static ColorRgba32 Parse(
+        ReadOnlySpan<byte> utf8Text,
+        IFormatProvider? provider)
+    {
+        var offset = Convert.ToInt32(utf8Text[0] == '#');
+        var r = Hex.ParseDigits(utf8Text[offset + 0], utf8Text[offset + 1]);
+        var g = Hex.ParseDigits(utf8Text[offset + 2], utf8Text[offset + 3]);
+        var b = Hex.ParseDigits(utf8Text[offset + 4], utf8Text[offset + 5]);
+        var a = Hex.ParseDigits(utf8Text[offset + 6], utf8Text[offset + 7]);
+        return new ColorRgba32((byte)r, (byte)g, (byte)b, (byte)a);
+    }
+
+    public static ColorRgba32 Parse(ReadOnlySpan<byte> utf8Text) => Parse(utf8Text, null);
+
+    public static bool TryParse(
+        ReadOnlySpan<byte> utf8Text,
+        IFormatProvider? provider,
+        out ColorRgba32 result)
+    {
+        if (utf8Text.IsEmpty)
+        {
+            result = default;
+            return false;
+        }
+
+        var offset = Convert.ToInt32(utf8Text[0] == '#');
+        if (utf8Text.Length < 8 + offset)
+        {
+            result = default;
+            return false;
+        }
+
+        var r = Hex.MaybeParseDigits(utf8Text[offset + 0], utf8Text[offset + 1]);
+        var g = Hex.MaybeParseDigits(utf8Text[offset + 2], utf8Text[offset + 3]);
+        var b = Hex.MaybeParseDigits(utf8Text[offset + 4], utf8Text[offset + 5]);
+        var a = Hex.MaybeParseDigits(utf8Text[offset + 6], utf8Text[offset + 7]);
+
+        if (r == Hex.InvalidDigit ||
+            g == Hex.InvalidDigit ||
+            b == Hex.InvalidDigit ||
+            a == Hex.InvalidDigit)
+        {
+            result = default;
+            return false;
+        }
+
+        result = new ColorRgba32(
+            (byte)r,
+            (byte)g,
+            (byte)b,
+            (byte)a);
+        return true;
+    }
+
+    public static bool TryParse(
+        ReadOnlySpan<byte> utf8Text,
+        out ColorRgba32 result)
+    {
+        return TryParse(utf8Text, null, out result);
+    }
+
     public static explicit operator ColorRgb24(ColorRgba32 c) => new(c.R, c.G, c.B);
+    public static implicit operator ColorRgba32(ColorRgb24 c) => new(c);
     public static bool operator ==(ColorRgba32 a, ColorRgba32 b) => a.Equals(b);
     public static bool operator !=(ColorRgba32 a, ColorRgba32 b) => !a.Equals(b);
 }

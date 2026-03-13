@@ -24,7 +24,7 @@ public class CsvReaderTests
         }
         stream.Position = 0;
         var reader = new CsvReader(stream);
-        Assert.Equal(columns, reader.GetColumnNames());
+        Assert.Equal(columns, reader.ColumnNames);
     }
 
     [Fact]
@@ -60,6 +60,9 @@ public class CsvReaderTests
         stream.Position = 0;
         var reader = new CsvReader(stream);
         Assert.Equal(expectedColumnCount, reader.ColumnCount);
+
+        for (int i = 0; i < expectedColumnCount; ++i)
+            Assert.StartsWith("Column", reader.ColumnNames[i]);
 
         var actualRowCount = 0;
         while (reader.TryReadRow())
