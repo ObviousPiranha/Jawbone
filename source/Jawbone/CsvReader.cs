@@ -23,6 +23,7 @@ public sealed class CsvReader
     private bool _eof;
 
     public int FieldCount => _dividers.Count - 1;
+    public int ColumnCount => _columnIndexByName.Count;
 
     public ReadOnlySpan<byte> this[int index] => GetFieldUtf8(index);
 
@@ -86,10 +87,10 @@ public sealed class CsvReader
         else
             _nextRowBegin = _rowEnd + 1;
         
+        _dividers.Clear();
         if (_bufferBegin == _bufferEnd)
             return false;
         
-        _dividers.Clear();
         _dividers.Add(_bufferBegin - 1);
         var row = _buffer.AsSpan(_bufferBegin.._rowEnd);
         foreach (var index in row.EnumerateIndicesOf(Comma))
@@ -99,6 +100,9 @@ public sealed class CsvReader
         return true;
     }
 
+    /// <summary>
+    /// Gets span containing the field contents as UTF-8.
+    /// </summary>
     public ReadOnlySpan<byte> GetFieldUtf8(int index)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index);
@@ -108,6 +112,9 @@ public sealed class CsvReader
         return _buffer.AsSpan(low..high);
     }
 
+    /// <summary>
+    /// Gets newly allocated string containing the field contents.
+    /// </summary>
     public string GetFieldUtf16(int index) => Encoding.UTF8.GetString(GetFieldUtf8(index));
 
     public string[] GetColumnNames() => _columnIndexByName.Keys.ToArray();

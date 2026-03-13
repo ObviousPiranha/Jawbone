@@ -60,6 +60,7 @@ class Program
             var reader = new CsvReader(stream);
             Dump(reader);
             Console.WriteLine("Completed in " + Stopwatch.GetElapsedTime(start));
+            Console.WriteLine("Done");
         }
         catch (Exception ex)
         {
