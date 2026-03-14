@@ -33,8 +33,8 @@ public class ColorTest
     public void ColorRgb24_ParseUtf8_RoundTrip(ColorRgb24 expected)
     {
         var utf8 = new byte[8];
-        expected.WriteUtf8(utf8);
-        var actual = ColorRgb24.ParseUtf8(utf8);
+        expected.TryFormat(utf8, out _);
+        var actual = ColorRgb24.Parse(utf8);
         Assert.Equal(expected, actual);
     }
 
@@ -52,8 +52,8 @@ public class ColorTest
     public void ColorRgba32_ParseUtf8_RoundTrip(ColorRgba32 expected)
     {
         var utf8 = new byte[10];
-        expected.WriteUtf8(utf8);
-        var actual = ColorRgba32.ParseUtf8(utf8);
+        expected.TryFormat(utf8, out _);
+        var actual = ColorRgba32.Parse(utf8);
         Assert.Equal(expected, actual);
     }
 }

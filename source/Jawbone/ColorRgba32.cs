@@ -234,8 +234,8 @@ public struct ColorRgba32 :
     public readonly bool TryFormat(
         Span<byte> utf8Destination,
         out int bytesWritten,
-        ReadOnlySpan<char> format,
-        IFormatProvider? provider)
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = null)
     {
         if (utf8Destination.Length < 9)
         {
