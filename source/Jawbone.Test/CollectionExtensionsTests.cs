@@ -24,7 +24,7 @@ public class CollectionExtensionsTests
                 ExpectedIndices.AsSpan());
         }
     }
-    
+
     private static EnumerableIndexData<char> StringData(
         ReadOnlySpan<char> data,
         char needle,
@@ -42,7 +42,7 @@ public class CollectionExtensionsTests
         new EnumerableIndexData<int>([1, 2, 3, 1, 2, 3], 3, [2, 5]),
         new EnumerableIndexData<int>([1, 2, 3, 1, 2, 3], 5, [])
     ];
-    
+
     public static TheoryData<ITestable> EnumerableIndexDataTheoryData => new(CreateTestables());
 
     [Fact]
@@ -50,7 +50,7 @@ public class CollectionExtensionsTests
     {
         foreach (var item in default(IndexEnumerable<int>))
             Assert.Fail("There should be no items here!");
-        
+
         foreach (var item in "hello".EnumerateIndicesOf('x'))
             Assert.Fail("There should be no items here!");
     }

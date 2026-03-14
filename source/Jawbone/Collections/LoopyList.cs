@@ -242,7 +242,7 @@ public sealed class LoopyList<T>
     {
         if (Count == Capacity)
             Grow(0);
-        
+
         var end = GetEnd(Count);
         if (end < _begin)
         {

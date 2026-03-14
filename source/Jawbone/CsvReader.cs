@@ -89,17 +89,17 @@ public sealed class CsvReader
             _rowEnd = _nextRowBegin = _bufferEnd;
         else
             _nextRowBegin = _rowEnd + 1;
-        
+
         _dividers.Clear();
         if (_bufferBegin == _bufferEnd)
             return false;
-        
+
         _dividers.Add(_bufferBegin - 1);
         var row = _buffer.AsSpan(_bufferBegin.._rowEnd);
         foreach (var index in row.EnumerateIndicesOf(Comma))
             _dividers.Add(_bufferBegin + index);
         _dividers.Add(_rowEnd);
-        
+
         return true;
     }
 
