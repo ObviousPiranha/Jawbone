@@ -1,180 +1,126 @@
+using Jawbone.Extensions;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Jawbone;
 
-public delegate int ByteReader(Span<byte> buffer);
-
 public sealed class CsvReader
 {
-    private static ByteReader DefaultByteReader => static _ => 0;
+    private const byte NewLine = (byte)'\n';
+    private const byte Comma = (byte)',';
 
-    private ByteReader _byteReader = DefaultByteReader;
-    private byte[] _data = new byte[256];
-    private int[] _dividerIndices = new int[16];
-    private int _activeByteCount = 0;
-    private int _currentRowBegin = 0;
-    private int _currentRowLength = 0;
+    private readonly ValueStream<byte> _byteReader;
+    private readonly Dictionary<string, int> _columnIndexByName = [];
+    private readonly List<string> _columnNames = [];
+    private readonly List<int> _dividers = [];
+    private byte[] _buffer = new byte[2048];
+    private int _bufferBegin = 0;
+    private int _bufferEnd = 0;
     private int _nextRowBegin = 0;
-    private int _fieldCount = 0;
+    private int _rowEnd = 0;
+    private bool _eof;
 
-    public ReadOnlySpan<byte> CurrentRow => _data.AsSpan(_currentRowBegin, _currentRowLength);
-    public int FieldCount => _fieldCount;
+    public int FieldCount => _dividers.Count - 1;
+    public int ColumnCount => _columnIndexByName.Count;
+    public ReadOnlySpan<string> ColumnNames => CollectionsMarshal.AsSpan(_columnNames);
 
-    public ReadOnlySpan<byte> this[int index] => GetField(index);
+    public ReadOnlySpan<byte> this[int index] => GetFieldUtf8(index);
 
-    public CsvReader()
+    public CsvReader(Stream stream) : this(stream.Read)
     {
-        _dividerIndices[0] = -1;
     }
 
-    public void Start(ByteReader byteReader)
+    public CsvReader(ValueStream<byte> byteReader)
     {
         _byteReader = byteReader;
-        _fieldCount = 0;
-        _activeByteCount = 0;
-        _currentRowBegin = 0;
-        _currentRowLength = 0;
-        _nextRowBegin = 0;
-    }
-
-    private void PrepareRow()
-    {
-        if (0 < _currentRowLength && _data[_currentRowBegin + _currentRowLength - 1] == '\r')
-            --_currentRowLength;
-
-        var row = CurrentRow;
-        _fieldCount = 0;
-        int offset = 0;
-        while (true)
+        if (TryReadRow())
         {
-            if (++_fieldCount == _dividerIndices.Length)
-                Array.Resize(ref _dividerIndices, _dividerIndices.Length * 2);
-
-            var commaIndex = row[offset..].IndexOf((byte)',');
-
-            if (0 <= commaIndex)
+            for (int i = 0; i < FieldCount; ++i)
             {
-                _dividerIndices[_fieldCount] = commaIndex + offset;
-                offset += commaIndex + 1;
-            }
-            else
-            {
-                _dividerIndices[_fieldCount] = row.Length;
-                break;
+                var data = GetFieldUtf8(i);
+                if (!data.IsEmpty)
+                {
+                    var name = Encoding.UTF8.GetString(data);
+                    _columnIndexByName.Add(name, i);
+                    _columnNames.Add(name);
+                }
             }
         }
     }
 
     public bool TryReadRow()
     {
-        if (0 < _nextRowBegin)
-        {
-            var nextRowData = _data.AsSpan(_nextRowBegin.._activeByteCount);
-            var newLineIndex = nextRowData.IndexOf((byte)'\n');
+        _bufferBegin = _nextRowBegin;
 
-            if (0 <= newLineIndex)
+        _rowEnd = _buffer
+            .AsSpan(0, _bufferEnd)
+            .SkipAndIndexOf(_bufferBegin, NewLine);
+
+        if (_rowEnd == -1 && !_eof)
+        {
+            if (0 < _bufferBegin)
             {
-                _currentRowBegin = _nextRowBegin;
-                _currentRowLength = newLineIndex;
-                _nextRowBegin += _currentRowLength + 1;
-                PrepareRow();
-                return true;
+                _buffer
+                    .AsSpan(_bufferBegin.._bufferEnd)
+                    .CopyTo(_buffer);
+                _bufferEnd -= _bufferBegin;
+                _bufferBegin = 0;
             }
-            else if (_activeByteCount < _data.Length)
+
+            do
             {
-                if (_nextRowBegin < _activeByteCount)
-                {
-                    _currentRowBegin = _nextRowBegin;
-                    _currentRowLength = _activeByteCount - _currentRowBegin;
-                    _nextRowBegin = _activeByteCount;
-                    PrepareRow();
-                    return true;
-                }
-                else
-                {
-                    _currentRowBegin = 0;
-                    _currentRowLength = 0;
-                    _fieldCount = 0;
-                    return false;
-                }
+                if (_bufferEnd == _buffer.Length)
+                    Array.Resize(ref _buffer, _buffer.Length * 2);
+                var available = _buffer.Length - _bufferEnd;
+                var n = _byteReader.Invoke(_buffer.AsSpan(_bufferEnd));
+                _eof = n < available;
+                var lineEnding = _buffer.AsSpan(_bufferEnd, n).IndexOf(NewLine);
+                if (0 <= lineEnding)
+                    _rowEnd = _bufferEnd + lineEnding;
+                _bufferEnd += n;
             }
-            else
-            {
-                nextRowData.CopyTo(_data);
-                _activeByteCount -= _nextRowBegin;
-                _nextRowBegin = 0;
-            }
+            while (_rowEnd == -1 && !_eof);
         }
 
-        _currentRowBegin = 0;
-        _currentRowLength = 0;
+        if (_rowEnd == -1)
+            _rowEnd = _nextRowBegin = _bufferEnd;
+        else
+            _nextRowBegin = _rowEnd + 1;
 
-        while (true)
-        {
-            var newDataIndex = _activeByteCount;
-            _activeByteCount += _byteReader.Invoke(_data.AsSpan(newDataIndex));
-            var newBytes = _data.AsSpan(newDataIndex.._activeByteCount);
-            var newLineIndex = newBytes.IndexOf((byte)'\n');
+        _dividers.Clear();
+        if (_bufferBegin == _bufferEnd)
+            return false;
 
-            if (0 <= newLineIndex)
-            {
-                _currentRowLength = newDataIndex + newLineIndex;
-                _nextRowBegin = _currentRowLength + 1;
-                PrepareRow();
-                return true;
-            }
-            else if (_activeByteCount == _data.Length)
-            {
-                Array.Resize(ref _data, _data.Length * 2);
-            }
-            else if (0 < _activeByteCount)
-            {
-                _currentRowLength = _activeByteCount;
-                _nextRowBegin = _activeByteCount;
-                PrepareRow();
-                return true;
-            }
-            else
-            {
-                _fieldCount = 0;
-                return false;
-            }
-        }
+        _dividers.Add(_bufferBegin - 1);
+        var row = _buffer.AsSpan(_bufferBegin.._rowEnd);
+        foreach (var index in row.EnumerateIndicesOf(Comma))
+            _dividers.Add(_bufferBegin + index);
+        _dividers.Add(_rowEnd);
+
+        return true;
     }
 
-    public ReadOnlySpan<byte> GetField(int index)
+    /// <summary>
+    /// Gets span referencing the field contents as UTF-8.
+    /// </summary>
+    public ReadOnlySpan<byte> GetFieldUtf8(int index)
     {
-        if (index < 0 || _fieldCount <= index)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        var low = _dividerIndices[index] + 1;
-        var high = _dividerIndices[index + 1];
-        return CurrentRow[low..high];
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, FieldCount);
+        var low = _dividers[index] + 1;
+        var high = _dividers[index + 1];
+        return _buffer.AsSpan(low..high);
     }
 
-    public ReadOnlySpan<byte> GetFields(int index, int count)
-    {
-        if (index < 0 || _fieldCount <= index)
-            throw new ArgumentOutOfRangeException(nameof(index));
+    /// <summary>
+    /// Gets newly allocated string containing the field contents.
+    /// </summary>
+    public string GetFieldUtf16(int index) => Encoding.UTF8.GetString(GetFieldUtf8(index));
 
-        if (count < 0 || _fieldCount < index + count)
-            throw new ArgumentOutOfRangeException(nameof(count));
-
-        var low = _dividerIndices[index] + 1;
-        var high = _dividerIndices[index + count];
-        return CurrentRow[low..high];
-    }
-
-    public ReadOnlySpan<byte> GetFields(int startIndex)
-    {
-        if (startIndex < 0 || _fieldCount < startIndex)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-
-        if (startIndex == _fieldCount)
-            return default;
-
-        var low = _dividerIndices[startIndex] + 1;
-        var high = _dividerIndices[_fieldCount];
-        return CurrentRow[low..high];
-    }
+    public int GetIndex(string columnName) => _columnIndexByName[columnName];
+    public bool TryGetIndex(string columnName, out int index) => _columnIndexByName.TryGetValue(columnName, out index);
+    public bool HasColumn(string columnName) => _columnIndexByName.ContainsKey(columnName);
 }

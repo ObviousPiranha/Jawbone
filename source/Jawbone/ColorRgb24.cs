@@ -5,7 +5,12 @@ using System.Runtime.InteropServices;
 namespace Jawbone;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
+public struct ColorRgb24 :
+    IEquatable<ColorRgb24>,
+    ISpanParsable<ColorRgb24>,
+    IUtf8SpanParsable<ColorRgb24>,
+    ISpanFormattable,
+    IUtf8SpanFormattable
 {
     public byte R;
     public byte G;
@@ -38,29 +43,9 @@ public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
             });
     }
 
-    public readonly void WriteUtf8(Span<byte> utf8)
-    {
-        utf8[6] = Utf8.GetLowHexDigit(B);
-        utf8[5] = Utf8.GetHighHexDigit(B);
-        utf8[4] = Utf8.GetLowHexDigit(G);
-        utf8[3] = Utf8.GetHighHexDigit(G);
-        utf8[2] = Utf8.GetLowHexDigit(R);
-        utf8[1] = Utf8.GetHighHexDigit(R);
-        utf8[0] = (byte)'#';
-    }
-
-    public static ColorRgb24 ParseUtf8(ReadOnlySpan<byte> utf8)
-    {
-        var offset = Convert.ToInt32(utf8[0] == '#');
-        var r = Hex.ParseDigits(utf8[offset + 0], utf8[offset + 1]);
-        var g = Hex.ParseDigits(utf8[offset + 2], utf8[offset + 3]);
-        var b = Hex.ParseDigits(utf8[offset + 4], utf8[offset + 5]);
-        return new ColorRgb24((byte)r, (byte)g, (byte)b);
-    }
-
     public static ColorRgb24 Parse(
         string s,
-        IFormatProvider? provider)
+        IFormatProvider? provider = null)
     {
         ArgumentNullException.ThrowIfNull(s);
         return Parse(s.AsSpan(), provider);
@@ -69,12 +54,19 @@ public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
     public static bool TryParse(
         [NotNullWhen(true)] string? s,
         IFormatProvider? provider,
-        [MaybeNullWhen(false)] out ColorRgb24 result)
+        out ColorRgb24 result)
     {
         return TryParse(s.AsSpan(), provider, out result);
     }
 
-    public static ColorRgb24 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static bool TryParse(
+        [NotNullWhen(true)] string? s,
+        out ColorRgb24 result)
+    {
+        return TryParse(s.AsSpan(), null, out result);
+    }
+
+    public static ColorRgb24 Parse(ReadOnlySpan<char> s, IFormatProvider? provider = null)
     {
         var offset = Convert.ToInt32(s[0] == '#');
         var r = Hex.ParseDigits(s[offset + 0], s[offset + 1]);
@@ -86,7 +78,7 @@ public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
     public static bool TryParse(
         ReadOnlySpan<char> s,
         IFormatProvider? provider,
-        [MaybeNullWhen(false)] out ColorRgb24 result)
+        out ColorRgb24 result)
     {
         if (s.IsEmpty)
         {
@@ -112,6 +104,101 @@ public struct ColorRgb24 : IEquatable<ColorRgb24>, ISpanParsable<ColorRgb24>
         }
 
         result = new ColorRgb24((byte)r, (byte)g, (byte)b);
+        return true;
+    }
+
+    public static bool TryParse(ReadOnlySpan<char> s, out ColorRgb24 result) => TryParse(s, null, out result);
+
+    public static ColorRgb24 Parse(
+        ReadOnlySpan<byte> utf8Text,
+        IFormatProvider? provider = null)
+    {
+        var offset = Convert.ToInt32(utf8Text[0] == '#');
+        var r = Hex.ParseDigits(utf8Text[offset + 0], utf8Text[offset + 1]);
+        var g = Hex.ParseDigits(utf8Text[offset + 2], utf8Text[offset + 3]);
+        var b = Hex.ParseDigits(utf8Text[offset + 4], utf8Text[offset + 5]);
+        return new ColorRgb24((byte)r, (byte)g, (byte)b);
+    }
+
+    public static bool TryParse(
+        ReadOnlySpan<byte> utf8Text,
+        IFormatProvider? provider,
+        out ColorRgb24 result)
+    {
+        if (utf8Text.IsEmpty)
+        {
+            result = default;
+            return false;
+        }
+
+        var offset = Convert.ToInt32(utf8Text[0] == '#');
+        if (utf8Text.Length < 6 + offset)
+        {
+            result = default;
+            return false;
+        }
+
+        var r = Hex.MaybeParseDigits(utf8Text[offset + 0], utf8Text[offset + 1]);
+        var g = Hex.MaybeParseDigits(utf8Text[offset + 2], utf8Text[offset + 3]);
+        var b = Hex.MaybeParseDigits(utf8Text[offset + 4], utf8Text[offset + 5]);
+
+        if (r == Hex.InvalidDigit || g == Hex.InvalidDigit || b == Hex.InvalidDigit)
+        {
+            result = default;
+            return false;
+        }
+
+        result = new ColorRgb24((byte)r, (byte)g, (byte)b);
+        return true;
+    }
+
+    public static bool TryParse(ReadOnlySpan<byte> utf8Text, out ColorRgb24 result) => TryParse(utf8Text, null, out result);
+
+    public readonly bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = null)
+    {
+        if (destination.Length < 7)
+        {
+            charsWritten = 0;
+            return false;
+        }
+
+        destination[6] = Utf16.GetLowHexDigit(B);
+        destination[5] = Utf16.GetHighHexDigit(B);
+        destination[4] = Utf16.GetLowHexDigit(G);
+        destination[3] = Utf16.GetHighHexDigit(G);
+        destination[2] = Utf16.GetLowHexDigit(R);
+        destination[1] = Utf16.GetHighHexDigit(R);
+        destination[0] = '#';
+        charsWritten = 7;
+        return true;
+    }
+
+    public readonly string ToString(string? format, IFormatProvider? formatProvider) => ToString();
+
+    public readonly bool TryFormat(
+        Span<byte> utf8Destination,
+        out int bytesWritten,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = default)
+    {
+        if (utf8Destination.Length < 7)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        utf8Destination[6] = Utf8.GetLowHexDigit(B);
+        utf8Destination[5] = Utf8.GetHighHexDigit(B);
+        utf8Destination[4] = Utf8.GetLowHexDigit(G);
+        utf8Destination[3] = Utf8.GetHighHexDigit(G);
+        utf8Destination[2] = Utf8.GetLowHexDigit(R);
+        utf8Destination[1] = Utf8.GetHighHexDigit(R);
+        utf8Destination[0] = (byte)'#';
+        bytesWritten = 7;
         return true;
     }
 

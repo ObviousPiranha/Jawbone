@@ -1,5 +1,3 @@
-using System;
-
 namespace Jawbone;
 
 public static class Utf16

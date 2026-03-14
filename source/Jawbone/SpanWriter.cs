@@ -37,7 +37,7 @@ public static class SpanWriter
         ref this SpanWriter<T> writer,
         T value)
     {
-        writer.Free[0] = value;
+        writer.Span[writer.Position] = value;
         ++writer.Position;
     }
 
@@ -47,6 +47,44 @@ public static class SpanWriter
     {
         values.CopyTo(writer.Free);
         writer.Position += values.Length;
+    }
+
+    public static void Write<T>(
+        ref this SpanWriter<T> writer,
+        scoped Span<T> values)
+    {
+        values.CopyTo(writer.Free);
+        writer.Position += values.Length;
+    }
+
+    public static bool TryWrite<T>(
+        ref this SpanWriter<T> writer,
+        T value)
+    {
+        if (writer.Span.Length <= writer.Position)
+            return false;
+        writer.Span[writer.Position++] = value;
+        return true;
+    }
+
+    public static bool TryWrite<T>(
+        ref this SpanWriter<T> writer,
+        scoped ReadOnlySpan<T> values)
+    {
+        if (!values.TryCopyTo(writer.Free))
+            return false;
+        writer.Position += values.Length;
+        return true;
+    }
+
+    public static bool TryWrite<T>(
+        ref this SpanWriter<T> writer,
+        scoped Span<T> values)
+    {
+        if (!values.TryCopyTo(writer.Free))
+            return false;
+        writer.Position += values.Length;
+        return true;
     }
 
     public static void Blit<T>(
@@ -76,5 +114,66 @@ public static class SpanWriter
         var bytes = MemoryMarshal.AsBytes(values);
         bytes.CopyTo(writer.Free);
         writer.Position += bytes.Length;
+    }
+
+    public static bool TryBlit<T>(
+        ref this SpanWriter<byte> writer,
+        in T value
+    ) where T : unmanaged
+    {
+        if (!MemoryMarshal.TryWrite(writer.Free, value))
+            return false;
+        writer.Position += Unsafe.SizeOf<T>();
+        return true;
+    }
+
+    public static bool TryBlit<T>(
+        ref this SpanWriter<byte> writer,
+        scoped ReadOnlySpan<T> values
+    ) where T : unmanaged
+    {
+        var bytes = MemoryMarshal.AsBytes(values);
+        if (!bytes.TryCopyTo(writer.Free))
+            return false;
+        writer.Position += bytes.Length;
+        return true;
+    }
+
+    public static bool TryBlit<T>(
+        ref this SpanWriter<byte> writer,
+        scoped Span<T> values
+    ) where T : unmanaged
+    {
+        var bytes = MemoryMarshal.AsBytes(values);
+        if (!bytes.TryCopyTo(writer.Free))
+            return false;
+        writer.Position += bytes.Length;
+        return true;
+    }
+
+    public static bool TryFormat<T>(
+        ref this SpanWriter<byte> writer,
+        T value,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? formatProvider = default
+        ) where T : IUtf8SpanFormattable
+    {
+        if (!value.TryFormat(writer.Free, out var bytesWritten, format, formatProvider))
+            return false;
+        writer.Position += bytesWritten;
+        return true;
+    }
+
+    public static bool TryFormat<T>(
+        ref this SpanWriter<char> writer,
+        T value,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? formatProvider = default
+        ) where T : ISpanFormattable
+    {
+        if (!value.TryFormat(writer.Free, out var charsWritten, format, formatProvider))
+            return false;
+        writer.Position += charsWritten;
+        return true;
     }
 }
