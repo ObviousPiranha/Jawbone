@@ -135,4 +135,11 @@ public static class SdlExtensions
         var result = pairs.ToFrozenDictionary();
         return result;
     }
+
+    public static Point32 GetSurfaceSize(nint surfacePtr)
+    {
+        ref var surface = ref SdlSurface.FromPointer(surfacePtr);
+        var result = new Point32(surface.W, surface.H);
+        return result;
+    }
 }

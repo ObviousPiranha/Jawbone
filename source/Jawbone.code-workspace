@@ -29,6 +29,9 @@
 		},
 		{
 			"path": "Piranha.SampleSdlGpu"
+		},
+		{
+			"path": "Piranha.SampleSdlRenderer"
 		}
 	],
 	"settings": {

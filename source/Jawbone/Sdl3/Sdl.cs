@@ -4100,7 +4100,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateWindowAndRenderer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool CreateWindowAndRenderer(nint title, int width, int height, ulong window_flags, nint window, nint renderer);
+    public static partial CBool CreateWindowAndRenderer(in byte title, int width, int height, SdlWindowFlags window_flags, out nint window, out nint renderer);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateRenderer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4376,7 +4376,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureRotated")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool RenderTextureRotated(nint renderer, nint texture, nint srcrect, nint dstrect, double angle, nint center, SdlFlipMode flip);
+    public static partial CBool RenderTextureRotated(nint renderer, nint texture, in SdlFRect srcrect, in SdlFRect dstrect, double angle, in SdlFPoint center, SdlFlipMode flip);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureTiled")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4633,6 +4633,14 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_CancelGPUCommandBuffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool CancelGpuCommandBuffer(nint commandBuffer);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_LoadPNG")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial nint LoadPng(in byte path);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_GetGPURendererDevice")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial nint GetGpuRendererDevice(nint renderer);
 }
 
 #pragma warning restore CA1401
