@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Piranha.SampleSdlRenderer;
 
+// https://examples.libsdl.org/SDL3/renderer/08-rotating-textures/
 class Program : ISdlEventHandler, IDisposable
 {
     private const int Width = 640;
