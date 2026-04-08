@@ -10,6 +10,7 @@ public readonly struct CStringArray : IDisposable
 {
     public nint Pointer { get; }
     public int Length { get; }
+    private readonly nint _allocated;
 
     public CStringArray(ReadOnlySpan<string> array)
     {
@@ -22,7 +23,7 @@ public readonly struct CStringArray : IDisposable
         var stringsSize = Length; //  Account for null terminators.
         foreach (var item in array)
             stringsSize += encoding.GetByteCount(item);
-        Pointer = Marshal.AllocHGlobal(pointerArraySize + stringsSize);
+        Pointer = _allocated = Marshal.AllocHGlobal(pointerArraySize + stringsSize);
         var pointerWriter = SpanWriter.Create<nint>(Pointer, Length);
         var stringWriter = SpanWriter.Create<byte>(Pointer + pointerArraySize, stringsSize);
         foreach (var item in array)
@@ -35,9 +36,15 @@ public readonly struct CStringArray : IDisposable
         Debug.Assert(stringWriter.IsFull);
     }
 
+    public CStringArray(nint pointer, int length)
+    {
+        Pointer = pointer;
+        Length = length;
+    }
+
     public void Dispose()
     {
-        Marshal.FreeHGlobal(Pointer);
+        Marshal.FreeHGlobal(_allocated);
     }
 
     public IEnumerable<string?> Enumerate()

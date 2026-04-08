@@ -19,6 +19,24 @@ public unsafe delegate void SdlAudioPostmixCallback(
     float* buffer,
     int buflen);
 
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int SdlMainFunc(int argc, nint argv);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int SdlRunApp(int argc, nint argv, SdlMainFunc mainFunc, nint reserved);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate SdlAppResult SdlAppInitFunc(out nint appState, int argc, nint argv);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate SdlAppResult SdlAppIterateFunc(nint appState);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate SdlAppResult SdlAppEventFunc(nint appState, in SdlEvent sdlEvent);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate void SdlAppQuitFunc(nint appState, SdlAppResult result);
+
 public static partial class Sdl
 {
     private const string Lib = "SDL3";
@@ -4628,7 +4646,12 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_WaitAndAcquireGPUSwapchainTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, out uint swapchain_texture_width, out uint swapchain_texture_height);
+    public static partial CBool WaitAndAcquireGpuSwapchainTexture(
+        nint commandBuffer,
+        nint window,
+        out nint swapchain_texture,
+        out uint swapchain_texture_width,
+        out uint swapchain_texture_height);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CancelGPUCommandBuffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4641,6 +4664,24 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPURendererDevice")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint GetGpuRendererDevice(nint renderer);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RunApp")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial int RunApp(
+        int argc,
+        nint argv,
+        SdlMainFunc mainFunction,
+        nint reserved);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_EnterAppMainCallbacks")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial int EnterAppMainCallbacks(
+        int argc,
+        nint argv,
+        SdlAppInitFunc appInit,
+        SdlAppIterateFunc appIter,
+        SdlAppEventFunc appEvent,
+        SdlAppQuitFunc appQuit);
 }
 
 #pragma warning restore CA1401

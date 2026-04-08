@@ -142,4 +142,75 @@ public static class SdlExtensions
         var result = new Point32(surface.W, surface.H);
         return result;
     }
+
+    public static int RunApp(Func<ISdlEventHandler> eventHandlerFactory)
+    {
+        using var args = CStringArray.FromCommandLine();
+        return RunApp(eventHandlerFactory, args);
+    }
+
+    public static int RunApp(Func<ISdlEventHandler> eventHandlerFactory, CStringArray args)
+    {
+        ISdlEventHandler eventHandler = default!;
+        return Sdl.RunApp(
+            args.Length,
+            args.Pointer,
+            (argc, argv) => Sdl.EnterAppMainCallbacks(
+                argc,
+                argv,
+                (out nint appState, int argc, nint argv) =>
+                {
+                    try
+                    {
+                        appState = default;
+                        eventHandler = eventHandlerFactory.Invoke();
+                        if (eventHandler is null)
+                            return SdlAppResult.Failure;
+                        return SdlAppResult.Continue;
+                    }
+                    catch
+                    {
+                        Unsafe.SkipInit(out appState);
+                        return SdlAppResult.Failure;
+                    }
+                },
+                _ =>
+                {
+                    try
+                    {
+                        eventHandler.OnLoop();
+                        return eventHandler.Running ? SdlAppResult.Continue : SdlAppResult.Success;
+                    }
+                    catch
+                    {
+                        return SdlAppResult.Failure;
+                    }
+                },
+                (nint appState, in SdlEvent sdlEvent) =>
+                {
+                    try
+                    {
+                        SdlEvent.Dispatch(sdlEvent, eventHandler);
+                        return eventHandler.Running ? SdlAppResult.Continue : SdlAppResult.Success;
+                    }
+                    catch
+                    {
+                        return SdlAppResult.Failure;
+                    }
+                },
+                (_, _) =>
+                {
+                    try
+                    {
+                        if (eventHandler is IDisposable disposable)
+                        disposable.Dispose();
+                    }
+                    catch
+                    {
+                        // Nothing we can do.
+                    }
+                }),
+                default);
+
+    }
 }

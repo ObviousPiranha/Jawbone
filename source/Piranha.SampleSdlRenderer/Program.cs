@@ -115,6 +115,8 @@ class Program : ISdlEventHandler, IDisposable
     {
         try
         {
+            // SdlExtensions.RunApp(() => new Program());
+            // return;
             using var test = CStringArray.FromCommandLine();
             foreach (var item in test.Enumerate())
             {
