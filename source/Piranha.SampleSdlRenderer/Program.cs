@@ -39,14 +39,14 @@ class Program : ISdlEventHandler, IDisposable
         Sdl.DestroySurface(surface);
 
         {
-            var version = SdlExtensions.GetVersion();
+            var (major, minor, micro) = SdlExtensions.GetVersion();
             Console.WriteLine(
-                $"SDL version: {version.major}.{version.minor}.{version.micro}");
+                $"SDL version: {major}.{minor}.{micro}");
             var gpuDrivers = string.Join(", ", SdlExtensions.EnumerateGpuDrivers());
             Console.WriteLine($"Available GPU drivers: {gpuDrivers}");
             Console.WriteLine($"SDL video driver: {Sdl.GetCurrentVideoDriver()}");
             var gpuDevice = Sdl.GetGpuRendererDevice(_renderer);
-            var gpuDeviceName = _renderer != default ? Sdl.GetGpuDeviceDriver(gpuDevice) : default;
+            var gpuDeviceName = gpuDevice != default ? Sdl.GetGpuDeviceDriver(gpuDevice) : default;
             var finalName = gpuDeviceName.GetStringOrDefault("no GPU");
             Console.WriteLine("GPU device name: " + finalName);
         }
@@ -115,6 +115,11 @@ class Program : ISdlEventHandler, IDisposable
     {
         try
         {
+            using var test = CStringArray.FromCommandLine();
+            foreach (var item in test.Enumerate())
+            {
+                Console.WriteLine("CL item: " + item);
+            }
             Sdl.Init(SdlInit.Video | SdlInit.Events).ThrowOnSdlFailure("Unable to init SDL.");
             {
                 using var program = new Program();
