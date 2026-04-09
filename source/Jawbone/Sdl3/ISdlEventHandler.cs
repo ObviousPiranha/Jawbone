@@ -5,6 +5,8 @@ public interface ISdlEventHandler
     bool Running => true;
     void OnSecond() { }
     void OnLoop() { }
+    void OnStart() { }
+    void OnStop() { }
 
     void OnCommonEvent(SdlCommonEvent sdlEvent) { }
     void OnQuit(SdlQuitEvent sdlEvent) { }

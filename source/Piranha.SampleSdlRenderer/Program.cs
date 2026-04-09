@@ -2,20 +2,20 @@
 using Jawbone.Sdl3;
 using System;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Piranha.SampleSdlRenderer;
 
 // https://examples.libsdl.org/SDL3/renderer/08-rotating-textures/
-class Program : ISdlEventHandler, IDisposable
+class Program : ISdlEventHandler
 {
-    private const int Width = 640;
-    private const int Height = 480;
-
-    private readonly nint _window;
-    private readonly nint _renderer;
-    private readonly nint _texture;
-    private readonly Point32 _imageSize;
+    private nint _window;
+    private nint _renderer;
+    private nint _texture;
+    private Point32 _imageSize;
+    private int _width = 640;
+    private int _height = 480;
 
     private readonly long _frameLength;
     private long _nextFrame;
@@ -27,9 +27,19 @@ class Program : ISdlEventHandler, IDisposable
     {
         _frameLength = Stopwatch.Frequency / 60;
         _nextFrame = Stopwatch.GetTimestamp();
-        Sdl.CreateWindowAndRenderer("Hello SDL3\0"u8[0], Width, Height, SdlWindowFlags.Resizable, out _window, out _renderer)
-            .ThrowOnSdlFailure("Unable to create window and renderer.");
-        Sdl.SetRenderLogicalPresentation(_renderer, Width, Height, SdlRendererLogicalPresentation.Letterbox)
+    }
+
+    public void OnStart()
+    {
+        _window = Sdl.CreateWindow("Hello SDL3", _width, _height, SdlWindowFlags.Resizable);
+        var properties = Sdl.CreateProperties();
+        Sdl.SetStringProperty(properties, SdlPropRendererCreate.String.Name[0], "vulkan").ThrowOnSdlFailure("Unable to set property.");
+        Sdl.SetPointerProperty(properties, SdlPropRendererCreate.Pointer.Window[0], _window);
+        _renderer = Sdl.CreateRendererWithProperties(properties).ThrowOnSdlFailure("Unable to create renderer.");
+        Sdl.DestroyProperties(properties);
+        // Sdl.CreateWindowAndRenderer("Hello SDL3\0"u8[0], _width, _height, SdlWindowFlags.Resizable | SdlWindowFlags.Vulkan, out _window, out _renderer)
+        //     .ThrowOnSdlFailure("Unable to create window and renderer.");
+        Sdl.SetRenderLogicalPresentation(_renderer, _width, _height, SdlRendererLogicalPresentation.Disabled)
             .ThrowOnSdlFailure("Error on SDL_SetRenderLogicalPresentation.");
         Console.WriteLine("So far so good.");
         var surface = Sdl.LoadPng("kenney_iconCross_blue.png\0"u8[0]).ThrowOnSdlFailure("Failed to load PNG.");
@@ -49,10 +59,13 @@ class Program : ISdlEventHandler, IDisposable
             var gpuDeviceName = gpuDevice != default ? Sdl.GetGpuDeviceDriver(gpuDevice) : default;
             var finalName = gpuDeviceName.GetStringOrDefault("no GPU");
             Console.WriteLine("GPU device name: " + finalName);
+
+            var rendererName = Sdl.GetRendererName(_renderer);
+            Console.WriteLine("Renderer Name: " + rendererName);
         }
     }
 
-    public void Dispose()
+    public void OnStop()
     {
         Sdl.DestroyTexture(_texture);
         Sdl.DestroyRenderer(_renderer);
@@ -67,6 +80,41 @@ class Program : ISdlEventHandler, IDisposable
     public void OnWindowCloseRequested(SdlWindowEvent sdlEvent)
     {
         Running = false;
+    }
+
+    public void OnWindowResized(SdlWindowEvent sdlEvent)
+    {
+        Console.WriteLine($"OnWindowResized: {sdlEvent.X}x{sdlEvent.Y}");
+        ChangeSize(sdlEvent.X, sdlEvent.Y);
+    }
+
+    public void OnWindowPixelSizeChanged(SdlWindowEvent sdlEvent)
+    {
+        Console.WriteLine($"OnWindowPixelSizeChanged: {sdlEvent.X}x{sdlEvent.Y}");
+        ChangeSize(sdlEvent.X, sdlEvent.Y);
+    }
+
+    private void ChangeSize(int w, int h)
+    {
+        if (w == _width || h == _height)
+            return;
+        _width = w;
+        _height = h;
+    }
+
+    public void OnKeyDown(SdlKeyboardEvent sdlEvent)
+    {
+        switch (sdlEvent.Scancode)
+        {
+            case SdlScancode.Escape:
+                Running = false;
+                break;
+            case SdlScancode.F11:
+                SdlExtensions
+                    .ToggleFullscreen(_window)
+                    .ThrowOnSdlFailure("Unable to toggle fullscreen.");
+                break;
+        }
     }
 
     public void OnLoop()
@@ -94,10 +142,15 @@ class Program : ISdlEventHandler, IDisposable
     {
         Sdl.SetRenderDrawColor(_renderer, 0, 0, 0, 255);
         Sdl.RenderClear(_renderer);
+        var srcRect = new SdlFRect
+        {
+            W = _imageSize.X / 2f,
+            H = _imageSize.Y / 2f
+        };
         var dstRect = new SdlFRect
         {
-            X = (Width - _imageSize.X) / 2f,
-            Y = (Height - _imageSize.Y) / 2f,
+            X = (_width - _imageSize.X) / 2f,
+            Y = (_height - _imageSize.Y) / 2f,
             W = _imageSize.X,
             H = _imageSize.Y
         };
@@ -107,16 +160,26 @@ class Program : ISdlEventHandler, IDisposable
             Y = _imageSize.Y / 2f
         };
         var angle = _rotateTick * 360 / 240d;
-        Sdl.RenderTextureRotated(_renderer, _texture, Unsafe.NullRef<SdlFRect>(), dstRect, angle, center, SdlFlipMode.None);
+        Sdl.SetRenderScale(_renderer, 1f, 1f);
+        // Sdl.RenderTextureRotated(_renderer, _texture, Unsafe.NullRef<SdlFRect>(), dstRect, angle, center, SdlFlipMode.None);
+        Sdl.RenderTextureRotated(_renderer, _texture, srcRect, dstRect, angle, center, SdlFlipMode.None);
+
+        var p = new Vector2(_width, _height) / 4f;
+        Sdl.SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+        Sdl.SetRenderScale(_renderer, 2f, 2f);
+        Sdl.RenderDebugText(_renderer, p.X, p.Y, "Hello, Friend");
+        
+        Sdl.SetRenderDrawColor(_renderer, 0, 0, 255, 255);
+        Sdl.SetRenderScale(_renderer, 1f, 1f);
+        Sdl.RenderDebugText(_renderer, p.X, p.Y, "Hello, Friend");
         Sdl.RenderPresent(_renderer);
     }
 
-    private static void Main(string[] args)
+    private static int Main(string[] args)
     {
         try
         {
-            // SdlExtensions.RunApp(() => new Program());
-            // return;
+            return SdlExtensions.RunApp(new Program());
             using var test = CStringArray.FromCommandLine();
             foreach (var item in test.Enumerate())
             {
@@ -124,16 +187,20 @@ class Program : ISdlEventHandler, IDisposable
             }
             Sdl.Init(SdlInit.Video | SdlInit.Events).ThrowOnSdlFailure("Unable to init SDL.");
             {
-                using var program = new Program();
+                var program = new Program();
+                program.OnStart();
                 ApplicationManager.Run(program);
+                program.OnStop();
             }
             Sdl.Quit();
+            return 0;
         }
         catch (Exception ex)
         {
             Console.WriteLine();
             Console.WriteLine(ex);
             Console.WriteLine();
+            return 1;
         }
     }
 }

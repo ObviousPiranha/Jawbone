@@ -143,15 +143,14 @@ public static class SdlExtensions
         return result;
     }
 
-    public static int RunApp(Func<ISdlEventHandler> eventHandlerFactory)
+    public static int RunApp(ISdlEventHandler eventHandler)
     {
         using var args = CStringArray.FromCommandLine();
-        return RunApp(eventHandlerFactory, args);
+        return RunApp(eventHandler, args);
     }
 
-    public static int RunApp(Func<ISdlEventHandler> eventHandlerFactory, CStringArray args)
+    public static int RunApp(ISdlEventHandler eventHandler, CStringArray args)
     {
-        ISdlEventHandler eventHandler = default!;
         return Sdl.RunApp(
             args.Length,
             args.Pointer,
@@ -163,13 +162,12 @@ public static class SdlExtensions
                     try
                     {
                         appState = default;
-                        eventHandler = eventHandlerFactory.Invoke();
-                        if (eventHandler is null)
-                            return SdlAppResult.Failure;
+                        eventHandler.OnStart();
                         return SdlAppResult.Continue;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine(ex);
                         Unsafe.SkipInit(out appState);
                         return SdlAppResult.Failure;
                     }
@@ -181,8 +179,9 @@ public static class SdlExtensions
                         eventHandler.OnLoop();
                         return eventHandler.Running ? SdlAppResult.Continue : SdlAppResult.Success;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine(ex);
                         return SdlAppResult.Failure;
                     }
                 },
@@ -193,8 +192,9 @@ public static class SdlExtensions
                         SdlEvent.Dispatch(sdlEvent, eventHandler);
                         return eventHandler.Running ? SdlAppResult.Continue : SdlAppResult.Success;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine(ex);
                         return SdlAppResult.Failure;
                     }
                 },
@@ -202,15 +202,25 @@ public static class SdlExtensions
                 {
                     try
                     {
-                        if (eventHandler is IDisposable disposable)
-                        disposable.Dispose();
+                        eventHandler.OnStop();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Nothing we can do.
+                        Console.WriteLine(ex);
                     }
                 }),
                 default);
+    }
 
+    public static bool IsFullscreen(nint window)
+    {
+        var flags = Sdl.GetWindowFlags(window);
+        var result = (flags & SdlWindowFlags.Fullscreen) == SdlWindowFlags.Fullscreen;
+        return result;
+    }
+
+    public static CBool ToggleFullscreen(nint window)
+    {
+        return Sdl.SetWindowFullscreen(window, !IsFullscreen(window));
     }
 }

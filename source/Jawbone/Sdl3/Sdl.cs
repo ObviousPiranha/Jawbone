@@ -831,11 +831,15 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetPointerProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetPointerProperty(uint props, nint name, nint value);
+    public static partial CBool SetPointerProperty(uint props, in byte name, nint value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetStringProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool SetStringProperty(uint props, nint name, nint value);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_SetStringProperty", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool SetStringProperty(uint props, in byte name, string? value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetNumberProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4142,7 +4146,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetRendererName")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetRendererName(nint renderer);
+    public static partial CString GetRendererName(nint renderer);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetRendererProperties")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4682,6 +4686,14 @@ public static partial class Sdl
         SdlAppIterateFunc appIter,
         SdlAppEventFunc appEvent,
         SdlAppQuitFunc appQuit);
+    
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderDebugText")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderDebugText(nint renderer, float x, float y, in byte str);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderDebugText", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderDebugText(nint renderer, float x, float y, string? str);
 }
 
 #pragma warning restore CA1401
