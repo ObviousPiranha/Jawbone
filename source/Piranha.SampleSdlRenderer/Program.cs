@@ -3,7 +3,6 @@ using Jawbone.Sdl3;
 using System;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace Piranha.SampleSdlRenderer;
 
@@ -31,21 +30,17 @@ class Program : ISdlEventHandler
 
     public void OnStart()
     {
-        _window = Sdl.CreateWindow("Hello SDL3", _width, _height, SdlWindowFlags.Resizable);
-        var properties = Sdl.CreateProperties();
-        Sdl.SetStringProperty(properties, SdlPropRendererCreate.String.Name[0], "vulkan").ThrowOnSdlFailure("Unable to set property.");
-        Sdl.SetPointerProperty(properties, SdlPropRendererCreate.Pointer.Window[0], _window);
-        _renderer = Sdl.CreateRendererWithProperties(properties).ThrowOnSdlFailure("Unable to create renderer.");
-        Sdl.DestroyProperties(properties);
-        // Sdl.CreateWindowAndRenderer("Hello SDL3\0"u8[0], _width, _height, SdlWindowFlags.Resizable | SdlWindowFlags.Vulkan, out _window, out _renderer)
-        //     .ThrowOnSdlFailure("Unable to create window and renderer.");
-        Sdl.SetRenderLogicalPresentation(_renderer, _width, _height, SdlRendererLogicalPresentation.Disabled)
+        Sdl.SetHint("SDL_RENDER_DRIVER", "direct3d12,metal,vulkan,opengl");
+        Sdl.CreateWindowAndRenderer("Hello SDL3", _width, _height, SdlWindowFlags.Resizable, out _window, out _renderer);
+        Sdl.SetRenderLogicalPresentation(_renderer, _width, _height, SdlRendererLogicalPresentation.Letterbox)
             .ThrowOnSdlFailure("Error on SDL_SetRenderLogicalPresentation.");
         Console.WriteLine("So far so good.");
-        var surface = Sdl.LoadPng("kenney_iconCross_blue.png\0"u8[0]).ThrowOnSdlFailure("Failed to load PNG.");
+        var surface = Sdl.LoadPng("kenney_iconCross_blue.png\0"u8[0])
+            .ThrowOnSdlFailure("Failed to load PNG.");
         _imageSize = SdlExtensions.GetSurfaceSize(surface);
         Console.WriteLine("Image size: " + _imageSize);
-        _texture = Sdl.CreateTextureFromSurface(_renderer, surface).ThrowOnSdlFailure("Unable to create texture.");
+        _texture = Sdl.CreateTextureFromSurface(_renderer, surface)
+            .ThrowOnSdlFailure("Unable to create texture.");
         Sdl.DestroySurface(surface);
 
         {
@@ -55,10 +50,6 @@ class Program : ISdlEventHandler
             var gpuDrivers = string.Join(", ", SdlExtensions.EnumerateGpuDrivers());
             Console.WriteLine($"Available GPU drivers: {gpuDrivers}");
             Console.WriteLine($"SDL video driver: {Sdl.GetCurrentVideoDriver()}");
-            var gpuDevice = Sdl.GetGpuRendererDevice(_renderer);
-            var gpuDeviceName = gpuDevice != default ? Sdl.GetGpuDeviceDriver(gpuDevice) : default;
-            var finalName = gpuDeviceName.GetStringOrDefault("no GPU");
-            Console.WriteLine("GPU device name: " + finalName);
 
             var rendererName = Sdl.GetRendererName(_renderer);
             Console.WriteLine("Renderer Name: " + rendererName);
@@ -98,8 +89,8 @@ class Program : ISdlEventHandler
     {
         if (w == _width || h == _height)
             return;
-        _width = w;
-        _height = h;
+        // _width = w;
+        // _height = h;
     }
 
     public void OnKeyDown(SdlKeyboardEvent sdlEvent)
@@ -179,7 +170,7 @@ class Program : ISdlEventHandler
     {
         try
         {
-            return SdlExtensions.RunApp(new Program());
+            // return SdlExtensions.RunApp(new Program());
             using var test = CStringArray.FromCommandLine();
             foreach (var item in test.Enumerate())
             {

@@ -8,9 +8,10 @@ namespace Jawbone;
 
 public readonly struct CStringArray : IDisposable
 {
+    private readonly nint _allocated;
+
     public nint Pointer { get; }
     public int Length { get; }
-    private readonly nint _allocated;
 
     public CStringArray(ReadOnlySpan<string> array)
     {
@@ -31,6 +32,7 @@ public readonly struct CStringArray : IDisposable
             pointerWriter.Write(Pointer + pointerArraySize + stringWriter.Position);
             var tryWriteResult = stringWriter.TryWriteUtf8(item);
             Debug.Assert(tryWriteResult);
+            Debug.Assert(!stringWriter.IsFull);
             stringWriter.Write(byte.MinValue);
         }
         Debug.Assert(stringWriter.IsFull);

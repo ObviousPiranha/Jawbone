@@ -3910,9 +3910,9 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool SetHintWithPriority(nint name, nint value, SdlHintPriority priority);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_SetHint")]
+    [LibraryImport(Lib, EntryPoint = "SDL_SetHint", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetHint(nint name, nint value);
+    public static partial CBool SetHint(string? name, string? value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_ResetHint")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4120,9 +4120,9 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint GetRenderDriver(int index);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_CreateWindowAndRenderer")]
+    [LibraryImport(Lib, EntryPoint = "SDL_CreateWindowAndRenderer", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool CreateWindowAndRenderer(in byte title, int width, int height, SdlWindowFlags window_flags, out nint window, out nint renderer);
+    public static partial CBool CreateWindowAndRenderer(string? title, int width, int height, SdlWindowFlags window_flags, out nint window, out nint renderer);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateRenderer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4686,7 +4686,7 @@ public static partial class Sdl
         SdlAppIterateFunc appIter,
         SdlAppEventFunc appEvent,
         SdlAppQuitFunc appQuit);
-    
+
     [LibraryImport(Lib, EntryPoint = "SDL_RenderDebugText")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderDebugText(nint renderer, float x, float y, in byte str);
