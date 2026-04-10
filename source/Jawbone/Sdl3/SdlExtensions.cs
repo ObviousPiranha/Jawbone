@@ -135,4 +135,92 @@ public static class SdlExtensions
         var result = pairs.ToFrozenDictionary();
         return result;
     }
+
+    public static Point32 GetSurfaceSize(nint surfacePtr)
+    {
+        ref var surface = ref SdlSurface.FromPointer(surfacePtr);
+        var result = new Point32(surface.W, surface.H);
+        return result;
+    }
+
+    public static int RunApp(ISdlEventHandler eventHandler)
+    {
+        using var args = CStringArray.FromCommandLine();
+        return RunApp(eventHandler, args);
+    }
+
+    public static int RunApp(ISdlEventHandler eventHandler, CStringArray args)
+    {
+        return Sdl.RunApp(
+            args.Length,
+            args.Pointer,
+            (argc, argv) => Sdl.EnterAppMainCallbacks(
+                argc,
+                argv,
+                (out nint appState, int argc, nint argv) =>
+                {
+                    try
+                    {
+                        appState = default;
+                        eventHandler.OnStart();
+                        return SdlAppResult.Continue;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        Unsafe.SkipInit(out appState);
+                        return SdlAppResult.Failure;
+                    }
+                },
+                _ =>
+                {
+                    try
+                    {
+                        eventHandler.OnLoop();
+                        return eventHandler.Running ? SdlAppResult.Continue : SdlAppResult.Success;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        return SdlAppResult.Failure;
+                    }
+                },
+                (nint appState, in SdlEvent sdlEvent) =>
+                {
+                    try
+                    {
+                        SdlEvent.Dispatch(sdlEvent, eventHandler);
+                        return eventHandler.Running ? SdlAppResult.Continue : SdlAppResult.Success;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        return SdlAppResult.Failure;
+                    }
+                },
+                (_, _) =>
+                {
+                    try
+                    {
+                        eventHandler.OnStop();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }),
+                default);
+    }
+
+    public static bool IsFullscreen(nint window)
+    {
+        var flags = Sdl.GetWindowFlags(window);
+        var result = (flags & SdlWindowFlags.Fullscreen) == SdlWindowFlags.Fullscreen;
+        return result;
+    }
+
+    public static CBool ToggleFullscreen(nint window)
+    {
+        return Sdl.SetWindowFullscreen(window, !IsFullscreen(window));
+    }
 }

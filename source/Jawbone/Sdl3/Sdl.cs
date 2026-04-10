@@ -19,6 +19,24 @@ public unsafe delegate void SdlAudioPostmixCallback(
     float* buffer,
     int buflen);
 
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int SdlMainFunc(int argc, nint argv);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate int SdlRunApp(int argc, nint argv, SdlMainFunc mainFunc, nint reserved);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate SdlAppResult SdlAppInitFunc(out nint appState, int argc, nint argv);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate SdlAppResult SdlAppIterateFunc(nint appState);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate SdlAppResult SdlAppEventFunc(nint appState, in SdlEvent sdlEvent);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public delegate void SdlAppQuitFunc(nint appState, SdlAppResult result);
+
 public static partial class Sdl
 {
     private const string Lib = "SDL3";
@@ -813,11 +831,15 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetPointerProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetPointerProperty(uint props, nint name, nint value);
+    public static partial CBool SetPointerProperty(uint props, in byte name, nint value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetStringProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool SetStringProperty(uint props, nint name, nint value);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_SetStringProperty", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool SetStringProperty(uint props, in byte name, string? value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetNumberProperty")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -3888,9 +3910,9 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool SetHintWithPriority(nint name, nint value, SdlHintPriority priority);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_SetHint")]
+    [LibraryImport(Lib, EntryPoint = "SDL_SetHint", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetHint(nint name, nint value);
+    public static partial CBool SetHint(string? name, string? value);
 
     [LibraryImport(Lib, EntryPoint = "SDL_ResetHint")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4098,9 +4120,9 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint GetRenderDriver(int index);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_CreateWindowAndRenderer")]
+    [LibraryImport(Lib, EntryPoint = "SDL_CreateWindowAndRenderer", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool CreateWindowAndRenderer(nint title, int width, int height, ulong window_flags, nint window, nint renderer);
+    public static partial CBool CreateWindowAndRenderer(string? title, int width, int height, SdlWindowFlags window_flags, out nint window, out nint renderer);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CreateRenderer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4124,7 +4146,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetRendererName")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetRendererName(nint renderer);
+    public static partial CString GetRendererName(nint renderer);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetRendererProperties")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4376,7 +4398,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureRotated")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool RenderTextureRotated(nint renderer, nint texture, nint srcrect, nint dstrect, double angle, nint center, SdlFlipMode flip);
+    public static partial CBool RenderTextureRotated(nint renderer, nint texture, in SdlFRect srcrect, in SdlFRect dstrect, double angle, in SdlFPoint center, SdlFlipMode flip);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureTiled")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4628,11 +4650,50 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_WaitAndAcquireGPUSwapchainTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool WaitAndAcquireGpuSwapchainTexture(nint commandBuffer, nint window, out nint swapchain_texture, out uint swapchain_texture_width, out uint swapchain_texture_height);
+    public static partial CBool WaitAndAcquireGpuSwapchainTexture(
+        nint commandBuffer,
+        nint window,
+        out nint swapchain_texture,
+        out uint swapchain_texture_width,
+        out uint swapchain_texture_height);
 
     [LibraryImport(Lib, EntryPoint = "SDL_CancelGPUCommandBuffer")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool CancelGpuCommandBuffer(nint commandBuffer);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_LoadPNG")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial nint LoadPng(in byte path);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_GetGPURendererDevice")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial nint GetGpuRendererDevice(nint renderer);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RunApp")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial int RunApp(
+        int argc,
+        nint argv,
+        SdlMainFunc mainFunction,
+        nint reserved);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_EnterAppMainCallbacks")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial int EnterAppMainCallbacks(
+        int argc,
+        nint argv,
+        SdlAppInitFunc appInit,
+        SdlAppIterateFunc appIter,
+        SdlAppEventFunc appEvent,
+        SdlAppQuitFunc appQuit);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderDebugText")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderDebugText(nint renderer, float x, float y, in byte str);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderDebugText", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderDebugText(nint renderer, float x, float y, string? str);
 }
 
 #pragma warning restore CA1401

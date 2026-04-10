@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Jawbone;
 
@@ -175,5 +176,20 @@ public static class SpanWriter
             return false;
         writer.Position += charsWritten;
         return true;
+    }
+
+    public static bool TryWriteUtf8(
+        ref this SpanWriter<byte> writer,
+        ReadOnlySpan<char> utf16)
+    {
+        if (Encoding.UTF8.TryGetBytes(utf16, writer.Free, out var bytesWritten))
+        {
+            writer.Position += bytesWritten;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
