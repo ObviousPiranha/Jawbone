@@ -30,7 +30,7 @@ class Program : ISdlEventHandler
 
     public void OnStart()
     {
-        Sdl.SetHint("SDL_RENDER_DRIVER", "direct3d12,metal,vulkan,opengl");
+        Sdl.SetHint(SdlHint.RenderDriver, "direct3d12,metal,vulkan,opengl");
         Sdl.CreateWindowAndRenderer("Hello SDL3", _width, _height, SdlWindowFlags.Resizable, out _window, out _renderer);
         Sdl.SetRenderLogicalPresentation(_renderer, _width, _height, SdlRendererLogicalPresentation.Letterbox)
             .ThrowOnSdlFailure("Error on SDL_SetRenderLogicalPresentation.");
