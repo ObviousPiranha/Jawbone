@@ -3060,7 +3060,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetKeyFromScancode")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetKeyFromScancode(SdlScancode scancode, ushort modstate, CBool key_event);
+    public static partial uint GetKeyFromScancode(SdlScancode scancode, SdlKeymod modstate, CBool key_event);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetScancodeFromKey")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

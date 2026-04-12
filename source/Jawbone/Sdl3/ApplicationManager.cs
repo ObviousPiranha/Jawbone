@@ -7,6 +7,7 @@ public static class ApplicationManager
 {
     public static void Run(ISdlEventHandler eventHandler)
     {
+        eventHandler.OnStart();
         var nextSecond = Stopwatch.GetTimestamp() + Stopwatch.Frequency;
 
         while (eventHandler.Running)
@@ -37,5 +38,6 @@ public static class ApplicationManager
 
         while (Sdl.PollEvent(out var sdlEvent))
             SdlEvent.Dispatch(sdlEvent, eventHandler);
+        eventHandler.OnStop();
     }
 }

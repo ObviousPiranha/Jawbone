@@ -12,4 +12,7 @@ public readonly struct Handle : IEquatable<Handle>
     public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is Handle other && Equals(other);
     public override readonly int GetHashCode() => HashCode.Combine(Index, Generation);
     public override readonly string ToString() => $"{Index}:{Generation}";
+    public static bool operator ==(Handle a, Handle b) => a.Equals(b);
+
+    public static bool operator !=(Handle a, Handle b) => !a.Equals(b);
 }
