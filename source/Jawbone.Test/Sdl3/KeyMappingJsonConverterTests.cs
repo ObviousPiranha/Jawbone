@@ -1,10 +1,8 @@
-using Jawbone.Sdl3;
 using System;
 using System.Text;
 using System.Text.Json;
-using Xunit;
 
-namespace Jawbone.Test;
+namespace Jawbone.Sdl3.Test;
 
 public class KeyMappingJsonConverterTests
 {

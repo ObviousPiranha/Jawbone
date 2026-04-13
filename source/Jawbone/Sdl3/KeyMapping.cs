@@ -33,15 +33,28 @@ public readonly struct KeyMapping : IEquatable<KeyMapping>
     public bool Equals(KeyMapping other) => Scancode == other.Scancode && Modifier == other.Modifier;
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is KeyMapping other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(Scancode, Modifier);
-    public override string? ToString()
+    public override string ToString()
+    {
+        var result = WithModifiers(Scancode.ToString());
+        return result;
+    }
+
+    public string ToSdlString()
+    {
+        var key = Sdl.GetKeyFromScancode(Scancode, default, false);
+        var name = Sdl.GetKeyName(key).ToString() ?? "";
+        var result = WithModifiers(name);
+        return result;
+    }
+
+    private string WithModifiers(string s)
     {
         var ctrl = Modifier.MaskAll(KeyModifier.Control) ? "Control " : "";
         var shift = Modifier.MaskAll(KeyModifier.Shift) ? "Shift " : "";
         var alt = Modifier.MaskAll(KeyModifier.Alt) ? "Alt " : "";
         var super = Modifier.MaskAll(KeyModifier.Super) ? "Super " : "";
-        var key = Sdl.GetKeyFromScancode(Scancode, default, false);
-        var name = Sdl.GetKeyName(key);
-        return string.Concat(ctrl, shift, alt, super, name.ToString());
+        var result = string.Concat(ctrl, shift, alt, super, s);
+        return result;
     }
 
     public static bool operator ==(KeyMapping a, KeyMapping b) => a.Equals(b);

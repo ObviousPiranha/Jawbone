@@ -1,9 +1,8 @@
-using Jawbone.Sdl3;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Jawbone;
+namespace Jawbone.Sdl3;
 
 public sealed class KeyMappingJsonConverter : JsonConverter<KeyMapping>
 {
@@ -11,6 +10,7 @@ public sealed class KeyMappingJsonConverter : JsonConverter<KeyMapping>
     private ReadOnlySpan<byte> Shift => "Shift"u8;
     private ReadOnlySpan<byte> Alt => "Alt"u8;
     private ReadOnlySpan<byte> Super => "Super"u8;
+
     public override KeyMapping Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
