@@ -1,30 +1,49 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Jawbone.Sdl3;
 
+[JsonConverter(typeof(KeyMappingJsonConverter))]
 public readonly struct KeyMapping : IEquatable<KeyMapping>
 {
     public SdlScancode Scancode { get; init; }
     public KeyModifier Modifier { get; init; }
 
-    public bool Equals(KeyMapping other) => Scancode == other.Scancode && Modifier == other.Modifier;
+    public KeyMapping(SdlScancode scancode, KeyModifier modifier = default)
+    {
+        Scancode = scancode;
+        Modifier = modifier;
+    }
 
+    public KeyMapping(SdlScancode scancode, SdlKeymod mod)
+    {
+        Scancode = scancode;
+        if (IsSet(SdlKeymod.Ctrl))
+            Modifier |= KeyModifier.Control;
+        if (IsSet(SdlKeymod.Shift))
+            Modifier |= KeyModifier.Shift;
+        if (IsSet(SdlKeymod.Alt))
+            Modifier |= KeyModifier.Alt;
+        if (IsSet(SdlKeymod.Gui))
+            Modifier |= KeyModifier.Super;
+        bool IsSet(SdlKeymod m) => (mod & m) != SdlKeymod.None;
+    }
+
+    public bool Equals(KeyMapping other) => Scancode == other.Scancode && Modifier == other.Modifier;
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is KeyMapping other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(Scancode, Modifier);
     public override string? ToString()
     {
-        var mod = default(SdlKeymod);
-        if (Modifier.MaskAll(KeyModifier.Control))
-            mod |= SdlKeymod.Ctrl;
-        if (Modifier.MaskAll(KeyModifier.Shift))
-            mod |= SdlKeymod.Shift;
-        if (Modifier.MaskAll(KeyModifier.Alt))
-            mod |= SdlKeymod.Alt;
-        if (Modifier.MaskAll(KeyModifier.Super))
-            mod |= SdlKeymod.Gui;
-        var key = Sdl.GetKeyFromScancode(Scancode, mod, false);
+        var ctrl = Modifier.MaskAll(KeyModifier.Control) ? "Control " : "";
+        var shift = Modifier.MaskAll(KeyModifier.Shift) ? "Shift " : "";
+        var alt = Modifier.MaskAll(KeyModifier.Alt) ? "Alt " : "";
+        var super = Modifier.MaskAll(KeyModifier.Super) ? "Super " : "";
+        var key = Sdl.GetKeyFromScancode(Scancode, default, false);
         var name = Sdl.GetKeyName(key);
-        return name.ToString();
+        return string.Concat(ctrl, shift, alt, super, name.ToString());
     }
+
+    public static bool operator ==(KeyMapping a, KeyMapping b) => a.Equals(b);
+    public static bool operator !=(KeyMapping a, KeyMapping b) => !a.Equals(b);
 }
