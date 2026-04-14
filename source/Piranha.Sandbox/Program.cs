@@ -1,6 +1,7 @@
 ﻿using Jawbone;
 using Jawbone.Sdl3;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
@@ -15,6 +16,13 @@ class Program
             Console.WriteLine(new KeyMapping(SdlScancode.Kp7, KeyModifier.Alt));
             Console.WriteLine(new KeyMapping(SdlScancode.A));
             Console.WriteLine(new KeyMapping(SdlScancode.A, KeyModifier.Shift));
+
+            var mappings = new Dictionary<KeyMapping, string>
+            {
+                [new KeyMapping(SdlScancode.A, KeyModifier.Control)] = "Huzzah"
+            };
+
+            var mappingsJson = JsonSerializer.Serialize(mappings);
 
             var keyMapping = new KeyMapping(SdlScancode.Kp7, KeyModifier.Control | KeyModifier.Alt);
             var serialized = JsonSerializer.SerializeToUtf8Bytes(keyMapping);

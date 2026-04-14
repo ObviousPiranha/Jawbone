@@ -7,6 +7,11 @@ namespace Jawbone.Sdl3;
 [JsonConverter(typeof(KeyMappingJsonConverter))]
 public readonly struct KeyMapping : IEquatable<KeyMapping>
 {
+    private static ReadOnlySpan<byte> Ctrl => "Ctrl"u8;
+    private static ReadOnlySpan<byte> Shift => "Shift"u8;
+    private static ReadOnlySpan<byte> Alt => "Alt"u8;
+    private static ReadOnlySpan<byte> Super => "Super"u8;
+
     public SdlScancode Scancode { get; init; }
     public KeyModifier Modifier { get; init; }
 
@@ -54,6 +59,38 @@ public readonly struct KeyMapping : IEquatable<KeyMapping>
         var alt = Modifier.MaskAll(KeyModifier.Alt) ? "Alt " : "";
         var super = Modifier.MaskAll(KeyModifier.Super) ? "Super " : "";
         var result = string.Concat(ctrl, shift, alt, super, s);
+        return result;
+    }
+
+    public bool TryWriteUtf8Json(ref SpanWriter<byte> writer)
+    {
+        if (Modifier.MaskAll(KeyModifier.Control))
+            writer.Write(Ctrl);
+        if (Modifier.MaskAll(KeyModifier.Shift))
+            writer.Write(Shift);
+        if (Modifier.MaskAll(KeyModifier.Alt))
+            writer.Write(Alt);
+        if (Modifier.MaskAll(KeyModifier.Super))
+            writer.Write(Super);
+        var result = writer.TryFormat((int)Scancode);
+        return result;
+    }
+
+    public static KeyMapping ParseUtf8Json(ReadOnlySpan<byte> utf8)
+    {
+        var reader = SpanReader.Create(utf8);
+        var mod = default(KeyModifier);
+        if (reader.TryMatch(Ctrl))
+            mod |= KeyModifier.Control;
+        if (reader.TryMatch(Shift))
+            mod |= KeyModifier.Shift;
+        if (reader.TryMatch(Alt))
+            mod |= KeyModifier.Alt;
+        if (reader.TryMatch(Super))
+            mod |= KeyModifier.Super;
+        var id = int.Parse(reader.Pending);
+        var scancode = (SdlScancode)id;
+        var result = new KeyMapping(scancode, mod);
         return result;
     }
 

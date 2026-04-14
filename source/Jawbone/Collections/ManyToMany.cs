@@ -47,6 +47,7 @@ public sealed class ManyToMany<T0, T1>
         if (_rightToLeft.TryGetValue(rightValue, out var leftValues))
         {
             Debug.Assert(!leftValues.IsDefaultOrEmpty);
+            Debug.Assert(!leftValues.Contains(leftValue, _leftEquality));
             _rightToLeft[rightValue] = leftValues.Add(leftValue);
         }
         else
@@ -65,19 +66,13 @@ public sealed class ManyToMany<T0, T1>
         var rightRemoved = rightValues.Remove(rightValue, _rightEquality);
         if (rightRemoved.Length == rightValues.Length)
             return false;
-        if (rightRemoved.IsEmpty)
-            _leftToRight.Remove(leftValue);
-        else
-            _leftToRight[leftValue] = rightRemoved;
+        Many.SetOrRemove(_leftToRight, leftValue, rightRemoved);
         
         var leftValues = _rightToLeft[rightValue];
         Debug.Assert(!leftValues.IsDefaultOrEmpty);
         var leftRemoved = leftValues.Remove(leftValue, _leftEquality);
         Debug.Assert(leftRemoved.Length < leftValues.Length);
-        if (leftRemoved.IsEmpty)
-            _rightToLeft.Remove(rightValue);
-        else
-            _rightToLeft[rightValue] = leftRemoved;
+        Many.SetOrRemove(_rightToLeft, rightValue, leftRemoved);
         return true;
     }
 
