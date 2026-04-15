@@ -14,10 +14,13 @@ public sealed class ManyToMany<T0, T1>
     private readonly Dictionary<T0, ImmutableArray<T1>> _leftToRight;
     private readonly Dictionary<T1, ImmutableArray<T0>> _rightToLeft;
 
+    public ManyToMany<T1, T0> Reversed { get; }
+
     public ManyToMany()
     {
         _leftToRight = [];
         _rightToLeft = [];
+        Reversed = new(this);
     }
 
     public ManyToMany(
@@ -28,51 +31,67 @@ public sealed class ManyToMany<T0, T1>
         _rightEquality = rightEquality;
         _leftToRight = new(leftEquality);
         _rightToLeft = new(rightEquality);
+        Reversed = new(this);
     }
 
-    public bool TryAdd(T0 leftValue, T1 rightValue)
+    private ManyToMany(ManyToMany<T1, T0> reversed)
     {
-        if (_leftToRight.TryGetValue(leftValue, out var rightValues))
+        _leftEquality = reversed._rightEquality;
+        _rightEquality = reversed._leftEquality;
+        _leftToRight = reversed._rightToLeft;
+        _rightToLeft = reversed._leftToRight;
+        Reversed = reversed;
+    }
+
+    public void Clear()
+    {
+        _leftToRight.Clear();
+        _rightToLeft.Clear();
+    }
+
+    public bool TryAdd(T0 left, T1 right)
+    {
+        if (_leftToRight.TryGetValue(left, out var rightValues))
         {
             Debug.Assert(!rightValues.IsDefaultOrEmpty);
-            if (rightValues.Contains(rightValue, _rightEquality))
+            if (rightValues.Contains(right, _rightEquality))
                 return false;
-            _leftToRight[leftValue] = rightValues.Add(rightValue);
+            _leftToRight[left] = rightValues.Add(right);
         }
         else
         {
-            _leftToRight.Add(leftValue, rightValues = [rightValue]);
+            _leftToRight.Add(left, rightValues = [right]);
         }
 
-        if (_rightToLeft.TryGetValue(rightValue, out var leftValues))
+        if (_rightToLeft.TryGetValue(right, out var leftValues))
         {
             Debug.Assert(!leftValues.IsDefaultOrEmpty);
-            Debug.Assert(!leftValues.Contains(leftValue, _leftEquality));
-            _rightToLeft[rightValue] = leftValues.Add(leftValue);
+            Debug.Assert(!leftValues.Contains(left, _leftEquality));
+            _rightToLeft[right] = leftValues.Add(left);
         }
         else
         {
-            _rightToLeft.Add(rightValue, [leftValue]);
+            _rightToLeft.Add(right, [left]);
         }
 
         return true;
     }
 
-    public bool TryRemove(T0 leftValue, T1 rightValue)
+    public bool TryRemove(T0 left, T1 right)
     {
-        if (!_leftToRight.TryGetValue(leftValue, out var rightValues))
+        if (!_leftToRight.TryGetValue(left, out var rightValues))
             return false;
         Debug.Assert(!rightValues.IsDefaultOrEmpty);
-        var rightRemoved = rightValues.Remove(rightValue, _rightEquality);
+        var rightRemoved = rightValues.Remove(right, _rightEquality);
         if (rightRemoved.Length == rightValues.Length)
             return false;
-        Many.SetOrRemove(_leftToRight, leftValue, rightRemoved);
+        Many.SetOrRemove(_leftToRight, left, rightRemoved);
         
-        var leftValues = _rightToLeft[rightValue];
+        var leftValues = _rightToLeft[right];
         Debug.Assert(!leftValues.IsDefaultOrEmpty);
-        var leftRemoved = leftValues.Remove(leftValue, _leftEquality);
+        var leftRemoved = leftValues.Remove(left, _leftEquality);
         Debug.Assert(leftRemoved.Length < leftValues.Length);
-        Many.SetOrRemove(_rightToLeft, rightValue, leftRemoved);
+        Many.SetOrRemove(_rightToLeft, right, leftRemoved);
         return true;
     }
 

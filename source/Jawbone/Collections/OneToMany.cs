@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Jawbone;
@@ -56,6 +57,12 @@ public sealed class OneToMany<TOne, TMany>
         _manyToOne = new(manyEquality);
     }
 
+    public void Clear()
+    {
+        _oneToMany.Clear();
+        _manyToOne.Clear();
+    }
+
     public bool TryAdd(TOne one, TMany many)
     {
         if (!_manyToOne.TryAdd(many, one))
@@ -66,15 +73,29 @@ public sealed class OneToMany<TOne, TMany>
         return true;
     }
 
-    public bool TryRemove(TMany many)
+    public bool TryRemove(TMany many, [MaybeNullWhen(false)] out TOne one)
     {
-        if (!_manyToOne.Remove(many, out var one))
+        if (!_manyToOne.Remove(many, out one))
             return false;
         var manyValues = _oneToMany[one];
         var removedMany = manyValues.Remove(many, _manyEquality);
         Debug.Assert(removedMany.Length < manyValues.Length);
         Many.SetOrRemove(_oneToMany, one, removedMany);
         return true;
+    }
+
+    public bool TryRemove(TMany many) => TryRemove(many, out _);
+
+    public ImmutableArray<TMany> RemoveMany(TOne one)
+    {
+        var result = GetMany(one);
+        foreach (var many in result)
+        {
+            var removedResult = _manyToOne.Remove(many, out var oldOne);
+            Debug.Assert(removedResult);
+            Debug.Assert(_oneEquality.Equals(one, oldOne));
+        }
+        return result;
     }
 
     public ImmutableArray<TMany> GetMany(TOne one) => _oneToMany.GetValueOrDefault(one, []);
