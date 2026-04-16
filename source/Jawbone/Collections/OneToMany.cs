@@ -15,6 +15,8 @@ public sealed class OneToMany<TOne, TMany>
     private readonly Dictionary<TOne, ImmutableArray<TMany>> _oneToMany;
     private readonly Dictionary<TMany, TOne> _manyToOne;
 
+    public int Count => _oneToMany.Count;
+
     public TOne this[TMany many]
     {
         get => _manyToOne[many];

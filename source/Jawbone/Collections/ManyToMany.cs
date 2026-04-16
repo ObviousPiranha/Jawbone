@@ -60,7 +60,7 @@ public sealed class ManyToMany<T0, T1>
         }
         else
         {
-            _leftToRight.Add(left, rightValues = [right]);
+            _leftToRight.Add(left, [right]);
         }
 
         if (_rightToLeft.TryGetValue(right, out var leftValues))
