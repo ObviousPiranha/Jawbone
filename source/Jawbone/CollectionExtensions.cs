@@ -8,9 +8,19 @@ namespace Jawbone.Extensions;
 
 public static class CollectionExtensions
 {
-    public static ArrayWithIndexEnumerable<T> WithIndex<T>(this T[] array)
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this T[]? array)
     {
-        return new ArrayWithIndexEnumerable<T>(array);
+        return new(array);
+    }
+
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this List<T>? list)
+    {
+        return new(CollectionsMarshal.AsSpan(list));
+    }
+
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this ReadOnlySpan<T> span)
+    {
+        return new(span);
     }
 
     public static IndexEnumerable<T> EnumerateIndicesOf<T>(this ReadOnlySpan<T> span, T needle)
@@ -288,25 +298,25 @@ public static class CollectionExtensions
     }
 }
 
-public readonly struct ArrayWithIndexEnumerable<T>
+public readonly ref struct SpanWithIndexEnumerable<T>
 {
-    private readonly T[] _array;
-    public ArrayWithIndexEnumerable(T[] array) => _array = array;
-    public ArrayWithIndexEnumerator<T> GetEnumerator() => new(_array);
+    private readonly ReadOnlySpan<T> _span;
+    public SpanWithIndexEnumerable(ReadOnlySpan<T> span) => _span = span;
+    public SpanWithIndexEnumerator<T> GetEnumerator() => new(_span);
 }
 
-public struct ArrayWithIndexEnumerator<T>
+public ref struct SpanWithIndexEnumerator<T>
 {
-    private readonly T[] _array;
+    private readonly ReadOnlySpan<T> _span;
     private int _index;
-    public ArrayWithIndexEnumerator(T[] array)
+    public SpanWithIndexEnumerator(ReadOnlySpan<T> span)
     {
-        _array = array;
+        _span = span;
         _index = -1;
     }
 
-    public bool MoveNext() => ++_index < _array.Length;
-    public readonly KeyValuePair<int, T> Current => new(_index, _array[_index]);
+    public bool MoveNext() => ++_index < _span.Length;
+    public readonly KeyValuePair<int, T> Current => new(_index, _span[_index]);
 }
 
 public readonly ref struct IndexEnumerable<T>

@@ -112,7 +112,7 @@ public sealed class CsvReader
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, FieldCount);
         var low = _dividers[index] + 1;
         var high = _dividers[index + 1];
-        return _buffer.AsSpan(low..high);
+        return _buffer.AsSpan(low..high).TrimEnd((byte)'\r');
     }
 
     /// <summary>
