@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -59,10 +60,22 @@ public sealed class OneToMany<TOne, TMany>
         _manyToOne = new(_manyEquality);
     }
 
+    public OneToMany(params ReadOnlySpan<(TOne one, TMany many)> mappings) : this()
+    {
+        foreach (var (one, many) in mappings)
+            Add(one, many);
+    }
+
     public void Clear()
     {
         _oneToMany.Clear();
         _manyToOne.Clear();
+    }
+
+    public void Add(TOne one, TMany many)
+    {
+        if (!TryAdd(one, many))
+            throw new ArgumentException("TMany value already mapped.");
     }
 
     public bool TryAdd(TOne one, TMany many)
@@ -100,6 +113,8 @@ public sealed class OneToMany<TOne, TMany>
         }
         return many;
     }
+
+    public bool TryGetOne(TMany many, [MaybeNullWhen(false)] out TOne one) => _manyToOne.TryGetValue(many, out one);
 
     public ImmutableArray<TMany> GetMany(TOne one) => _oneToMany.GetValueOrDefault(one, []);
     public IEnumerable<(TOne one, TMany many)> EnumerateMappings() => _manyToOne.Select(pair => (pair.Value, pair.Key));

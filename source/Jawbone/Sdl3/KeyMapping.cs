@@ -38,6 +38,10 @@ public readonly struct KeyMapping :
         }
     }
 
+    public KeyMapping(SdlKeyboardEvent sdlKeyboardEvent) : this(sdlKeyboardEvent.Scancode, sdlKeyboardEvent.Mod)
+    {
+    }
+
     public bool Equals(KeyMapping other) => Scancode == other.Scancode && Modifier == other.Modifier;
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is KeyMapping other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(Scancode, Modifier);
@@ -210,4 +214,5 @@ public readonly struct KeyMapping :
 
     public static bool operator ==(KeyMapping a, KeyMapping b) => a.Equals(b);
     public static bool operator !=(KeyMapping a, KeyMapping b) => !a.Equals(b);
+    public static implicit operator KeyMapping(SdlScancode scancode) => new(scancode);
 }
