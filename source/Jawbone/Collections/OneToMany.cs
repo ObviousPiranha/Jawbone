@@ -55,8 +55,8 @@ public sealed class OneToMany<TOne, TMany>
     {
         _oneEquality = oneEquality ?? EqualityComparer<TOne>.Default;
         _manyEquality = manyEquality ?? EqualityComparer<TMany>.Default;
-        _oneToMany = new(oneEquality);
-        _manyToOne = new(manyEquality);
+        _oneToMany = new(_oneEquality);
+        _manyToOne = new(_manyEquality);
     }
 
     public void Clear()
@@ -90,14 +90,15 @@ public sealed class OneToMany<TOne, TMany>
 
     public ImmutableArray<TMany> RemoveMany(TOne one)
     {
-        var result = GetMany(one);
-        foreach (var many in result)
+        if (!_oneToMany.TryGetValue(one, out var many))
+            return [];
+        foreach (var item in many)
         {
-            var removedResult = _manyToOne.Remove(many, out var oldOne);
+            var removedResult = _manyToOne.Remove(item, out var oldOne);
             Debug.Assert(removedResult);
             Debug.Assert(_oneEquality.Equals(one, oldOne));
         }
-        return result;
+        return many;
     }
 
     public ImmutableArray<TMany> GetMany(TOne one) => _oneToMany.GetValueOrDefault(one, []);

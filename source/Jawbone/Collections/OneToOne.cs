@@ -44,8 +44,6 @@ public sealed class OneToOne<T0, T1> : IDictionary<T0, T1>
         }
     }
 
-    private ICollection<KeyValuePair<T0, T1>> GetCollection() => _leftToRight;
-
     public OneToOne()
     {
         _leftToRight = [];
@@ -162,8 +160,8 @@ public sealed class OneToOne<T0, T1> : IDictionary<T0, T1>
         _rightToLeft.Clear();
     }
 
-    bool ICollection<KeyValuePair<T0, T1>>.Contains(KeyValuePair<T0, T1> item) => GetCollection().Contains(item);
-    void ICollection<KeyValuePair<T0, T1>>.CopyTo(KeyValuePair<T0, T1>[] array, int arrayIndex) => GetCollection().CopyTo(array, arrayIndex);
+    bool ICollection<KeyValuePair<T0, T1>>.Contains(KeyValuePair<T0, T1> item) => AsDictionary().Contains(item);
+    void ICollection<KeyValuePair<T0, T1>>.CopyTo(KeyValuePair<T0, T1>[] array, int arrayIndex) => AsDictionary().CopyTo(array, arrayIndex);
     bool ICollection<KeyValuePair<T0, T1>>.Remove(KeyValuePair<T0, T1> item)
     {
         var result =
