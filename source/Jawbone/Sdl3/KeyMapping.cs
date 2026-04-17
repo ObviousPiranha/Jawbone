@@ -38,7 +38,7 @@ public readonly struct KeyMapping :
         }
     }
 
-    public KeyMapping(SdlKeyboardEvent sdlKeyboardEvent) : this(sdlKeyboardEvent.Scancode, sdlKeyboardEvent.Mod)
+    public KeyMapping(in SdlKeyboardEvent sdlKeyboardEvent) : this(sdlKeyboardEvent.Scancode, sdlKeyboardEvent.Mod)
     {
     }
 

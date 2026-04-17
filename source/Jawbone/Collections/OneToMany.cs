@@ -37,6 +37,7 @@ public sealed class OneToMany<TOne, TMany>
             {
                 _manyToOne[many] = value;
                 var manyValues =_oneToMany.GetValueOrDefault(value, []);
+                Debug.Assert(!manyValues.Contains(many, _manyEquality));
                 _oneToMany[value] = manyValues.Add(many);
             }
         }
@@ -62,8 +63,7 @@ public sealed class OneToMany<TOne, TMany>
 
     public OneToMany(params ReadOnlySpan<(TOne one, TMany many)> mappings) : this()
     {
-        foreach (var (one, many) in mappings)
-            Add(one, many);
+        AddRange(mappings);
     }
 
     public void Clear()
@@ -76,6 +76,18 @@ public sealed class OneToMany<TOne, TMany>
     {
         if (!TryAdd(one, many))
             throw new ArgumentException("TMany value already mapped.");
+    }
+
+    public void AddRange(IEnumerable<(TOne one, TMany many)> mappings)
+    {
+        foreach (var (one, many) in mappings)
+            Add(one, many);
+    }
+
+    public void AddRange(params ReadOnlySpan<(TOne one, TMany many)> mappings)
+    {
+        foreach (var (one, many) in mappings)
+            Add(one, many);
     }
 
     public bool TryAdd(TOne one, TMany many)
