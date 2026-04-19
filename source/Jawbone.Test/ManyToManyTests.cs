@@ -16,7 +16,7 @@ public class ManyToManyTests
             Assert.True(m2m.TryAdd(0, i.ToString()));
             Assert.True(m2m.TryAdd(i, "0"));
         }
-        
+
         Assert.Equal(expectedCount, m2m.GetLeftValues("0").Length);
         Assert.Equal(expectedCount, m2m.GetRightValues(0).Length);
 

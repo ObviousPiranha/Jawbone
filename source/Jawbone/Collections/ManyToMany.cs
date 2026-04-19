@@ -86,7 +86,7 @@ public sealed class ManyToMany<T0, T1>
         if (rightRemoved.Length == rightValues.Length)
             return false;
         Many.SetOrRemove(_leftToRight, left, rightRemoved);
-        
+
         var leftValues = _rightToLeft[right];
         Debug.Assert(!leftValues.IsDefaultOrEmpty);
         var leftRemoved = leftValues.Remove(left, _leftEquality);

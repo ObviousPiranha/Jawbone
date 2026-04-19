@@ -27,7 +27,7 @@ public sealed class OneToMany<TOne, TMany>
             {
                 if (_oneEquality.Equals(one, value))
                     return;
-                
+
                 var manyValues = _oneToMany[one];
                 var removedMany = manyValues.Remove(many, _manyEquality);
                 Debug.Assert(removedMany.Length < manyValues.Length);
@@ -36,7 +36,7 @@ public sealed class OneToMany<TOne, TMany>
 
             {
                 _manyToOne[many] = value;
-                var manyValues =_oneToMany.GetValueOrDefault(value, []);
+                var manyValues = _oneToMany.GetValueOrDefault(value, []);
                 Debug.Assert(!manyValues.Contains(many, _manyEquality));
                 _oneToMany[value] = manyValues.Add(many);
             }
