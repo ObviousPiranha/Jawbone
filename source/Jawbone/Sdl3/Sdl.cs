@@ -3060,7 +3060,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetKeyFromScancode")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial uint GetKeyFromScancode(SdlScancode scancode, ushort modstate, CBool key_event);
+    public static partial uint GetKeyFromScancode(SdlScancode scancode, SdlKeymod modstate, CBool key_event);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetScancodeFromKey")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4052,9 +4052,9 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool ShowMessageBox(nint messageboxdata, nint buttonid);
 
-    [LibraryImport(Lib, EntryPoint = "SDL_ShowSimpleMessageBox")]
+    [LibraryImport(Lib, EntryPoint = "SDL_ShowSimpleMessageBox", StringMarshalling = StringMarshalling.Utf8)]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool ShowSimpleMessageBox(uint flags, nint title, nint message, nint window);
+    public static partial CBool ShowSimpleMessageBox(SdlMessageBoxFlags flags, string? title, string? message, nint window);
 
     [LibraryImport(Lib, EntryPoint = "SDL_Metal_CreateView")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

@@ -30,4 +30,6 @@ public readonly struct PackedUnsignedVector4 : IEquatable<PackedUnsignedVector4>
     public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is PackedUnsignedVector4 other && Equals(other);
     public override readonly int GetHashCode() => _data.GetHashCode();
     public override readonly string ToString() => $"{X}, ${Y}, ${Z}, ${W}";
+    public static bool operator ==(PackedUnsignedVector4 a, PackedUnsignedVector4 b) => a.Equals(b);
+    public static bool operator !=(PackedUnsignedVector4 a, PackedUnsignedVector4 b) => !a.Equals(b);
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -51,5 +52,24 @@ public static class Platform
         }
 
         return null;
+    }
+
+    public static void OpenFolder(string folder)
+    {
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = folder,
+            UseShellExecute = true,
+            Verb = "open"
+        };
+
+        var process = Process.Start(processStartInfo);
+        process?.Dispose();
+    }
+
+    public static void OpenFolderIfExists(string folder)
+    {
+        if (Directory.Exists(folder))
+            OpenFolder(folder);
     }
 }
