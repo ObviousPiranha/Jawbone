@@ -5,10 +5,10 @@ namespace Jawbone;
 
 public readonly ref struct Utf8Span
 {
-    public readonly Span<byte> Bytes;
+    public Span<byte> Bytes { get; }
 
     public Utf8Span(Span<byte> bytes) => Bytes = bytes;
-    public readonly override string ToString() => Encoding.UTF8.GetString(Bytes);
+    public override string ToString() => Encoding.UTF8.GetString(Bytes);
 
     public Utf8Enumerator GetEnumerator() => new(Bytes);
 
