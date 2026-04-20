@@ -56,4 +56,5 @@ public readonly struct CString : IUtf8SpanFormattable, ISpanFormattable
     }
 
     public string ToString(string? format, IFormatProvider? formatProvider) => GetStringOrEmpty();
+    public Utf8String ToUtf8String() => new(AsSpan());
 }
