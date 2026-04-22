@@ -7,7 +7,7 @@ namespace Jawbone;
 
 public readonly struct CString : IUtf8SpanFormattable, ISpanFormattable
 {
-    public nint Address { get; }
+    public nint Address { get; init; }
 
     public CString(nint address) => Address = address;
 
@@ -56,5 +56,11 @@ public readonly struct CString : IUtf8SpanFormattable, ISpanFormattable
     }
 
     public string ToString(string? format, IFormatProvider? formatProvider) => GetStringOrEmpty();
-    public Utf8String ToUtf8String() => new(AsSpan());
+    public Utf8String? ToUtf8String()
+    {
+        if (Address == default)
+            return default;
+        var result = new Utf8String(AsSpan());
+        return result;
+    }
 }
