@@ -124,14 +124,14 @@ public static class CollectionExtensions
         return value;
     }
 
-    public static string? AsCString(this IntPtr ptr)
+    public static string? AsCString(this nint ptr)
     {
         return ptr.IsInvalid() ? null : Marshal.PtrToStringUTF8(ptr);
     }
 
-    public static bool IsValid(this IntPtr ptr) => !IsInvalid(ptr);
+    public static bool IsValid(this nint ptr) => !IsInvalid(ptr);
 
-    public static bool IsInvalid(this IntPtr ptr)
+    public static bool IsInvalid(this nint ptr)
     {
         if (Environment.Is64BitProcess)
         {
@@ -145,7 +145,7 @@ public static class CollectionExtensions
         }
     }
 
-    public unsafe static ReadOnlySpan<T> ToReadOnlySpan<T>(this IntPtr ptr, int length) where T : unmanaged
+    public unsafe static ReadOnlySpan<T> ToReadOnlySpan<T>(this nint ptr, int length) where T : unmanaged
     {
         var result = new ReadOnlySpan<T>(ptr.ToPointer(), length);
         return result;

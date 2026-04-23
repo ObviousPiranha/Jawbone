@@ -1,34 +1,66 @@
-using Jawbone.Extensions;
 using System;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Jawbone;
 
-public struct CString
+public readonly struct CString : IUtf8SpanFormattable, ISpanFormattable
 {
-    public nint Address;
+    public nint Address { get; init; }
 
     public CString(nint address) => Address = address;
 
-    public readonly string GetStringOrDefault(string defaultValue) => ToString() ?? defaultValue;
+    [return: NotNullIfNotNull(nameof(defaultValue))]
+    public readonly string? GetStringOrDefault(string? defaultValue) => ToString() ?? defaultValue;
     public readonly string GetStringOrEmpty() => ToString() ?? "";
-    public unsafe readonly ReadOnlySpan<byte> AsSpan()
+    public unsafe ReadOnlySpan<byte> AsSpan()
+    {
+        var pointer = (byte*)Address.ToPointer();
+        var result = MemoryMarshal.CreateReadOnlySpanFromNullTerminated(pointer);
+        return result;
+    }
+
+    public override string? ToString() => Marshal.PtrToStringUTF8(Address);
+
+    public bool TryFormat(
+        Span<byte> utf8Destination,
+        out int bytesWritten,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = null)
+    {
+        var span = AsSpan();
+        if (utf8Destination.Length < span.Length)
+        {
+            span[..utf8Destination.Length].CopyTo(utf8Destination);
+            bytesWritten = utf8Destination.Length;
+            return false;
+        }
+        else
+        {
+            span.CopyTo(utf8Destination);
+            bytesWritten = span.Length;
+            return true;
+        }
+    }
+
+    public bool TryFormat(
+        Span<char> destination,
+        out int charsWritten,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? provider = null)
+    {
+        var span = AsSpan();
+        var result = Encoding.UTF8.TryGetChars(span, destination, out charsWritten);
+        return result;
+    }
+
+    public string ToString(string? format, IFormatProvider? formatProvider) => GetStringOrEmpty();
+    public Utf8String? ToUtf8String()
     {
         if (Address == default)
             return default;
-
-        var length = 0;
-        while (true)
-        {
-            var address = IntPtr.Add(Address, length);
-            var b = Unsafe.Read<byte>(address.ToPointer());
-            if (b == 0)
-                break;
-            ++length;
-        }
-        return Address.ToReadOnlySpan<byte>(length);
+        var result = new Utf8String(AsSpan());
+        return result;
     }
-
-    public override readonly string? ToString() => Marshal.PtrToStringUTF8(Address);
 }

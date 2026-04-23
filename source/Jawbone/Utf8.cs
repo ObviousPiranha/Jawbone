@@ -1,5 +1,7 @@
 using Jawbone.Extensions;
 using System;
+using System.Collections.Frozen;
+using System.Collections.Generic;
 
 namespace Jawbone;
 
@@ -110,4 +112,29 @@ public static class Utf8
 
     public static byte GetHighHexDigit(byte b) => (byte)Hex.Lower[b >> 4];
     public static byte GetLowHexDigit(byte b) => (byte)Hex.Lower[b & 0xf];
+
+    public static int GetHashCode(ReadOnlySpan<byte> utf8)
+    {
+        var result = utf8.Length switch
+        {
+            0 => 0,
+            1 => HashCode.Combine(1, utf8[0]),
+            2 => HashCode.Combine(2, utf8[0], utf8[1]),
+            3 => HashCode.Combine(3, utf8[0], utf8[1], utf8[2]),
+            _ => HashCode.Combine(utf8.Length, BitConverter.ToInt32(utf8))
+        };
+        return result;
+    }
+
+    public static FrozenDictionary<Utf8String, T> CreateNameMap<T>(
+        IEqualityComparer<Utf8String>? comparer = null
+        ) where T : unmanaged, Enum
+    {
+        var values = Enum.GetValues<T>();
+        var pairs = Array.ConvertAll(
+            values,
+            static v => KeyValuePair.Create(new Utf8String(v.ToString()), v));
+        var result = pairs.ToFrozenDictionary(comparer);
+        return result;
+    }
 }

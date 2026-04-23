@@ -31,6 +31,14 @@ public static class SpanReader
     public static SpanReader<T> Create<T>(List<T>? list) => new(CollectionsMarshal.AsSpan(list));
     public static SpanReader<char> Create(string? text) => new(text);
 
+    public static ReadOnlySpan<char> ReadWord(ReadOnlySpan<char> span)
+    {
+        var trimmed = span.Trim();
+        var space = trimmed.IndexOf(' ');
+        var result = space == -1 ? trimmed : trimmed[..space];
+        return result;
+    }
+
     public static ReadOnlySpan<char> ReadWord(ref this SpanReader<char> reader)
     {
         reader.SkipAll(' ');
