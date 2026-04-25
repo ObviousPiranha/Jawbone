@@ -303,7 +303,7 @@ public static class CollectionExtensions
 
         while (count < span.Length && predicate.Invoke(state, span[count]))
             ++count;
-        
+
         for (int i = count + 1; i < span.Length; ++i)
         {
             if (predicate.Invoke(state, span[i]))
@@ -327,7 +327,7 @@ public static class CollectionExtensions
 
         while (count < span.Length && predicate.Invoke(span[count], state))
             ++count;
-        
+
         for (int i = count + 1; i < span.Length; ++i)
         {
             if (predicate.Invoke(span[i], state))
