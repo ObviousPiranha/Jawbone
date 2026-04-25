@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Jawbone;
@@ -191,6 +192,77 @@ public static class UnmanagedListExtensions
         }
 
         return list.AppendUtf32((uint)value);
+    }
+
+    public static UnmanagedList<char> AppendUtf32(
+        this UnmanagedList<char> list,
+        int utf32)
+    {
+        var rune = new Rune(utf32);
+        var buffer = list.AcquireUninitialized(2);
+        var n = rune.EncodeToUtf16(buffer);
+        if (n == 1)
+            list.RemoveLast();
+        else if (n != 2) // lolwut how
+            Throw();
+        return list;
+        static void Throw() => throw new InvalidOperationException("UTF-16 encode failed.");
+    }
+
+    public static UnmanagedList<char> InsertUtf32(
+        this UnmanagedList<char> list,
+        ref int index,
+        int utf32)
+    {
+        Span<char> buffer = stackalloc char[2];
+        var rune = new Rune(utf32);
+        var n = rune.EncodeToUtf16(buffer);
+        list.InsertAll(index, buffer[..n]);
+        index += n;
+        return list;
+    }
+
+    public static UnmanagedList<char> RemoveCodePointBefore(
+        this UnmanagedList<char> list,
+        ref int index)
+    {
+        --index;
+        try
+        {
+            return list.RemoveCodePointAt(ref index);
+        }
+        catch
+        {
+            ++index;
+            throw;
+        }
+    }
+
+    public static UnmanagedList<char> RemoveCodePointAt(
+        this UnmanagedList<char> list,
+        ref int index)
+    {
+        if (char.IsHighSurrogate(list[index]))
+        {
+            var neighbor = list[index + 1];
+            if (!char.IsLowSurrogate(neighbor))
+                throw new InvalidOperationException($"Missing low surrogate at index {index + 1}.");
+            list.RemoveAt(index, 2);
+        }
+        else if (char.IsLowSurrogate(list[index]))
+        {
+            var neighbor = list[index - 1];
+            if (!char.IsHighSurrogate(neighbor))
+                throw new InvalidOperationException($"Missing high surrogate at index {index - 1}.");
+            list.RemoveAt(index - 1, 2);
+            --index;
+        }
+        else
+        {
+            list.RemoveAt(index);
+        }
+
+        return list;
     }
 
     public static string AsUtf32String(this UnmanagedList<int> list)

@@ -124,11 +124,6 @@ public static class CollectionExtensions
         return value;
     }
 
-    public static string? AsCString(this nint ptr)
-    {
-        return ptr.IsInvalid() ? null : Marshal.PtrToStringUTF8(ptr);
-    }
-
     public static bool IsValid(this nint ptr) => !IsInvalid(ptr);
 
     public static bool IsInvalid(this nint ptr)
@@ -224,6 +219,8 @@ public static class CollectionExtensions
         return ImmutableCollectionsMarshal.AsImmutableArray(result);
     }
 
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) => array.IsDefault ? [] : array;
+
     public static TResult[] ToArray<T, TResult>(this Span<T> span, Func<T, TResult> conversion)
     {
         var result = new TResult[span.Length];
@@ -295,6 +292,51 @@ public static class CollectionExtensions
     ) where T : unmanaged
     {
         return array.AsSpan().ByteSize();
+    }
+
+    public static int HalfStablePartition<T, TState>(
+        this Span<T> span,
+        TState state,
+        Func<TState, T, bool> predicate) where TState : allows ref struct
+    {
+        int count = 0;
+
+        while (count < span.Length && predicate.Invoke(state, span[count]))
+            ++count;
+
+        for (int i = count + 1; i < span.Length; ++i)
+        {
+            if (predicate.Invoke(state, span[i]))
+            {
+                var swapValue = span[count];
+                span[count++] = span[i];
+                span[i] = swapValue;
+            }
+        }
+
+        return count;
+    }
+
+    public static int RemoveAll<T, TState>(
+        this List<T> list,
+        TState state,
+        Func<T, TState, bool> predicate) where TState : allows ref struct
+    {
+        var span = CollectionsMarshal.AsSpan(list);
+        int count = 0;
+
+        while (count < span.Length && predicate.Invoke(span[count], state))
+            ++count;
+
+        for (int i = count + 1; i < span.Length; ++i)
+        {
+            if (predicate.Invoke(span[i], state))
+                span[count++] = span[i];
+        }
+
+        list.RemoveRange(count, list.Count - count);
+
+        return count;
     }
 }
 
