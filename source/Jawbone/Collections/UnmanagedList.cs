@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -56,7 +57,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         if (count == 0)
             return default;
 
-        EnsureCapacity(Count + count);
+        EnsureCapacityFor(count);
         var result = _items.AsSpan(Count, count);
         Count += count;
         return result;
@@ -64,22 +65,20 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void Add(T item)
     {
-        if (Count == Capacity)
-            Grow();
-
+        EnsureCapacityFor(1);
         _items[Count++] = item;
     }
 
     public void Add(T item0, T item1)
     {
-        EnsureCapacity(Count + 2);
+        EnsureCapacityFor(2);
         _items[Count++] = item0;
         _items[Count++] = item1;
     }
 
     public void Add(T item0, T item1, T item2)
     {
-        EnsureCapacity(Count + 3);
+        EnsureCapacityFor(3);
         _items[Count++] = item0;
         _items[Count++] = item1;
         _items[Count++] = item2;
@@ -87,7 +86,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void Add(T item0, T item1, T item2, T item3)
     {
-        EnsureCapacity(Count + 4);
+        EnsureCapacityFor(4);
         _items[Count++] = item0;
         _items[Count++] = item1;
         _items[Count++] = item2;
@@ -97,7 +96,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public void AddAll(ReadOnlySpan<T> items)
     {
         var minCapacity = Count + items.Length;
-        EnsureCapacity(minCapacity);
+        EnsureMinCapacity(minCapacity);
         items.CopyTo(_items.AsSpan(Count));
         Count = minCapacity;
     }
@@ -142,7 +141,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void Insert(int index, T item)
     {
-        EnsureCapacity(Count + 1);
+        EnsureCapacityFor(1);
         AsSpan(index).CopyTo(_items.AsSpan(index + 1));
         _items[index] = item;
         ++Count;
@@ -150,7 +149,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void InsertAll(int index, ReadOnlySpan<T> items)
     {
-        EnsureCapacity(Count + items.Length);
+        EnsureCapacityFor(items.Length);
         AsSpan(index).CopyTo(_items.AsSpan(index + items.Length));
         items.CopyTo(_items.AsSpan(index));
         Count += items.Length;
@@ -163,7 +162,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         --Count;
     }
 
-    public void RemoteAt(Range range)
+    public void RemoveAt(Range range)
     {
         var (start, count) = range.GetOffsetAndLength(Count);
         AsSpan(start + count).CopyTo(_items.AsSpan(start));
@@ -210,6 +209,15 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         return item;
     }
 
+    public void RemoveLast()
+    {
+        if (Count < 1)
+            Throw();
+        --Count;
+        [DoesNotReturn] static void Throw() =>
+            throw new InvalidOperationException("Cannot remove from empty collection.");
+    }
+
     public Span<T> AsSpan() => _items.AsSpan(0, Count);
     public Span<T> AsSpan(int start) => _items.AsSpan(start, Count - start);
     public Span<T> AsSpan(int start, int length) => AsSpan().Slice(start, length);
@@ -218,7 +226,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     private void AddEnumerable(IEnumerable<T> enumerable, int count)
     {
         var minCapacity = Count + count;
-        EnsureCapacity(minCapacity);
+        EnsureMinCapacity(minCapacity);
 
         // This is a defensive maneuver against a badly implemented collection
         // where the reported count fails to match the actual number of items
@@ -231,7 +239,9 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         }
     }
 
-    private void EnsureCapacity(int minCapacity)
+    private void EnsureCapacityFor(int count) => EnsureMinCapacity(Count + count);
+
+    private void EnsureMinCapacity(int minCapacity)
     {
         if (Capacity < minCapacity)
             Grow(minCapacity);
