@@ -265,44 +265,6 @@ public static class UnmanagedListExtensions
         return list;
     }
 
-    public static UnmanagedList<char> MoveLeft(
-        this UnmanagedList<char> list,
-        ref int index)
-    {
-        var i = index;
-        var c = list[--i];
-        if (char.IsLowSurrogate(c))
-        {
-            if (!char.IsHighSurrogate(list[--i]))
-                throw new InvalidOperationException($"Missing high surrogate at index {i}.");
-        }
-        index = i;
-        return list;
-    }
-
-    public static UnmanagedList<char> MoveRight(
-        this UnmanagedList<char> list,
-        ref int index)
-    {
-        var c = list[index];
-        if (char.IsHighSurrogate(c))
-        {
-            if (!char.IsLowSurrogate(list[index + 1]))
-                throw new InvalidOperationException($"Missing low surrogate at index {index + 1}.");
-            index += 2;
-        }
-        else if (char.IsLowSurrogate(c))
-        {
-            throw new InvalidOperationException($"Unexpected low surrogate at index {index}.");
-        }
-        else
-        {
-            ++index;
-        }
-
-        return list;
-    }
-
     public static string AsUtf32String(this UnmanagedList<int> list)
     {
         var result = Encoding.UTF32.GetString(list.Bytes);

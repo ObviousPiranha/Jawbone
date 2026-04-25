@@ -356,4 +356,43 @@ public static class SpanReader
             return true;
         }
     }
+
+    public static int MoveToPreviousCodePoint(ReadOnlySpan<char> span, int index)
+    {
+        if (char.IsLowSurrogate(span[index - 1]))
+        {
+            var result = index - 2;
+            if (result < 0 || !char.IsHighSurrogate(span[result]))
+                throw new InvalidOperationException($"Missing high surrogate at index {result}.");
+            return result;
+        }
+        else if (char.IsHighSurrogate(span[index - 1]))
+        {
+            if (index == span.Length || !char.IsLowSurrogate(span[index]))
+                throw new InvalidOperationException($"Missing low surrogate at index {index}.");
+            return MoveToPreviousCodePoint(span, index - 1);
+        }
+        else
+        {
+            return index - 1;
+        }
+    }
+
+    public static int MoveToNextCodePoint(ReadOnlySpan<char> span, int index)
+    {
+        if (char.IsHighSurrogate(span[index]))
+        {
+            var i = index + 1;
+            if (i == span.Length || !char.IsLowSurrogate(span[i]))
+                throw new InvalidOperationException($"Missing low surrogate at index {i}.");
+            return index + 2;
+        }
+        else if (char.IsLowSurrogate(span[index]))
+        {
+            if (index == 0 || !char.IsHighSurrogate(span[index - 1]))
+                throw new InvalidOperationException($"Missing high surrogate at index {index - 1}.");
+        }
+
+        return index + 1;
+    }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -21,6 +22,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     public int Count { get; private set; }
     public int Size => Count * Unsafe.SizeOf<T>();
     public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
+    public Span<T> Items => AsSpan();
 
     public ref T this[int index] => ref AsSpan()[index];
     public ref T this[Index index] => ref AsSpan()[index];
@@ -262,4 +264,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         AsSpan().CopyTo(items);
         _items = items;
     }
+
+    public static implicit operator Span<T>(UnmanagedList<T> list) => list.AsSpan();
+    public static implicit operator ReadOnlySpan<T>(UnmanagedList<T> list) => list.AsSpan();
 }
