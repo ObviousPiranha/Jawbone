@@ -11,7 +11,6 @@ public readonly struct Fixed24_8 : IEquatable<Fixed24_8>, IComparable<Fixed24_8>
     public int SmallPart
     {
         get
-
         {
             var masked = _value & 0xff;
             return 0 <= _value || masked == 0 ? masked : masked - 256;
@@ -50,6 +49,8 @@ public readonly struct Fixed24_8 : IEquatable<Fixed24_8>, IComparable<Fixed24_8>
     public static Fixed24_8 operator -(Fixed24_8 value) => new(-value._value);
     public static Fixed24_8 operator +(Fixed24_8 a, Fixed24_8 b) => new(a._value + b._value);
     public static Fixed24_8 operator -(Fixed24_8 a, Fixed24_8 b) => new(a._value - b._value);
+    public static Fixed24_8 operator +(Fixed24_8 a, int b) => new(a._value + b << 8);
+    public static Fixed24_8 operator -(Fixed24_8 a, int b) => new(a._value - b << 8);
     public static Fixed24_8 operator *(Fixed24_8 a, int b) => new(a._value * b);
     public static Fixed24_8 operator /(Fixed24_8 a, int b) => new(a._value / b);
 }
