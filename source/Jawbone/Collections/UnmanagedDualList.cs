@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Jawbone;
 
-public sealed class DualList<TLeft, TRight>
+public sealed class UnmanagedDualList<TLeft, TRight>
+    where TLeft : unmanaged
+    where TRight : unmanaged
 {
-    private TLeft[] _left = [];
-    private TRight[] _right = [];
+    private byte[] _bytes = [];
     private int _count;
 
     public int Count
@@ -28,9 +31,12 @@ public sealed class DualList<TLeft, TRight>
             }
         }
     }
-    public int Capacity => _left.Length;
-    public Span<TLeft> Left => _left.AsSpan(0, _count);
-    public Span<TRight> Right => _right.AsSpan(0, _count);
+
+    public int Capacity { get; private set; }
+    public Span<byte> LeftBytes => _bytes.AsSpan(0, _count * Unsafe.SizeOf<TLeft>());
+    public Span<TLeft> Left => MemoryMarshal.Cast<byte, TLeft>(LeftBytes);
+    public Span<byte> RightBytes => _bytes.AsSpan(Capacity * Unsafe.SizeOf<TLeft>(), _count * Unsafe.SizeOf<TRight>());
+    public Span<TRight> Right => MemoryMarshal.Cast<byte, TRight>(RightBytes);
 
     public DualValue<TLeft, TRight> this[int index]
     {
@@ -48,25 +54,22 @@ public sealed class DualList<TLeft, TRight>
         set => this[index.GetOffset(_count)] = value;
     }
 
-    public DualList()
+    public UnmanagedDualList()
     {
     }
 
-    public DualList(int capacity)
+    public UnmanagedDualList(int capacity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(capacity);
-        if (capacity == 0)
-            return;
-        _left = new TLeft[capacity];
-        _right = new TRight[capacity];
+        GrowFor(capacity);
     }
 
     public void Add(TLeft left, TRight right)
     {
         var index = _count;
         GrowFor(1);
-        _left[index] = left;
-        _right[index] = right;
+        Left[index] = left;
+        Right[index] = right;
     }
 
     public void AddSpans(ReadOnlySpan<TLeft> left, ReadOnlySpan<TRight> right)
@@ -122,12 +125,18 @@ public sealed class DualList<TLeft, TRight>
     {
         if (Capacity < nextCount)
         {
-            var nextCapacity = int.Max(Capacity * 2, 8);
+            var nextCapacity = int.Max(16, Capacity * 2);
             while (nextCapacity < nextCount)
                 nextCapacity *= 2;
-            Array.Resize(ref _left, nextCapacity);
-            Array.Resize(ref _right, nextCapacity);
+            var nextBytes = GC.AllocateUninitializedArray<byte>(nextCapacity * BytesPerPair);
+            _bytes.AsSpan(0, _count * Unsafe.SizeOf<TLeft>()).CopyTo(nextBytes);
+            _bytes.AsSpan(Capacity * Unsafe.SizeOf<TLeft>(), _count * Unsafe.SizeOf<TRight>())
+                .CopyTo(nextBytes.AsSpan(nextCapacity * Unsafe.SizeOf<TLeft>()));
+            _bytes = nextBytes;
+            Capacity = nextCapacity;
         }
         _count = nextCount;
     }
+
+    private static int BytesPerPair => Unsafe.SizeOf<TLeft>() + Unsafe.SizeOf<TRight>();
 }
