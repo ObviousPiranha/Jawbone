@@ -16,6 +16,12 @@ public readonly struct DualValue<TLeft, TRight> : IEquatable<DualValue<TLeft, TR
         Right = right;
     }
 
+    public void Deconstruct(out TLeft left, out TRight right)
+    {
+        left = Left;
+        right = Right;
+    }
+
     public bool Equals(DualValue<TLeft, TRight> other)
     {
         return
@@ -33,6 +39,8 @@ public readonly struct DualValue<TLeft, TRight> : IEquatable<DualValue<TLeft, TR
 
     public static bool operator ==(DualValue<TLeft, TRight> a, DualValue<TLeft, TRight> b) => a.Equals(b);
     public static bool operator !=(DualValue<TLeft, TRight> a, DualValue<TLeft, TRight> b) => !a.Equals(b);
+    public static explicit operator DualValue<TLeft, TRight>(KeyValuePair<TLeft, TRight> kvp) => new(kvp.Key, kvp.Value);
+    public static explicit operator KeyValuePair<TLeft, TRight>(DualValue<TLeft, TRight> dv) => new(dv.Left, dv.Right);
 }
 
 public static class DualValue
