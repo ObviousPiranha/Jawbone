@@ -46,24 +46,4 @@ public readonly struct DualValue<TLeft, TRight> : IEquatable<DualValue<TLeft, TR
 public static class DualValue
 {
     public static DualValue<TLeft, TRight> Create<TLeft, TRight>(TLeft left, TRight right) => new(left, right);
-
-    internal static bool TryGetSpan<T>(
-        IEnumerable<T> enumerable,
-        out ReadOnlySpan<T> span)
-    {
-        if (enumerable is T[] array)
-        {
-            span = array;
-            return true;
-        }
-
-        if (enumerable is List<T> list)
-        {
-            span = CollectionsMarshal.AsSpan(list);
-            return true;
-        }
-
-        span = default;
-        return false;
-    }
 }

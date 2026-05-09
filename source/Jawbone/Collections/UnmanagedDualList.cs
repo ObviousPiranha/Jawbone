@@ -84,8 +84,8 @@ public sealed class UnmanagedDualList<TLeft, TRight>
 
     public void AddEnumerables(IEnumerable<TLeft> left, IEnumerable<TRight> right)
     {
-        if (DualValue.TryGetSpan(left, out var leftSpan) &&
-            DualValue.TryGetSpan(right, out var rightSpan))
+        if (SpanReader.TryGetSpan(left, out var leftSpan) &&
+            SpanReader.TryGetSpan(right, out var rightSpan))
         {
             AddSpans(leftSpan, rightSpan);
             return;

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Jawbone;
 
@@ -24,7 +26,7 @@ public sealed class DualList<TLeft, TRight>
             }
             else
             {
-                _count = value;
+                ShrinkTo(value);
             }
         }
     }
@@ -81,8 +83,8 @@ public sealed class DualList<TLeft, TRight>
 
     public void AddEnumerables(IEnumerable<TLeft> left, IEnumerable<TRight> right)
     {
-        if (DualValue.TryGetSpan(left, out var leftSpan) &&
-            DualValue.TryGetSpan(right, out var rightSpan))
+        if (SpanReader.TryGetSpan(left, out var leftSpan) &&
+            SpanReader.TryGetSpan(right, out var rightSpan))
         {
             AddSpans(leftSpan, rightSpan);
             return;
@@ -115,8 +117,17 @@ public sealed class DualList<TLeft, TRight>
         }
     }
 
-    public void Clear() => _count = 0;
+    public void Clear() => ShrinkTo(0);
 
+    private void ShrinkTo(int nextCount)
+    {
+        Debug.Assert(nextCount <= _count);
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<TLeft>())
+            Left[nextCount.._count].Clear();
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<TRight>())
+            Right[nextCount.._count].Clear();
+        _count = nextCount;
+    }
     private void GrowFor(int count) => GrowTo(_count + count);
     private void GrowTo(int nextCount)
     {
