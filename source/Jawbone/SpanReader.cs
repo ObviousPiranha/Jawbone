@@ -3,10 +3,10 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Jawbone;
 
@@ -418,6 +418,54 @@ public static class SpanReader
             utf32 = reader.Span[reader.Position++];
             return true;
         }
+    }
+
+    public static Rune DecodeRuneFromUtf16(ref this SpanReader<char> reader)
+    {
+        var result = Rune.DecodeFromUtf16(
+            reader.Pending,
+            out var rune,
+            out var charsConsumed);
+        if (result != OperationStatus.Done)
+            throw new InvalidOperationException("Unable to decode rune: " + result);
+        reader.Position += charsConsumed;
+        return rune;
+    }
+
+    public static bool TryDecodeRuneFromUtf16(ref this SpanReader<char> reader, out Rune rune)
+    {
+        var result = Rune.DecodeFromUtf16(
+            reader.Pending,
+            out rune,
+            out var charsConsumed);
+        if (result != OperationStatus.Done)
+            return false;
+        reader.Position += charsConsumed;
+        return true;
+    }
+
+    public static Rune DecodeRuneFromUtf8(ref this SpanReader<byte> reader)
+    {
+        var result = Rune.DecodeFromUtf8(
+            reader.Pending,
+            out var rune,
+            out var bytesConsumed);
+        if (result != OperationStatus.Done)
+            throw new InvalidOperationException("Unable to decode rune: " + result);
+        reader.Position += bytesConsumed;
+        return rune;
+    }
+
+    public static bool TryDecodeRuneFromUtf8(ref this SpanReader<byte> reader, out Rune rune)
+    {
+        var result = Rune.DecodeFromUtf8(
+            reader.Pending,
+            out rune,
+            out var bytesConsumed);
+        if (result != OperationStatus.Done)
+            return false;
+        reader.Position += bytesConsumed;
+        return true;
     }
 
     public static int MoveToPreviousCodePoint(ReadOnlySpan<char> span, int index)
