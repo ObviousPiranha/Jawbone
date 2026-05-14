@@ -275,4 +275,17 @@ public static class UnmanagedListExtensions
         var result = Encoding.UTF8.GetString(list.AsSpan());
         return result;
     }
+
+    public static UnmanagedList<char> AppendFormatted<T>(
+        this UnmanagedList<char> list,
+        T item,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? formatProvider = null) where T : ISpanFormattable
+    {
+        int charsWritten;
+        while (!item.TryFormat(list.Free, out charsWritten, format, formatProvider))
+            list.Reserve();
+        list.Count += charsWritten;
+        return list;
+    }
 }

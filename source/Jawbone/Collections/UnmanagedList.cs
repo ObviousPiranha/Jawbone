@@ -13,15 +13,15 @@ namespace Jawbone;
 public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
     private T[] _items = [];
-    private int _nextCapacity;
     private readonly bool _pinned;
 
     public bool IsEmpty => Count == 0;
     public int Capacity => _items.Length;
-    public int Count { get; private set; }
+    public int Count { get; internal set; }
     public int Size => Count * Unsafe.SizeOf<T>();
     public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
     public Span<T> Items => AsSpan();
+    internal Span<T> Free => _items.AsSpan(Count);
 
     public ref T this[int index] => ref AsSpan()[index];
     public ref T this[Index index] => ref AsSpan()[index];
@@ -29,20 +29,21 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public UnmanagedList(bool pinned = false)
     {
-        _nextCapacity = 64;
         _pinned = pinned;
     }
 
-    public UnmanagedList(int firstCapacity)
+    public UnmanagedList(int capacity)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(firstCapacity, 1);
-        _nextCapacity = firstCapacity;
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
+        _items = new T[capacity];
     }
 
     public void Clear()
     {
         Count = 0;
     }
+
+    public void Reserve() => Grow(Capacity * 2);
 
     public Span<T> Acquire(int count)
     {
@@ -240,26 +241,24 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureCapacityFor(int count) => EnsureMinCapacity(Count + count);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureMinCapacity(int minCapacity)
     {
         if (Capacity < minCapacity)
             Grow(minCapacity);
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private void Grow(int minCapacity)
     {
-        while (_nextCapacity < minCapacity)
-            _nextCapacity *= 2;
+        var nextCapacity = int.Max(Capacity * 2, 64);
+        while (nextCapacity < minCapacity)
+            nextCapacity *= 2;
 
-        Grow();
-    }
-
-    private void Grow()
-    {
-        var items = GC.AllocateUninitializedArray<T>(_nextCapacity, _pinned);
-        _nextCapacity *= 2;
+        var items = GC.AllocateUninitializedArray<T>(nextCapacity, _pinned);
         AsSpan().CopyTo(items);
         _items = items;
     }
