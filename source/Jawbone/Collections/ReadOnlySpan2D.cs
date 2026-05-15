@@ -27,6 +27,6 @@ public readonly ref struct ReadOnlySpan2D<T>
         Width = span.Width;
         Height = span.Height;
     }
-    
+
     public ReadOnlySpan<T> GetRow(int y) => Source.Slice(y * Width, Width);
 }

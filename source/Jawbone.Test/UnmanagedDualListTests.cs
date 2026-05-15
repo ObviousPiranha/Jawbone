@@ -24,7 +24,7 @@ public class UnmanagedDualListTests
 
         for (int i = 0; i < expectedCount; ++i)
             list.Add(expectedLeft[i], expectedRight[i]);
-        
+
         Assert.Equal(expectedCount, list.Count);
         Assert.Equal(expectedLeft, list.Left);
         Assert.Equal(expectedRight, list.Right);
