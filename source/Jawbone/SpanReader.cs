@@ -2,8 +2,11 @@ using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Jawbone;
 
@@ -27,9 +30,69 @@ public static class SpanReader
     public static SpanReader<T> Create<T>(ReadOnlyMemory<T> memory) => new(memory.Span);
     public static SpanReader<T> Create<T>(Memory<T> memory) => new(memory.Span);
     public static SpanReader<T> Create<T>(T[]? array) => new(array);
+    public static SpanReader<T> Create<T>(ImmutableArray<T> immutableArray) => new(immutableArray.AsSpan());
     public static SpanReader<T> Create<T>(ArraySegment<T> segment) => new(segment);
     public static SpanReader<T> Create<T>(List<T>? list) => new(CollectionsMarshal.AsSpan(list));
     public static SpanReader<char> Create(string? text) => new(text);
+
+    public static bool TryCreate<T>(IEnumerable<T>? enumerable, out SpanReader<T> reader)
+    {
+        if (TryGetSpan(enumerable, out var span))
+        {
+            reader = new(span);
+            return true;
+        }
+        else
+        {
+            reader = default;
+            return false;
+        }
+    }
+
+    public static bool TryGetSpan<T>(
+        [NotNullWhen(true)] IEnumerable<T>? enumerable,
+        out ReadOnlySpan<T> span)
+    {
+        if (enumerable is null)
+        {
+            span = default;
+            return false;
+        }
+
+        if (enumerable is T[] array)
+        {
+            span = array;
+            return true;
+        }
+
+        if (enumerable is List<T> list)
+        {
+            span = CollectionsMarshal.AsSpan(list);
+            return true;
+        }
+
+        if (enumerable is ArraySegment<T> arraySegment)
+        {
+            span = arraySegment;
+            return true;
+        }
+
+        if (enumerable is ImmutableArray<T> immutableArray)
+        {
+            span = immutableArray.AsSpan();
+            return true;
+        }
+
+        if (typeof(T) == typeof(char) && enumerable is string s)
+        {
+            var charSpan = s.AsSpan();
+            span = Unsafe.As<ReadOnlySpan<char>, ReadOnlySpan<T>>(ref charSpan);
+            return true;
+        }
+
+        span = default;
+        return false;
+    }
 
     public static ReadOnlySpan<char> ReadWord(ReadOnlySpan<char> span)
     {
@@ -355,6 +418,54 @@ public static class SpanReader
             utf32 = reader.Span[reader.Position++];
             return true;
         }
+    }
+
+    public static Rune DecodeRuneFromUtf16(ref this SpanReader<char> reader)
+    {
+        var result = Rune.DecodeFromUtf16(
+            reader.Pending,
+            out var rune,
+            out var charsConsumed);
+        if (result != OperationStatus.Done)
+            throw new InvalidOperationException("Unable to decode rune: " + result);
+        reader.Position += charsConsumed;
+        return rune;
+    }
+
+    public static bool TryDecodeRuneFromUtf16(ref this SpanReader<char> reader, out Rune rune)
+    {
+        var result = Rune.DecodeFromUtf16(
+            reader.Pending,
+            out rune,
+            out var charsConsumed);
+        if (result != OperationStatus.Done)
+            return false;
+        reader.Position += charsConsumed;
+        return true;
+    }
+
+    public static Rune DecodeRuneFromUtf8(ref this SpanReader<byte> reader)
+    {
+        var result = Rune.DecodeFromUtf8(
+            reader.Pending,
+            out var rune,
+            out var bytesConsumed);
+        if (result != OperationStatus.Done)
+            throw new InvalidOperationException("Unable to decode rune: " + result);
+        reader.Position += bytesConsumed;
+        return rune;
+    }
+
+    public static bool TryDecodeRuneFromUtf8(ref this SpanReader<byte> reader, out Rune rune)
+    {
+        var result = Rune.DecodeFromUtf8(
+            reader.Pending,
+            out rune,
+            out var bytesConsumed);
+        if (result != OperationStatus.Done)
+            return false;
+        reader.Position += bytesConsumed;
+        return true;
     }
 
     public static int MoveToPreviousCodePoint(ReadOnlySpan<char> span, int index)

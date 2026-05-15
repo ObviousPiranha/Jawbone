@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -26,6 +27,52 @@ public static class SpanWriter
     public static SpanWriter<T> Create<T>(List<T>? list) => new(CollectionsMarshal.AsSpan(list));
     public static SpanWriter<T> Create<T>(ArraySegment<T> segment) => new(segment);
     public static unsafe SpanWriter<T> Create<T>(nint ptr, int length) => new(new(ptr.ToPointer(), length));
+
+    public static bool TryCreate<T>(IEnumerable<T>? enumerable, out SpanReader<T> reader)
+    {
+        if (TryGetSpan(enumerable, out var span))
+        {
+            reader = new(span);
+            return true;
+        }
+        else
+        {
+            reader = default;
+            return false;
+        }
+    }
+
+    public static bool TryGetSpan<T>(
+        [NotNullWhen(true)] IEnumerable<T>? enumerable,
+        out Span<T> span)
+    {
+        if (enumerable is null)
+        {
+            span = default;
+            return false;
+        }
+
+        if (enumerable is T[] array)
+        {
+            span = array;
+            return true;
+        }
+
+        if (enumerable is List<T> list)
+        {
+            span = CollectionsMarshal.AsSpan(list);
+            return true;
+        }
+
+        if (enumerable is ArraySegment<T> arraySegment)
+        {
+            span = arraySegment;
+            return true;
+        }
+
+        span = default;
+        return false;
+    }
 
     public static SpanWriter<T> FromBytes<T>(Span<byte> bytes) where T : unmanaged
     {

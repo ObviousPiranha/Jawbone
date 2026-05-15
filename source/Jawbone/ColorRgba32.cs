@@ -12,6 +12,8 @@ public struct ColorRgba32 :
     ISpanFormattable,
     IUtf8SpanFormattable
 {
+    public const int StringLength = 9;
+
     public byte R;
     public byte G;
     public byte B;
@@ -43,7 +45,7 @@ public struct ColorRgba32 :
     public override readonly string ToString()
     {
         return string.Create(
-            9,
+            StringLength,
             this,
             static (span, state) =>
             {
@@ -210,7 +212,7 @@ public struct ColorRgba32 :
         ReadOnlySpan<char> format = default,
         IFormatProvider? provider = null)
     {
-        if (destination.Length < 9)
+        if (destination.Length < StringLength)
         {
             charsWritten = 0;
             return false;
@@ -237,7 +239,7 @@ public struct ColorRgba32 :
         ReadOnlySpan<char> format = default,
         IFormatProvider? provider = null)
     {
-        if (utf8Destination.Length < 9)
+        if (utf8Destination.Length < StringLength)
         {
             bytesWritten = 0;
             return false;
@@ -252,7 +254,7 @@ public struct ColorRgba32 :
         utf8Destination[2] = Utf8.GetLowHexDigit(R);
         utf8Destination[1] = Utf8.GetHighHexDigit(R);
         utf8Destination[0] = (byte)'#';
-        bytesWritten = 9;
+        bytesWritten = StringLength;
         return true;
     }
 

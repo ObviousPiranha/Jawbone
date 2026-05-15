@@ -8,35 +8,19 @@ namespace Jawbone.Extensions;
 
 public static class CollectionExtensions
 {
-    public static SpanWithIndexEnumerable<T> WithIndex<T>(this T[]? array)
-    {
-        return new(array);
-    }
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this Span<T> span) => new(span);
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this T[]? array) => new(array);
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this List<T>? list) => new(CollectionsMarshal.AsSpan(list));
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this ImmutableArray<T> array) => new(array.AsSpan());
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this ArraySegment<T> arraySegment) => new(arraySegment);
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this ReadOnlySpan<T> span) => new(span);
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this ReadOnlyMemory<T> memory) => new(memory.Span);
+    public static SpanWithIndexEnumerable<T> WithIndex<T>(this Memory<T> memory) => new(memory.Span);
+    public static SpanWithIndexEnumerable<char> WithIndex(this string? s) => new(s);
 
-    public static SpanWithIndexEnumerable<T> WithIndex<T>(this List<T>? list)
-    {
-        return new(CollectionsMarshal.AsSpan(list));
-    }
-
-    public static SpanWithIndexEnumerable<T> WithIndex<T>(this ReadOnlySpan<T> span)
-    {
-        return new(span);
-    }
-
-    public static IndexEnumerable<T> EnumerateIndicesOf<T>(this ReadOnlySpan<T> span, T needle)
-    {
-        return new(span, needle);
-    }
-
-    public static IndexEnumerable<T> EnumerateIndicesOf<T>(this Span<T> span, T needle)
-    {
-        return new(span, needle);
-    }
-
-    public static IndexEnumerable<char> EnumerateIndicesOf(this string? s, char needle)
-    {
-        return new(s, needle);
-    }
+    public static IndexEnumerable<T> EnumerateIndicesOf<T>(this ReadOnlySpan<T> span, T needle) => new(span, needle);
+    public static IndexEnumerable<T> EnumerateIndicesOf<T>(this Span<T> span, T needle) => new(span, needle);
+    public static IndexEnumerable<char> EnumerateIndicesOf(this string? s, char needle) => new(s, needle);
 
     public static int SkipAndIndexOf<T>(this ReadOnlySpan<T> span, int skip, T needle)
     {

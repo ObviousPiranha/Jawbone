@@ -22,8 +22,8 @@ public class ManyToManyTests
 
         for (int i = 1; i <= expectedCount; ++i)
         {
-            Assert.Equal(1, m2m.GetLeftValues(i.ToString()).Length);
-            Assert.Equal(1, m2m.GetRightValues(i).Length);
+            Assert.Single(m2m.GetLeftValues(i.ToString()));
+            Assert.Single(m2m.GetRightValues(i));
         }
     }
 
