@@ -105,26 +105,9 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void AddRange(IEnumerable<T> items)
     {
-        if (items is T[] array)
+        if (SpanReader.TryGetSpan(items, out var span))
         {
-            AddAll(array);
-        }
-        else if (items is List<T> list)
-        {
-            var span = CollectionsMarshal.AsSpan(list);
             AddAll(span);
-        }
-        else if (items is ImmutableArray<T> immutableArray)
-        {
-            AddAll(immutableArray.AsSpan());
-        }
-        else if (items is IList<T> ilist)
-        {
-            AddEnumerable(items, ilist.Count);
-        }
-        else if (items is IReadOnlyList<T> readOnlyList)
-        {
-            AddEnumerable(items, readOnlyList.Count);
         }
         else if (items is ICollection<T> collection)
         {

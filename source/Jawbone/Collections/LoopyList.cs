@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Jawbone;
-
-public delegate int ValueStream<T>(Span<T> buffer);
 
 public sealed class LoopyList<T>
 {
@@ -54,6 +53,30 @@ public sealed class LoopyList<T>
     }
 
     public bool IsContiguous => (_begin + Count) <= Capacity;
+
+    public DualSpan<T> Slice(Range range)
+    {
+        var (start, count) = range.GetOffsetAndLength(Count);
+        return Slice(start, count);
+    }
+
+    public DualSpan<T> Slice(int start, int count)
+    {
+        var begin = GetBegin(start);
+        var end = GetEnd(start + count);
+        if (end < begin)
+        {
+            var result = new DualSpan<T>(
+                _data.AsSpan(begin),
+                _data.AsSpan(0, end));
+            return result;
+        }
+        else
+        {
+            var result = new DualSpan<T>(_data.AsSpan(begin, count));
+            return result;
+        }
+    }
 
     public void Clear()
     {
@@ -132,6 +155,8 @@ public sealed class LoopyList<T>
     public void PopBackWhile(Predicate<T> predicate) => PopBackWhile(predicate, static (item, state) => state.Invoke(item));
     public void PopBackWhile<TState>(TState arg, Func<T, TState, bool> predicate)
     {
+        if (Count == 0)
+            return;
         var last = GetBegin(Count - 1);
         while (0 < Count && predicate.Invoke(_data[last], arg))
         {
@@ -194,7 +219,23 @@ public sealed class LoopyList<T>
         }
     }
 
-    public void TrimFront(int count)
+    public Span<T> AsContiguousSpan()
+    {
+        if (!IsContiguous)
+        {
+            var span = _data.AsSpan();
+            var n = _data.Length - _begin;
+            span.Reverse();
+            span[..n].Reverse();
+            span[n..].Reverse();
+            _begin = 0;
+        }
+
+        Debug.Assert(IsContiguous);
+        return _data.AsSpan(_begin, Count);
+    }
+
+    public void RemoveFront(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(count, Count);
@@ -209,7 +250,7 @@ public sealed class LoopyList<T>
         }
     }
 
-    public void TrimBack(int count)
+    public void RemoveBack(int count)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(count, Count);
@@ -238,49 +279,6 @@ public sealed class LoopyList<T>
         }
     }
 
-    public int ReadFrom(ValueStream<T> valueStream)
-    {
-        if (Count == Capacity)
-            Grow(0);
-
-        var end = GetEnd(Count);
-        if (end < _begin)
-        {
-            var first = _data.AsSpan(_begin);
-            var n0 = ReadFrom(valueStream, first);
-            Count += n0;
-
-            if (n0 == first.Length)
-            {
-                var second = _data.AsSpan(0, end);
-                var n1 = ReadFrom(valueStream, second);
-                Count += n1;
-                return n0 + n1;
-            }
-            else
-            {
-                return n0;
-            }
-        }
-        else
-        {
-            var free = _data.AsSpan(_begin..end);
-            var n = ReadFrom(valueStream, free);
-            Count += n;
-            return n;
-        }
-    }
-
-    private static int ReadFrom(ValueStream<T> valueStream, Span<T> buffer)
-    {
-        var n = valueStream.Invoke(buffer);
-        if (n < 0)
-            throw new InvalidOperationException("Value stream cannot return a negative value.");
-        if (buffer.Length < n)
-            throw new InvalidOperationException("Value stream cannot return a value larger than the buffer.");
-        return n;
-    }
-
     public T[] ToArray()
     {
         var result = new T[Count];
@@ -290,13 +288,12 @@ public sealed class LoopyList<T>
 
     public bool SequenceEqual(params ReadOnlySpan<T> items)
     {
-        var end = GetEnd(items.Length);
+        if (Count != items.Length)
+            return false;
 
+        var end = GetEnd(items.Length);
         if (end < _begin)
         {
-            if (Count != items.Length)
-                return false;
-
             var first = _data.AsSpan(_begin..);
 
             return
@@ -324,6 +321,7 @@ public sealed class LoopyList<T>
         var nextCapacity = int.Max(Capacity * 2, 16);
         while (nextCapacity < minCapacity)
             nextCapacity *= 2;
+        Debug.Assert((nextCapacity & (nextCapacity - 1)) == 0);
 
         var data = new T[nextCapacity];
         var end = GetEnd(Count);
@@ -355,7 +353,7 @@ public sealed class LoopyList<T>
 
     public struct Enumerator
     {
-        private LoopyList<T> _list;
+        private readonly LoopyList<T> _list;
         private int _index;
 
         public Enumerator(LoopyList<T> list)

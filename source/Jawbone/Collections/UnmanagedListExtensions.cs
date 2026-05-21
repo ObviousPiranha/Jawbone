@@ -288,4 +288,22 @@ public static class UnmanagedListExtensions
         list.Count += charsWritten;
         return list;
     }
+
+    public static UnmanagedList<T> AppendDual<T>(
+        this UnmanagedList<T> list,
+        DualReadOnlySpan<T> dualSpan) where T : unmanaged
+    {
+        list.AddAll(dualSpan.First);
+        list.AddAll(dualSpan.Second);
+        return list;
+    }
+
+    public static UnmanagedList<T> AppendDual<T>(
+        this UnmanagedList<T> list,
+        DualSpan<T> dualSpan) where T : unmanaged
+    {
+        list.AddAll(dualSpan.First);
+        list.AddAll(dualSpan.Second);
+        return list;
+    }
 }
