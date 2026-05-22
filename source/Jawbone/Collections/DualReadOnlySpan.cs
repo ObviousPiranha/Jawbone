@@ -7,6 +7,7 @@ public readonly ref struct DualReadOnlySpan<T>
     public ReadOnlySpan<T> First { get; }
     public ReadOnlySpan<T> Second { get; }
     public int Length => First.Length + Second.Length;
+    public bool IsContiguous => Second.IsEmpty || First.IsEmpty;
 
     public DualReadOnlySpan(ReadOnlySpan<T> first) => First = first;
 
@@ -54,6 +55,14 @@ public readonly ref struct DualReadOnlySpan<T>
     {
         var (start, length) = range.GetOffsetAndLength(Length);
         return Slice(start, length);
+    }
+
+    public bool SequenceEqual(ReadOnlySpan<T> span)
+    {
+        return
+            span.Length == Length &&
+            First.SequenceEqual(span[..First.Length]) &&
+            Second.SequenceEqual(span[First.Length..]);
     }
 
     public static implicit operator DualReadOnlySpan<T>(DualSpan<T> dualSpan) => new(dualSpan);

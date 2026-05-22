@@ -97,10 +97,16 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void AddAll(ReadOnlySpan<T> items)
     {
-        var minCapacity = Count + items.Length;
-        EnsureMinCapacity(minCapacity);
+        EnsureCapacityFor(items.Length);
         items.CopyTo(_items.AsSpan(Count));
-        Count = minCapacity;
+        Count += items.Length;
+    }
+
+    public void AddAll(DualReadOnlySpan<T> items)
+    {
+        EnsureCapacityFor(items.Length);
+        items.CopyTo(_items.AsSpan(Count));
+        Count += items.Length;
     }
 
     public void AddRange(IEnumerable<T> items)

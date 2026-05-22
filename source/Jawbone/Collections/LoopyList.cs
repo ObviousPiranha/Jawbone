@@ -237,6 +237,8 @@ public sealed class LoopyList<T>
 
     public void RemoveFront(int count)
     {
+        if (count == 0)
+            return;
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(count, Count);
         if (count == Count)
@@ -252,6 +254,8 @@ public sealed class LoopyList<T>
 
     public void RemoveBack(int count)
     {
+        if (count == 0)
+            return;
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(count, Count);
         if (count == Count)
