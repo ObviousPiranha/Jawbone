@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -41,10 +40,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         _items = new T[capacity];
     }
 
-    public void Clear()
-    {
-        Count = 0;
-    }
+    public void Clear() => Count = 0;
 
     public void Expand() => Grow(Capacity * 2);
 
@@ -52,6 +48,13 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     {
         var result = AcquireUninitialized(count);
         result.Clear();
+        return result;
+    }
+
+    public Span<T> Acquire(int count, T fillValue)
+    {
+        var result = AcquireUninitialized(count);
+        result.Fill(fillValue);
         return result;
     }
 
@@ -198,22 +201,15 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public T Pop()
     {
-        if (Count == 0)
-            Throw();
+        ThrowIfEmpty();
         var result = _items[--Count];
         return result;
-
-        static void Throw() =>
-            throw new InvalidOperationException("Collection is empty.");
     }
 
     public void RemoveLast()
     {
-        if (Count < 1)
-            Throw();
+        ThrowIfEmpty();
         --Count;
-        [DoesNotReturn] static void Throw() =>
-            throw new InvalidOperationException("Cannot remove from empty collection.");
     }
 
     public Span<T> AsSpan() => _items.AsSpan(0, Count);
@@ -223,14 +219,14 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     private void AddEnumerable(IEnumerable<T> enumerable, int count)
     {
-        var minCapacity = Count + count;
-        EnsureMinCapacity(minCapacity);
+        EnsureCapacityFor(count);
+        var maxCount = Count + count;
 
         // This is a defensive maneuver against a badly implemented collection
         // where the reported count fails to match the actual number of items
         // in the collection.
         using var enumerator = enumerable.GetEnumerator();
-        while (Count < minCapacity && enumerator.MoveNext())
+        while (Count < maxCount && enumerator.MoveNext())
         {
             var current = enumerator.Current;
             _items[Count++] = current;
@@ -239,36 +235,47 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     private void EnsureCapacityFor(int count)
     {
-        var freeCount = int.MaxValue - Count;
-        if (freeCount < count)
+        var freeCapacity = Capacity - Count;
+        if (count <= freeCapacity)
+            return;
+        var maxFreeCapacity = int.MaxValue - Count;
+        if (maxFreeCapacity < count)
             Throw();
-        EnsureMinCapacity(Count + count);
+        Grow(Count + count);
 
-        [DoesNotReturn]
-        static void Throw() =>
+        [DoesNotReturn] static void Throw() =>
             throw new InvalidOperationException("Not enough room for this operation.");
-    }
-
-    private void EnsureMinCapacity(int minCapacity)
-    {
-        if (Capacity < minCapacity)
-            Grow(minCapacity);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void Grow(int minCapacity)
     {
-        var nextCapacity = int.MaxValue;
-        if (minCapacity < DangerZone)
+        var nextCapacity = 0 < Capacity ? Capacity * 2 : DefaultFirstCapacity;
+        while (nextCapacity < minCapacity)
         {
-            nextCapacity = 0 < Capacity ? Capacity * 2 : DefaultFirstCapacity;
-            while (nextCapacity < minCapacity)
+            if (nextCapacity < DangerZone)
+            {
                 nextCapacity *= 2;
+            }
+            else
+            {
+                nextCapacity = int.MaxValue;
+                break;
+            }
         }
 
         var items = GC.AllocateUninitializedArray<T>(nextCapacity, _pinned);
         AsSpan().CopyTo(items);
         _items = items;
+    }
+
+    public void ThrowIfEmpty()
+    {
+        if (Count < 1)
+            Throw();
+        
+        [DoesNotReturn] static void Throw() =>
+            throw new InvalidOperationException("Collection is empty.");
     }
 
     public static implicit operator Span<T>(UnmanagedList<T> list) => list.AsSpan();

@@ -54,14 +54,57 @@ public sealed class LoopyList<T>
 
     public bool IsContiguous => (_begin + Count) <= Capacity;
 
-    public DualSpan<T> Slice(Range range)
+    public DualSpan<T> AsSpan()
     {
-        var (start, count) = range.GetOffsetAndLength(Count);
-        return Slice(start, count);
+        var end = GetEnd(Count);
+        if (end < _begin)
+        {
+            var result = new DualSpan<T>(
+                _data.AsSpan(_begin),
+                _data.AsSpan(0, end));
+            return result;
+        }
+        else
+        {
+            var result = new DualSpan<T>(
+                _data.AsSpan(_begin..end));
+            return result;
+        }
     }
 
-    public DualSpan<T> Slice(int start, int count)
+    public DualSpan<T> AsSpan(Range range)
     {
+        var (start, count) = range.GetOffsetAndLength(Count);
+        return AsSpan(start, count);
+    }
+
+    public DualSpan<T> AsSpan(int start)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(start);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(start, Count);
+        var begin = GetBegin(start);
+        var end = GetEnd(Count);
+        if (end < begin)
+        {
+            var result = new DualSpan<T>(
+                _data.AsSpan(begin),
+                _data.AsSpan(0, end));
+            return result;
+        }
+        else
+        {
+            var result = new DualSpan<T>(
+                _data.AsSpan(begin..end));
+            return result;
+        }
+    }
+
+    public DualSpan<T> AsSpan(int start, int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(start);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(start, Count);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(start + count, Count);
         var begin = GetBegin(start);
         var end = GetEnd(start + count);
         if (end < begin)
@@ -73,7 +116,8 @@ public sealed class LoopyList<T>
         }
         else
         {
-            var result = new DualSpan<T>(_data.AsSpan(begin, count));
+            var result = new DualSpan<T>(
+                _data.AsSpan(begin..end));
             return result;
         }
     }
@@ -96,16 +140,16 @@ public sealed class LoopyList<T>
         if (items.IsEmpty)
             return;
         EnsureCapacityFor(items.Length);
-        var free = GetBegin(Count);
-        var buffer = free < _begin ? _data.AsSpan(free.._begin) : _data.AsSpan(free..);
-        if (buffer.Length < items.Length)
+        var end = GetEnd(Count);
+        var free = Capacity - end;
+        if (items.Length <= free)
         {
-            items[..buffer.Length].CopyTo(buffer);
-            items[buffer.Length..].CopyTo(_data);
+            items.CopyTo(_data.AsSpan(end));
         }
         else
         {
-            items.CopyTo(buffer);
+            items[..free].CopyTo(_data.AsSpan(end));
+            items[free..].CopyTo(_data);
         }
         Count += items.Length;
     }
@@ -124,19 +168,18 @@ public sealed class LoopyList<T>
         if (items.IsEmpty)
             return;
         EnsureCapacityFor(items.Length);
-        var free = GetBegin(Count);
-        var buffer = free < _begin ? _data.AsSpan(free.._begin) : _data.AsSpan(.._begin);
-        if (buffer.Length < items.Length)
+        if (items.Length <= _begin)
         {
-            items[^buffer.Length..].CopyTo(buffer);
-            var remaining = items[..^buffer.Length];
-            remaining.CopyTo(_data.AsSpan(^remaining.Length..));
+            _begin -= items.Length;
+            items.CopyTo(_data.AsSpan(_begin));
         }
         else
         {
-            items.CopyTo(buffer[^items.Length..]);
+            var n = items.Length - _begin;
+            _begin += Capacity - items.Length;
+            items[n..].CopyTo(_data);
+            items[..n].CopyTo(_data.AsSpan(_begin));
         }
-        _begin = GetBegin(-items.Length);
         Count += items.Length;
     }
 
@@ -290,33 +333,20 @@ public sealed class LoopyList<T>
         return result;
     }
 
-    public bool SequenceEqual(params ReadOnlySpan<T> items)
+    public void Expand() => Grow(0);
+
+    private void EnsureCapacityFor(int count)
     {
-        if (Count != items.Length)
-            return false;
-
-        var end = GetEnd(items.Length);
-        if (end < _begin)
-        {
-            var first = _data.AsSpan(_begin..);
-
-            return
-                first.SequenceEqual(items[..first.Length]) &&
-                _data.AsSpan(..end).SequenceEqual(items[first.Length..]);
-        }
-        else
-        {
-            return _data.AsSpan(_begin..end).SequenceEqual(items);
-        }
-    }
-
-    public void ExpandCapacity() => Grow(0);
-
-    private void EnsureCapacityFor(int additionalItemCount)
-    {
-        var minCapacity = Count + additionalItemCount;
-        if (Capacity < minCapacity)
-            Grow(minCapacity);
+        var freeCapacity = Capacity - Count;
+        if (count <= freeCapacity)
+            return;
+        var maxFreeCapacity = int.MaxValue - Count;
+        if (maxFreeCapacity < count)
+            Throw();
+        Grow(Count + count);
+        
+        [DoesNotReturn] static void Throw() =>
+            throw new InvalidOperationException("Not enough room for this operation.");
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

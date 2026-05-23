@@ -136,7 +136,7 @@ public class LoopyListTest
         ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6, 7, 8];
         list.PushBack(items);
         Assert.True(list.IsContiguous);
-        Assert.True(list.SequenceEqual(items));
+        Assert.True(list.AsSpan().SequenceEqual(items));
     }
 
     [Fact]
@@ -147,6 +147,6 @@ public class LoopyListTest
         list.PushBack(items[4..]);
         list.PushFront(items[..4]);
         Assert.False(list.IsContiguous);
-        Assert.True(list.SequenceEqual(items));
+        Assert.True(list.AsSpan().SequenceEqual(items));
     }
 }

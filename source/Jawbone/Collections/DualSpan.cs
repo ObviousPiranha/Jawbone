@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Jawbone;
 
@@ -52,5 +53,32 @@ public readonly ref struct DualSpan<T>
         return Slice(start, length);
     }
 
-    public DualReadOnlySpan<T> AsReadOnly() => this;
+    public bool SequenceEqual(
+        ReadOnlySpan<T> span,
+        IEqualityComparer<T>? comparer = null)
+    {
+        return
+            span.Length == Length &&
+            First.SequenceEqual(span[..First.Length], comparer) &&
+            Second.SequenceEqual(span[First.Length..], comparer);
+    }
+
+    public bool TryGetSpan(out Span<T> result)
+    {
+        if (Second.IsEmpty)
+        {
+            result = First;
+            return true;
+        }
+        else if (First.IsEmpty)
+        {
+            result = Second;
+            return true;
+        }
+        else
+        {
+            result = default;
+            return false;
+        }
+    }
 }
