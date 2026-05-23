@@ -269,7 +269,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         _items = items;
     }
 
-    public void ThrowIfEmpty()
+    private void ThrowIfEmpty()
     {
         if (Count < 1)
             Throw();

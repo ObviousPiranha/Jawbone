@@ -83,19 +83,6 @@ public class LoopyListTest
     }
 
     [Fact]
-    public void ForEach_YieldsCorrectValues()
-    {
-        var list = new LoopyList<int>();
-        ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6];
-        list.PushBack(items);
-        Assert.Equal(items.Length, list.Count);
-        var n = 0;
-
-        foreach (var item in list)
-            Assert.Equal(items[n++], item);
-    }
-
-    [Fact]
     public void AsEnumerable_YieldsCorrectValues()
     {
         var list = new LoopyList<int>();
@@ -148,5 +135,20 @@ public class LoopyListTest
         list.PushFront(items[..4]);
         Assert.False(list.IsContiguous);
         Assert.True(list.AsSpan().SequenceEqual(items));
+    }
+
+    [Fact]
+    public void AsSpan_FullList()
+    {
+        var list = new LoopyList<int>();
+        list.PushBack(-1);
+        while (list.Count < list.Capacity)
+            list.PushBack(1);
+        // Force wrap-around.
+        list.RemoveFront(1);
+        list.PushBack(2);
+        Assert.Equal(list.Capacity, list.Count);
+        var spans = list.AsSpan();
+        Assert.Equal(list.Capacity, spans.Length);
     }
 }

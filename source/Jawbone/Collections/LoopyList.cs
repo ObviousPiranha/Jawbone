@@ -17,14 +17,7 @@ public sealed class LoopyList<T>
     public bool IsEmpty => Count == 0;
     private int Mask => Capacity - 1;
 
-    private int GetBegin(int offset) => (_begin + offset) & Mask;
-    private int GetEnd(int offset)
-    {
-        var result = _begin + offset;
-        if (result != Capacity)
-            result &= Mask;
-        return result;
-    }
+    private int GetIndex(int offset) => (_begin + offset) & Mask;
 
     public T this[int index]
     {
@@ -32,7 +25,7 @@ public sealed class LoopyList<T>
         {
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
-            var privateIndex = GetBegin(index);
+            var privateIndex = GetIndex(index);
             var result = _data[privateIndex];
             return result;
         }
@@ -41,7 +34,7 @@ public sealed class LoopyList<T>
         {
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
-            var privateIndex = GetBegin(index);
+            var privateIndex = GetIndex(index);
             _data[privateIndex] = value;
         }
     }
@@ -54,23 +47,16 @@ public sealed class LoopyList<T>
 
     public bool IsContiguous => (_begin + Count) <= Capacity;
 
-    public DualSpan<T> AsSpan()
+    public LoopyList()
     {
-        var end = GetEnd(Count);
-        if (end < _begin)
-        {
-            var result = new DualSpan<T>(
-                _data.AsSpan(_begin),
-                _data.AsSpan(0, end));
-            return result;
-        }
-        else
-        {
-            var result = new DualSpan<T>(
-                _data.AsSpan(_begin..end));
-            return result;
-        }
     }
+
+    public LoopyList(int minCapacity)
+    {
+        GrowTo(minCapacity);
+    }
+
+    public DualSpan<T> AsSpan() => GetSpan(0, Count);
 
     public DualSpan<T> AsSpan(Range range)
     {
@@ -82,21 +68,7 @@ public sealed class LoopyList<T>
     {
         ArgumentOutOfRangeException.ThrowIfNegative(start);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(start, Count);
-        var begin = GetBegin(start);
-        var end = GetEnd(Count);
-        if (end < begin)
-        {
-            var result = new DualSpan<T>(
-                _data.AsSpan(begin),
-                _data.AsSpan(0, end));
-            return result;
-        }
-        else
-        {
-            var result = new DualSpan<T>(
-                _data.AsSpan(begin..end));
-            return result;
-        }
+        return GetSpan(start, Count - start);
     }
 
     public DualSpan<T> AsSpan(int start, int count)
@@ -105,9 +77,16 @@ public sealed class LoopyList<T>
         ArgumentOutOfRangeException.ThrowIfGreaterThan(start, Count);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(start + count, Count);
-        var begin = GetBegin(start);
-        var end = GetEnd(start + count);
-        if (end < begin)
+        return GetSpan(start, count);
+    }
+
+    private DualSpan<T> GetSpan(int start, int count)
+    {
+        if (count == 0)
+            return default;
+        var begin = GetIndex(start);
+        var end = GetIndex(start + count);
+        if (end <= begin)
         {
             var result = new DualSpan<T>(
                 _data.AsSpan(begin),
@@ -117,7 +96,7 @@ public sealed class LoopyList<T>
         else
         {
             var result = new DualSpan<T>(
-                _data.AsSpan(begin..end));
+                _data.AsSpan(begin, count));
             return result;
         }
     }
@@ -131,7 +110,7 @@ public sealed class LoopyList<T>
     public void PushBack(T item)
     {
         EnsureCapacityFor(1);
-        var privateIndex = GetBegin(Count++);
+        var privateIndex = GetIndex(Count++);
         _data[privateIndex] = item;
     }
 
@@ -140,16 +119,16 @@ public sealed class LoopyList<T>
         if (items.IsEmpty)
             return;
         EnsureCapacityFor(items.Length);
-        var end = GetEnd(Count);
-        var free = Capacity - end;
-        if (items.Length <= free)
+        var end = GetIndex(Count);
+        var backCapacity = Capacity - end;
+        if (items.Length <= backCapacity)
         {
             items.CopyTo(_data.AsSpan(end));
         }
         else
         {
-            items[..free].CopyTo(_data.AsSpan(end));
-            items[free..].CopyTo(_data);
+            items[..backCapacity].CopyTo(_data.AsSpan(end));
+            items[backCapacity..].CopyTo(_data);
         }
         Count += items.Length;
     }
@@ -157,7 +136,7 @@ public sealed class LoopyList<T>
     public void PushFront(T item)
     {
         EnsureCapacityFor(1);
-        var privateIndex = GetBegin(-1);
+        var privateIndex = GetIndex(-1);
         _data[privateIndex] = item;
         _begin = privateIndex;
         ++Count;
@@ -185,10 +164,8 @@ public sealed class LoopyList<T>
 
     public T PopBack()
     {
-        if (Count == 0)
-            throw new InvalidOperationException("List is empty.");
-
-        var last = GetBegin(Count - 1);
+        ThrowIfEmpty();
+        var last = GetIndex(Count - 1);
         var result = _data[last];
         if (--Count == 0)
             _begin = 0;
@@ -200,7 +177,7 @@ public sealed class LoopyList<T>
     {
         if (Count == 0)
             return;
-        var last = GetBegin(Count - 1);
+        var last = GetIndex(Count - 1);
         while (0 < Count && predicate.Invoke(_data[last], arg))
         {
             last = (last - 1) & Mask;
@@ -220,17 +197,15 @@ public sealed class LoopyList<T>
         }
 
         item = _data[_begin];
-        _begin = --Count == 0 ? 0 : GetBegin(1);
+        _begin = --Count == 0 ? 0 : GetIndex(1);
         return true;
     }
 
     public T PopFront()
     {
-        if (Count == 0)
-            throw new InvalidOperationException("List is empty.");
-
+        ThrowIfEmpty();
         var result = _data[_begin];
-        _begin = --Count == 0 ? 0 : GetBegin(1);
+        _begin = --Count == 0 ? 0 : GetIndex(1);
         return result;
     }
 
@@ -239,27 +214,12 @@ public sealed class LoopyList<T>
     {
         while (0 < Count && predicate.Invoke(_data[_begin], arg))
         {
-            _begin = GetBegin(1);
+            _begin = GetIndex(1);
             --Count;
         }
 
         if (Count == 0)
             _begin = 0;
-    }
-
-    public void CopyTo(Span<T> destination)
-    {
-        var end = GetEnd(Count);
-        if (end < _begin)
-        {
-            var block = _data.AsSpan(_begin..);
-            block.CopyTo(destination);
-            _data.AsSpan(..end).CopyTo(destination[block.Length..]);
-        }
-        else
-        {
-            _data.AsSpan(_begin..end).CopyTo(destination);
-        }
     }
 
     public Span<T> AsContiguousSpan()
@@ -290,7 +250,7 @@ public sealed class LoopyList<T>
         }
         else
         {
-            _begin = GetBegin(count);
+            _begin = GetIndex(count);
             Count -= count;
         }
     }
@@ -307,108 +267,51 @@ public sealed class LoopyList<T>
             Count -= count;
     }
 
-    public void CopyTo(Range sourceRange, Span<T> destination)
-    {
-        var (start, count) = sourceRange.GetOffsetAndLength(Count);
+    public void Expand() => GrowTo(0);
 
-        var begin = GetBegin(start);
-        var end = GetEnd(start + count);
-
-        if (end < begin)
-        {
-            var first = _data.AsSpan(begin..);
-            first.CopyTo(destination);
-            _data.AsSpan(..end).CopyTo(destination[first.Length..]);
-        }
-        else
-        {
-            _data.AsSpan(begin..end).CopyTo(destination);
-        }
-    }
-
-    public T[] ToArray()
-    {
-        var result = new T[Count];
-        CopyTo(result);
-        return result;
-    }
-
-    public void Expand() => Grow(0);
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureCapacityFor(int count)
     {
         var freeCapacity = Capacity - Count;
-        if (count <= freeCapacity)
-            return;
-        var maxFreeCapacity = int.MaxValue - Count;
-        if (maxFreeCapacity < count)
-            Throw();
-        Grow(Count + count);
-        
-        [DoesNotReturn] static void Throw() =>
-            throw new InvalidOperationException("Not enough room for this operation.");
+        if (freeCapacity < count)
+            GrowFor(count);
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void Grow(int minCapacity)
+    private void GrowFor(int count)
     {
-        var nextCapacity = int.Max(Capacity * 2, 16);
+        var maxFreeCapacity = int.MaxValue - Count;
+        if (maxFreeCapacity < count)
+            throw new InvalidOperationException("Not enough room for this operation.");
+        GrowTo(Count + count);
+    }
+
+    private void GrowTo(int minCapacity)
+    {
+        var nextCapacity = 0 < Capacity ? Capacity * 2 : 16;
         while (nextCapacity < minCapacity)
             nextCapacity *= 2;
         Debug.Assert((nextCapacity & (nextCapacity - 1)) == 0);
-
         var data = new T[nextCapacity];
-        var end = GetEnd(Count);
-        if (end < _begin)
-        {
-            var first = _data.AsSpan(_begin);
-            first.CopyTo(data);
-            _data.AsSpan(0, end).CopyTo(data.AsSpan(first.Length));
-        }
-        else
-        {
-            _data.AsSpan(_begin..end).CopyTo(data);
-        }
-
+        AsSpan().CopyTo(data);
         _data = data;
         _begin = 0;
+    }
+
+    private void ThrowIfEmpty()
+    {
+        if (Count < 1)
+            Throw();
+        
+        [DoesNotReturn] static void Throw() =>
+            throw new InvalidOperationException("Collection is empty.");
     }
 
     public IEnumerable<T> AsEnumerable()
     {
         for (int i = 0; i < Count; ++i)
         {
-            var privateIndex = GetBegin(i);
+            var privateIndex = GetIndex(i);
             yield return _data[privateIndex];
-        }
-    }
-
-    public Enumerator GetEnumerator() => new(this);
-
-    public struct Enumerator
-    {
-        private readonly LoopyList<T> _list;
-        private int _index;
-
-        public Enumerator(LoopyList<T> list)
-        {
-            _list = list;
-            Current = default!;
-        }
-
-        public T Current { get; private set; }
-
-        public bool MoveNext()
-        {
-            if (_index < _list.Count)
-            {
-                Current = _list[_index++];
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
     }
 }

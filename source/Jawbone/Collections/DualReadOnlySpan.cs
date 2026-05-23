@@ -11,6 +11,17 @@ public readonly ref struct DualReadOnlySpan<T>
     public bool IsEmpty => First.IsEmpty && Second.IsEmpty;
     public bool IsContiguous => Second.IsEmpty || First.IsEmpty;
 
+    public ref readonly T this[int index]
+    {
+        get
+        {
+            if (index < First.Length)
+                return ref First[index];
+            else
+                return ref Second[index - First.Length];
+        }
+    }
+
     public DualReadOnlySpan(ReadOnlySpan<T> first) => First = first;
 
     public DualReadOnlySpan(
@@ -85,6 +96,30 @@ public readonly ref struct DualReadOnlySpan<T>
         {
             result = default;
             return false;
+        }
+    }
+
+    public Enumerator GetEnumerator() => new(this);
+
+    public ref struct Enumerator
+    {
+        private readonly DualReadOnlySpan<T> _dualSpan;
+        private int _index;
+
+        public Enumerator(DualReadOnlySpan<T> dualSpan)
+        {
+            _dualSpan = dualSpan;
+            _index = -1;
+        }
+
+        public readonly ref readonly T Current => ref _dualSpan[_index];
+        public bool MoveNext()
+        {
+            var next = _index + 1;
+            if (_dualSpan.Length <= next)
+                return false;
+            _index = next;
+            return true;
         }
     }
 
