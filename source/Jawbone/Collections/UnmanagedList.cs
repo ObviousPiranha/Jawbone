@@ -12,6 +12,9 @@ namespace Jawbone;
 [DebuggerDisplay("Count = {Count}")]
 public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
+    private const int DangerZone = 1 << 30;
+    private const int DefaultFirstCapacity = 64;
+
     private T[] _items = [];
     private readonly bool _pinned;
 
@@ -43,7 +46,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         Count = 0;
     }
 
-    public void Reserve() => Grow(Capacity * 2);
+    public void Expand() => Grow(Capacity * 2);
 
     public Span<T> Acquire(int count)
     {
@@ -195,9 +198,13 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public T Pop()
     {
-        var item = _items[Count - 1]; // Ensure throw happens without altering count.
-        --Count;
-        return item;
+        if (Count == 0)
+            Throw();
+        var result = _items[--Count];
+        return result;
+
+        static void Throw() =>
+            throw new InvalidOperationException("Collection is empty.");
     }
 
     public void RemoveLast()
@@ -230,10 +237,18 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureCapacityFor(int count) => EnsureMinCapacity(Count + count);
+    private void EnsureCapacityFor(int count)
+    {
+        var freeCount = int.MaxValue - Count;
+        if (freeCount < count)
+            Throw();
+        EnsureMinCapacity(Count + count);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DoesNotReturn]
+        static void Throw() =>
+            throw new InvalidOperationException("Not enough room for this operation.");
+    }
+
     private void EnsureMinCapacity(int minCapacity)
     {
         if (Capacity < minCapacity)
@@ -243,9 +258,13 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void Grow(int minCapacity)
     {
-        var nextCapacity = int.Max(Capacity * 2, 64);
-        while (nextCapacity < minCapacity)
-            nextCapacity *= 2;
+        var nextCapacity = int.MaxValue;
+        if (minCapacity < DangerZone)
+        {
+            nextCapacity = 0 < Capacity ? Capacity * 2 : DefaultFirstCapacity;
+            while (nextCapacity < minCapacity)
+                nextCapacity *= 2;
+        }
 
         var items = GC.AllocateUninitializedArray<T>(nextCapacity, _pinned);
         AsSpan().CopyTo(items);

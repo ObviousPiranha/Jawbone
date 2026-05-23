@@ -7,6 +7,7 @@ public readonly ref struct DualReadOnlySpan<T>
     public ReadOnlySpan<T> First { get; }
     public ReadOnlySpan<T> Second { get; }
     public int Length => First.Length + Second.Length;
+    public bool IsEmpty => First.IsEmpty && Second.IsEmpty;
     public bool IsContiguous => Second.IsEmpty || First.IsEmpty;
 
     public DualReadOnlySpan(ReadOnlySpan<T> first) => First = first;
