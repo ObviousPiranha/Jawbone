@@ -1,9 +1,6 @@
 ﻿using Jawbone;
-using Jawbone.Sdl3;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
+using System.Linq;
 
 namespace Piranha.Sandbox;
 
@@ -13,6 +10,22 @@ class Program
     {
         try
         {
+            Console.WriteLine(new LoopyList<int>());
+            var list = new LoopyList<int>(16);
+            Console.WriteLine(list);
+            list.PushBack(Enumerable.Range(1, list.Capacity));
+            Console.WriteLine(list);
+            list.RemoveFront(2);
+            list.RemoveBack(2);
+            Console.WriteLine(list);
+            list.Clear();
+            Console.WriteLine(list);
+            list.PushBack(Enumerable.Range(1, list.Capacity));
+            list.RemoveFront(list.Capacity / 2);
+            list.PushBack(Enumerable.Range(99, list.Capacity / 2 - 2));
+            Console.WriteLine(list);
+            list.PushBack(200, 201);
+            Console.WriteLine(list);
         }
         catch (Exception ex)
         {

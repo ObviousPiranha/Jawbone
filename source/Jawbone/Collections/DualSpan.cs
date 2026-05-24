@@ -33,6 +33,18 @@ public readonly ref struct DualSpan<T>
         First = first;
         Second = second;
     }
+
+    public void Clear()
+    {
+        First.Clear();
+        Second.Clear();
+    }
+
+    public void Fill(T value)
+    {
+        First.Fill(value);
+        Second.Fill(value);
+    }
     
     public void CopyTo(Span<T> destination)
     {

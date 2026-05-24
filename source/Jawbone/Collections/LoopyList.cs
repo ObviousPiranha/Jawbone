@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Jawbone;
 
@@ -91,7 +93,7 @@ public sealed class LoopyList<T>
             return default;
         var begin = GetIndex(start);
         var end = GetIndex(start + count);
-        if (end <= begin)
+        if (end <= begin && 0 < end)
         {
             var result = new DualSpan<T>(
                 _data.AsSpan(begin),
@@ -138,6 +140,20 @@ public sealed class LoopyList<T>
         Count += items.Length;
     }
 
+    public void PushBack(IEnumerable<T> enumerable)
+    {
+        if (SpanReader.TryGetSpan(enumerable, out var span))
+        {
+            PushBack(span);
+            return;
+        }
+        else
+        {
+            foreach (var item in enumerable)
+                PushBack(item);
+        }
+    }
+
     public void PushFront(T item)
     {
         EnsureCapacityFor(1);
@@ -165,6 +181,20 @@ public sealed class LoopyList<T>
             items[..n].CopyTo(_data.AsSpan(_begin));
         }
         Count += items.Length;
+    }
+
+    public void PushFront(IEnumerable<T> enumerable)
+    {
+        if (SpanReader.TryGetSpan(enumerable, out var span))
+        {
+            PushFront(span);
+            return;
+        }
+        else
+        {
+            foreach (var item in enumerable)
+                PushFront(item);
+        }
     }
 
     public T PopBack()
@@ -318,6 +348,44 @@ public sealed class LoopyList<T>
             var privateIndex = GetIndex(i);
             yield return _data[privateIndex];
         }
+    }
+
+    public override string ToString()
+    {
+        if (Capacity == 0)
+            return "([])";
+        if (Count == 0)
+        {
+            var body = string.Join(',', Enumerable.Range(0, Capacity).Select(_ => '_'));
+            return $"([]{body})";
+        }
+
+        var builder = new StringBuilder("(");
+        var end = GetIndex(Count);
+        var last = GetIndex(Count - 1);
+        if (end <= _begin)
+        {
+            for (int i = 0; i < Capacity; ++i)
+            {
+                builder
+                    .Append(0 < i ? "," : "")
+                    .Append(i == _begin ? "[" : "")
+                    .Append(end <= i && i < _begin ? "_" : _data[i]?.ToString())
+                    .Append(i == last ? "]" : "");
+            }
+        }
+        else
+        {
+            for (int i = 0; i < Capacity; ++i)
+            {
+                builder
+                    .Append(0 < i ? "," : "")
+                    .Append(i == _begin ? "[" : "")
+                    .Append(_begin <= i && i < end ? _data[i]?.ToString() : "_")
+                    .Append(i == last ? "]" : "");
+            }
+        }
+        return builder.Append(')').ToString();
     }
 }
 
