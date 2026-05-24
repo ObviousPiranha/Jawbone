@@ -8,6 +8,8 @@ namespace Jawbone;
 
 public sealed class LoopyList<T>
 {
+    public const int MaxCapacity = 1 << 30;
+
     private T[] _data = [];
     private int _begin;
 
@@ -45,6 +47,8 @@ public sealed class LoopyList<T>
         set => this[index.GetOffset(Count)] = value;
     }
 
+    public DualSpan<T> this[Range range] => AsSpan(range);
+
     public bool IsContiguous => (_begin + Count) <= Capacity;
 
     public LoopyList()
@@ -53,6 +57,7 @@ public sealed class LoopyList<T>
 
     public LoopyList(int minCapacity)
     {
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(minCapacity, MaxCapacity);
         GrowTo(minCapacity);
     }
 
@@ -279,7 +284,7 @@ public sealed class LoopyList<T>
 
     private void GrowFor(int count)
     {
-        var maxFreeCapacity = int.MaxValue - Count;
+        var maxFreeCapacity = MaxCapacity - Count;
         if (maxFreeCapacity < count)
             throw new InvalidOperationException("Not enough room for this operation.");
         GrowTo(Count + count);
@@ -314,4 +319,9 @@ public sealed class LoopyList<T>
             yield return _data[privateIndex];
         }
     }
+}
+
+public static class LoopyList
+{
+    public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this LoopyList<T>? list) => list is null || list.IsEmpty;
 }
