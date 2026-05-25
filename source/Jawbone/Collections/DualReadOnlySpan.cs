@@ -40,9 +40,8 @@ public readonly ref struct DualReadOnlySpan<T>
     
     public void CopyTo(Span<T> destination)
     {
-        var span = destination[..Length];
-        First.CopyTo(span);
-        Second.CopyTo(span[First.Length..]);
+        Second.CopyTo(destination[First.Length..]);
+        First.CopyTo(destination);
     }
 
     public DualReadOnlySpan<T> Slice(int start)

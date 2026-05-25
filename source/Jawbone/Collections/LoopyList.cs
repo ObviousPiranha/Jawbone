@@ -197,14 +197,14 @@ public sealed class LoopyList<T>
                 PushFront(item);
                 ++count;
             }
-            AsSpan(0, count).Reverse();
+            GetSpan(0, count).Reverse();
         }
     }
 
     public void PushEachFront(params ReadOnlySpan<T> items)
     {
         PushAllFront(items);
-        AsSpan(0, items.Length).Reverse();
+        GetSpan(0, items.Length).Reverse();
     }
 
     public void PushEachFront(IEnumerable<T> items)
