@@ -163,7 +163,7 @@ public sealed class LoopyList<T>
         ++Count;
     }
 
-    public void PushFront(params ReadOnlySpan<T> items)
+    public void PushAllFront(params ReadOnlySpan<T> items)
     {
         if (items.IsEmpty)
             return;
@@ -183,16 +183,39 @@ public sealed class LoopyList<T>
         Count += items.Length;
     }
 
-    public void PushFront(IEnumerable<T> enumerable)
+    public void PushAllFront(IEnumerable<T> items)
     {
-        if (SpanReader.TryGetSpan(enumerable, out var span))
+        if (SpanReader.TryGetSpan(items, out var span))
         {
-            PushFront(span);
-            return;
+            PushAllFront(span);
         }
         else
         {
-            foreach (var item in enumerable)
+            var count = 0;
+            foreach (var item in items)
+            {
+                PushFront(item);
+                ++count;
+            }
+            AsSpan(0, count).Reverse();
+        }
+    }
+
+    public void PushEachFront(params ReadOnlySpan<T> items)
+    {
+        PushAllFront(items);
+        AsSpan(0, items.Length).Reverse();
+    }
+
+    public void PushEachFront(IEnumerable<T> items)
+    {
+        if (SpanReader.TryGetSpan(items, out var span))
+        {
+            PushEachFront(span);
+        }
+        else
+        {
+            foreach (var item in items)
                 PushFront(item);
         }
     }

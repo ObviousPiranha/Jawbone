@@ -75,7 +75,7 @@ public class LoopyListTest
     {
         ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6];
         var list = new LoopyList<int>();
-        list.PushFront(items);
+        list.PushAllFront(items);
         Assert.Equal(items.Length, list.Count);
 
         for (int i = 0; i < items.Length; ++i)
@@ -96,7 +96,7 @@ public class LoopyListTest
     public void PopFrontWhile_RemovesValues()
     {
         var list = new LoopyList<int>();
-        list.PushFront(0, 0, 0, 0);
+        list.PushAllFront(0, 0, 0, 0);
         list.PushBack(1, 1, 1, 1);
         Assert.Equal(8, list.Count);
         list.PopFrontWhile(static n => n == 0);
@@ -108,7 +108,7 @@ public class LoopyListTest
     public void PopBackWhile_RemovesValues()
     {
         var list = new LoopyList<int>();
-        list.PushFront(0, 0, 0, 0);
+        list.PushAllFront(0, 0, 0, 0);
         list.PushBack(1, 1, 1, 1);
         Assert.Equal(8, list.Count);
         list.PopBackWhile(static n => n == 1);
@@ -132,7 +132,7 @@ public class LoopyListTest
         var list = new LoopyList<int>();
         ReadOnlySpan<int> items = [1, 2, 3, 4, 5, 6, 7, 8];
         list.PushBack(items[4..]);
-        list.PushFront(items[..4]);
+        list.PushAllFront(items[..4]);
         Assert.False(list.IsContiguous);
         Assert.True(list.AsSpan().SequenceEqual(items));
     }

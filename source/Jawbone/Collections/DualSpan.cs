@@ -45,6 +45,24 @@ public readonly ref struct DualSpan<T>
         First.Fill(value);
         Second.Fill(value);
     }
+
+    public void Reverse()
+    {
+        if (TryGetSpan(out var span))
+        {
+            span.Reverse();
+            return;
+        }
+
+        var ii = Length;
+        var n = ii / 2;
+        for (int i = 0; i < n; ++i)
+        {
+            var swapValue = this[i];
+            this[i] = this[--ii];
+            this[ii] = swapValue;
+        }
+    }
     
     public void CopyTo(Span<T> destination)
     {
