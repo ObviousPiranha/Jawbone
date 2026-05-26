@@ -110,6 +110,8 @@ public sealed class LoopyList<T>
 
     public void Clear()
     {
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            AsSpan().Clear();
         _begin = 0;
         Count = 0;
     }
@@ -225,6 +227,8 @@ public sealed class LoopyList<T>
         ThrowIfEmpty();
         var last = GetIndex(Count - 1);
         var result = _data[last];
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            _data[last] = default!;
         if (--Count == 0)
             _begin = 0;
         return result;
@@ -238,6 +242,8 @@ public sealed class LoopyList<T>
         var last = GetIndex(Count - 1);
         while (0 < Count && predicate.Invoke(_data[last], arg))
         {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                _data[last] = default!;
             last = (last - 1) & Mask;
             --Count;
         }
@@ -255,6 +261,8 @@ public sealed class LoopyList<T>
         }
 
         item = _data[_begin];
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            _data[_begin] = default!;
         _begin = --Count == 0 ? 0 : GetIndex(1);
         return true;
     }
@@ -263,6 +271,8 @@ public sealed class LoopyList<T>
     {
         ThrowIfEmpty();
         var result = _data[_begin];
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            _data[_begin] = default!;
         _begin = --Count == 0 ? 0 : GetIndex(1);
         return result;
     }
@@ -272,6 +282,8 @@ public sealed class LoopyList<T>
     {
         while (0 < Count && predicate.Invoke(_data[_begin], arg))
         {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                _data[_begin] = default!;
             _begin = GetIndex(1);
             --Count;
         }
@@ -308,6 +320,8 @@ public sealed class LoopyList<T>
         }
         else
         {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                GetSpan(0, count).Clear();
             _begin = GetIndex(count);
             Count -= count;
         }
@@ -320,9 +334,15 @@ public sealed class LoopyList<T>
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(count, Count);
         if (count == Count)
+        {
             Clear();
+        }
         else
+        {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                GetSpan(Count - count, count).Clear();
             Count -= count;
+        }
     }
 
     public void Expand() => GrowTo(0);

@@ -44,6 +44,19 @@ public readonly ref struct DualReadOnlySpan<T>
         First.CopyTo(destination);
     }
 
+    public void CopyTo(DualSpan<T> destination)
+    {
+        if (destination.First.Length < Length)
+        {
+            Slice(destination.First.Length).CopyTo(destination.Second);
+            Slice(0, destination.First.Length).CopyTo(destination.First);
+        }
+        else
+        {
+            CopyTo(destination.First);
+        }
+    }
+
     public DualReadOnlySpan<T> Slice(int start)
     {
         if (First.Length <= start)

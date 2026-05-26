@@ -70,6 +70,19 @@ public readonly ref struct DualSpan<T>
         First.CopyTo(destination);
     }
 
+    public void CopyTo(DualSpan<T> destination)
+    {
+        if (destination.First.Length < Length)
+        {
+            Slice(destination.First.Length).CopyTo(destination.Second);
+            Slice(0, destination.First.Length).CopyTo(destination.First);
+        }
+        else
+        {
+            CopyTo(destination.First);
+        }
+    }
+
     public DualSpan<T> Slice(int start)
     {
         if (First.Length <= start)
@@ -145,6 +158,39 @@ public readonly ref struct DualSpan<T>
                 return false;
             _index = next;
             return true;
+        }
+    }
+}
+
+public static class DualSpan
+{
+    public static void CopyTo<T>(
+        this ReadOnlySpan<T> source,
+        DualSpan<T> destination)
+    {
+        if (destination.First.Length < source.Length)
+        {
+            source.Slice(destination.First.Length).CopyTo(destination.Second);
+            source.Slice(0, destination.First.Length).CopyTo(destination.First);
+        }
+        else
+        {
+            source.CopyTo(destination.First);
+        }
+    }
+
+    public static void CopyTo<T>(
+        this Span<T> source,
+        DualSpan<T> destination)
+    {
+        if (destination.First.Length < source.Length)
+        {
+            source.Slice(destination.First.Length).CopyTo(destination.Second);
+            source.Slice(0, destination.First.Length).CopyTo(destination.First);
+        }
+        else
+        {
+            source.CopyTo(destination.First);
         }
     }
 }
