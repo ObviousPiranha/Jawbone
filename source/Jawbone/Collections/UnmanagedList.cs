@@ -233,21 +233,22 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureCapacityFor(int count)
     {
         var freeCapacity = Capacity - Count;
-        if (count <= freeCapacity)
-            return;
-        var maxFreeCapacity = int.MaxValue - Count;
-        if (maxFreeCapacity < count)
-            Throw();
-        Grow(Count + count);
-
-        [DoesNotReturn] static void Throw() =>
-            throw new InvalidOperationException("Not enough room for this operation.");
+        if (freeCapacity < count)
+            GrowFor(count);
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void GrowFor(int count)
+    {
+        var maxFreeCapacity = int.MaxValue - Count;
+        if (maxFreeCapacity < count)
+            throw new InvalidOperationException("Not enough room for this operation.");
+        Grow(Count + count);
+    }
+
     private void Grow(int minCapacity)
     {
         var nextCapacity = 0 < Capacity ? Capacity * 2 : DefaultFirstCapacity;
