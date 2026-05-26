@@ -274,7 +274,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     {
         if (Count < 1)
             Throw();
-        
+
         [DoesNotReturn] static void Throw() =>
             throw new InvalidOperationException("Collection is empty.");
     }

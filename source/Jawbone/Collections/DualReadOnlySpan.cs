@@ -37,7 +37,7 @@ public readonly ref struct DualReadOnlySpan<T>
         First = dualSpan.First;
         Second = dualSpan.Second;
     }
-    
+
     public void CopyTo(Span<T> destination)
     {
         Second.CopyTo(destination[First.Length..]);

@@ -379,7 +379,7 @@ public sealed class LoopyList<T>
     {
         if (Count < 1)
             Throw();
-        
+
         [DoesNotReturn] static void Throw() =>
             throw new InvalidOperationException("Collection is empty.");
     }

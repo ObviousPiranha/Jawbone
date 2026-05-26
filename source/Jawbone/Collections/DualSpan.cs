@@ -63,7 +63,7 @@ public readonly ref struct DualSpan<T>
             this[ii] = swapValue;
         }
     }
-    
+
     public void CopyTo(Span<T> destination)
     {
         Second.CopyTo(destination[First.Length..]);
