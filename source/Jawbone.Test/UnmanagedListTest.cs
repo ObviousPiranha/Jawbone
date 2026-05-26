@@ -21,7 +21,7 @@ public class UnmanagedListTest
 
         list.Clear();
         Assert.True(list.IsEmpty);
-        Assert.Throws<IndexOutOfRangeException>(() => list.Pop());
+        Assert.Throws<InvalidOperationException>(() => list.Pop());
     }
 
     [Theory]
