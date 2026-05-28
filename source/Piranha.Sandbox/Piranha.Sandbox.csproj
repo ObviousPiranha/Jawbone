@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <None Include="libSDL3.so" CopyToOutputDirectory="Always"/>
+    <!-- <None Include="libSDL3.so" CopyToOutputDirectory="Always"/> -->
   </ItemGroup>
 
   <ItemGroup>

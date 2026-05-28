@@ -7,6 +7,8 @@ using System.Text;
 
 namespace Jawbone;
 
+public delegate int ValueStream<T>(Span<T> buffer);
+
 public sealed class CsvReader
 {
     private const byte NewLine = (byte)'\n';

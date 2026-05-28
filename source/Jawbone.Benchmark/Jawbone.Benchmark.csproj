@@ -9,9 +9,9 @@
     <PackageReference Include="BenchmarkDotNet"/>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PiranhaNative.dll" Link="PiranhaNative.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <!-- <None Include="PiranhaNative.dll" Link="PiranhaNative.dll"> -->
+      <!-- <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+    <!-- </None> -->
   </ItemGroup>
 
   <PropertyGroup>

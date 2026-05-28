@@ -261,7 +261,7 @@ public static class StatisticalSummary
 
         try
         {
-            values.CopyTo(array);
+            values.AsSpan().CopyTo(array);
             var span = array.AsSpan(0, values.Count);
             var result = Calculate(span);
             return result;
@@ -287,7 +287,7 @@ public static class StatisticalSummary
 
         try
         {
-            values.CopyTo(range, array);
+            values.AsSpan(range).CopyTo(array);
             var span = array.AsSpan(0, count);
             var result = Calculate(span);
             return result;
@@ -337,45 +337,26 @@ public static class StatisticalSummary
 
     public static StatisticalSummary<double> Create(LoopyList<double>? values)
     {
-        if (values is null || values.IsEmpty)
+        if (LoopyList.IsNullOrEmpty(values))
+            return default;
+        return Create(values.AsSpan());
+    }
+
+    public static StatisticalSummary<double> Create(DualReadOnlySpan<double> values)
+    {
+        if (values.Length == 0)
             return default;
 
-        if (values.Count == 1)
+        if (values.Length == 1)
             return CreateMono(values[0]);
 
         var pool = ArrayPool<double>.Shared;
-        var array = pool.Rent(values.Count);
+        var array = pool.Rent(values.Length);
 
         try
         {
             values.CopyTo(array);
-            var span = array.AsSpan(0, values.Count);
-            var result = Calculate(span);
-            return result;
-        }
-        finally
-        {
-            pool.Return(array);
-        }
-    }
-
-    public static StatisticalSummary<double> Create(LoopyList<double> values, Range range)
-    {
-        var (start, count) = range.GetOffsetAndLength(values.Count);
-
-        if (count == 0)
-            return default;
-
-        if (count == 1)
-            return CreateMono(values[start]);
-
-        var pool = ArrayPool<double>.Shared;
-        var array = pool.Rent(count);
-
-        try
-        {
-            values.CopyTo(range, array);
-            var span = array.AsSpan(0, count);
+            var span = array.AsSpan(0, values.Length);
             var result = Calculate(span);
             return result;
         }

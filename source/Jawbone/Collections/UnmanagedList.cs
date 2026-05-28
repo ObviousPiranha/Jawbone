@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -12,6 +11,9 @@ namespace Jawbone;
 [DebuggerDisplay("Count = {Count}")]
 public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 {
+    private const int DangerZone = 1 << 30;
+    private const int DefaultFirstCapacity = 64;
+
     private T[] _items = [];
     private readonly bool _pinned;
 
@@ -38,17 +40,21 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
         _items = new T[capacity];
     }
 
-    public void Clear()
-    {
-        Count = 0;
-    }
+    public void Clear() => Count = 0;
 
-    public void Reserve() => Grow(Capacity * 2);
+    public void Expand() => Grow(Capacity * 2);
 
     public Span<T> Acquire(int count)
     {
         var result = AcquireUninitialized(count);
         result.Clear();
+        return result;
+    }
+
+    public Span<T> Acquire(int count, T fillValue)
+    {
+        var result = AcquireUninitialized(count);
+        result.Fill(fillValue);
         return result;
     }
 
@@ -97,34 +103,23 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public void AddAll(ReadOnlySpan<T> items)
     {
-        var minCapacity = Count + items.Length;
-        EnsureMinCapacity(minCapacity);
+        EnsureCapacityFor(items.Length);
         items.CopyTo(_items.AsSpan(Count));
-        Count = minCapacity;
+        Count += items.Length;
+    }
+
+    public void AddAll(DualReadOnlySpan<T> items)
+    {
+        EnsureCapacityFor(items.Length);
+        items.CopyTo(_items.AsSpan(Count));
+        Count += items.Length;
     }
 
     public void AddRange(IEnumerable<T> items)
     {
-        if (items is T[] array)
+        if (SpanReader.TryGetSpan(items, out var span))
         {
-            AddAll(array);
-        }
-        else if (items is List<T> list)
-        {
-            var span = CollectionsMarshal.AsSpan(list);
             AddAll(span);
-        }
-        else if (items is ImmutableArray<T> immutableArray)
-        {
-            AddAll(immutableArray.AsSpan());
-        }
-        else if (items is IList<T> ilist)
-        {
-            AddEnumerable(items, ilist.Count);
-        }
-        else if (items is IReadOnlyList<T> readOnlyList)
-        {
-            AddEnumerable(items, readOnlyList.Count);
         }
         else if (items is ICollection<T> collection)
         {
@@ -206,18 +201,15 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public T Pop()
     {
-        var item = _items[Count - 1]; // Ensure throw happens without altering count.
-        --Count;
-        return item;
+        ThrowIfEmpty();
+        var result = _items[--Count];
+        return result;
     }
 
     public void RemoveLast()
     {
-        if (Count < 1)
-            Throw();
+        ThrowIfEmpty();
         --Count;
-        [DoesNotReturn] static void Throw() =>
-            throw new InvalidOperationException("Cannot remove from empty collection.");
     }
 
     public Span<T> AsSpan() => _items.AsSpan(0, Count);
@@ -227,14 +219,14 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     private void AddEnumerable(IEnumerable<T> enumerable, int count)
     {
-        var minCapacity = Count + count;
-        EnsureMinCapacity(minCapacity);
+        EnsureCapacityFor(count);
+        var maxCount = Count + count;
 
         // This is a defensive maneuver against a badly implemented collection
         // where the reported count fails to match the actual number of items
         // in the collection.
         using var enumerator = enumerable.GetEnumerator();
-        while (Count < minCapacity && enumerator.MoveNext())
+        while (Count < maxCount && enumerator.MoveNext())
         {
             var current = enumerator.Current;
             _items[Count++] = current;
@@ -242,25 +234,49 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureCapacityFor(int count) => EnsureMinCapacity(Count + count);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureMinCapacity(int minCapacity)
+    private void EnsureCapacityFor(int count)
     {
-        if (Capacity < minCapacity)
-            Grow(minCapacity);
+        var freeCapacity = Capacity - Count;
+        if (freeCapacity < count)
+            GrowFor(count);
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void GrowFor(int count)
+    {
+        var maxFreeCapacity = int.MaxValue - Count;
+        if (maxFreeCapacity < count)
+            throw new InvalidOperationException("Not enough room for this operation.");
+        Grow(Count + count);
+    }
+
     private void Grow(int minCapacity)
     {
-        var nextCapacity = int.Max(Capacity * 2, 64);
+        var nextCapacity = 0 < Capacity ? Capacity * 2 : DefaultFirstCapacity;
         while (nextCapacity < minCapacity)
-            nextCapacity *= 2;
+        {
+            if (nextCapacity < DangerZone)
+            {
+                nextCapacity *= 2;
+            }
+            else
+            {
+                nextCapacity = int.MaxValue;
+                break;
+            }
+        }
 
         var items = GC.AllocateUninitializedArray<T>(nextCapacity, _pinned);
         AsSpan().CopyTo(items);
         _items = items;
+    }
+
+    private void ThrowIfEmpty()
+    {
+        if (Count < 1)
+            Throw();
+
+        [DoesNotReturn] static void Throw() =>
+            throw new InvalidOperationException("Collection is empty.");
     }
 
     public static implicit operator Span<T>(UnmanagedList<T> list) => list.AsSpan();

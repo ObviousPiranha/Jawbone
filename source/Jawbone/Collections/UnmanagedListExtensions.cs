@@ -284,8 +284,21 @@ public static class UnmanagedListExtensions
     {
         int charsWritten;
         while (!item.TryFormat(list.Free, out charsWritten, format, formatProvider))
-            list.Reserve();
+            list.Expand();
         list.Count += charsWritten;
+        return list;
+    }
+
+    public static UnmanagedList<byte> AppendFormatted<T>(
+        this UnmanagedList<byte> list,
+        T item,
+        ReadOnlySpan<char> format = default,
+        IFormatProvider? formatProvider = null) where T : IUtf8SpanFormattable
+    {
+        int bytesWritten;
+        while (!item.TryFormat(list.Free, out bytesWritten, format, formatProvider))
+            list.Expand();
+        list.Count += bytesWritten;
         return list;
     }
 }
