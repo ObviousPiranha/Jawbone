@@ -4396,6 +4396,10 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderTexture(nint renderer, nint texture, nint srcrect, nint dstrect);
 
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderTexture")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderTexture(nint renderer, nint texture, in SdlFRect srcrect, in SdlFRect dstrect);
+
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureRotated")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderTextureRotated(nint renderer, nint texture, in SdlFRect srcrect, in SdlFRect dstrect, double angle, in SdlFPoint center, SdlFlipMode flip);
