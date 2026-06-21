@@ -223,4 +223,13 @@ public static class SdlExtensions
     {
         return Sdl.SetWindowFullscreen(window, !IsFullscreen(window));
     }
+
+    public static nint LoadPngToSurface(ReadOnlySpan<char> file)
+    {
+        var nullTerminated = string.Concat(file, "\0");
+        var nullTerminatedUtf8 = System.Text.Encoding.UTF8.GetBytes(nullTerminated);
+        var result = Sdl.LoadPng(nullTerminatedUtf8[0])
+            .ThrowOnSdlFailure("Failed to load PNG.");
+        return result;
+    }
 }

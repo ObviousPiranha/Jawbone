@@ -4278,7 +4278,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderCoordinatesFromWindow")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool RenderCoordinatesFromWindow(nint renderer, float window_x, float window_y, nint x, nint y);
+    public static partial CBool RenderCoordinatesFromWindow(nint renderer, float window_x, float window_y, out float x, out float y);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderCoordinatesToWindow")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4286,7 +4286,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_ConvertEventToRenderCoordinates")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool ConvertEventToRenderCoordinates(nint renderer, nint @event);
+    public static partial CBool ConvertEventToRenderCoordinates(nint renderer, ref SdlEvent @event);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetRenderViewport")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4394,11 +4394,11 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool RenderTexture(nint renderer, nint texture, nint srcrect, nint dstrect);
+    public static partial CBool RenderTexture(nint renderer, nint texture, in SdlFRect srcrect, in SdlFRect dstrect);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool RenderTexture(nint renderer, nint texture, in SdlFRect srcrect, in SdlFRect dstrect);
+    public static partial CBool RenderTexture(nint renderer, nint texture, nint srcrect, nint dstrect);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureRotated")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
