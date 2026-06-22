@@ -17,4 +17,13 @@ public struct SdlSurface // SDL_Surface
     {
         return ref Unsafe.AsRef<SdlSurface>(ptr.ToPointer());
     }
+
+    public static Point32 GetSize(nint ptr)
+    {
+        if (ptr == default)
+            throw new System.ArgumentNullException(nameof(ptr), "Surface pointer cannot be null.");
+        ref var surface = ref FromPointer(ptr);
+        var result = new Point32(surface.W, surface.H);
+        return result;
+    }
 }

@@ -236,14 +236,13 @@ public static class SdlExtensions
             throw new ArgumentNullException(nameof(sourceSurfacePtr), message);
         if (destinationSurfacePtr == default)
             throw new ArgumentNullException(nameof(destinationSurfacePtr), message);
-        ref var sourceSurface = ref SdlSurface.FromPointer(sourceSurfacePtr);
-        ref var destinationSurface = ref SdlSurface.FromPointer(destinationSurfacePtr);
+        var sourceSize = SdlSurface.GetSize(sourceSurfacePtr);
 
-        Debug.Assert(0 < sourceSurface.W);
-        Debug.Assert(0 < sourceSurface.H);
+        Debug.Assert(0 < sourceSize.X);
+        Debug.Assert(0 < sourceSize.Y);
 
-        var imageWidth = sourceSurface.W;
-        var imageHeight = sourceSurface.H;
+        var w = sourceSize.X;
+        var h = sourceSize.Y;
         
         var srcRect = default(SdlRect);
         var dstRect = default(SdlRect);
@@ -262,7 +261,7 @@ public static class SdlExtensions
         // Top edge
         srcRect.X = 0;
         srcRect.Y = 0;
-        srcRect.W = imageWidth;
+        srcRect.W = w;
         srcRect.H = 1;
         dstRect.X = destinationX;
         dstRect.Y = destinationY - 1;
@@ -275,11 +274,11 @@ public static class SdlExtensions
 
         // Bottom edge
         srcRect.X = 0;
-        srcRect.Y = imageHeight - 1;
-        srcRect.W = imageWidth;
+        srcRect.Y = h - 1;
+        srcRect.W = w;
         srcRect.H = 1;
         dstRect.X = destinationX;
-        dstRect.Y = destinationY + imageHeight;
+        dstRect.Y = destinationY + h;
         Sdl.BlitSurface(
             sourceSurfacePtr,
             srcRect,
@@ -291,7 +290,7 @@ public static class SdlExtensions
         srcRect.X = 0;
         srcRect.Y = 0;
         srcRect.W = 1;
-        srcRect.H = imageHeight;
+        srcRect.H = h;
         dstRect.X = destinationX - 1;
         dstRect.Y = destinationY;
         Sdl.BlitSurface(
@@ -302,11 +301,11 @@ public static class SdlExtensions
             ).ThrowOnSdlFailure(blitMessage);
 
         // Right edge
-        srcRect.X = imageWidth - 1;
+        srcRect.X = w - 1;
         srcRect.Y = 0;
         srcRect.W = 1;
-        srcRect.H = imageHeight;
-        dstRect.X = destinationX + imageWidth;
+        srcRect.H = h;
+        dstRect.X = destinationX + w;
         dstRect.Y = destinationY;
         Sdl.BlitSurface(
             sourceSurfacePtr,
@@ -330,11 +329,11 @@ public static class SdlExtensions
             ).ThrowOnSdlFailure(blitMessage);
 
         // Top right corner
-        srcRect.X = imageWidth - 1;
+        srcRect.X = w - 1;
         srcRect.Y = 0;
         srcRect.W = 1;
         srcRect.H = 1;
-        dstRect.X = destinationX + imageWidth;
+        dstRect.X = destinationX + w;
         dstRect.Y = destinationY - 1;
         Sdl.BlitSurface(
             sourceSurfacePtr,
@@ -345,11 +344,11 @@ public static class SdlExtensions
 
         // Bottom left corner
         srcRect.X = 0;
-        srcRect.Y = imageHeight - 1;
+        srcRect.Y = h - 1;
         srcRect.W = 1;
         srcRect.H = 1;
         dstRect.X = destinationX - 1;
-        dstRect.Y = destinationY + imageHeight;
+        dstRect.Y = destinationY + h;
         Sdl.BlitSurface(
             sourceSurfacePtr,
             srcRect,
@@ -358,12 +357,12 @@ public static class SdlExtensions
             ).ThrowOnSdlFailure(blitMessage);
 
         // Bottom right corner
-        srcRect.X = imageWidth - 1;
-        srcRect.Y = imageHeight - 1;
+        srcRect.X = w - 1;
+        srcRect.Y = h - 1;
         srcRect.W = 1;
         srcRect.H = 1;
-        dstRect.X = destinationX + imageWidth;
-        dstRect.Y = destinationY + imageHeight;
+        dstRect.X = destinationX + w;
+        dstRect.Y = destinationY + h;
         Sdl.BlitSurface(
             sourceSurfacePtr,
             srcRect,
