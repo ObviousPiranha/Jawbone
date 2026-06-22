@@ -4669,6 +4669,10 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint LoadPng(in byte path);
 
+    [LibraryImport(Lib, EntryPoint = "SDL_LoadPNG", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial nint LoadPng(string path);
+
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPURendererDevice")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint GetGpuRendererDevice(nint renderer);

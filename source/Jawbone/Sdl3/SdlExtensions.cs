@@ -19,7 +19,7 @@ public static class SdlExtensions
         return services.AddSingleton<IAudioManager, AudioManager>();
     }
 
-    public static CBool ThrowOnSdlFailure(this CBool result, string? message)
+    public static CBool ThrowOnSdlFailure(this CBool result, string? message = null)
     {
         if (!result)
             SdlException.Throw(message);
@@ -222,14 +222,5 @@ public static class SdlExtensions
     public static CBool ToggleFullscreen(nint window)
     {
         return Sdl.SetWindowFullscreen(window, !IsFullscreen(window));
-    }
-
-    public static nint LoadPngToSurface(ReadOnlySpan<char> file)
-    {
-        var nullTerminated = string.Concat(file, "\0");
-        var nullTerminatedUtf8 = System.Text.Encoding.UTF8.GetBytes(nullTerminated);
-        var result = Sdl.LoadPng(nullTerminatedUtf8[0])
-            .ThrowOnSdlFailure("Failed to load PNG.");
-        return result;
     }
 }
