@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -223,4 +224,152 @@ public static class SdlExtensions
     {
         return Sdl.SetWindowFullscreen(window, !IsFullscreen(window));
     }
+
+    public static void BlitAndBleed(
+        nint sourceSurfacePtr,
+        nint destinationSurfacePtr,
+        int destinationX,
+        int destinationY)
+    {
+        const string message = "Surface pointer cannot be null.";
+        if (sourceSurfacePtr == default)
+            throw new ArgumentNullException(nameof(sourceSurfacePtr), message);
+        if (destinationSurfacePtr == default)
+            throw new ArgumentNullException(nameof(destinationSurfacePtr), message);
+        ref var sourceSurface = ref SdlSurface.FromPointer(sourceSurfacePtr);
+        ref var destinationSurface = ref SdlSurface.FromPointer(destinationSurfacePtr);
+
+        Debug.Assert(0 < sourceSurface.W);
+        Debug.Assert(0 < sourceSurface.H);
+
+        var imageWidth = sourceSurface.W;
+        var imageHeight = sourceSurface.H;
+        
+        var srcRect = default(SdlRect);
+        var dstRect = default(SdlRect);
+
+        dstRect.X = destinationX;
+        dstRect.Y = destinationY;
+
+        const string blitMessage = "Unable to blit surface.";
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            Unsafe.NullRef<SdlRect>(),
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Top edge
+        srcRect.X = 0;
+        srcRect.Y = 0;
+        srcRect.W = imageWidth;
+        srcRect.H = 1;
+        dstRect.X = destinationX;
+        dstRect.Y = destinationY - 1;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Bottom edge
+        srcRect.X = 0;
+        srcRect.Y = imageHeight - 1;
+        srcRect.W = imageWidth;
+        srcRect.H = 1;
+        dstRect.X = destinationX;
+        dstRect.Y = destinationY + imageHeight;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Left edge
+        srcRect.X = 0;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = imageHeight;
+        dstRect.X = destinationX - 1;
+        dstRect.Y = destinationY;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Right edge
+        srcRect.X = imageWidth - 1;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = imageHeight;
+        dstRect.X = destinationX + imageWidth;
+        dstRect.Y = destinationY;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Top left corner
+        srcRect.X = 0;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX - 1;
+        dstRect.Y = destinationY - 1;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Top right corner
+        srcRect.X = imageWidth - 1;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX + imageWidth;
+        dstRect.Y = destinationY - 1;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Bottom left corner
+        srcRect.X = 0;
+        srcRect.Y = imageHeight - 1;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX - 1;
+        dstRect.Y = destinationY + imageHeight;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Bottom right corner
+        srcRect.X = imageWidth - 1;
+        srcRect.Y = imageHeight - 1;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX + imageWidth;
+        dstRect.Y = destinationY + imageHeight;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+    }
 }
+
