@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -28,62 +29,77 @@ internal partial class Program
     static void PackFolder(string folder)
     {
         var imageSizes = new List<KeyValuePair<string, Point32>>();
+        var totalArea = 0;
 
-        foreach (var file in Directory.EnumerateFiles(folder))
+        foreach (var file in Directory.EnumerateFiles(folder, "*.png"))
         {
             var imageSize = Jawbone.Png.Png.GetImageSize(file);
             var pair = KeyValuePair.Create(Path.GetFileName(file), imageSize);
             imageSizes.Add(pair);
+            totalArea += (imageSize.X + 1) * (imageSize.Y + 1);
         }
 
         imageSizes.Sort(ComparePairs);
-
-        // foreach (var pair in imageSizes)
-        // {
-        //     Console.WriteLine(pair);
-        // }
 
         Console.WriteLine();
         Console.WriteLine("--- --- ---");
         Console.WriteLine();
 
-        var sheetSize = new Point32(1200);
-        var sheetSurface = Sdl.CreateSurface(sheetSize.X, sheetSize.Y, SdlPixelFormat.Abgr8888)
-            .ThrowOnSdlFailure("Failed to create surface.");
-        var sheetBuilder = new SheetBuilder(sheetSize);
+        var minSheetEdge = (int)float.Sqrt(totalArea);
+        Console.WriteLine($"Min sheet size is {minSheetEdge}.");
+        var sheetEdge = minSheetEdge * 2;
         var imageLocations = new Dictionary<string, Rectangle32>();
-
-        foreach (var pair in imageSizes)
+    restart:
+        while (1 < sheetEdge - minSheetEdge)
         {
-            var sizeInAtlas = pair.Value + 2;
-            var sheetPosition = sheetBuilder.Allocate(sizeInAtlas);
-            if (0 < sheetPosition.SheetIndex)
+            var nextSheetEdge = (minSheetEdge + sheetEdge) / 2;
+            var sheetBuilder = new SheetBuilder(new(nextSheetEdge));
+            imageLocations.Clear();
+
+            foreach (var pair in imageSizes)
             {
-                Console.WriteLine("oops " + pair);
-                continue;
+                var sizeInAtlas = pair.Value + 2;
+                var sheetPosition = sheetBuilder.Allocate(sizeInAtlas);
+                if (0 < sheetPosition.SheetIndex)
+                {
+                    Console.WriteLine($"Sheet size of {nextSheetEdge} failed.");
+                    minSheetEdge = nextSheetEdge;
+                    goto restart;
+                }
+                var spritePosition = sheetPosition.Rectangle.Padded(1);
+                imageLocations.Add(pair.Key, spritePosition);
             }
-            var spritePosition = sheetPosition.Rectangle.Padded(1);
-            imageLocations.Add(pair.Key, spritePosition);
-            Console.WriteLine($"{pair.Key}: {spritePosition}");
+
+            Console.WriteLine($"Sheet size of {nextSheetEdge} succeeded.");
+            sheetEdge = nextSheetEdge;
+        }
+
+        var sheetSurface = Sdl.CreateSurface(sheetEdge, sheetEdge, SdlPixelFormat.Abgr8888)
+            .ThrowOnSdlFailure("Failed to create surface.");
+
+        foreach (var pair in imageLocations)
+        {
+            // Console.WriteLine($"{pair}");
             var file = Path.Combine(folder, pair.Key);
             var imageSurface = Sdl.LoadPng(file)
                 .ThrowOnSdlFailure("Failed to load file.");
+            var spritePosition = pair.Value.Position;
             SdlExtensions.BlitAndBleed(
                 imageSurface,
                 sheetSurface,
-                spritePosition.Position.X,
-                spritePosition.Position.Y);
+                spritePosition.X,
+                spritePosition.Y);
             Sdl.DestroySurface(imageSurface);
         }
 
         var pixels = SdlSurface.FromPointer(sheetSurface).Pixels;
         StbImageWrite.WritePng(
             "sheet.png",
-            sheetSize.X,
-            sheetSize.Y,
+            sheetEdge,
+            sheetEdge,
             4,
             pixels,
-            sheetSize.X * 4);
+            sheetEdge * 4);
 
         Sdl.DestroySurface(sheetSurface);
 

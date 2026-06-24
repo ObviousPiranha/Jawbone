@@ -33,6 +33,11 @@ public static class Quad
 {
     public static Quad<T> Create<T>(T abcd) => new(abcd);
     public static Quad<T> Create<T>(T a, T b, T c, T d) => new(a, b, c, d);
+    public static Quad<Vector2> Create(LiteQuad<Vector2> lq) =>
+        Create(lq.A, lq.B, lq.C, lq.C + lq.A - lq.B);
+
+    public static Quad<Vector3> Create(LiteQuad<Vector3> lq) =>
+        Create(lq.A, lq.B, lq.C, lq.C + lq.A - lq.B);
 
     // [Obsolete("Use CreateAxCy instead.")]
     public static Quad<Vector2> Create(Vector2 a, Vector2 c) => CreateAxCy(a, c);
