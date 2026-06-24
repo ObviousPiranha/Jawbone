@@ -4350,7 +4350,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetRenderDrawBlendMode")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetRenderDrawBlendMode(nint renderer, uint blendMode);
+    public static partial CBool SetRenderDrawBlendMode(nint renderer, SdlBlendMode blendMode);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetRenderDrawBlendMode")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4380,6 +4380,10 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderRect(nint renderer, nint rect);
 
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderRect")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderRect(nint renderer, in SdlFRect rect);
+
     [LibraryImport(Lib, EntryPoint = "SDL_RenderRects")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderRects(nint renderer, nint rects, int count);
@@ -4387,6 +4391,10 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_RenderFillRect")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderFillRect(nint renderer, nint rect);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderFillRect")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderFillRect(nint renderer, in SdlFRect rect);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderFillRects")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4399,6 +4407,10 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderTexture(nint renderer, nint texture, nint srcrect, nint dstrect);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureAffine")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderTextureAffine(nint renderer, nint texture, in SdlFRect srcRect, in SdlFPoint origin, in SdlFPoint right, in SdlFPoint down);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureRotated")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

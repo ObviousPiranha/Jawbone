@@ -20,11 +20,10 @@ public sealed class UnmanagedList<T> : IUnmanagedList, IBufferWriter<T> where T 
 
     public bool IsEmpty => Count == 0;
     public int Capacity => _items.Length;
-    public int Count { get; internal set; }
+    public int Count { get; private set; }
     public int Size => Count * Unsafe.SizeOf<T>();
     public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
     public Span<T> Items => AsSpan();
-    internal Span<T> Free => _items.AsSpan(Count);
 
     public ref T this[int index] => ref AsSpan()[index];
     public ref T this[Index index] => ref AsSpan()[index];

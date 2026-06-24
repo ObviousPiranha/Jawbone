@@ -283,9 +283,9 @@ public static class UnmanagedListExtensions
         IFormatProvider? formatProvider = null) where T : ISpanFormattable
     {
         int charsWritten;
-        while (!item.TryFormat(list.Free, out charsWritten, format, formatProvider))
+        while (!item.TryFormat(list.GetSpan(), out charsWritten, format, formatProvider))
             list.Expand();
-        list.Count += charsWritten;
+        list.Advance(charsWritten);
         return list;
     }
 
@@ -296,9 +296,9 @@ public static class UnmanagedListExtensions
         IFormatProvider? formatProvider = null) where T : IUtf8SpanFormattable
     {
         int bytesWritten;
-        while (!item.TryFormat(list.Free, out bytesWritten, format, formatProvider))
+        while (!item.TryFormat(list.GetSpan(), out bytesWritten, format, formatProvider))
             list.Expand();
-        list.Count += bytesWritten;
+        list.Advance(bytesWritten);
         return list;
     }
 }
