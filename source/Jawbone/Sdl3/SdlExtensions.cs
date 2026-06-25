@@ -3,6 +3,7 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -367,6 +368,64 @@ public static class SdlExtensions
             destinationSurfacePtr,
             dstRect
             ).ThrowOnSdlFailure(blitMessage);
+    }
+
+    public static nint CreateSpriteSheet(
+        string folder,
+        out Point32 sheetSize,
+        out Dictionary<string, Rectangle32> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        SheetBuilder.CreateSingleSheet(
+            folder,
+            out sheetSize,
+            out imageLocations);
+        var result = CreateSpriteSheet(
+            folder,
+            sheetSize,
+            imageLocations,
+            pixelFormat);
+        return result;
+    }
+
+    public static nint CreateSpriteSheet(
+        string folder,
+        Point32 sheetSize,
+        IEnumerable<KeyValuePair<string, Rectangle32>> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        var sheetSurface = Sdl.CreateSurface(sheetSize.X, sheetSize.Y, pixelFormat)
+            .ThrowOnSdlFailure("Unable to create surface.");
+        
+        try
+        {
+            foreach (var pair in imageLocations)
+            {
+                var file = Path.Combine(folder, pair.Key);
+                var spritePosition = pair.Value.Position;
+                var imageSurface = Sdl.LoadPng(file)
+                    .ThrowOnSdlFailure("Unable to load PNG.");
+                try
+                {
+                    BlitAndBleed(
+                        imageSurface,
+                        sheetSurface,
+                        spritePosition.X,
+                        spritePosition.Y);
+                }
+                finally
+                {
+                    Sdl.DestroySurface(imageSurface);
+                }
+            }
+
+            return sheetSurface;
+        }
+        catch
+        {
+            Sdl.DestroySurface(sheetSurface);
+            throw;
+        }
     }
 }
 
