@@ -32,17 +32,12 @@ public struct HertzMachine
     {
         if (_hertz < 1)
             return false;
-        if (_nextFrame <= now)
-        {
-            var frameLength = _frameLength + Convert.ToInt64(_frameIndex < _remainder);
-            _nextFrame += frameLength;
-            _frameIndex = (_frameIndex + 1) % _hertz;
-            ++UpdateCount;
-            return true;
-        }
-        else
-        {
+        if (now < _nextFrame)
             return false;
-        }
+        var frameLength = _frameLength + Convert.ToInt64(_frameIndex < _remainder);
+        _nextFrame += frameLength;
+        _frameIndex = (_frameIndex + 1) % _hertz;
+        ++UpdateCount;
+        return true;
     }
 }
