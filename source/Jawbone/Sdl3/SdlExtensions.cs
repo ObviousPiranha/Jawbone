@@ -1,3 +1,4 @@
+using Jawbone.Stb;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Frozen;
@@ -426,6 +427,22 @@ public static class SdlExtensions
             Sdl.DestroySurface(sheetSurface);
             throw;
         }
+    }
+
+    public static void SaveSurfaceAsPng(nint surfacePtr, string path)
+    {
+        if (surfacePtr == default)
+            throw new ArgumentNullException(nameof(surfacePtr));
+        ref var surface = ref SdlSurface.FromPointer(surfacePtr);
+        var result = StbImageWrite.WritePng(
+            path,
+            surface.W,
+            surface.H,
+            4,
+            surface.Pixels,
+            surface.Pitch);
+        if (result == 0)
+            throw new InvalidOperationException("Failed to write PNG.");
     }
 }
 
