@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace Jawbone;
@@ -159,14 +160,14 @@ public sealed class SheetBuilder
 
         var minSheetEdge = (int)float.Sqrt(totalArea);
         var sheetEdge = minSheetEdge * 2;
-        imageLocations = new Dictionary<string, Rectangle32>();
+        imageLocations = new Dictionary<string, Rectangle32>(imageSizes.Count);
+        var imageLocationsCandidate = new Dictionary<string, Rectangle32>(imageSizes.Count);
 
-    restart:
         while (1 < sheetEdge - minSheetEdge)
         {
             var nextSheetEdge = (minSheetEdge + sheetEdge) / 2;
             var sheetBuilder = new SheetBuilder(new(nextSheetEdge));
-            imageLocations.Clear();
+            imageLocationsCandidate.Clear();
 
             foreach (var pair in imageSizes)
             {
@@ -175,16 +176,21 @@ public sealed class SheetBuilder
                 if (0 < sheetPosition.SheetIndex)
                 {
                     minSheetEdge = nextSheetEdge;
-                    goto restart;
+                    break;
                 }
                 var spritePosition = sheetPosition.Rectangle.Padded(1);
-                imageLocations.Add(pair.Key, spritePosition);
+                imageLocationsCandidate.Add(pair.Key, spritePosition);
             }
 
-            sheetEdge = nextSheetEdge;
+            if (minSheetEdge != nextSheetEdge)
+            {
+                sheetEdge = nextSheetEdge;
+                (imageLocations, imageLocationsCandidate) = (imageLocationsCandidate, imageLocations);
+            }
         }
 
         sheetSize = new(sheetEdge);
+        Debug.Assert(imageSizes.Count == imageLocations.Count);
 
         static int ComparePairs(
             KeyValuePair<string, Point32> a,
