@@ -444,5 +444,16 @@ public static class SdlExtensions
         if (result == 0)
             throw new InvalidOperationException("Failed to write PNG.");
     }
+
+    public static CBool RenderLines(nint renderer, ReadOnlySpan<SdlFPoint> points) =>
+        Sdl.RenderLines(renderer, points[0], points.Length);
+    
+    public static CBool RenderLines(nint renderer, ReadOnlySpan<Vector2> points)
+    {
+        Debug.Assert(Unsafe.SizeOf<Vector2>() == Unsafe.SizeOf<SdlFPoint>());
+        var span = MemoryMarshal.Cast<Vector2, SdlFPoint>(points);
+        var result = RenderLines(renderer, span);
+        return result;
+    }
 }
 

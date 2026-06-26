@@ -4376,6 +4376,10 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderLines(nint renderer, nint points, int count);
 
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderLines")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderLines(nint renderer, in SdlFPoint points, int count);
+
     [LibraryImport(Lib, EntryPoint = "SDL_RenderRect")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderRect(nint renderer, nint rect);
