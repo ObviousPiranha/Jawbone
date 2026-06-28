@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Jawbone;
 
 public static class Line
@@ -65,6 +67,58 @@ public static class Line
         x = xn / d;
         y = yn / d;
         return true;
+    }
+
+    public static bool TryIntersect(
+        float x1,
+        float y1,
+        float x2,
+        float y2,
+        float x3,
+        float y3,
+        float x4,
+        float y4,
+        out float x,
+        out float y)
+    {
+        var d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+        if (!float.IsRealNumber(d) || d == 0f)
+        {
+            // Lines are (probably) parallel.
+            x = 0f;
+            y = 0f;
+            return false;
+        }
+
+        var x1y2_y1x2 = x1 * y2 - y1 * x2;
+        var x3y4_y3x4 = x3 * y4 - y3 * x4;
+
+        var xn = x1y2_y1x2 * (x3 - x4) - (x1 - x2) * x3y4_y3x4;
+        var yn = x1y2_y1x2 * (y3 - y4) - (y1 - y2) * x3y4_y3x4;
+        x = xn / d;
+        y = yn / d;
+        return true;
+    }
+
+    public static bool TryIntersect(
+        Vector2 v1,
+        Vector2 v2,
+        Vector2 v3,
+        Vector2 v4,
+        out Vector2 result)
+    {
+        return TryIntersect(
+            v1.X,
+            v1.Y,
+            v2.X,
+            v2.Y,
+            v3.X,
+            v3.Y,
+            v4.X,
+            v4.Y,
+            out result.X,
+            out result.Y);
     }
 
     public static bool IntersectsAtX(
