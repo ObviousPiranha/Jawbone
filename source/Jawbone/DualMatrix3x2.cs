@@ -6,17 +6,29 @@ namespace Jawbone;
 
 public readonly struct DualMatrix3x2
 {
-    public Matrix3x2 Forward { get; init; }
-    public Matrix3x2 Inverse { get; init; }
+    public static DualMatrix3x2 Identity =>
+        new(Matrix3x2.Identity, Matrix3x2.Identity);
+
+    public Matrix3x2 Forward { get; }
+    public Matrix3x2 Inverse { get; }
+    private readonly bool _initialized;
 
     public DualMatrix3x2(Matrix3x2 forward, Matrix3x2 inverse)
     {
         Forward = forward;
         Inverse = inverse;
+        _initialized = true;
     }
 
-    public DualMatrix3x2 Transform(Matrix3x2 forward, Matrix3x2 inverse) =>
-        new(Forward * forward, inverse * Inverse);
+    public DualMatrix3x2 Transform(Matrix3x2 forward, Matrix3x2 inverse)
+    {
+        return _initialized ?
+            new(Forward * forward, inverse * Inverse) :
+            new(forward, inverse);
+    }
+    
+    public DualMatrix3x2 Transform(DualMatrix3x2 dualMatrix) =>
+        Transform(dualMatrix.Forward, dualMatrix.Inverse);
 
     public DualMatrix3x2 Scale(float x, float y)
     {
@@ -36,6 +48,8 @@ public readonly struct DualMatrix3x2
         }
     }
 
+    public DualMatrix3x2 Scale(float xy) => Scale(xy, xy);
+
     public DualMatrix3x2 Scale(Vector2 v) => Scale(v.X, v.Y);
 
     public DualMatrix3x2 Translate(float x, float y)
@@ -54,5 +68,10 @@ public readonly struct DualMatrix3x2
             Matrix3x2.CreateRotation(-radians));
     }
 
-    public static DualMatrix3x2 Start() => new(Matrix3x2.Identity, Matrix3x2.Identity);
+    public DualMatrix3x2 Rotate(float radians, Vector2 centerPoint)
+    {
+        return Transform(
+            Matrix3x2.CreateRotation(radians, centerPoint),
+            Matrix3x2.CreateRotation(-radians, centerPoint));
+    }
 }
