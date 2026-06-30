@@ -6,26 +6,17 @@ namespace Jawbone;
 
 public readonly struct DualMatrix3x2
 {
-    public static DualMatrix3x2 Identity =>
-        new(Matrix3x2.Identity, Matrix3x2.Identity);
-
-    public Matrix3x2 Forward { get; }
-    public Matrix3x2 Inverse { get; }
-    private readonly bool _initialized;
+    public readonly Matrix3x2 Forward;
+    public readonly Matrix3x2 Inverse;
 
     public DualMatrix3x2(Matrix3x2 forward, Matrix3x2 inverse)
     {
         Forward = forward;
         Inverse = inverse;
-        _initialized = true;
     }
 
-    public DualMatrix3x2 Transform(Matrix3x2 forward, Matrix3x2 inverse)
-    {
-        return _initialized ?
-            new(Forward * forward, inverse * Inverse) :
-            new(forward, inverse);
-    }
+    public DualMatrix3x2 Transform(Matrix3x2 forward, Matrix3x2 inverse) =>
+        new(Forward * forward, inverse * Inverse);
     
     public DualMatrix3x2 Transform(DualMatrix3x2 dualMatrix) =>
         Transform(dualMatrix.Forward, dualMatrix.Inverse);
@@ -74,4 +65,7 @@ public readonly struct DualMatrix3x2
             Matrix3x2.CreateRotation(radians, centerPoint),
             Matrix3x2.CreateRotation(-radians, centerPoint));
     }
+
+    public static DualMatrix3x2 Create() =>
+        new(Matrix3x2.Identity, Matrix3x2.Identity);
 }
