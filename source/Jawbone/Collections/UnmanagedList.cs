@@ -297,7 +297,7 @@ public sealed class UnmanagedList<T> : IUnmanagedList, IBufferWriter<T> where T 
     public Span<T> GetSpan(int sizeHint = 0)
     {
         EnsureCapacityFor(int.Max(1, sizeHint));
-        return _items.AsSpan(Count);;        
+        return _items.AsSpan(Count);
     }
 
     public static implicit operator Span<T>(UnmanagedList<T> list) => list.AsSpan();
