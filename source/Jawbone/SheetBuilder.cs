@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 
 namespace Jawbone;
@@ -124,43 +125,14 @@ public sealed class SheetBuilder
         out Point32 sheetSize,
         out Dictionary<string, Rectangle32> imageLocations)
     {
-        var imageSizes = new List<KeyValuePair<string, Point32>>();
-        var totalArea = 0;
-
-        {
-            var pendingFolders = new Stack<string?>();
-            pendingFolders.Push(null);
-            while (pendingFolders.TryPop(out var relativeFolder))
-            {
-                var currentFolder = relativeFolder is null ? folder : Path.Combine(folder, relativeFolder);
-
-                foreach (var innerFolder in Directory.EnumerateDirectories(currentFolder))
-                {
-                    var pendingFolder = Path.GetFileName(innerFolder);
-                    if (relativeFolder is not null)
-                        pendingFolder = Path.Combine(relativeFolder, pendingFolder);
-                    pendingFolders.Push(pendingFolder);
-                }
-                
-                foreach (var file in Directory.EnumerateFiles(currentFolder, "*.png"))
-                {
-                    var imageSize = Png.Png.GetImageSize(file);
-                    var relativeFile = Path.GetFileName(file);
-                    if (relativeFolder is not null)
-                        relativeFile = Path.Combine(relativeFolder, relativeFile);
-                    relativeFile = relativeFile.Replace('\\', '/');
-                    var pair = KeyValuePair.Create(relativeFile, imageSize);
-                    imageSizes.Add(pair);
-                    totalArea += (imageSize.X + 1) * (imageSize.Y + 1);
-                }
-            }
-        }
-
+        var imageSizes = GetImageSizes(folder, out var totalArea, out var largestDimensions);
         imageSizes.Sort(ComparePairs);
 
-        var minSheetEdge = (int)float.Sqrt(totalArea);
+        var minSheetEdge = int.Max(
+            (int)float.Sqrt(totalArea),
+            int.Max(largestDimensions.X, largestDimensions.Y));
         var sheetEdge = minSheetEdge * 2;
-        imageLocations = new Dictionary<string, Rectangle32>(imageSizes.Count);
+        imageLocations = new(imageSizes.Count);
         var imageLocationsCandidate = new Dictionary<string, Rectangle32>(imageSizes.Count);
 
         while (1 < sheetEdge - minSheetEdge)
@@ -191,24 +163,89 @@ public sealed class SheetBuilder
 
         sheetSize = new(sheetEdge);
         Debug.Assert(imageSizes.Count == imageLocations.Count);
+    }
 
-        static int ComparePairs(
-            KeyValuePair<string, Point32> a,
-            KeyValuePair<string, Point32> b)
+    public static void CreateSheets(
+        string folder,
+        Point32 sheetSize,
+        out Dictionary<string, SheetPosition> imageLocations)
+    {
+        var imageSizes = GetImageSizes(folder, out var totalArea, out var largestDimensions);
+        if (sheetSize.X < largestDimensions.X || sheetSize.Y < largestDimensions.Y)
+            throw new InvalidOperationException($"Sheet size {sheetSize} is not big enough for largest sprites {largestDimensions}.");
+        imageSizes.Sort(ComparePairs);
+
+        var sheetBuilder = new SheetBuilder(sheetSize);
+        imageLocations = new(imageSizes.Count);
+
+        foreach (var pair in imageSizes)
         {
-            var area0 = a.Value.X * a.Value.Y;
-            var area1 = b.Value.X * b.Value.Y;
-            var result = area1.CompareTo(area0);
-            if (result != 0)
-                return result;
-            var extreme0 = int.Max(a.Value.X, a.Value.Y);
-            var extreme1 = int.Max(b.Value.X, b.Value.Y);
-            result = extreme1.CompareTo(extreme0);
-            if (result != 0)
-                return result;
-            
-            result = a.Key.CompareTo(b.Key);
-            return result;
+            var sizeInAtlas = pair.Value + 2;
+            var sheetPosition = sheetBuilder.Allocate(sizeInAtlas);
+            imageLocations.Add(pair.Key, sheetPosition.Padded(1));
         }
+
+        Debug.Assert(imageSizes.Count == imageLocations.Count);
+    }
+
+    private static List<KeyValuePair<string, Point32>> GetImageSizes(
+        string folder,
+        out int totalAtlasArea,
+        out Point32 largestDimensions)
+    {
+        var imageSizes = new List<KeyValuePair<string, Point32>>();
+        totalAtlasArea = 0;
+        largestDimensions = default;
+
+        var pendingFolders = new Stack<string?>();
+        pendingFolders.Push(null);
+        while (pendingFolders.TryPop(out var relativeFolder))
+        {
+            var currentFolder = relativeFolder is null ? folder : Path.Combine(folder, relativeFolder);
+
+            foreach (var innerFolder in Directory.EnumerateDirectories(currentFolder))
+            {
+                var pendingFolder = Path.GetFileName(innerFolder);
+                if (relativeFolder is not null)
+                    pendingFolder = Path.Combine(relativeFolder, pendingFolder);
+                pendingFolders.Push(pendingFolder);
+            }
+            
+            foreach (var file in Directory.EnumerateFiles(currentFolder, "*.png"))
+            {
+                var imageSize = Png.Png.GetImageSize(file);
+                var relativeFile = Path.GetFileName(file);
+                if (relativeFolder is not null)
+                    relativeFile = Path.Combine(relativeFolder, relativeFile);
+                relativeFile = relativeFile.Replace('\\', '/');
+                var pair = KeyValuePair.Create(relativeFile, imageSize);
+                imageSizes.Add(pair);
+                var sizeInAtlas = imageSize + 1;
+                totalAtlasArea += sizeInAtlas.X * sizeInAtlas.Y;
+                largestDimensions = new(
+                    int.Max(largestDimensions.X, sizeInAtlas.X),
+                    int.Max(largestDimensions.Y, sizeInAtlas.Y));
+            }
+        }
+        return imageSizes;
+    }
+
+    private static int ComparePairs(
+        KeyValuePair<string, Point32> a,
+        KeyValuePair<string, Point32> b)
+    {
+        var area0 = a.Value.X * a.Value.Y;
+        var area1 = b.Value.X * b.Value.Y;
+        var result = area1.CompareTo(area0);
+        if (result != 0)
+            return result;
+        var extreme0 = int.Max(a.Value.X, a.Value.Y);
+        var extreme1 = int.Max(b.Value.X, b.Value.Y);
+        result = extreme1.CompareTo(extreme0);
+        if (result != 0)
+            return result;
+        
+        result = a.Key.CompareTo(b.Key);
+        return result;
     }
 }

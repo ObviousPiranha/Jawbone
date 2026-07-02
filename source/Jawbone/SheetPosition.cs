@@ -13,6 +13,11 @@ public readonly struct SheetPosition : IEquatable<SheetPosition>
         Rectangle = rectangle;
     }
 
+    public SheetPosition Padded(int n)
+    {
+        return new(SheetIndex, Rectangle.Padded(n));
+    }
+
     public readonly bool Equals(SheetPosition other) => SheetIndex == other.SheetIndex && Rectangle == other.Rectangle;
     public override readonly bool Equals(object? obj) => obj is SheetPosition other && Equals(other);
     public override readonly int GetHashCode() => HashCode.Combine(SheetIndex, Rectangle);

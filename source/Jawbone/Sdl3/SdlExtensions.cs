@@ -27,7 +27,7 @@ public static class SdlExtensions
         return result;
     }
 
-    public static nint ThrowOnSdlFailure(this nint result, string? message)
+    public static nint ThrowOnSdlFailure(this nint result, string? message = null)
     {
         if (result == default)
             SdlException.Throw(message);
@@ -427,6 +427,63 @@ public static class SdlExtensions
             Sdl.DestroySurface(sheetSurface);
             throw;
         }
+    }
+
+    public static List<nint> CreateSpriteSheets(
+        string folder,
+        Point32 sheetSize,
+        out Dictionary<string, SheetPosition> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        SheetBuilder.CreateSheets(folder, sheetSize, out imageLocations);
+        var result = CreateSpriteSheets(folder, sheetSize, imageLocations, pixelFormat);
+        return result;
+    }
+
+    public static List<nint> CreateSpriteSheets(
+        string folder,
+        Point32 sheetSize,
+        IEnumerable<KeyValuePair<string, SheetPosition>> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        var surfaces = new List<nint>();
+
+        try
+        {
+            foreach (var pair in imageLocations)
+            {
+                while (surfaces.Count <= pair.Value.SheetIndex)
+                {
+                    var surface = Sdl.CreateSurface(sheetSize.X, sheetSize.Y, pixelFormat)
+                        .ThrowOnSdlFailure("Unable to create surface.");
+                    surfaces.Add(surface);
+                }
+                var file = Path.Combine(folder, pair.Key);
+                var spritePosition = pair.Value.Rectangle.Position;
+                var imageSurface = Sdl.LoadPng(file)
+                    .ThrowOnSdlFailure("Unable to load PNG.");
+                try
+                {
+                    BlitAndBleed(
+                        imageSurface,
+                        surfaces[pair.Value.SheetIndex],
+                        spritePosition.X,
+                        spritePosition.Y);
+                }
+                finally
+                {
+                    Sdl.DestroySurface(imageSurface);
+                }
+            }
+        }
+        catch
+        {
+            foreach (var surface in surfaces)
+                Sdl.DestroySurface(surface);
+            throw;
+        }
+
+        return surfaces;
     }
 
     public static void SaveSurfaceAsPng(nint surfacePtr, string path)
