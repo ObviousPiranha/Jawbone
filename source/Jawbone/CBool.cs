@@ -12,7 +12,7 @@ public struct CBool : IEquatable<CBool>
     public override readonly int GetHashCode() => Value == 0 ? 0 : 1;
     public override readonly string ToString() => Convert.ToBoolean(Value).ToString();
 
-    public static implicit operator bool(CBool CBool) => Convert.ToBoolean(CBool.Value);
+    public static implicit operator bool(CBool b) => Convert.ToBoolean(b.Value);
     public static implicit operator CBool(bool b) => new() { Value = Convert.ToByte(b) };
 
     public static bool operator ==(CBool a, CBool b) => a.Equals(b);
