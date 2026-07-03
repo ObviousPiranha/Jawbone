@@ -124,18 +124,6 @@ public static class CollectionExtensions
         }
     }
 
-    public unsafe static ReadOnlySpan<T> ToReadOnlySpan<T>(this nint ptr, int length) where T : unmanaged
-    {
-        var result = new ReadOnlySpan<T>(ptr.ToPointer(), length);
-        return result;
-    }
-
-    public unsafe static Span<T> ToSpan<T>(this nint ptr, int length) where T : unmanaged
-    {
-        var result = new Span<T>(ptr.ToPointer(), length);
-        return result;
-    }
-
     public static Span<byte> NullTerminated(this Span<byte> span)
     {
         var index = span.IndexOf(default(byte));
@@ -146,24 +134,6 @@ public static class CollectionExtensions
     {
         var index = span.IndexOf(default(byte));
         return index == -1 ? span : span.Slice(0, index);
-    }
-
-    public static void Fill<T>(this Span<T> span, Func<int, T> factory)
-    {
-        for (int i = 0; i < span.Length; ++i)
-            span[i] = factory.Invoke(i);
-    }
-
-    public static void Fill<T, TState>(this Span<T> span, TState state, Func<int, TState, T> factory)
-    {
-        for (int i = 0; i < span.Length; ++i)
-            span[i] = factory.Invoke(i, state);
-    }
-
-    public static void MutateAll<T, TState>(this Span<T> span, TState state, Func<TState, T, T> mutator)
-    {
-        for (int i = 0; i < span.Length; ++i)
-            span[i] = mutator.Invoke(state, span[i]);
     }
 
     public static int Increment<TKey>(this IDictionary<TKey, int> dictionary, TKey key)

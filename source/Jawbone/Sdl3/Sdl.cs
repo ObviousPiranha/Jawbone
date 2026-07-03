@@ -2007,7 +2007,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetDisplays")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetDisplays(nint count);
+    public static partial nint GetDisplays(out int count);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetPrimaryDisplay")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -2146,7 +2146,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetWindowPosition")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool GetWindowPosition(nint window, nint x, nint y);
+    public static partial CBool GetWindowPosition(nint window, out int x, out int y);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetWindowSize")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

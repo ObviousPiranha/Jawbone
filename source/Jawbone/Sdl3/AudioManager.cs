@@ -71,7 +71,7 @@ sealed class AudioManager : IAudioManager, IDisposable
 
         try
         {
-            var deviceIds = deviceIdsPointer.ToReadOnlySpan<uint>(deviceCount);
+            var deviceIds = SpanReader.CreateSpan<uint>(deviceIdsPointer, deviceCount);
             var deviceNames = "(none)";
 
             if (!deviceIds.IsEmpty)

@@ -35,6 +35,10 @@ public static class SpanReader
     public static SpanReader<T> Create<T>(List<T>? list) => new(CollectionsMarshal.AsSpan(list));
     public static SpanReader<char> Create(string? text) => new(text);
 
+    public static unsafe ReadOnlySpan<T> CreateSpan<T>(
+        nint pointer, int length) where T : unmanaged =>
+        new(pointer.ToPointer(), length);
+
     public static bool TryCreate<T>(IEnumerable<T>? enumerable, out SpanReader<T> reader)
     {
         if (TryGetSpan(enumerable, out var span))

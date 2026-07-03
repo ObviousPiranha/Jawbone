@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
@@ -511,6 +512,44 @@ public static class SdlExtensions
         var span = MemoryMarshal.Cast<Vector2, SdlFPoint>(points);
         var result = RenderLines(renderer, span);
         return result;
+    }
+
+    public static ReadOnlySpan<uint> GetDisplayIds()
+    {
+        var pointer = Sdl.GetDisplays(out var count)
+            .ThrowOnSdlFailure();
+        var result = SpanReader.CreateSpan<uint>(pointer, count);
+        return result;
+    }
+
+    public static KeyValuePair<uint, SdlRect>[] GetAllDisplayBounds()
+    {
+        var ids = GetDisplayIds();
+        var result = new KeyValuePair<uint, SdlRect>[ids.Length];
+        for (int i = 0; i < ids.Length; ++i)
+        {
+            Sdl.GetDisplayBounds(ids[i], out var rect)
+                .ThrowOnSdlFailure();
+            result[i] = KeyValuePair.Create(ids[i], rect);
+        }
+        return result;
+    }
+
+    public static KeyValuePair<uint, SdlRect>[] GetAllDisplayBoundsFromTopLeft()
+    {
+        var result = GetAllDisplayBounds();
+        Array.Sort(result, ComparePairs);
+        return result;
+
+        static int ComparePairs(
+            KeyValuePair<uint, SdlRect> a,
+            KeyValuePair<uint, SdlRect> b)
+        {
+            var result = a.Value.X.CompareTo(b.Value.X);
+            if (result == 0)
+                result = a.Value.Y.CompareTo(b.Value.Y);
+            return result;
+        }
     }
 }
 
