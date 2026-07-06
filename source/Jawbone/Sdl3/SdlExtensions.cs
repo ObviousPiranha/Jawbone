@@ -1,12 +1,13 @@
+using Jawbone.Stb;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Jawbone.Sdl3;
 
@@ -19,14 +20,14 @@ public static class SdlExtensions
         return services.AddSingleton<IAudioManager, AudioManager>();
     }
 
-    public static CBool ThrowOnSdlFailure(this CBool result, string? message)
+    public static CBool ThrowOnSdlFailure(this CBool result, string? message = null)
     {
         if (!result)
             SdlException.Throw(message);
         return result;
     }
 
-    public static nint ThrowOnSdlFailure(this nint result, string? message)
+    public static nint ThrowOnSdlFailure(this nint result, string? message = null)
     {
         if (result == default)
             SdlException.Throw(message);
@@ -223,4 +224,331 @@ public static class SdlExtensions
     {
         return Sdl.SetWindowFullscreen(window, !IsFullscreen(window));
     }
+
+    public static void BlitAndBleed(
+        nint sourceSurfacePtr,
+        nint destinationSurfacePtr,
+        int destinationX,
+        int destinationY)
+    {
+        const string message = "Surface pointer cannot be null.";
+        if (sourceSurfacePtr == default)
+            throw new ArgumentNullException(nameof(sourceSurfacePtr), message);
+        if (destinationSurfacePtr == default)
+            throw new ArgumentNullException(nameof(destinationSurfacePtr), message);
+        var sourceSize = SdlSurface.GetSize(sourceSurfacePtr);
+
+        Debug.Assert(0 < sourceSize.X);
+        Debug.Assert(0 < sourceSize.Y);
+
+        var w = sourceSize.X;
+        var h = sourceSize.Y;
+
+        var srcRect = default(SdlRect);
+        var dstRect = default(SdlRect);
+
+        dstRect.X = destinationX;
+        dstRect.Y = destinationY;
+
+        const string blitMessage = "Unable to blit surface.";
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            Unsafe.NullRef<SdlRect>(),
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Top edge
+        srcRect.X = 0;
+        srcRect.Y = 0;
+        srcRect.W = w;
+        srcRect.H = 1;
+        dstRect.X = destinationX;
+        dstRect.Y = destinationY - 1;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Bottom edge
+        srcRect.X = 0;
+        srcRect.Y = h - 1;
+        srcRect.W = w;
+        srcRect.H = 1;
+        dstRect.X = destinationX;
+        dstRect.Y = destinationY + h;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Left edge
+        srcRect.X = 0;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = h;
+        dstRect.X = destinationX - 1;
+        dstRect.Y = destinationY;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Right edge
+        srcRect.X = w - 1;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = h;
+        dstRect.X = destinationX + w;
+        dstRect.Y = destinationY;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Top left corner
+        srcRect.X = 0;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX - 1;
+        dstRect.Y = destinationY - 1;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Top right corner
+        srcRect.X = w - 1;
+        srcRect.Y = 0;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX + w;
+        dstRect.Y = destinationY - 1;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Bottom left corner
+        srcRect.X = 0;
+        srcRect.Y = h - 1;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX - 1;
+        dstRect.Y = destinationY + h;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+
+        // Bottom right corner
+        srcRect.X = w - 1;
+        srcRect.Y = h - 1;
+        srcRect.W = 1;
+        srcRect.H = 1;
+        dstRect.X = destinationX + w;
+        dstRect.Y = destinationY + h;
+        Sdl.BlitSurface(
+            sourceSurfacePtr,
+            srcRect,
+            destinationSurfacePtr,
+            dstRect
+            ).ThrowOnSdlFailure(blitMessage);
+    }
+
+    public static nint CreateSpriteSheet(
+        string folder,
+        out Point32 sheetSize,
+        out Dictionary<string, Rectangle32> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        SheetBuilder.CreateSingleSheet(
+            folder,
+            out sheetSize,
+            out imageLocations);
+        var result = CreateSpriteSheet(
+            folder,
+            sheetSize,
+            imageLocations,
+            pixelFormat);
+        return result;
+    }
+
+    public static nint CreateSpriteSheet(
+        string folder,
+        Point32 sheetSize,
+        IEnumerable<KeyValuePair<string, Rectangle32>> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        var sheetSurface = Sdl.CreateSurface(sheetSize.X, sheetSize.Y, pixelFormat)
+            .ThrowOnSdlFailure("Unable to create surface.");
+
+        try
+        {
+            foreach (var pair in imageLocations)
+            {
+                var file = Path.Combine(folder, pair.Key);
+                var spritePosition = pair.Value.Position;
+                var imageSurface = Sdl.LoadPng(file)
+                    .ThrowOnSdlFailure("Unable to load PNG.");
+                try
+                {
+                    BlitAndBleed(
+                        imageSurface,
+                        sheetSurface,
+                        spritePosition.X,
+                        spritePosition.Y);
+                }
+                finally
+                {
+                    Sdl.DestroySurface(imageSurface);
+                }
+            }
+
+            return sheetSurface;
+        }
+        catch
+        {
+            Sdl.DestroySurface(sheetSurface);
+            throw;
+        }
+    }
+
+    public static List<nint> CreateSpriteSheets(
+        string folder,
+        Point32 sheetSize,
+        out Dictionary<string, SheetPosition> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        SheetBuilder.CreateSheets(folder, sheetSize, out imageLocations);
+        var result = CreateSpriteSheets(folder, sheetSize, imageLocations, pixelFormat);
+        return result;
+    }
+
+    public static List<nint> CreateSpriteSheets(
+        string folder,
+        Point32 sheetSize,
+        IEnumerable<KeyValuePair<string, SheetPosition>> imageLocations,
+        SdlPixelFormat pixelFormat = SdlPixelFormat.Abgr8888)
+    {
+        var surfaces = new List<nint>();
+
+        try
+        {
+            foreach (var pair in imageLocations)
+            {
+                while (surfaces.Count <= pair.Value.SheetIndex)
+                {
+                    var surface = Sdl.CreateSurface(sheetSize.X, sheetSize.Y, pixelFormat)
+                        .ThrowOnSdlFailure("Unable to create surface.");
+                    surfaces.Add(surface);
+                }
+                var file = Path.Combine(folder, pair.Key);
+                var spritePosition = pair.Value.Rectangle.Position;
+                var imageSurface = Sdl.LoadPng(file)
+                    .ThrowOnSdlFailure("Unable to load PNG.");
+                try
+                {
+                    BlitAndBleed(
+                        imageSurface,
+                        surfaces[pair.Value.SheetIndex],
+                        spritePosition.X,
+                        spritePosition.Y);
+                }
+                finally
+                {
+                    Sdl.DestroySurface(imageSurface);
+                }
+            }
+        }
+        catch
+        {
+            foreach (var surface in surfaces)
+                Sdl.DestroySurface(surface);
+            throw;
+        }
+
+        return surfaces;
+    }
+
+    public static void SaveSurfaceAsPng(nint surfacePtr, string path)
+    {
+        if (surfacePtr == default)
+            throw new ArgumentNullException(nameof(surfacePtr));
+        ref var surface = ref SdlSurface.FromPointer(surfacePtr);
+        var result = StbImageWrite.WritePng(
+            path,
+            surface.W,
+            surface.H,
+            4,
+            surface.Pixels,
+            surface.Pitch);
+        if (result == 0)
+            throw new InvalidOperationException("Failed to write PNG.");
+    }
+
+    public static CBool RenderLines(nint renderer, ReadOnlySpan<SdlFPoint> points) =>
+        Sdl.RenderLines(renderer, points[0], points.Length);
+
+    public static CBool RenderLines(nint renderer, ReadOnlySpan<Vector2> points)
+    {
+        Debug.Assert(Unsafe.SizeOf<Vector2>() == Unsafe.SizeOf<SdlFPoint>());
+        var span = MemoryMarshal.Cast<Vector2, SdlFPoint>(points);
+        var result = RenderLines(renderer, span);
+        return result;
+    }
+
+    public static ReadOnlySpan<uint> GetDisplayIds()
+    {
+        var pointer = Sdl.GetDisplays(out var count)
+            .ThrowOnSdlFailure();
+        var result = SpanReader.CreateSpan<uint>(pointer, count);
+        return result;
+    }
+
+    public static KeyValuePair<uint, SdlRect>[] GetAllDisplayBounds()
+    {
+        var ids = GetDisplayIds();
+        var result = new KeyValuePair<uint, SdlRect>[ids.Length];
+        for (int i = 0; i < ids.Length; ++i)
+        {
+            Sdl.GetDisplayBounds(ids[i], out var rect)
+                .ThrowOnSdlFailure();
+            result[i] = KeyValuePair.Create(ids[i], rect);
+        }
+        return result;
+    }
+
+    public static KeyValuePair<uint, SdlRect>[] GetAllDisplayBoundsFromTopLeft()
+    {
+        var result = GetAllDisplayBounds();
+        Array.Sort(result, ComparePairs);
+        return result;
+
+        static int ComparePairs(
+            KeyValuePair<uint, SdlRect> a,
+            KeyValuePair<uint, SdlRect> b)
+        {
+            var result = a.Value.X.CompareTo(b.Value.X);
+            if (result == 0)
+                result = a.Value.Y.CompareTo(b.Value.Y);
+            return result;
+        }
+    }
 }
+

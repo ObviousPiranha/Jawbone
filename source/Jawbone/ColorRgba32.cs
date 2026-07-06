@@ -23,6 +23,10 @@ public struct ColorRgba32 :
     {
     }
 
+    public ColorRgba32(byte rgb) : this(rgb, rgb, rgb)
+    {
+    }
+
     public ColorRgba32(byte r, byte g, byte b)
     {
         R = r;

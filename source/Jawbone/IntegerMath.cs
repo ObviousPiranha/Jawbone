@@ -6,4 +6,5 @@ public static class IntegerMath
 {
     public static int SquareRoot32(double n) => (int)double.Floor(double.Sqrt(n));
     public static long SquareRoot64(double n) => (long)double.Floor(double.Sqrt(n));
+    public static bool IsPowerOfTwo(int n) => 0 < n && (n & (n - 1)) == 0;
 }

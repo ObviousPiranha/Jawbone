@@ -1,5 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Jawbone;
 
@@ -24,4 +26,29 @@ public struct Rectangle32 : IEquatable<Rectangle32>
 
     public static bool operator ==(Rectangle32 a, Rectangle32 b) => a.Equals(b);
     public static bool operator !=(Rectangle32 a, Rectangle32 b) => !a.Equals(b);
+
+    public sealed class SimpleJsonConverter : JsonConverter<Rectangle32>
+    {
+        public override Rectangle32 Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options)
+        {
+            var text = reader.GetString() ?? throw new JsonException();
+            var values = text.Split(",", StringSplitOptions.TrimEntries);
+            var result = new Rectangle32(
+                new(int.Parse(values[0]), int.Parse(values[1])),
+                new(int.Parse(values[2]), int.Parse(values[3])));
+            return result;
+        }
+
+        public override void Write(
+            Utf8JsonWriter writer,
+            Rectangle32 value,
+            JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(
+                $"{value.Position.X}, {value.Position.Y}, {value.Size.X}, {value.Size.Y}");
+        }
+    }
 }

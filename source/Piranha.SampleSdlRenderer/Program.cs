@@ -179,9 +179,9 @@ class Program : ISdlEventHandler
             Sdl.Init(SdlInit.Video | SdlInit.Events).ThrowOnSdlFailure("Unable to init SDL.");
             {
                 var program = new Program();
-                program.OnStart();
+                // program.OnStart();
                 ApplicationManager.Run(program);
-                program.OnStop();
+                // program.OnStop();
             }
             Sdl.Quit();
             return 0;

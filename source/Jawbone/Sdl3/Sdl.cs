@@ -2007,7 +2007,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetDisplays")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial nint GetDisplays(nint count);
+    public static partial nint GetDisplays(out int count);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetPrimaryDisplay")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -2146,7 +2146,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetWindowPosition")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool GetWindowPosition(nint window, nint x, nint y);
+    public static partial CBool GetWindowPosition(nint window, out int x, out int y);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetWindowSize")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4278,7 +4278,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderCoordinatesFromWindow")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool RenderCoordinatesFromWindow(nint renderer, float window_x, float window_y, nint x, nint y);
+    public static partial CBool RenderCoordinatesFromWindow(nint renderer, float window_x, float window_y, out float x, out float y);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderCoordinatesToWindow")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4286,7 +4286,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_ConvertEventToRenderCoordinates")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool ConvertEventToRenderCoordinates(nint renderer, nint @event);
+    public static partial CBool ConvertEventToRenderCoordinates(nint renderer, ref SdlEvent @event);
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetRenderViewport")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4350,7 +4350,7 @@ public static partial class Sdl
 
     [LibraryImport(Lib, EntryPoint = "SDL_SetRenderDrawBlendMode")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial CBool SetRenderDrawBlendMode(nint renderer, uint blendMode);
+    public static partial CBool SetRenderDrawBlendMode(nint renderer, SdlBlendMode blendMode);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetRenderDrawBlendMode")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4376,9 +4376,17 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderLines(nint renderer, nint points, int count);
 
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderLines")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderLines(nint renderer, in SdlFPoint points, int count);
+
     [LibraryImport(Lib, EntryPoint = "SDL_RenderRect")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderRect(nint renderer, nint rect);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderRect")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderRect(nint renderer, in SdlFRect rect);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderRects")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4388,13 +4396,25 @@ public static partial class Sdl
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderFillRect(nint renderer, nint rect);
 
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderFillRect")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderFillRect(nint renderer, in SdlFRect rect);
+
     [LibraryImport(Lib, EntryPoint = "SDL_RenderFillRects")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderFillRects(nint renderer, nint rects, int count);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTexture")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderTexture(nint renderer, nint texture, in SdlFRect srcrect, in SdlFRect dstrect);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderTexture")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial CBool RenderTexture(nint renderer, nint texture, nint srcrect, nint dstrect);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureAffine")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial CBool RenderTextureAffine(nint renderer, nint texture, in SdlFRect srcRect, in SdlFPoint origin, in SdlFPoint right, in SdlFPoint down);
 
     [LibraryImport(Lib, EntryPoint = "SDL_RenderTextureRotated")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -4664,6 +4684,10 @@ public static partial class Sdl
     [LibraryImport(Lib, EntryPoint = "SDL_LoadPNG")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial nint LoadPng(in byte path);
+
+    [LibraryImport(Lib, EntryPoint = "SDL_LoadPNG", StringMarshalling = StringMarshalling.Utf8)]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial nint LoadPng(string path);
 
     [LibraryImport(Lib, EntryPoint = "SDL_GetGPURendererDevice")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

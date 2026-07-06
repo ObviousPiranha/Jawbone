@@ -28,6 +28,34 @@ public static class SpanWriter
     public static SpanWriter<T> Create<T>(ArraySegment<T> segment) => new(segment);
     public static unsafe SpanWriter<T> Create<T>(nint ptr, int length) => new(new(ptr.ToPointer(), length));
 
+    public static unsafe Span<T> CreateSpan<T>(
+        nint pointer, int length) where T : unmanaged =>
+        new(pointer.ToPointer(), length);
+
+    public static void Fill<T>(Span<T> span, Func<int, T> factory)
+    {
+        for (int i = 0; i < span.Length; ++i)
+            span[i] = factory.Invoke(i);
+    }
+
+    public static void Fill<T, TState>(
+        Span<T> span,
+        TState state,
+        Func<int, TState, T> factory)
+    {
+        for (int i = 0; i < span.Length; ++i)
+            span[i] = factory.Invoke(i, state);
+    }
+
+    public static void Mutate<T, TState>(
+        Span<T> span,
+        TState state,
+        Func<TState, T, T> mutator)
+    {
+        for (int i = 0; i < span.Length; ++i)
+            span[i] = mutator.Invoke(state, span[i]);
+    }
+
     public static bool TryCreate<T>(IEnumerable<T>? enumerable, out SpanReader<T> reader)
     {
         if (TryGetSpan(enumerable, out var span))

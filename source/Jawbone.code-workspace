@@ -32,6 +32,9 @@
 		},
 		{
 			"path": "Piranha.SampleSdlRenderer"
+		},
+		{
+			"path": "Piranha.Packer"
 		}
 	],
 	"settings": {

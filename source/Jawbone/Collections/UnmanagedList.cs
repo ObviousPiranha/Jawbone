@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -9,7 +10,7 @@ namespace Jawbone;
 
 [DebuggerTypeProxy(typeof(UnmanagedListDebugView<>))]
 [DebuggerDisplay("Count = {Count}")]
-public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
+public sealed class UnmanagedList<T> : IUnmanagedList, IBufferWriter<T> where T : unmanaged
 {
     private const int DangerZone = 1 << 30;
     private const int DefaultFirstCapacity = 64;
@@ -19,11 +20,10 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
     public bool IsEmpty => Count == 0;
     public int Capacity => _items.Length;
-    public int Count { get; internal set; }
+    public int Count { get; private set; }
     public int Size => Count * Unsafe.SizeOf<T>();
     public Span<byte> Bytes => MemoryMarshal.AsBytes(AsSpan());
     public Span<T> Items => AsSpan();
-    internal Span<T> Free => _items.AsSpan(Count);
 
     public ref T this[int index] => ref AsSpan()[index];
     public ref T this[Index index] => ref AsSpan()[index];
@@ -277,6 +277,27 @@ public sealed class UnmanagedList<T> : IUnmanagedList where T : unmanaged
 
         [DoesNotReturn] static void Throw() =>
             throw new InvalidOperationException("Collection is empty.");
+    }
+
+    public void Advance(int count)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+
+        var freeCapacity = Capacity - Count;
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(count, freeCapacity);
+        Count += count;
+    }
+
+    public Memory<T> GetMemory(int sizeHint = 0)
+    {
+        EnsureCapacityFor(int.Max(1, sizeHint));
+        return _items.AsMemory(Count);
+    }
+
+    public Span<T> GetSpan(int sizeHint = 0)
+    {
+        EnsureCapacityFor(int.Max(1, sizeHint));
+        return _items.AsSpan(Count);
     }
 
     public static implicit operator Span<T>(UnmanagedList<T> list) => list.AsSpan();
