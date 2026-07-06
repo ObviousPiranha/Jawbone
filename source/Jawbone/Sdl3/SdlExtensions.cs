@@ -243,7 +243,7 @@ public static class SdlExtensions
 
         var w = sourceSize.X;
         var h = sourceSize.Y;
-        
+
         var srcRect = default(SdlRect);
         var dstRect = default(SdlRect);
 
@@ -397,7 +397,7 @@ public static class SdlExtensions
     {
         var sheetSurface = Sdl.CreateSurface(sheetSize.X, sheetSize.Y, pixelFormat)
             .ThrowOnSdlFailure("Unable to create surface.");
-        
+
         try
         {
             foreach (var pair in imageLocations)
@@ -504,7 +504,7 @@ public static class SdlExtensions
 
     public static CBool RenderLines(nint renderer, ReadOnlySpan<SdlFPoint> points) =>
         Sdl.RenderLines(renderer, points[0], points.Length);
-    
+
     public static CBool RenderLines(nint renderer, ReadOnlySpan<Vector2> points)
     {
         Debug.Assert(Unsafe.SizeOf<Vector2>() == Unsafe.SizeOf<SdlFPoint>());

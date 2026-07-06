@@ -10,7 +10,7 @@ public struct HertzMachine
     private readonly int _hertz;
     private long _nextFrame;
     private int _frameIndex;
-    
+
     public long UpdateCount { get; private set; }
 
     public HertzMachine(int hertz) : this(hertz, Stopwatch.GetTimestamp())

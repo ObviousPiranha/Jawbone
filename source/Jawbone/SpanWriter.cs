@@ -31,7 +31,7 @@ public static class SpanWriter
     public static unsafe Span<T> CreateSpan<T>(
         nint pointer, int length) where T : unmanaged =>
         new(pointer.ToPointer(), length);
-    
+
     public static void Fill<T>(Span<T> span, Func<int, T> factory)
     {
         for (int i = 0; i < span.Length; ++i)

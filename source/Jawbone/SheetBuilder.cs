@@ -210,7 +210,7 @@ public sealed class SheetBuilder
                     pendingFolder = Path.Combine(relativeFolder, pendingFolder);
                 pendingFolders.Push(pendingFolder);
             }
-            
+
             foreach (var file in Directory.EnumerateFiles(currentFolder, "*.png"))
             {
                 var imageSize = Png.Png.GetImageSize(file);
@@ -244,7 +244,7 @@ public sealed class SheetBuilder
         result = extreme1.CompareTo(extreme0);
         if (result != 0)
             return result;
-        
+
         result = a.Key.CompareTo(b.Key);
         return result;
     }

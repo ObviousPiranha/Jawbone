@@ -17,7 +17,7 @@ public readonly struct DualMatrix3x2
 
     public DualMatrix3x2 Transform(Matrix3x2 forward, Matrix3x2 inverse) =>
         new(Forward * forward, inverse * Inverse);
-    
+
     public DualMatrix3x2 Transform(DualMatrix3x2 dualMatrix) =>
         Transform(dualMatrix.Forward, dualMatrix.Inverse);
 
@@ -29,7 +29,7 @@ public readonly struct DualMatrix3x2
         return Transform(
             Matrix3x2.CreateScale(x, y),
             Matrix3x2.CreateScale(1f / x, 1f / y));
-        
+
         static void Validate(
             float n,
             [CallerArgumentExpression(nameof(n))] string? paramName = null)
