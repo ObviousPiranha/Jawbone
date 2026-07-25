@@ -13,6 +13,8 @@ public readonly struct DualMatrix3x2
         Inverse = inverse;
     }
 
+    public static DualMatrix3x2 Identity => new(Matrix3x2.Identity, Matrix3x2.Identity);
+
     public static DualMatrix3x2 CreateRotation(float radians)
     {
         return new(
@@ -42,6 +44,20 @@ public readonly struct DualMatrix3x2
     }
 
     public static DualMatrix3x2 CreateScale(Vector2 scales) => CreateScale(scales.X, scales.Y);
+
+    public static DualMatrix3x2 CreateSkew(float radiansX, float radiansY)
+    {
+        return new(
+            Matrix3x2.CreateSkew(radiansX, radiansY),
+            Matrix3x2.CreateSkew(-radiansX, -radiansY));
+    }
+
+    public static DualMatrix3x2 CreateSkew(float radiansX, float radiansY, Vector2 centerPoint)
+    {
+        return new(
+            Matrix3x2.CreateSkew(radiansX, radiansY, centerPoint),
+            Matrix3x2.CreateSkew(-radiansX, -radiansY, centerPoint));
+    }
 
     public static DualMatrix3x2 CreateTranslation(float xPosition, float yPosition)
     {
