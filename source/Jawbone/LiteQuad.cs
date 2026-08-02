@@ -38,5 +38,8 @@ public static class LiteQuad
     public static LiteQuad<Vector2> Transformed(LiteQuad<Vector2> lq, Matrix3x2 m) =>
         new(Vector2.Transform(lq.A, m), Vector2.Transform(lq.B, m), Vector2.Transform(lq.C, m));
 
-    public static LiteQuad<Vector2> Translated(LiteQuad<Vector2> lq, Vector2 v) => new(lq.A + v, lq.B + v, lq.C + v);
+    public static LiteQuad<Vector2> Translated(LiteQuad<Vector2> lq, Vector2 v) =>
+        new(lq.A + v, lq.B + v, lq.C + v);
+    
+    public static Vector2 GetD(this LiteQuad<Vector2> lq) => lq.A - lq.B + lq.C;
 }
