@@ -63,6 +63,43 @@ public static class AaQuad
             new Vector2(r.HighX() / w, r.HighY() / h));
     }
 
+    public static AaQuad<Vector2> Transform(
+        this AaQuad<Vector2> aaq, Matrix3x2 matrix)
+    {
+        return new(
+            Vector2.Transform(aaq.A, matrix),
+            Vector2.Transform(aaq.C, matrix));
+    }
+
+    public static AaQuad<Vector2> GetMinMax(this AaQuad<Vector2> aaq)
+    {
+        AaQuad<Vector2> result;
+
+        if (aaq.C.X < aaq.A.X)
+        {
+            result.A.X = aaq.C.X;
+            result.C.X = aaq.A.X;
+        }
+        else
+        {
+            result.A.X = aaq.A.X;
+            result.C.X = aaq.C.X;
+        }
+
+        if (aaq.C.Y < aaq.A.Y)
+        {
+            result.A.Y = aaq.C.Y;
+            result.C.Y = aaq.A.Y;
+        }
+        else
+        {
+            result.A.Y = aaq.A.Y;
+            result.C.Y = aaq.C.Y;
+        }
+
+        return result;
+    }
+
     public static Vector2 Size(this AaQuad<Vector2> aaq) => Vector2.Abs(aaq.C - aaq.A);
     public static float Width(this AaQuad<Vector2> aaq) => aaq.C.X - aaq.A.X;
     public static float Width(this AaQuad<Vector3> aaq) => aaq.C.X - aaq.A.X;
