@@ -278,6 +278,8 @@ public sealed class UnmanagedList<T> : IUnmanagedList, IBufferWriter<T> where T 
         [DoesNotReturn] static void Throw() =>
             throw new InvalidOperationException("Collection is empty.");
     }
+    
+    public Span<T>.Enumerator GetEnumerator() => AsSpan().GetEnumerator();
 
     public void Advance(int count)
     {

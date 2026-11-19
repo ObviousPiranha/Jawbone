@@ -26,6 +26,14 @@ public struct AaQuad<T> // axis-aligned quad
 public static class AaQuad
 {
     public static AaQuad<T> Create<T>(T a, T c) => new(a, c);
+    
+    public static AaQuad<Vector2> FromFullSize(Vector2 center, Vector2 fullSize) =>
+        FromHalfSize(center, fullSize / 2f);
+    public static AaQuad<Vector2> FromHalfSize(Vector2 center, Vector2 halfSize)
+    {
+        var result = Create(center - halfSize, center + halfSize);
+        return result;
+    }
 
     // [Obsolete("Use ToQuadAxCy instead.")]
     public static Quad<Vector2> ToQuad(this AaQuad<Vector2> aaq) => Quad.Create(aaq.A, aaq.C);
@@ -107,4 +115,12 @@ public static class AaQuad
     public static float Height(this AaQuad<Vector3> aaq) => aaq.C.Y - aaq.A.Y;
     public static float XyRatio(this AaQuad<Vector2> aaq) => aaq.Width() / aaq.Height();
     public static float XyRatio(this AaQuad<Vector3> aaq) => aaq.Width() / aaq.Height();
+    
+    extension(AaQuad<Vector2> aaq)
+    {
+        public Vector2 BottomLeft => aaq.A;
+        public Vector2 TopLeft => new(aaq.A.X, aaq.C.Y);
+        public Vector2 TopRight => aaq.C;
+        public Vector2 BottomRight => new(aaq.C.X, aaq.A.Y);
+    }
 }
